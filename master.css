@@ -1,0 +1,32 @@
+body {
+  font-family: avenir;
+  color: #D8DFE3;
+  background-color: #324148;
+}
+
+h1 {
+  font-size: 42px;
+  color: #2197F3;
+  text-align: center;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 24px;
+  color: #2197F3;
+  text-align: center;
+  margin: 0 auto;
+  border: 1px solid black;
+  margin: 15px;
+  padding: 15px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+img {
+  align-self: center;
+  width: 30%;
+  border: 12px solid #D8DFE3;
+}
