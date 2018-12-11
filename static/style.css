@@ -1,37 +1,80 @@
 body {
   font-family: Arial, sans-serif;
   color: black;
-  background-color: #c5c5c5;
+  background-color: white;
 }
 
-h1 {
-  font-size: 42px;
-  color: #0a4e81;
-  text-align: center;
-  margin: 0 auto;
-}
-
-h2 {
-  font-size: 24px;
-  color: #0a4e81;
-  text-align: center;
-  margin: 0 auto;
-  border: 1px solid black;
-  margin: 15px;
-  padding: 15px;
-}
-
-h3 {
-  font-size: 18px;
-}
-
-img {
-  align-self: center;
+figure {
   width: 30%;
-  border: 12px solid #D8DFE3;
+}
+
+h5, h1 {
+  text-align: center;
+}
+
+img:hover {
+  border: 2px solid #11A9F3;
+}
+
+ul {
+  font-size: 18px;
+  color: #2197F3;
+  font-weight: bold;
+}
+ul li {
+  font-size: 14px;
+  font-weight: normal;
 }
 
 #icon {
   width: 60px;
+  height: 60px;
   border: none;
 }
+
+#contactme {
+  width: 500px;
+  text-align: left;
+}
+
+.tablehead {
+  font-size: 125%;
+  color: #673AB7;
+}
+
+.nav-link {
+  color: #2197F3;
+}
+
+@media (max-width: 1500px) {
+  #pagetitle {
+    color: #F44236;
+  }
+}
+@media (max-width: 1300px) {
+  #pagetitle {
+    color: #FE9803;
+  }
+}
+@media (max-width: 1100px) {
+  #pagetitle {
+    color: #FEEA3A;
+  }
+}
+@media (max-width: 900px) {
+  #pagetitle {
+    color: #4DAF50;
+  }
+}
+@media (max-width: 700px) {
+  #pagetitle {
+    color: #2197F3;
+  }
+}
+@media (max-width: 500px) {
+  #pagetitle {
+    color: #9C27B0;
+  }
+}
+
+/*# sourceMappingURL=style.css.map */

@@ -1,0 +1,112 @@
+// Variables
+$myred: #F44236;
+$mypink: #E92662;
+$mypurple: #9C27B0;
+$mydarkpurple: #673AB7;
+$myindigo: #3F51B5;
+$myblue: #2197F3;
+$mylightblue: #11A9F3;
+$mycyan: #16BCD4;
+$myteal: #0E9688;
+$mygreen: #4DAF50;
+$mylightgreen: #8CC44A;
+$mylime: #CDDB39;
+$myyellow: #FEEA3A;
+$myamber: #FFC10A;
+$myorange: #FE9803;
+$mydarkorange: #FE5723;
+$mybrown: #785548;
+$mygrey: #9E9E9E;
+$mybluegrey: #607C8B;
+
+// HTML elements
+body {
+    font-family: Arial, sans-serif;
+    color: black;
+    background-color: white;
+}
+
+figure {
+    width: 30%;
+}
+
+%h {
+    text-align: center;
+}
+
+h1 {
+    @extend %h;
+}
+
+h5 {
+    @extend %h;
+}
+
+img:hover {
+    border: 2px solid $mylightblue;
+}
+
+ul {
+    font-size: 18px;
+    color: $myblue;
+    font-weight: bold;
+    li {
+        font-size: 14px;
+        font-weight: normal;
+    }
+}
+
+// IDs
+#icon {
+    width: 60px;
+    height: 60px;
+    border: none;
+}
+
+#contactme {
+    width: 500px;
+    text-align: left;
+}
+
+// Classes
+.tablehead {
+    font-size: 125%;
+    color: $mydarkpurple;
+}
+
+.nav-link {
+    color: $myblue;
+}
+
+
+// Media queries
+@media (max-width: 1500px) {
+    #pagetitle {
+        color: $myred;
+    }
+}
+@media (max-width: 1300px) {
+    #pagetitle {
+        color: $myorange;
+    }
+}
+@media (max-width: 1100px) {
+    #pagetitle {
+        color: $myyellow;
+    }
+}
+@media (max-width: 900px) {
+    #pagetitle {
+        color: $mygreen;
+    }
+}
+@media (max-width: 700px) {
+    #pagetitle {
+        color: $myblue;
+    }
+}
+@media (max-width: 500px) {
+    #pagetitle {
+        color: $mypurple;
+    }
+}
