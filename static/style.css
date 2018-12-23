@@ -21,6 +21,7 @@ ul {
   color: #2197F3;
   font-weight: bold;
 }
+
 ul li {
   font-size: 14px;
   font-weight: normal;
@@ -51,26 +52,31 @@ ul li {
     color: #F44236;
   }
 }
+
 @media (max-width: 1300px) {
   #pagetitle {
     color: #FE9803;
   }
 }
+
 @media (max-width: 1100px) {
   #pagetitle {
     color: #FEEA3A;
   }
 }
+
 @media (max-width: 900px) {
   #pagetitle {
     color: #4DAF50;
   }
 }
+
 @media (max-width: 700px) {
   #pagetitle {
     color: #2197F3;
   }
 }
+
 @media (max-width: 500px) {
   #pagetitle {
     color: #9C27B0;
