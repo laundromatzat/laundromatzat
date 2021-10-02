@@ -68,20 +68,20 @@ body, html {
   opacity: 0.75;
 }
 
-#parallaxPacific {
+#parallaxIceland {
   /* The image used */
-  background-image: url('../images/pacific.jpg');
+  background-image: url('../images/index_iceland.JPG');
 }
 
-#parallaxCemetery {
+#parallaxNewMexico {
   /* The image used */
-  background-image: url('../images/cemetery.jpg');
+  background-image: url('../images/index_newmexico.jpg');
   height: 50%;
 }
 
-#parallaxSunsetSF {
+#parallaxBritishColumbia {
   /* The image used */
-  background-image: url('../images/sunsetSF.jpg');
+  background-image: url('../images/index_britishcolumbia.jpg');
 }
 
 .caption {
