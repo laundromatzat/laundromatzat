@@ -70,18 +70,18 @@ body, html {
 
 #parallaxIceland {
   /* The image used */
-  background-image: url('../images/index_iceland.JPG');
+  background-image: url('../images/index_iceland.webp');
 }
 
 #parallaxNewMexico {
   /* The image used */
-  background-image: url('../images/index_newmexico.jpg');
+  background-image: url('../images/index_newmexico.webp');
   height: 50%;
 }
 
 #parallaxBritishColumbia {
   /* The image used */
-  background-image: url('../images/index_britishcolumbia.jpg');
+  background-image: url('../images/index_britishcolumbia.webp');
 }
 
 .caption {
