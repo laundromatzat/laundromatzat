@@ -1,93 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>laundromatzat studios - watch</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png" href="images/laundromatzat-icon.png">
-
-    <style>
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #121212;
-            color: #f1f1f1;
-        }
-
-        .header {
-            background-color: #1e1e1e;
-            padding: 20px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
-            overflow: hidden;
-            background-color: #000;
-            border-radius: 12px;
-        }
-
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .footer {
-            background-color: #1e1e1e;
-            padding: 20px 0;
-            text-align: center;
-            color: #a1a1a1;
-            font-size: 0.875rem;
-        }
-
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            background-color: #2a2a2a;
-            color: #f1f1f1;
-            border-radius: 6px;
-            transition: background-color 0.2s;
-        }
-
-        .back-button:hover {
-            background-color: #3a3a3a;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>laundromatzat studios</title>
+    <link href="css/styles.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="images/laundromatzat-icon-purple.png">
 </head>
-<body>
-    <header class="header">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <h1 class="text-3xl font-bold">laundromatzat studios</h1>
-            <p class="mt-1 text-sm">welcome to the laundromat</p>
-        </div>
-    </header>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-6">
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-10">
+        <a href="index.html"> <img class="nav-logo-image" src="images/laundromatzat-icon-purple.png"
+                alt="Laundromatzat Icon"></a>
+        <ul>
+            <li><a href="/videos.html">Vids</a></li>
+            <li><a href="/images.html">Pics</a></li>
+            <li><a href="/about.html">Info</a></li>
+            <li><a href="/ai.html">AI</a></li>
+        </ul>
+    </nav>
+
+    <main class="max-w-7xl mx-auto pt-20 sm:px-6 lg:px-8">
+        <div class="mt-6 mb-6">
             <a href="videos.html" class="back-button">
                 ← videos
             </a>
+        </div>        
+        <div class="video-container-watch" id="video-player">
+
         </div>
 
-        <div class="video-container" id="video-player"></div>
-        
-        <div class="mt-6">
+        <div class="mt-6 ml-6 video-info">
             <h2 class="text-2xl font-bold" id="video-title"></h2>
             <p class="text-gray-400 mt-2" id="video-location"></p>
         </div>
-        
+
     </main>
 
-    <footer class="footer">
-        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <p class="text-center">&copy; 2024 laundromatzat studios. All rights reserved.</p>
+    <footer class="footer mt-8">
+        <div class="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
+            <p class="text-center">© 2024 laundromatzat studios. All rights reserved.</p>
         </div>
     </footer>
 
@@ -105,46 +60,48 @@
             const videoPlayer = document.getElementById('video-player');
             const videoTitle = document.getElementById('video-title');
             const videoLocation = document.getElementById('video-location');
-            
+
             // Set title and location
             videoTitle.textContent = title;
             videoLocation.textContent = location;
 
             // Handle different video platforms
-            if (videoUrl.includes('vimeo.com')) {
-                vimeoId="{vimeoid}"
-            
-                videoPlayer.innerHTML = `<iframe src="https://player.vimeo.com/video/${vimeoId}?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" 
-                    style="position:absolute;top:0;left:0;width:100%;height:100%;" 
-                    frameborder="0" 
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write" 
-                    allowfullscreen
-                    title="${title}"></iframe>`;
-                
+            if (videoUrl.includes('vimeo.com')) {                
+                let vimeoId = videoUrl.split('vimeo.com/')[1].split('?')[0];
+
+                videoPlayer.innerHTML = `<iframe src="https://player.vimeo.com/video/${vimeoId}?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+                style="position:absolute;top:0;left:0;width:min(100vw, 800px);height:min(100vh, 500px);"
+                frameborder="0"
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+                allowfullscreen
+                title="${title}"></iframe>`;
+
                 // Add Vimeo player script if not already present
                 if (!document.querySelector('script[src="https://player.vimeo.com/api/player.js"]')) {
                     const script = document.createElement('script');
                     script.src = 'https://player.vimeo.com/api/player.js';
                     document.body.appendChild(script);
-                }
+                }            
+            
             } else if (videoUrl.includes('drive.google.com')) {
                 // Convert Google Drive link to embed format
                 const driveUrl = videoUrl.replace('/view?usp=sharing', '/preview')
-                                      .replace('/view?usp=drive_link', '/preview');
+                    .replace('/view?usp=drive_link', '/preview');
                 videoPlayer.innerHTML = `<iframe src="${driveUrl}" allowfullscreen></iframe>`;
             }
         }
-            
+
         // On page load, get video details from URL parameters and embed video
-        window.onload = function() {
+        window.onload = function () {
             const videoUrl = getUrlParameter('video');
             const title = getUrlParameter('title');
             const location = getUrlParameter('location');
-            
+
             if (videoUrl) {
                 embedVideo(videoUrl, title, location);
             }
         };
     </script>
 </body>
+
 </html>
