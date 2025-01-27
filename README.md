@@ -1,3 +1,1 @@
-## the laundromat
-
-_laundromatzat_
+A simple HTML/JS/CSS starter template
