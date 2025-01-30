@@ -1,0 +1,304 @@
+/* Color Palette */
+:root {
+  --color-primary: #1e1e1e;
+  --color-secondary: #e0e0e0;
+  --color-accent: #c87af7;
+  --color-background: #333333;
+  --color-text: #fefefe;
+  --color-video: #e9d460;
+}
+
+/* Basic Styles */
+body, html {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+}
+
+/* Updated Navigation Bar */
+nav {
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1.4rem;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.nav-logo-image {
+  height: 2.5rem;
+  width: auto;
+  margin-left: 1rem;
+  transition: transform 0.6s ease-in-out;
+}
+
+.nav-logo:hover {
+  transform: scale(1.1, 1.1);
+}
+
+nav ul {
+  display: flex;
+  list-style: none; 
+  padding: 0;
+}
+
+nav ul li {
+  margin-right: 1rem; 
+  transition: transform 0.3s ease-in-out;
+}
+
+nav ul li:hover {
+  transform: scale(1.1, 1.0);
+}
+
+nav ul li a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  font-size: 1.4rem;
+  font-weight: 500;
+  text-transform: lowercase;
+  padding: 0.5rem;
+  letter-spacing: 0.1rem;
+  transition: color 0.5s ease;
+  transition: font-size 0.5s ease;
+}
+
+nav ul li a:hover {
+  color: var(--color-accent);
+}
+
+nav ul {
+  margin-left: auto; /* Push the ul to the right */
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.5rem 0;
+  width: 100%;
+}
+
+/* Hero Section */
+.hero {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-background);
+  text-align: center;
+  position: relative;
+}
+
+.hero h1 {
+  color: var(--color-text);
+  letter-spacing: 0.4rem;
+  margin-bottom: 1.0rem;
+  font-size: 1.8rem;
+  font-weight: 300;
+}
+
+.hero img {
+  height: 1.5rem;
+  margin-left: 0.5rem;
+}
+
+.hero-link {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  letter-spacing: 0.4rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0rem;
+  text-decoration: none;
+  text-transform: lowercase;
+  transition: color 0.5s ease;
+  transition: font-size 0.5s ease;
+}
+
+.hero-link p {
+  font-weight: 100;
+}
+
+/* Video Styling */
+.video-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-container {
+  width: 6.25rem;
+  height: 6.25rem;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: transform 2.0s;
+  }
+
+.video-container:hover {
+  transform: scale(3);
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: invert(100%);
+  transition: filter 0.6s ease-in-out;
+  transition: transform 2.0s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.video-container:hover video {
+  animation: pulse-effect 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes pulse-effect {
+  0%, 100% {
+    filter: blur(0px) invert(100%) sepia(0%) hue-rotate(0deg) opacity(100%);
+  } 50% {
+    filter: blur(0px) invert(100%) sepia(75%) hue-rotate(180deg) opacity(25%);
+  }
+}
+
+/* Footer Text */
+.footer {
+  text-align: center;
+  padding: 1.0rem;
+  background-color: var(--color-primary);
+  font-size: 1.0rem;
+  color: var(--color-secondary);
+}
+
+/* for videos.html */
+.video-item {
+  background-color: var(--color-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.video-item:hover {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    background-color: var(--color-accent);
+}
+
+.video-thumbnail {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+
+.video-content {
+  padding: 12px;
+}
+
+.video-content h3 {
+  font-size: 1.2rem;
+  color: var(--color-primary);
+  margin-bottom: -20px;
+  margin-top: -6px;
+  font-weight: 300;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: auto;
+}
+
+.video-content p {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  margin-bottom: 0;
+  margin-left: 0px;
+  font-weight: 100;
+}
+
+.fade-underline {
+  position: relative;
+}
+
+.fade-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 75%;
+  height: 1px;
+  background: linear-gradient(to right, currentColor 0%, transparent 100%);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Make the grid scale with the content */
+  gap: 1rem; /* Reduced space between items */
+}
+
+#videos-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Make the grid scale with the content */
+  gap: 1rem; /* Reduced space between items */
+  padding: 2rem; /* Reduced space between items */
+}
+
+main {
+  padding: 4rem;
+}
+
+/* watch.html  */
+#video-player {
+  width: 100%;
+  max-width: 100vw;
+  height: auto;
+  max-height: calc(100vh - 60px); /* 100vh for full viewport height, 100px for navbar and some space */
+  margin: 0 auto;
+  margin-top: 0rem; /* Space below navbar */
+  object-fit: contain;
+}
+
+  .watch-content {
+    padding: 2rem;
+  }
+  
+  .watch-title {
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 300;
+  }
+  
+  .watch-description {
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 100;
+  }
+  
+  .watch-video-section {
+    margin-top: 4rem;
+  }
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #2a2a2a;
+  color: #f1f1f1;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #3a3a3a;
+}
+
+.video-link {
+  text-decoration: none;
+  
+}
+  
