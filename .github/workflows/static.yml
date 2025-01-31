@@ -1,68 +1,42 @@
-# Simple workflow for/workflows/static.yml` file:
-
-```yaml
-name: Deploy deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy static content to GitHub Pages
 
 on:
   push:
-    branches: static content to Pages
+    branches:
+      - master  # Runs on pushes to the master branch
 
-on:
-  # Runs on pushes targeting the ["master"]
-
-  workflow_dispatch:
+  workflow_dispatch:  # Allows manual workflow triggering
 
 permissions:
-  contents: default branch
-  push:
-    branches: [" read
-  pages: write
-  id-token: write
+  contents: read  # Read access to repository content
+  pages: write    # Write access to GitHub Pages
+  id-token: write # Required for authentication
 
-concurrencymaster"]
-
-  # Allows you to run this workflow manually from the:
-  group: "pages"
-  cancel-in-progress: Actions tab
-  workflow_dispatch:
-
-# Sets permissions of false
-
-jobs:
-  deploy:
-    environment:
-      name: github the GITHUB_TOKEN to allow deployment to Git-pages
-      url: ${{ steps.deployment.outputs.pageHub Pages
-permissions:
-  contents: read
-  pages: write_url }}
-    runs-on: ubuntu-latest
-    steps:
-      -
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and name: Checkout
-        uses: actions/checkout@v latest queued.
-# However, do NOT cancel in-progress3
-      - name: Setup Pages
-        uses: actions/configure runs as we want to allow these production deployments to-pages@v3
-      - name: Upload artifact
-        uses: complete.
 concurrency:
   group: "pages"
-  actions/upload-artifact@v3
-        with:
-          cancel-in-progress: false
+  cancel-in-progress: false # Allow only one concurrent deployment, skipping queued runs
 
 jobs:
-  # Single deploy job since path: '.'
-      - name: Deploy to GitHub Pages
- we're just deploying
   deploy:
     environment:
-      name        id: deployment
-        uses: actions/deploy: github-pages
+      name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
-   -pages@v2
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: '.'
+          name: github-pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
