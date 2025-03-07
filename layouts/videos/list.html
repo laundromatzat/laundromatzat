@@ -1,0 +1,18 @@
+{{ define "main" }}
+<div class="video-grid">
+  {{ range .Site.Data.videos.videos }}
+  <div class="video-grid__item">
+    {{ $fullURL := .token }}
+    <div class="video-grid__metadata">
+      <h2>{{ .title }}</h2>
+      {{ with .location }}<p class="location">{{ . }}</p>{{ end }}
+      {{ with .date }}<p class="date">{{ . }}</p>{{ end }}
+    </div>
+    <video controls preload="metadata" poster="{{ with .thumbnail }}{{ . }}{{ end }}">
+      <source src="{{ $fullURL }}">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  {{ end }}
+</div>
+{{ end }}
