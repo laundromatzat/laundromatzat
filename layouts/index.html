@@ -1,0 +1,11 @@
+{{ define "main" }}
+<div class="home__container">
+  <div class="video-wrapper">
+    <a href="/videos">
+      <img class="home__content" src="/videos/deb-breathe-transparent.webp" alt="Link to the Videos page">
+      <br>
+    </a>
+  </div>
+  <a href="/videos" class="home__subtitle">{{ .Site.Params.description }}</a>
+</div>
+{{ end }}

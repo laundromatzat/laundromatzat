@@ -1,0 +1,22 @@
+baseURL = 'http://laundromatzat.com/'
+languageCode = 'en-us'
+title = 'laundromatzat.com'
+
+[params]
+  description = "welcome to the laundromat"
+  mainSections = ["videos"]  # Define main content section
+  favicon = "/favicon.ico"
+
+[menu]
+  [[menu.main]]
+    name = "videos"
+    url = "/videos/"
+    weight = 1
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true  # Allow HTML in markdown
+
+[build]
+  writeStats = true  # Enable build statistics
