@@ -1,0 +1,213 @@
+/* main.css */
+/* Font import */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300&display=swap");
+
+/* Color variables matching the palette */
+:root {
+  --primary: #1e1e1e;
+  --secondary: #e0e0e0;
+  --accent: #a370f0;
+  --background: #4d4c4c;
+  --white: #fff;
+  --text: #fefefe;
+  --highlight: #f9fec4;
+}
+
+/* Global styles */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-family: "Inter", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: var(--background);
+  color: var(--text);
+}
+
+main {
+  flex: 1;
+}
+
+/* Header styles */
+.site-header {
+  background: var(--primary);
+  padding: 1rem 0;
+}
+
+.header-container {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 0.5rem 6rem;
+}
+
+.site-nav {
+  width: 100%;
+}
+
+.nav-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.site-title {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 2rem;
+  font-weight: 200;
+  transition: color 0.3s ease;
+}
+
+.site-title:hover {
+  color: var(--secondary);
+}
+
+/* Homepage styles using BEM naming */
+.home__container {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.home__title {
+  font-size: 1.5rem;
+  font-weight: 200;
+  margin: 0;
+}
+
+.video-wrapper {
+  filter: invert(100%);
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Updated for BEM: home__content */
+.home__content {
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  transition: transform 6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0.2);
+}
+
+.home__content:hover {
+  transform: scale(1);
+  animation: color-breathe 12s infinite;
+}
+
+/* Optimized hover animations for mobile devices */
+@media (max-width: 600px) {
+  .home__content:hover {
+    transform: scale(1);
+    animation: none;
+  }
+}
+
+@keyframes color-breathe {
+  0% {
+    filter: brightness(1.2) sepia(1) hue-rotate(0deg) saturate(100%) opacity(0.9);
+  }
+  20% {
+    filter: brightness(0.9) sepia(1) hue-rotate(60deg) saturate(150%) opacity(0.8);
+  }
+  40% {
+    filter: brightness(1) sepia(1) hue-rotate(120deg) saturate(200%) opacity(0.7);
+  }
+  60% {
+    filter: brightness(1.1) sepia(1) hue-rotate(180deg) saturate(150%) opacity(0.8);
+  }
+  80% {
+    filter: brightness(0.95) sepia(1) hue-rotate(240deg) saturate(100%) opacity(0.9);
+  }
+  100% {
+    filter: brightness(1.2) sepia(1) hue-rotate(360deg) saturate(100%) opacity(0.9);
+  }
+}
+
+.home__subtitle {
+  font-size: 1rem;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 200;
+  margin: 0;
+  transition: font-weight 0.1s ease;
+}
+
+.home__subtitle:hover {
+  font-weight: 800;
+}
+
+.home__button {
+  /* Additional button styling if needed */
+}
+
+/* Video grid page using BEM naming */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Renamed for BEM: video-grid__item */
+.video-grid__item {
+  background: var(--secondary);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+}
+
+.video-grid__item video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Renamed for BEM: video-grid__metadata */
+.video-grid__metadata {
+  padding: 1rem;
+}
+
+.video-grid__metadata h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.video-grid__metadata p {
+  margin: 0.25rem 0;
+  color: var(--primary);
+}
+
+/* Responsive enhancements */
+@media (max-width: 800px) {
+  .header-container {
+    padding: 0.5rem 2rem;
+  }
+  .video-grid {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+  width: 100%;
+  font-weight: 200;
+  letter-spacing: 0.02em;
+  background: var(--primary);
+  color: var(--text);
+  padding: 1rem;
+}
