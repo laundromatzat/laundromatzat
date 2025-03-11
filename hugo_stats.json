@@ -21,15 +21,18 @@
       "script",
       "section",
       "source",
+      "style",
       "title",
       "video"
     ],
     "classes": [
+      "bg-white",
       "center",
       "cf",
       "date",
       "f1",
       "f4",
+      "favicon-image",
       "flex-ns",
       "flex-wrap",
       "header-container",
@@ -39,6 +42,7 @@
       "justify-around",
       "lh-copy",
       "location",
+      "mb4",
       "measure-wide",
       "mid-gray",
       "mt5",
@@ -50,6 +54,7 @@
       "ph5-l",
       "pv3",
       "pv4-l",
+      "relative",
       "site-header",
       "site-nav",
       "site-title",
@@ -57,7 +62,9 @@
       "video-grid",
       "video-grid__item",
       "video-grid__metadata",
-      "video-wrapper"
+      "video-wrapper",
+      "w-100",
+      "w-30-l"
     ],
     "ids": null
   }

@@ -8,7 +8,7 @@
       {{ with .location }}<p class="location">{{ . }}</p>{{ end }}
       {{ with .date }}<p class="date">{{ . }}</p>{{ end }}
     </div>
-    <video controls preload="metadata" poster="{{ with .thumbnail }}{{ . }}{{ end }}">
+    <video controls preload="metadata" poster="{{ with .thumbnail }}{{ . }}{{ end }}" loading="lazy">
       <source src="{{ $fullURL }}">
       Your browser does not support the video tag.
     </video>
