@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
     <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
-    
-    {{ with .Site.Params.favicon }}
-    <link rel="icon" type="image/x-icon" href="{{ . }}">
-    {{ end }}
-    
+
+    {{ partial "head.html" . }}
+
     {{ $style := resources.Get "css/main.css" | minify | fingerprint }}
     <link rel="stylesheet" href="{{ $style.RelPermalink }}" integrity="{{ $style.Data.Integrity }}">
-    
+
     {{ if .IsHome }}
     <meta property="og:type" content="website">
     {{ else }}
@@ -27,7 +25,7 @@
       <div class="header-container">
         <nav class="site-nav">
           <div class="nav-content">
-            <a href="{{ .Site.Home.RelPermalink }}" class="site-title">{{ .Site.Title }}</a>
+            <a href="{{ .Site.Home.RelPermalink }}" class="site-title"><img src="/favicon.ico" alt="Favicon" class="favicon-image" style="height: 1em; vertical-align: middle; margin-right: 0.5em;">{{ .Site.Title }}</a>
           </div>
         </nav>
       </div>
@@ -43,4 +41,4 @@
       </div>
     </footer>
   </body>
-</html> 
+</html>

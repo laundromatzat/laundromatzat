@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ExampleCategory1 on laundromatzat.com</title>
+    <link>http://laundromatzat.com/categories/examplecategory1/</link>
+    <description>Recent content in ExampleCategory1 on laundromatzat.com</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="http://laundromatzat.com/categories/examplecategory1/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Videos</title>
+      <link>http://laundromatzat.com/videos/</link>
+      <pubDate>Fri, 23 Feb 2024 12:00:00 -0800</pubDate>
+      <guid>http://laundromatzat.com/videos/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>
