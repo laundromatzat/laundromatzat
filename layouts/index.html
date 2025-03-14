@@ -1,11 +1,17 @@
 {{ define "main" }}
 <div class="home__container">
+  <h1 class="home__title">Welcome to the Laundromat</h1>
   <div class="video-wrapper">
-    <a href="/videos">
-      <img class="home__content" src="/videos/deb-breathe-transparent.webp" alt="Link to the Videos page">
-      <br>
+    <a href="/videos" class="feature-link">
+      <div class="image-container">
+        <img class="home__content" src="/videos/deb-breathe-transparent.webp" alt="Link to the Videos page">
+      </div>
     </a>
   </div>
-  <a href="/videos" class="home__subtitle">{{ .Site.Params.description }}</a>
+  <div class="home__actions">
+    <a href="/videos" class="home__button">Browse Collection</a>
+    <a href="/about" class="home__button home__button--secondary">About Us</a>
+  </div>
+  <p class="home__subtitle">{{ .Site.Params.description }}</p>
 </div>
 {{ end }}
