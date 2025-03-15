@@ -1,32 +1,123 @@
 name: Deploy Hugo Site
 
 on:
+  # Run on pushes to master branch
   push:
     branches:
-      - master  # Runs on updates to the main branch
+      - master
+  # Run weekly to ensure GitHub Pages stays active
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sundays at midnight
+  # Allow manual triggering
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1  # Pinned version
         with:
-          submodules: true  # Ensures themes are included
-          fetch-depth: 0
+          submodules: true  # Get Hugo themes
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+
+      - name: Cache Hugo modules and packages
+        uses: actions/cache@v3.3.2  # Pinned version
+        with:
+          path: |
+            ~/.hugo_cache
+            /tmp/hugo_cache
+          key: ${{ runner.os }}-hugo-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-hugo-
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
+        uses: peaceiris/actions-hugo@v2.6.0  # Pinned version
         with:
           hugo-version: "latest"
+          extended: true  # Enable SCSS/SASS support
 
+      - name: Check Hugo version
+        run: hugo version
+      
       - name: Build Hugo site
-        run: hugo --minify
+        run: hugo --minify --verbose
+        env:
+          # Set environment variables if needed
+          HUGO_ENV: production
+      
+      # Create a CNAME file if it doesn't exist in static directory
+      - name: Ensure CNAME file
+        run: |
+          if [ ! -f public/CNAME ]; then
+            echo "laundromatzat.com" > public/CNAME
+            echo "Created CNAME file as it was missing"
+          else
+            echo "CNAME file exists"
+          fi
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      # Optional: Test for broken links
+      - name: Install html-proofer
+        run: |
+          gem install html-proofer -v 5.0.8
+        continue-on-error: true
+
+      - name: Check for broken internal links
+        run: |
+          htmlproofer ./public --disable-external --allow-hash-href --allow-missing-href
+        continue-on-error: true  # Don't fail the workflow if some links are broken
+      
+      # Upload artifact for deployment job
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3.0.0  # Pinned version
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./public
-          cname: laundromatzat.com
+          path: ./public
+          retention-days: 7  # How long to retain the artifact
+
+  deploy:
+    needs: build
+    # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4.0.3  # Pinned version
+        with:
+          cname: laundromatzat.com  # Set custom domain
+
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for DNS propagation
+        run: sleep 60  # Wait a minute for potential DNS propagation
+        
+      - name: Verify deployment
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://laundromatzat.com)
+          echo "Website status code: $HTTP_STATUS"
+          if [[ "$HTTP_STATUS" -ne 200 ]]; then
+            echo "Warning: Site returned non-200 status code: $HTTP_STATUS"
+          else
+            echo "Site verification successful"
+          fi
+        continue-on-error: true
+      
+      - name: Verify custom domain
+        run: |
+          DOMAIN=$(curl -s -I https://laundromatzat.com | grep -i "Location" || echo "")
+          if [[ "$DOMAIN" == *"github.io"* ]]; then
+            echo "Warning: Domain appears to be redirecting to github.io"
+          else
+            echo "Custom domain verification successful"
+          fi
+        continue-on-error: true
