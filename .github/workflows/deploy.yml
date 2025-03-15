@@ -30,7 +30,6 @@ jobs:
           key: ${{ runner.os }}-hugo-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-hugo-
-
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
@@ -55,14 +54,16 @@ jobs:
           else
             echo "CNAME file exists"
           fi
-
-      # Optional: Test for broken links
+      
+      # Install and run html-proofer with proper permissions
       - name: Install html-proofer
         run: |
-          gem install html-proofer
+          sudo gem install html-proofer
         continue-on-error: true
+        id: install-proofer
 
       - name: Check for broken internal links
+        if: steps.install-proofer.outcome == 'success'
         run: |
           htmlproofer ./public --disable-external --allow-hash-href --allow-missing-href
         continue-on-error: true  # Don't fail the workflow if some links are broken
