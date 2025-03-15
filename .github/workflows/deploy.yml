@@ -16,13 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.1  # Pinned version
+        uses: actions/checkout@v4  # Removed pinned minor version
         with:
           submodules: true  # Get Hugo themes
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
       - name: Cache Hugo modules and packages
-        uses: actions/cache@v3.3.2  # Pinned version
+        uses: actions/cache@v3  # Using v3 without specific minor version
         with:
           path: |
             ~/.hugo_cache
@@ -32,7 +32,7 @@ jobs:
             ${{ runner.os }}-hugo-
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2.6.0  # Pinned version
+        uses: peaceiris/actions-hugo@v2  # Removed pinned minor version
         with:
           hugo-version: "latest"
           extended: true  # Enable SCSS/SASS support
@@ -59,7 +59,7 @@ jobs:
       # Optional: Test for broken links
       - name: Install html-proofer
         run: |
-          gem install html-proofer -v 5.0.8
+          gem install html-proofer
         continue-on-error: true
 
       - name: Check for broken internal links
@@ -69,7 +69,7 @@ jobs:
       
       # Upload artifact for deployment job
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3.0.0  # Pinned version
+        uses: actions/upload-pages-artifact@v3  # Using v3 without specific minor version
         with:
           path: ./public
           retention-days: 7  # How long to retain the artifact
@@ -90,7 +90,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4.0.3  # Pinned version
+        uses: actions/deploy-pages@v4  # Using v4 without specific minor version
         with:
           cname: laundromatzat.com  # Set custom domain
 
