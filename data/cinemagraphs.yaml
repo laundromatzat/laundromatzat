@@ -1,0 +1,59 @@
+baseURL: ""
+tokenSuffix: ""
+
+images:
+  - id: "love"
+    title: "Love"
+    url: "https://photos.app.goo.gl/5ttpReZTLGY4y2zUA"
+    date: "03/2025"
+    location: "Bernal Heights"
+    description: "love"
+
+images:
+  - id: ""
+    title: ""
+    url: 
+    date: ""
+    location: ""
+    description: ""
+
+images:
+  - id: ""
+    title: ""
+    url: 
+    date: ""
+    location: ""
+    description: ""
+
+images:
+  - id: ""
+    title: ""
+    url: 
+    date: ""
+    location: ""
+    description: ""
+
+images:
+  - id: ""
+    title: ""
+    url: 
+    date: ""
+    location: ""
+    description: ""
+
+images:
+  - id: ""
+    title: ""
+    url: 
+    date: ""
+    location: ""
+    description: ""
+
+images:
+  - id: ""
+    title: ""
+    url: 
+    date: ""
+    location: ""
+    description: ""
+
