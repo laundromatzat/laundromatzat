@@ -373,18 +373,20 @@ footer {
   align-items: center;
 }
 
-/* For home page, ensure footer is visible */
+/* For home page, ensure footer is visible and fixed at bottom */
 body:has(.home__content) footer {
-  position: relative;
-  margin-top: auto;
+  position: fixed;
+  bottom: 0;
+  left: 0;
   z-index: 10;
 }
 
 /* Ensure home container doesn't overlap footer */
 body:has(.home__content) .home__container {
-  height: calc(100vh - 125px);
-  max-height: calc(100vh - 125px);
-  padding-bottom: 60px; /* Add space for footer */
+  height: calc(100vh - 160px); /* Adjusted to account for header + footer + nav */
+  max-height: calc(100vh - 160px);
+  margin-bottom: 60px; /* Space for footer */
+  overflow: hidden;
 }
 
 /* Media query for very short screens */
