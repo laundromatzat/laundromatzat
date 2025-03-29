@@ -373,10 +373,18 @@ footer {
   align-items: center;
 }
 
-/* For home page, unfixed footer */
+/* For home page, ensure footer is visible */
 body:has(.home__content) footer {
   position: relative;
   margin-top: auto;
+  z-index: 10;
+}
+
+/* Ensure home container doesn't overlap footer */
+body:has(.home__content) .home__container {
+  height: calc(100vh - 125px);
+  max-height: calc(100vh - 125px);
+  padding-bottom: 60px; /* Add space for footer */
 }
 
 /* Media query for very short screens */
