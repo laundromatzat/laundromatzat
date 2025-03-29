@@ -268,9 +268,8 @@ body:has(.home__content) main::-webkit-scrollbar {
 
 /* Renamed for BEM: video-grid__metadata */
 .video-grid__metadata {
-  padding: 0.5rem 0.75rem 0.25rem 0.75rem;
+  padding: 0.75rem 0.75rem 0.25rem 0.75rem;
   flex-shrink: 0; /* Prevent metadata from shrinking */
-  height: 75px; /* Even more reduced height for metadata */
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* Align items to the top instead of distributing space */
