@@ -4,22 +4,62 @@
   <h1>Images</h1>
   <div class="accent-line"></div>
 </div>
-<div class="video-grid">
+<div class="image-grid">
   {{ range .Site.Data.images.images }}
   {{ if .title }}
-  <div class="video-grid__item">
-    <div class="video-grid__metadata">
-      <h2>{{ .title }}</h2>
-      <p class="location">
-        <i class="location-icon"></i>{{ .location }}
-      </p>
-      <p class="date">
-        <i class="calendar-icon"></i>{{ .date }}
-      </p>
+  <div class="image-item">
+    <div class="image-container">
+      <img class="image-grid__image" src="{{ .token }}" alt="{{ .title }}" loading="lazy">
+      <div class="image-overlay">
+        <h2>{{ .title }}</h2>
+        <div class="image-metadata">
+          {{ if .location }}
+          <p class="location">
+            <i class="location-icon"></i>{{ .location }}
+          </p>
+          {{ end }}
+          {{ if .date }}
+          <p class="date">
+            <i class="calendar-icon"></i>{{ .date }}
+          </p>
+          {{ end }}
+        </div>
+      </div>
     </div>
-    <img src="{{ .url }}" alt="{{ .title }}" class="image-grid__image">
   </div>
   {{ end }}
   {{ end }}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const images = document.querySelectorAll('.image-grid__image');
+  
+  // Add click event for fullscreen viewing
+  images.forEach(img => {
+    img.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (img.requestFullscreen) {
+        img.requestFullscreen();
+      } else if (img.webkitRequestFullscreen) { /* Safari */
+        img.webkitRequestFullscreen();
+      } else if (img.msRequestFullscreen) { /* IE11 */
+        img.msRequestFullscreen();
+      }
+    });
+    
+    // Detect image orientation once loaded
+    img.addEventListener('load', function() {
+      const item = this.closest('.image-item');
+      if (this.naturalHeight > this.naturalWidth) {
+        item.classList.add('portrait');
+      } else {
+        item.classList.add('landscape');
+      }
+    });
+  });
+});
+</script>
 {{ end }}

@@ -1,7 +1,8 @@
+
 baseURL: ""
 tokenSuffix: ""
 
-images:
+cinemagraphs:
   - id: "bernal-hill-sunrise-cinemagraph"
     title: "sunrise from bernal hill"
     url: "gs://laundromat-zat.firebasestorage.app/cinemagraphs/bernal-hill-sunrise-cinemagraph.mp4"
