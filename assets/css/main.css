@@ -354,7 +354,7 @@ body:has(.home__content) main::-webkit-scrollbar {
   }
 }
 
-/* Footer - fixed position */
+/* Footer - regular position by default */
 footer {
   width: 100%;
   font-weight: 200;
@@ -364,16 +364,14 @@ footer {
   padding: 0.75rem 2rem;
   font-size: clamp(0.7rem, 1.5vw, 0.9rem);
   text-align: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
+  position: relative;
   z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* For home page, ensure footer is visible and fixed at bottom */
+/* Only for home page, ensure footer is fixed at bottom */
 body:has(.home__content) footer {
   position: fixed;
   bottom: 0;
