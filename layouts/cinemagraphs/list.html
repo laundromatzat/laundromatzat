@@ -4,25 +4,92 @@
   <h1>Cinemagraphs</h1>
   <div class="accent-line"></div>
 </div>
-<div class="video-grid">
-  {{ range .Site.Data.cinemagraphs.images }}
+<div class="cinemagraph-grid">
+  {{ range .Site.Data.cinemagraphs.cinemagraphs }}
   {{ if .title }}
-  <div class="video-grid__item">
-    <div class="video-grid__metadata">
-      <h2>{{ .title }}</h2>
-      <p class="location">
-        <i class="location-icon"></i>{{ .location }}
-      </p>
-      <p class="date">
-        <i class="calendar-icon"></i>{{ .date }}
-      </p>
+  <div class="cinemagraph-item">
+    <div class="cinemagraph-container">
+      <video class="cinemagraph-video" muted loop playsinline preload="metadata" poster="{{ .thumbnail }}">
+        <source src="{{ .token }}">
+        Your browser does not support the video tag.
+      </video>
+      <div class="cinemagraph-overlay">
+        <h2>{{ .title }}</h2>
+        <div class="cinemagraph-metadata">
+          {{ if .location }}
+          <p class="location">
+            <i class="location-icon"></i>{{ .location }}
+          </p>
+          {{ end }}
+          {{ if .date }}
+          <p class="date">
+            <i class="calendar-icon"></i>{{ .date }}
+          </p>
+          {{ end }}
+        </div>
+      </div>
     </div>
-    <video controls preload="metadata" poster="{{ .thumbnail }}">
-      <source src="{{ .token }}">
-      Your browser does not support the video tag.
-    </video>
   </div>
   {{ end }}
   {{ end }}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const cinemagraphVideos = document.querySelectorAll('.cinemagraph-video');
+  
+  // Add hover event listeners for play/pause
+  cinemagraphVideos.forEach(video => {
+    // Handle hover events for play/pause
+    video.parentElement.addEventListener('mouseenter', () => {
+      if (video.paused) {
+        video.play();
+      }
+    });
+    
+    video.parentElement.addEventListener('mouseleave', () => {
+      if (!video.paused) {
+        video.pause();
+      }
+    });
+    
+    // Handle click for fullscreen
+    video.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (video.requestFullscreen) {
+        video.requestFullscreen();
+      } else if (video.webkitRequestFullscreen) { /* Safari */
+        video.webkitRequestFullscreen();
+      } else if (video.msRequestFullscreen) { /* IE11 */
+        video.msRequestFullscreen();
+      }
+      
+      // Ensure video is playing in fullscreen
+      video.play();
+    });
+    
+    // Handle fullscreen change
+    document.addEventListener('fullscreenchange', function() {
+      if (!document.fullscreenElement) {
+        // When exiting fullscreen
+        if (!video.parentElement.matches(':hover')) {
+          video.pause();
+        }
+      }
+    });
+    
+    // Detect video orientation once metadata is loaded
+    video.addEventListener('loadedmetadata', function() {
+      const item = this.closest('.cinemagraph-item');
+      if (this.videoHeight > this.videoWidth) {
+        item.classList.add('portrait');
+      } else {
+        item.classList.add('landscape');
+      }
+    });
+  });
+});
+</script>
 {{ end }}
