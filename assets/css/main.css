@@ -169,7 +169,9 @@ body:has(.home__content) main::-webkit-scrollbar {
 }
 
 .video-grid__item video[poster] {
-  object-fit: contain; /* Ensure poster image fits within the video container */
+  object-fit: cover; /* Force poster image to cover the container */
+  object-position: center; /* Center the poster image */
+  background-color: var(--primary); /* Match background color */
 }
 
 .home__content:hover {
@@ -259,6 +261,9 @@ body:has(.home__content) main::-webkit-scrollbar {
   object-fit: cover; /* Cover available space */
   display: block;
   border-radius: 0; /* Remove border radius from video to avoid white space */
+  margin: 0;
+  padding: 0;
+  background-color: var(--primary); /* Match background to hide any gaps */
 }
 
 .video-grid__item:hover {
