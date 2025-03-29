@@ -155,6 +155,7 @@ videos:
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ftransatlanticism.mp4?alt=media&token=e0e342ec-2204-4a70-bad7-5cff8afc694f"
     thumbnail: "/videos/images/thumbnails/transatlanticism.webp"
 
+  videos:
   - id: "one-of-us"
     title: "One of Us"
     date: "05/2014"
@@ -171,7 +172,7 @@ videos:
     feat: "Michael"
     description: "Camping trip to Crater Lake and Redwoods National Park from September 6 - 8, 2013."
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ffast-car.mov?alt=media&token=ce20c5b2-47d0-4c79-9745-1c0a18e4ddf3"
-    thumbnail: "/videos/images/thumbnails/fast-car.webp"
+    thumbnail: "/videos/images/thumbnails/fast-car.webp""
 
   - id: "you-were-meant-for-me"
     title: "You Were Meant for Me"
