@@ -30,8 +30,8 @@ args = "[ ! -f /home/runner/.local/bin/hugo ] && curl -L https://github.com/gohu
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "export PATH=$PATH:/home/runner/.local/bin"
+args = "/home/runner/.local/bin/hugo server --bind=0.0.0.0 --port=5000 --baseURL=https://$REPL_SLUG.$REPL_OWNER.repl.co"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "hugo server --bind=0.0.0.0 --port=5000 --baseURL=https://$REPL_SLUG.$REPL_OWNER.repl.co"
+[[ports]]
+localPort = 5000
+externalPort = 80
