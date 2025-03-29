@@ -249,7 +249,7 @@ body:has(.home__content) main::-webkit-scrollbar {
   transition: transform 0.5s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
-  height: 320px; /* Reduced fixed height */
+  height: 305px; /* Reduced fixed height to match smaller metadata */
   width: 100%;
 }
 
@@ -268,9 +268,9 @@ body:has(.home__content) main::-webkit-scrollbar {
 
 /* Renamed for BEM: video-grid__metadata */
 .video-grid__metadata {
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem 0.25rem 0.75rem;
   flex-shrink: 0; /* Prevent metadata from shrinking */
-  height: 90px; /* Further reduced height for metadata */
+  height: 75px; /* Even more reduced height for metadata */
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* Align items to the top instead of distributing space */
@@ -321,7 +321,7 @@ body:has(.home__content) main::-webkit-scrollbar {
   }
   
   .video-grid__item {
-    height: 320px;
+    height: 305px;
   }
   
   .video-grid__item video {
@@ -335,7 +335,7 @@ body:has(.home__content) main::-webkit-scrollbar {
   }
   
   .video-grid__item {
-    height: 340px;
+    height: 305px;
   }
   
   .video-grid__item video {
