@@ -4,33 +4,12 @@ modules = ["python-3.12", "c-clang14", "web", "nodejs-20"]
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Install Hugo and Run"
+runButton = "Run Hugo"
 
 [[workflows.workflow]]
 name = "Run Hugo"
 author = 18971042
 mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "hugo server --bind=0.0.0.0 --port=5000 --baseURL=https://$REPL_SLUG.$REPL_OWNER.repl.co"
-
-[[workflows.workflow]]
-name = "Install Hugo and Run"
-author = 18971042
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "mkdir -p /home/runner/.local/bin"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "[ ! -f /home/runner/.local/bin/hugo ] && curl -L https://github.com/gohugoio/hugo/releases/download/v0.111.3/hugo_0.111.3_Linux-64bit.tar.gz | tar -xz && mv hugo /home/runner/.local/bin/"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "export PATH=$PATH:/home/runner/.local/bin"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
