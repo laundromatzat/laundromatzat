@@ -73,6 +73,7 @@
       "site-title",
       "tc-l",
       "video-grid",
+      "video-grid__info-row",
       "video-grid__item",
       "video-grid__metadata",
       "video-wrapper",
