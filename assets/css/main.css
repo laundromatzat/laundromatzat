@@ -249,7 +249,7 @@ body:has(.home__content) main::-webkit-scrollbar {
   transition: transform 0.5s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
-  height: 340px; /* Fixed height */
+  height: 320px; /* Reduced fixed height */
   width: 100%;
 }
 
@@ -268,9 +268,9 @@ body:has(.home__content) main::-webkit-scrollbar {
 
 /* Renamed for BEM: video-grid__metadata */
 .video-grid__metadata {
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
   flex-shrink: 0; /* Prevent metadata from shrinking */
-  height: 120px; /* Fixed height for metadata */
+  height: 100px; /* Reduced height for metadata */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -278,13 +278,34 @@ body:has(.home__content) main::-webkit-scrollbar {
 
 .video-grid__metadata h2 {
   margin: 0 0 0.25rem;
-  font-size: clamp(1.4rem, 2vw, 1.25rem);
+  font-size: clamp(1.2rem, 2vw, 1.25rem);
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .video-grid__metadata p {
-  margin: 0.25rem 0;
+  margin: 0.15rem 0;
   color: var(--primary);
-  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  display: inline-block;
+}
+
+.video-grid__info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.location, .date {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Responsive enhancements */
