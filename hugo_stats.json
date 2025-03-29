@@ -34,8 +34,7 @@
       "center",
       "cf",
       "cinemagraph-container",
-      "cinemagraph-grid",
-      "cinemagraph-item",
+      "cinemagraph-details",
       "cinemagraph-metadata",
       "cinemagraph-overlay",
       "cinemagraph-video",
@@ -64,6 +63,8 @@
       "location-icon",
       "main-nav",
       "main-nav-container",
+      "masonry-grid",
+      "masonry-item",
       "mb4",
       "measure-wide",
       "mid-gray",
@@ -91,6 +92,8 @@
       "w-100",
       "w-30-l"
     ],
-    "ids": null
+    "ids": [
+      "cinemagraph-grid"
+    ]
   }
 }
