@@ -125,15 +125,16 @@ body:has(.home__content) main::-webkit-scrollbar {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.5rem, 2vh, 2rem); /* Responsive gap */
+  gap: clamp(0.3rem, 1vh, 1rem); /* Reduced responsive gap */
   padding: 0 1rem;
-  min-height: calc(100vh - 125px); /* Account for header and footer height */
+  height: calc(100vh - 125px); /* Fixed height instead of min-height */
+  overflow: hidden; /* Prevent scrolling */
 }
 
 .home__title {
-  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-size: clamp(1.2rem, 4vw, 2rem);
   font-weight: 300;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   letter-spacing: -0.02em;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -142,11 +143,11 @@ body:has(.home__content) main::-webkit-scrollbar {
   position: relative;
   width: 100%;
   height: auto;
-  flex: 1;
+  flex: 0 1 auto; /* Don't force flex grow */
   display: flex;
   justify-content: center;
   align-items: center;
-  max-height: 60vh; /* Limit height to ensure footer visibility */
+  max-height: 50vh; /* Reduced max height */
 }
 
 /* Updated for BEM: home__content */
@@ -157,7 +158,7 @@ body:has(.home__content) main::-webkit-scrollbar {
   max-width: 100%;
   object-fit: contain; /* Maintain aspect ratio */
   transition: transform 2.0s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(0.8);
+  transform: scale(0.7); /* Reduced scale to fit better */
 }
 
 .video-grid__item video {
