@@ -284,6 +284,7 @@ body:has(.home__content) main::-webkit-scrollbar {
   margin: 0 0 0.1rem;
   font-size: clamp(1.2rem, 2vw, 1.25rem);
   line-height: 1.1;
+  padding: 0.75rem 0 0 0;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -431,7 +432,7 @@ body:has(.home__content) footer {
   
   .section-header {
     margin-bottom: 1rem;
-    padding-top: 1rem;
+    padding-top: 0rem;
   }
   
   .content-section {
