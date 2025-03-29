@@ -8,52 +8,5 @@ images:
     date: "03/2025"
     location: "Bernal Heights"
     description: "love"
-
-images:
-  - id: ""
-    title: ""
-    url: 
-    date: ""
-    location: ""
-    description: ""
-
-images:
-  - id: ""
-    title: ""
-    url: 
-    date: ""
-    location: ""
-    description: ""
-
-images:
-  - id: ""
-    title: ""
-    url: 
-    date: ""
-    location: ""
-    description: ""
-
-images:
-  - id: ""
-    title: ""
-    url: 
-    date: ""
-    location: ""
-    description: ""
-
-images:
-  - id: ""
-    title: ""
-    url: 
-    date: ""
-    location: ""
-    description: ""
-
-images:
-  - id: ""
-    title: ""
-    url: 
-    date: ""
-    location: ""
-    description: ""
-
+    token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Flove.mp4?alt=media&token=sample-token"
+    thumbnail: "/videos/images/thumbnails/love.webp"
