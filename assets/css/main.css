@@ -303,20 +303,21 @@ body:has(.home__content) main::-webkit-scrollbar {
 /* Masonry grid for cinemagraphs */
 .masonry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  grid-auto-rows: 10px;
-  grid-gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
   padding: 20px;
+  min-height: calc(100vh - 220px); /* Ensure content area is tall enough for footer */
+  margin-bottom: 60px; /* Add space for the footer */
 }
 
 .masonry-item {
-  grid-row-end: span 20; /* Default height, will be adjusted by JS */
   background-color: #f9f9f9;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
+  height: auto; /* Let height be determined by content */
 }
 
 .masonry-item:hover {
@@ -324,9 +325,13 @@ body:has(.home__content) main::-webkit-scrollbar {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
 }
 
-/* Portrait items take more vertical space */
-.masonry-item.portrait {
-  grid-row-end: span 40;
+/* Portrait items have different aspect ratio */
+.masonry-item.portrait .cinemagraph-container {
+  aspect-ratio: 9/16;
+}
+
+.masonry-item.landscape .cinemagraph-container {
+  aspect-ratio: 16/9;
 }
 
 .cinemagraph-container {
@@ -341,6 +346,7 @@ body:has(.home__content) main::-webkit-scrollbar {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  display: block; /* Remove any default inline spacing */
 }
 
 .cinemagraph-item {
@@ -354,6 +360,13 @@ body:has(.home__content) main::-webkit-scrollbar {
 .cinemagraph-item:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Add proper container height for footer */
+main {
+  min-height: calc(100vh - 120px);
+  position: relative;
+  padding-bottom: 60px; /* Space for footer */
 }
 
 .cinemagraph-container {

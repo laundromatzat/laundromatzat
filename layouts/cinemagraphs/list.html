@@ -86,51 +86,61 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle aspect ratio detection
     video.addEventListener('loadedmetadata', function() {
       // Check if video is portrait or landscape
-      if (video.videoHeight > video.videoWidth) {
+      if (video.videovideoHeight > video.videoWidth) {
         item.classList.add('portrait');
       } else {
         item.classList.add('landscape');
       }
+    });
 
-      // Initialize Masonry layout after videos are loaded
-      if (item === cinemagraphs[cinemagraphs.length - 1]) {
-        initMasonry();
-      }
+    // Pause cinemagraphs when not visible
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const video = entry.target.querySelector('video');
+        if (!video) return;
+        
+        if (entry.isIntersecting) {
+          // Only play on hover, not automatically when visible
+          if (entry.target.classList.contains('hovered')) {
+            video.play().catch(e => console.error("Video play error:", e));
+          }
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    cinemagraphs.forEach(item => {
+      observer.observe(item);
+      
+      // Play on hover
+      item.addEventListener('mouseenter', () => {
+        const video = item.querySelector('video');
+        if (video) {
+          item.classList.add('hovered');
+          video.play().catch(e => console.error("Video play error:", e));
+        }
+      });
+      
+      // Pause when not hovered
+      item.addEventListener('mouseleave', () => {
+        const video = item.querySelector('video');
+        if (video) {
+          item.classList.remove('hovered');
+          video.pause();
+        }
+      });
+      
+      // Fullscreen on click
+      item.addEventListener('click', () => {
+        const video = item.querySelector('video');
+        if (video && video.requestFullscreen) {
+          video.requestFullscreen().catch(e => console.error("Fullscreen error:", e));
+          video.play().catch(e => console.error("Video play error:", e));
+        }
+      });
     });
   });
-
-  // Initialize Masonry layout
-  function initMasonry() {
-    const grid = document.getElementById('cinemagraph-grid');
-
-    // Use imagesLoaded if available, otherwise just init
-    if (typeof imagesLoaded !== 'undefined') {
-      imagesLoaded(grid, function() {
-        new Masonry(grid, {
-          itemSelector: '.masonry-item',
-          columnWidth: '.masonry-item',
-          percentPosition: true,
-          transitionDuration: '0.2s'
-        });
-      });
-    } else {
-      // Simple masonry-like layout using CSS grid
-      adjustItemSizes();
-      window.addEventListener('resize', adjustItemSizes);
-    }
-  }
-
-  // CSS-only masonry fallback
-  function adjustItemSizes() {
-    cinemagraphs.forEach(item => {
-      const video = item.querySelector('video');
-      if (item.classList.contains('portrait')) {
-        item.style.gridRowEnd = 'span 2';
-      } else {
-        item.style.gridRowEnd = 'span 1';
-      }
-    });
-  }
 });
 </script>
 {{ end }}
