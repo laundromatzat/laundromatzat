@@ -22,7 +22,15 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "mkdir -p /home/runner/.local/bin"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
 args = "[ ! -f /home/runner/.local/bin/hugo ] && curl -L https://github.com/gohugoio/hugo/releases/download/v0.111.3/hugo_0.111.3_Linux-64bit.tar.gz | tar -xz && mv hugo /home/runner/.local/bin/"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "export PATH=$PATH:/home/runner/.local/bin"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
