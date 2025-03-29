@@ -1,29 +1,29 @@
+
 {{ define "main" }}
 <div class="section-header">
   <h1>cinemagraphs</h1>
   <div class="accent-line"></div>
 </div>
 <div class="video-grid">
-  {{ range .Site.Data.videos.videos }}
+  {{ range .Site.Data.cinemagraphs.cinemagraphs }}
   <div class="video-grid__item">
-    {{ $fullURL := .token }}
+    {{ $fullURL := .url }}
     {{ $thumbnail := .thumbnail }}
     {{ if not $thumbnail }}
     {{ $thumbnail = "static/favicon.ico" }}
     {{ end }}    
     <div class="video-grid__metadata">
       <h2>{{ .title }}</h2>
-      <p class="location">
-        <i class="location-icon"></i>{{ with .location }}{{ . }}{{ else }}Location not specified{{ end }}
-      </p>
-      <p class="date">
-        <i class="calendar-icon"></i>{{ with .date }}{{ . }}{{ else }}Date not specified{{ end }}
-      </p>
+      <div class="video-grid__info-row">
+        <p class="location">
+          <i class="location-icon"></i>{{ with .location }}{{ . }}{{ else }}Location not specified{{ end }}
+        </p>
+        <p class="date">
+          <i class="calendar-icon"></i>{{ with .date }}{{ . }}{{ else }}Date not specified{{ end }}
+        </p>
+      </div>
     </div>
-    <video controls preload="metadata" poster="{{ $thumbnail }}">
-      <source src="{{ $fullURL }}">
-      Your browser does not support the video tag.
-    </video>
+    <img src="{{ $fullURL }}" alt="{{ .title }}" class="cinemagraph">
   </div>
   {{ end }}
 </div>

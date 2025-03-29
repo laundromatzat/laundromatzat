@@ -1,43 +1,46 @@
+
 <!DOCTYPE html>
-<html lang="{{ .Site.Language.Lang }}">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
-    <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
+    <meta name="description" content="{{ .Site.Params.description }}">
+    <title>{{ if .Title }}{{ .Title }} &middot; {{ end }}{{ .Site.Title }}</title>
 
-    {{ partial "head.html" . }}
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
-    {{ $style := resources.Get "css/main.css" | minify | fingerprint }}
-    <link rel="stylesheet" href="{{ $style.RelPermalink }}" integrity="{{ $style.Data.Integrity }}">
+    {{ $css := resources.Get "css/main.css" | resources.Minify | resources.Fingerprint }}
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
 
-    {{ if .IsHome }}
-    <meta property="og:type" content="website">
-    {{ else }}
-    <meta property="og:type" content="article">
-    {{ end }}
-    <meta property="og:title" content="{{ .Title }}">
-    <meta property="og:description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
-    <meta property="og:url" content="{{ .Permalink }}">
+    {{ template "_internal/opengraph.html" . }}
   </head>
   <body>
     <header class="site-header">
       <div class="header-container">
         <nav class="site-nav">
           <div class="nav-content">
-            <a href="{{ .Site.Home.RelPermalink }}" class="site-title"><img src="/favicon.ico" alt="Favicon" class="favicon-image" style="height: 1em; vertical-align: middle; margin-right: 0.5em;">{{ .Site.Title }}</a>
+            <a href="/" class="site-title"><img src="/favicon.ico" alt="Favicon" class="favicon-image" style="height: 1em; vertical-align: middle; margin-right: 0.5em;">laundromatzat.com</a>
           </div>
         </nav>
       </div>
     </header>
 
-    <main>
+    <nav class="main-nav">
+      <div class="main-nav-container">
+        <a href="/" class="nav-button {{ if .IsHome }}active{{ end }}">home</a>
+        <a href="/videos" class="nav-button {{ if eq .RelPermalink "/videos/" }}active{{ end }}">videos</a>
+        <a href="/cinemagraphs" class="nav-button {{ if eq .RelPermalink "/cinemagraphs/" }}active{{ end }}">cinemagraphs</a>
+        <a href="/images" class="nav-button {{ if eq .RelPermalink "/images/" }}active{{ end }}">images</a>
+      </div>
+    </nav>
+
+    <main class="content-area">
       {{ block "main" . }}{{ end }}
     </main>
 
     <footer>
       <div class="header-container">
-        <p>&copy; {{ now.Format "2006" }} {{ .Site.Title }}</p>
+        <p>&copy; 2025 laundromatzat.com</p>
       </div>
     </footer>
   </body>
