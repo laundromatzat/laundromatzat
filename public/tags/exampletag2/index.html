@@ -46,7 +46,7 @@
 
 
     
-    <link rel="stylesheet" href="/css/main.min.b812c0a947156e8bede36a0ed85f69d1ff706f0286c431482c5a05506f0205b7.css" integrity="sha256-uBLAqUcVbovt42oO2F9p0f9wbwKGxDFILFoFUG8CBbc=">
+    <link rel="stylesheet" href="/css/main.min.5d10be61679fed5921febfde1e596eb9b3e5cccb7007e81cd4d172c12dfdc6e3.css" integrity="sha256-XRC&#43;YWef7Vkh/r/eHlluubPlzMtwB&#43;gc1NFywS39xuM=">
 
     <meta property="og:url" content="https://workspace.StephenMatzat.repl.co:5000/tags/exampletag2/">
   <meta property="og:site_name" content="laundromatzat.com">
@@ -62,20 +62,18 @@
         <nav class="site-nav">
           <div class="nav-content">
             <a href="/" class="site-title"><img src="/favicon.ico" alt="Favicon" class="favicon-image" style="height: 1em; vertical-align: middle; margin-right: 0.5em;">laundromatzat.com</a>
+            
+            <div class="main-nav-container">
+              <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">home</a>
+              <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">videos</a>
+              <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">cinemagraphs</a>
+              <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">images</a>
+              <span class="htmx-indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
+            </div>
           </div>
         </nav>
       </div>
     </header>
-
-    <nav class="main-nav">
-      <div class="main-nav-container">
-        <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">home</a>
-        <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">videos</a>
-        <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">cinemagraphs</a>
-        <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">images</a>
-        <span class="htmx-indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
-      </div>
-    </nav>
 
     <main class="content-area">
       <div id="content-container">
