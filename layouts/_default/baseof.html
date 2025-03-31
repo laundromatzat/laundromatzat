@@ -56,20 +56,18 @@
         <nav class="site-nav">
           <div class="nav-content">
             <a href="/" class="site-title"><img src="/favicon.ico" alt="Favicon" class="favicon-image" style="height: 1em; vertical-align: middle; margin-right: 0.5em;">laundromatzat.com</a>
+            
+            <div class="main-nav-container">
+              <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if .IsHome }}active{{ end }}">home</a>
+              <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/videos/" }}active{{ end }}">videos</a>
+              <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/cinemagraphs/" }}active{{ end }}">cinemagraphs</a>
+              <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/images/" }}active{{ end }}">images</a>
+              <span class="htmx-indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
+            </div>
           </div>
         </nav>
       </div>
     </header>
-
-    <nav class="main-nav">
-      <div class="main-nav-container">
-        <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if .IsHome }}active{{ end }}">home</a>
-        <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/videos/" }}active{{ end }}">videos</a>
-        <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/cinemagraphs/" }}active{{ end }}">cinemagraphs</a>
-        <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/images/" }}active{{ end }}">images</a>
-        <span class="htmx-indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
-      </div>
-    </nav>
 
     <main class="content-area">
       <div id="content-container">

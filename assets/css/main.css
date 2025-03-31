@@ -123,6 +123,12 @@ body:has(.home__content) main::-webkit-scrollbar {
   align-items: center;
 }
 
+.main-nav-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .site-title {
   color: var(--text);
   text-decoration: none;
