@@ -6,7 +6,7 @@
 </div>
 
 <div class="video-grid">
-  {{ range $index, $item := $.Site.Data.cinemagraphs }}
+  {{ range $index, $item := $.Site.Data.cinemagraphs.cinemagraphs }}
     <div class="video-grid__item">
       <video autoplay loop muted playsinline>
         <source src="{{ .token }}" type="video/mp4">

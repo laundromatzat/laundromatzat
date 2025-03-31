@@ -5,16 +5,14 @@
 </div>
 
 <div class="image-grid">
-  {{ range $index, $item := $.Site.Data.images }}
-    <div class="image-item {{ if .portrait }}portrait{{ end }}">
-      <div class="image-container">
-        <img class="image-grid__image" src="{{ .url }}" alt="{{ .title }}">
-        <div class="image-overlay">
-          <h2>{{ .title }}</h2>
-          <div class="image-metadata">
-            <p class="location">{{ .location }}</p>
-            <p class="date">{{ .date }}</p>
-          </div>
+  {{ range $index, $item := $.Site.Data.images.images }}
+    <div class="image-item">
+      <img src="{{ .url }}" alt="{{ .title }}">
+      <div class="image-metadata">
+        <h2>{{ .title }}</h2>
+        <div class="image-info-row">
+          <p class="location">{{ .location }}</p>
+          <p class="date">{{ .date }}</p>
         </div>
       </div>
     </div>
