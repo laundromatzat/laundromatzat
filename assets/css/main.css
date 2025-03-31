@@ -349,9 +349,11 @@ body:has(.home__content) main::-webkit-scrollbar {
   gap: clamp(1rem, 2vw, 2rem);
   padding: clamp(0.5rem, 2vw, 2rem);
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
   color: var(--primary);
-  padding-bottom: 2rem; /* Ensure space between grid and footer */
+  padding-bottom: 4rem; /* Increased space between grid and footer */
 }
 
 /* Renamed for BEM: video-grid__item */
@@ -401,10 +403,11 @@ body:has(.home__content) main::-webkit-scrollbar {
   gap: clamp(1rem, 2vw, 2rem);
   padding: clamp(0.5rem, 2vw, 2rem);
   width: 100%;
-  max-width: 1600px;
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
   color: var(--primary);
-  padding-bottom: 2rem;
+  padding-bottom: 4rem;
 }
 
 
@@ -753,6 +756,7 @@ body:has(.home__content) footer {
   position: fixed;
   bottom: 0;
   left: 0;
+  width: 100%;
   z-index: 10;
 }
 
@@ -762,6 +766,14 @@ body:has(.home__content) .home__container {
   max-height: calc(100vh - 160px);
   margin-bottom: 60px; /* Space for footer */
   overflow: hidden;
+}
+
+/* Fix footer from appearing in the middle of content on non-home pages */
+body:not(:has(.home__content)) footer {
+  margin-top: 2rem;
+  position: relative;
+  width: 100%;
+  clear: both;
 }
 
 /* Media query for very short screens */
