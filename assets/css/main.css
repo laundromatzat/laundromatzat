@@ -502,6 +502,33 @@ transition: width 3s cubic-bezier(0.05, 0.95, 0, 1);
   width: 100%;
 }
 
+/* Remove duplicate navigation styles */
+.nav-button {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover, .nav-button.active {
+  color: var(--accent);
+}
+
+.nav-button.active::after, .nav-button:hover::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--accent);
+}
+
 /* Section headers */
 .section-header {
   text-align: center;
@@ -581,7 +608,8 @@ transition: width 3s cubic-bezier(0.05, 0.95, 0, 1);
   gap: 1rem;
   margin-top: 1rem;
 }
-.nav-button {
+/* Button styles for action buttons (not navigation) */
+.action-button {
   padding: 0.5rem 1rem;
   background-color: var(--accent2);
   color: var(--white);
@@ -592,21 +620,21 @@ transition: width 3s cubic-bezier(0.05, 0.95, 0, 1);
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.nav-button:hover {
+.action-button:hover {
   background-color: var(--highlight);
   transform: translateY(-2px);
 }
 
-.nav-button:active {
+.action-button:active {
   transform: translateY(0);
 }
 
-.nav-button--secondary {
+.action-button--secondary {
   background-color: var(--secondary);
   color: var(--text-medium);
 }
 
-.nav-button--secondary:hover {
+.action-button--secondary:hover {
   background-color: var(--primary);
   color: var(--white);
 }
