@@ -1,4 +1,8 @@
 
+{{ if .Site.IsServer }}
+  {{ if eq (.Param "request_type" | default "") "htmx" }}
+    {{ block "main" . }}{{ end }}
+  {{ else }}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -19,6 +23,11 @@
         initMasonry();
         handleVideoVisibility();
         window.addEventListener('scroll', handleVideoVisibility);
+      });
+      
+      // Add event listener for HTMX before send to set custom header
+      document.addEventListener('htmx:configRequest', function(event) {
+        event.detail.headers['HX-Request'] = 'true';
       });
       
       function updateActiveNavButton() {
@@ -142,3 +151,154 @@
     </footer>
   </body>
 </html>
+  {{ end }}
+{{ else }}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+
+    <script>
+      document.addEventListener('htmx:afterSwap', function(event) {
+        updateActiveNavButton();
+        // Reinitialize Masonry and video visibility after content swaps
+        initMasonry();
+        handleVideoVisibility();
+      });
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        updateActiveNavButton();
+        initMasonry();
+        handleVideoVisibility();
+        window.addEventListener('scroll', handleVideoVisibility);
+      });
+      
+      // Add event listener for HTMX before send to set custom header
+      document.addEventListener('htmx:configRequest', function(event) {
+        event.detail.headers['HX-Request'] = 'true';
+      });
+      
+      function updateActiveNavButton() {
+        // Remove 'active' class from all nav buttons
+        document.querySelectorAll('.nav-button').forEach(function(button) {
+          button.classList.remove('active');
+        });
+        
+        // Add 'active' class to the current page's nav button
+        const currentPath = window.location.pathname;
+        let targetButton = null;
+        
+        // Match the button to the current path
+        if (currentPath === '/' || currentPath === '') {
+          targetButton = document.querySelector('.nav-button[hx-get="/"]');
+        } else {
+          // Handle section paths like /videos, /images, etc.
+          const sections = ['/videos', '/cinemagraphs', '/images'];
+          for (const section of sections) {
+            if (currentPath.startsWith(section)) {
+              targetButton = document.querySelector(`.nav-button[hx-get="${section}"]`);
+              break;
+            }
+          }
+        }
+        
+        // Activate the matched button
+        if (targetButton) {
+          targetButton.classList.add('active');
+        }
+      }
+      
+      function initMasonry() {
+        // Initialize for image grids
+        const imageGrids = document.querySelectorAll('.image-grid');
+        imageGrids.forEach(grid => {
+          imagesLoaded(grid, function() {
+            new Masonry(grid, {
+              itemSelector: '.image-grid__item',
+              percentPosition: true
+            });
+          });
+        });
+        
+        // Initialize for video grids
+        const videoGrids = document.querySelectorAll('.video-grid');
+        videoGrids.forEach(grid => {
+          imagesLoaded(grid, function() {
+            new Masonry(grid, {
+              itemSelector: '.video-grid__item',
+              percentPosition: true
+            });
+          });
+        });
+      }
+      
+      function handleVideoVisibility() {
+        const videos = document.querySelectorAll('video');
+        videos.forEach(video => {
+          const rect = video.getBoundingClientRect();
+          const isVisible = (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+          );
+          
+          if (isVisible) {
+            if (video.paused) video.play();
+          } else {
+            if (!video.paused) video.pause();
+          }
+        });
+      }
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{ .Site.Params.description }}">
+    <title>{{ if .Title }}{{ .Title }} &middot; {{ end }}{{ .Site.Title }}</title>
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Masonry.js for better grid layouts -->
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+
+    {{ $css := resources.Get "css/main.css" | resources.Minify | resources.Fingerprint }}
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+
+    {{ template "_internal/opengraph.html" . }}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-container">
+        <nav class="site-nav">
+          <div class="nav-content">
+            <a href="/" class="site-title"><img src="/favicon.ico" alt="Favicon" class="favicon-image" style="height: 1em; vertical-align: middle; margin-right: 0.5em;">laundromatzat.com</a>
+            
+            <div class="main-nav-container">
+              <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button {{ if .IsHome }}active{{ end }}">home</a>
+              <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button {{ if eq .RelPermalink "/videos/" }}active{{ end }}">videos</a>
+              <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button {{ if eq .RelPermalink "/cinemagraphs/" }}active{{ end }}">cinemagraphs</a>
+              <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button {{ if eq .RelPermalink "/images/" }}active{{ end }}">images</a>
+              <span class="htmx-indicator" id="indicator" style="margin-left: 10px; color: var(--accent); display: none;">Loading...</span>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <div id="content-container">
+        {{ block "main" . }}{{ end }}
+      </div>
+    </main>
+
+    <footer>
+      <div class="header-container">
+        <p>&copy; {{ now.Format "2006" }} laundromatzat.com</p>
+      </div>
+    </footer>
+  </body>
+</html>
+{{ end }}
