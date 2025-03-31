@@ -1,31 +1,29 @@
 {{ define "main" }}
-<div class="section-header">
-  <h1>Cinemagraphs</h1>
-  <div class="accent-line"></div>
+<div class="page-header">
+  <h1>{{ .Title }}</h1>
 </div>
-<div class="masonry-grid" id="cinemagraph-grid">
-  {{ range $item := $.Site.Data.cinemagraphs.cinemagraphs }}
-  <div class="masonry-item{{ if eq $item.id "fireside-meditation-cinemagraph" }} portrait{{ else }}{{ end }}">
+
+<div class="masonry-grid">
+  {{ range .Site.Data.cinemagraphs.cinemagraphs }}
+  <div class="masonry-item">
     <div class="cinemagraph-container">
-      <video loop muted preload="metadata" class="cinemagraph-video" poster="{{ if .thumbnail }}{{ .thumbnail }}{{ end }}">
+      <video loop muted playsinline preload="metadata" poster="{{ .thumbnail }}">
         <source src="{{ .token }}" type="video/mp4">
         Your browser does not support the video tag.
       </video>
       <div class="cinemagraph-overlay">
+        <h2>{{ .title }}</h2>
         <div class="cinemagraph-metadata">
-          <h2>{{ .title }}</h2>
-          <div class="cinemagraph-details">
-            {{ if .location }}
-            <p class="location">
-              <i class="location-icon"></i>{{ .location }}
-            </p>
-            {{ end }}
-            {{ if .date }}
-            <p class="date">
-              <i class="calendar-icon"></i>{{ .date }}
-            </p>
-            {{ end }}
-          </div>
+          {{ if .location }}
+          <p class="location">
+            <i class="location-icon"></i>{{ .location }}
+          </p>
+          {{ end }}
+          {{ if .date }}
+          <p class="date">
+            <i class="calendar-icon"></i>{{ .date }}
+          </p>
+          {{ end }}
         </div>
       </div>
     </div>
@@ -35,6 +33,20 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Masonry
+  var grid = document.querySelector('.masonry-grid');
+  var masonry = new Masonry(grid, {
+    itemSelector: '.masonry-item',
+    columnWidth: '.masonry-item',
+    percentPosition: true,
+    gutter: 15
+  });
+
+  // Re-layout Masonry after images are loaded
+  imagesLoaded(grid).on('progress', function() {
+    masonry.layout();
+  });
+
   const cinemagraphs = document.querySelectorAll('.masonry-item');
 
   // Handle hover effects
@@ -91,54 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         item.classList.add('landscape');
       }
-    });
-
-    // Pause cinemagraphs when not visible
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const video = entry.target.querySelector('video');
-        if (!video) return;
-
-        if (entry.isIntersecting) {
-          // Only play on hover, not automatically when visible
-          if (entry.target.classList.contains('hovered')) {
-            video.play().catch(e => console.error("Video play error:", e));
-          }
-        } else {
-          video.pause();
-        }
-      });
-    }, { threshold: 0.5 });
-
-    cinemagraphs.forEach(item => {
-      observer.observe(item);
-
-      // Play on hover
-      item.addEventListener('mouseenter', () => {
-        const video = item.querySelector('video');
-        if (video) {
-          item.classList.add('hovered');
-          video.play().catch(e => console.error("Video play error:", e));
-        }
-      });
-
-      // Pause when not hovered
-      item.addEventListener('mouseleave', () => {
-        const video = item.querySelector('video');
-        if (video) {
-          item.classList.remove('hovered');
-          video.pause();
-        }
-      });
-
-      // Fullscreen on click
-      item.addEventListener('click', () => {
-        const video = item.querySelector('video');
-        if (video && video.requestFullscreen) {
-          video.requestFullscreen().catch(e => console.error("Fullscreen error:", e));
-          video.play().catch(e => console.error("Video play error:", e));
-        }
-      });
     });
   });
 });

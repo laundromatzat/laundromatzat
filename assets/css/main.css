@@ -1,3 +1,111 @@
+
+/* Masonry grid for cinemagraphs */
+.masonry-grid {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.masonry-item {
+  width: calc(33.333% - 15px);
+  margin-bottom: 15px;
+  background: var(--background);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.masonry-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.cinemagraph-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.masonry-item video {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  background-color: #000;
+}
+
+.cinemagraph-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.masonry-item:hover .cinemagraph-overlay {
+  opacity: 1;
+}
+
+.cinemagraph-overlay h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-weight: 400;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.cinemagraph-metadata {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.cinemagraph-metadata p {
+  margin: 0.2rem 0;
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Portrait video adjustments */
+.masonry-item.portrait {
+  width: calc(25% - 15px); /* Make portrait videos slightly narrower */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .masonry-item {
+    width: calc(50% - 15px);
+  }
+  
+  .masonry-item.portrait {
+    width: calc(33.333% - 15px);
+  }
+}
+
+@media (max-width: 768px) {
+  .masonry-item, 
+  .masonry-item.portrait {
+    width: calc(50% - 10px);
+    margin-bottom: 10px;
+  }
+  
+  .masonry-grid {
+    column-gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .masonry-item, 
+  .masonry-item.portrait {
+    width: 100%;
+  }
+}
+
 /* main.css */
 /* Font import */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300&display=swap");
