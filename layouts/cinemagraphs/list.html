@@ -4,8 +4,8 @@
   <div class="accent-line"></div>
 </div>
 <div class="masonry-grid" id="cinemagraph-grid">
-  {{ range .Site.Data.cinemagraphs.cinemagraphs }}
-  <div class="masonry-item" data-id="{{ .id }}">
+  {{ range $item := $.Site.Data.cinemagraphs.cinemagraphs }}
+  <div class="masonry-item{{ if eq $item.id "fireside-meditation-cinemagraph" }} portrait{{ else }}{{ end }}">
     <div class="cinemagraph-container">
       <video loop muted preload="metadata" class="cinemagraph-video" poster="{{ if .thumbnail }}{{ .thumbnail }}{{ end }}">
         <source src="{{ .token }}" type="video/mp4">
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle aspect ratio detection
     video.addEventListener('loadedmetadata', function() {
       // Check if video is portrait or landscape
-      if (video.videovideoHeight > video.videoWidth) {
+      if (video.videoHeight > video.videoWidth) {
         item.classList.add('portrait');
       } else {
         item.classList.add('landscape');
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
       entries.forEach(entry => {
         const video = entry.target.querySelector('video');
         if (!video) return;
-        
+
         if (entry.isIntersecting) {
           // Only play on hover, not automatically when visible
           if (entry.target.classList.contains('hovered')) {
@@ -109,10 +109,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     }, { threshold: 0.5 });
-    
+
     cinemagraphs.forEach(item => {
       observer.observe(item);
-      
+
       // Play on hover
       item.addEventListener('mouseenter', () => {
         const video = item.querySelector('video');
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
           video.play().catch(e => console.error("Video play error:", e));
         }
       });
-      
+
       // Pause when not hovered
       item.addEventListener('mouseleave', () => {
         const video = item.querySelector('video');
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
           video.pause();
         }
       });
-      
+
       // Fullscreen on click
       item.addEventListener('click', () => {
         const video = item.querySelector('video');
