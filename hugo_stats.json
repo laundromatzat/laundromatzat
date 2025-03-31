@@ -79,7 +79,8 @@
       "w-30-l"
     ],
     "ids": [
-      "content-container"
+      "content-container",
+      "indicator"
     ]
   }
 }
