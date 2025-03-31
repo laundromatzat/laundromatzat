@@ -399,9 +399,9 @@ body:has(.home__content) main::-webkit-scrollbar {
 /* Cinemagraph Grid Styles */
 .cinemagraph-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: clamp(1rem, 2vw, 2rem);
-  padding: clamp(0.5rem, 2vw, 2rem);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: clamp(1rem, 1.5vw, 1.5rem);
+  padding: clamp(0.5rem, 1vw, 1rem);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -485,6 +485,8 @@ main {
   aspect-ratio: 16/9;
   overflow: hidden;
   cursor: pointer;
+  width: 100%;
+  height: 100%;
 }
 
 /* This makes videos adopt their natural aspect ratio */
@@ -543,10 +545,18 @@ main {
 }
 
 /* Responsive adjustments for cinemagraphs */
+@media (max-width: 1400px) {
+  .cinemagraph-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+}
+
 @media (max-width: 800px) {
   .cinemagraph-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.8rem;
+    padding: 0.5rem;
   }
 }
 
