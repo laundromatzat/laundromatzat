@@ -97,16 +97,13 @@ body:has(.home__content) main::-webkit-scrollbar {
 }
 
 /* Header styles - made more compact */
+
+/* Header padding moved to site-header */
 .site-header {
   background: var(--primary);
-  padding: 0.5rem 0;
+  padding: 0.5rem clamp(1rem, 3vw, 2rem);
   width: 100%;
   z-index: 100;
-}
-
-.header-container {
-  margin: 0 auto;
-  padding: 0.25rem clamp(1rem, 3vw, 2rem);
 }
 
 .site-nav {
@@ -343,8 +340,8 @@ body:has(.home__content) main::-webkit-scrollbar {
 
 /* Responsive enhancements */
 @media (max-width: 800px) {
-  .header-container {
-    padding: 0.25rem 1rem;
+  .site-header {
+    padding: 0.5rem 1rem;
   }
   
   .video-grid {
@@ -391,7 +388,7 @@ footer {
   left: 0;
   z-index: 100;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 
@@ -447,7 +444,7 @@ body:has(.home__content) footer {
 
 /* Adjust padding on smaller screens */
 @media (max-width: 600px) {
-  .header-container,
+  .site-header,
   .home__container,
   .video-grid {
     padding-left: 0.5rem;
