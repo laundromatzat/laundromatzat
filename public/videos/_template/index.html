@@ -9,10 +9,16 @@
     <script>
       document.addEventListener('htmx:afterSwap', function(event) {
         updateActiveNavButton();
+        
+        initMasonry();
+        handleVideoVisibility();
       });
       
       document.addEventListener('DOMContentLoaded', function() {
         updateActiveNavButton();
+        initMasonry();
+        handleVideoVisibility();
+        window.addEventListener('scroll', handleVideoVisibility);
       });
       
       function updateActiveNavButton() {
@@ -44,28 +50,6 @@
           targetButton.classList.add('active');
         }
       }
-    </script>
-
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="welcome to the laundromat">
-    <title>Video Title &middot; laundromatzat.com</title>
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-
-    
-    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
-    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
-    
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        initMasonry();
-      });
-      
-      
-      document.addEventListener('htmx:afterSwap', function() {
-        initMasonry();
-      });
       
       function initMasonry() {
         
@@ -90,18 +74,6 @@
           });
         });
       }
-    </script>
-
-
-    
-    <link rel="stylesheet" href="/css/main.min.8ef94218d2d4cac188c84209ad5c6b79f6bfc258377c7bd7f652b5d30f15f954.css" integrity="sha256-jvlCGNLUysGIyEIJrVxrefa/wlg3fHvX9lK10w8V&#43;VQ=">
-    
-    <script>
-      
-      document.addEventListener('DOMContentLoaded', function() {
-        handleVideoVisibility();
-        window.addEventListener('scroll', handleVideoVisibility);
-      });
       
       function handleVideoVisibility() {
         const videos = document.querySelectorAll('video');
@@ -122,6 +94,19 @@
         });
       }
     </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="welcome to the laundromat">
+    <title>Video Title &middot; laundromatzat.com</title>
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+
+    
+    <link rel="stylesheet" href="/css/main.min.8ef94218d2d4cac188c84209ad5c6b79f6bfc258377c7bd7f652b5d30f15f954.css" integrity="sha256-jvlCGNLUysGIyEIJrVxrefa/wlg3fHvX9lK10w8V&#43;VQ=">
 
     <meta property="og:url" content="https://workspace.StephenMatzat.repl.co:5000/videos/_template/">
   <meta property="og:site_name" content="laundromatzat.com">
