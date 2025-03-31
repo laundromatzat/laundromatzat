@@ -2,7 +2,10 @@
 /* Masonry grid for cinemagraphs */
 .masonry-grid {
   width: 100%;
+  max-width: 100%;
   margin: 0 auto;
+  padding: 0 15px;
+  box-sizing: border-box;
 }
 
 .masonry-item {
@@ -746,6 +749,9 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-sizing: border-box;
+  clear: both;
+  margin-top: 30px; /* Add space after content */
 }
 
 /* Only for home page, ensure footer is fixed at bottom */
@@ -754,6 +760,7 @@ body:has(.home__content) footer {
   bottom: 0;
   left: 0;
   z-index: 10;
+  margin-top: 0;
 }
 
 /* Ensure home container doesn't overlap footer */
@@ -762,6 +769,12 @@ body:has(.home__content) .home__container {
   max-height: calc(100vh - 160px);
   margin-bottom: 60px; /* Space for footer */
   overflow: hidden;
+}
+
+/* Make sure content clears before footer */
+main {
+  min-height: calc(100vh - 150px);
+  padding-bottom: 30px;
 }
 
 /* Media query for very short screens */
