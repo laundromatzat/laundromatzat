@@ -9,10 +9,16 @@
     <script>
       document.addEventListener('htmx:afterSwap', function(event) {
         updateActiveNavButton();
+        // Reinitialize Masonry and video visibility after content swaps
+        initMasonry();
+        handleVideoVisibility();
       });
       
       document.addEventListener('DOMContentLoaded', function() {
         updateActiveNavButton();
+        initMasonry();
+        handleVideoVisibility();
+        window.addEventListener('scroll', handleVideoVisibility);
       });
       
       function updateActiveNavButton() {
@@ -44,28 +50,6 @@
           targetButton.classList.add('active');
         }
       }
-    </script>
-
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="{{ .Site.Params.description }}">
-    <title>{{ if .Title }}{{ .Title }} &middot; {{ end }}{{ .Site.Title }}</title>
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-
-    <!-- Masonry.js for better grid layouts -->
-    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
-    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
-    
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        initMasonry();
-      });
-      
-      // Initialize Masonry after HTMX content swaps
-      document.addEventListener('htmx:afterSwap', function() {
-        initMasonry();
-      });
       
       function initMasonry() {
         // Initialize for image grids
@@ -90,18 +74,6 @@
           });
         });
       }
-    </script>
-
-
-    {{ $css := resources.Get "css/main.css" | resources.Minify | resources.Fingerprint }}
-    <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
-    
-    <script>
-      // Function to handle autoplay for videos when they're visible
-      document.addEventListener('DOMContentLoaded', function() {
-        handleVideoVisibility();
-        window.addEventListener('scroll', handleVideoVisibility);
-      });
       
       function handleVideoVisibility() {
         const videos = document.querySelectorAll('video');
@@ -122,6 +94,19 @@
         });
       }
     </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{ .Site.Params.description }}">
+    <title>{{ if .Title }}{{ .Title }} &middot; {{ end }}{{ .Site.Title }}</title>
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Masonry.js for better grid layouts -->
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+
+    {{ $css := resources.Get "css/main.css" | resources.Minify | resources.Fingerprint }}
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
 
     {{ template "_internal/opengraph.html" . }}
   </head>
