@@ -3,6 +3,37 @@
 <html lang="en">
   <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=5000&amp;path=livereload" data-no-instant defer></script>
     <meta charset="utf-8">
+
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+
+    <script>
+      document.addEventListener('htmx:afterSwap', function(event) {
+        
+        document.querySelectorAll('.nav-button').forEach(function(button) {
+          button.classList.remove('active');
+        });
+        
+        
+        const currentPath = window.location.pathname;
+        let targetButton;
+        
+        if (currentPath === '/') {
+          targetButton = document.querySelector('.nav-button[hx-get="/"]');
+        } else if (currentPath.includes('/videos')) {
+          targetButton = document.querySelector('.nav-button[hx-get="/videos"]');
+        } else if (currentPath.includes('/cinemagraphs')) {
+          targetButton = document.querySelector('.nav-button[hx-get="/cinemagraphs"]');
+        } else if (currentPath.includes('/images')) {
+          targetButton = document.querySelector('.nav-button[hx-get="/images"]');
+        }
+        
+        if (targetButton) {
+          targetButton.classList.add('active');
+        }
+      });
+    </script>
+
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="welcome to the laundromat">
     <title>Images &middot; laundromatzat.com</title>
@@ -15,7 +46,7 @@
 
 
     
-    <link rel="stylesheet" href="/css/main.min.d6756aa919f8b6ccb76174bbf72701db3a7048e6207cc29c7bf71555034455a5.css" integrity="sha256-1nVqqRn4tsy3YXS79ycB2zpwSOYgfMKce/cVVQNEVaU=">
+    <link rel="stylesheet" href="/css/main.min.b812c0a947156e8bede36a0ed85f69d1ff706f0286c431482c5a05506f0205b7.css" integrity="sha256-uBLAqUcVbovt42oO2F9p0f9wbwKGxDFILFoFUG8CBbc=">
 
     <meta property="og:url" content="https://workspace.StephenMatzat.repl.co:5000/images/">
   <meta property="og:site_name" content="laundromatzat.com">
@@ -38,15 +69,17 @@
 
     <nav class="main-nav">
       <div class="main-nav-container">
-        <a href="/" class="nav-button ">home</a>
-        <a href="/videos" class="nav-button ">videos</a>
-        <a href="/cinemagraphs" class="nav-button ">cinemagraphs</a>
-        <a href="/images" class="nav-button active">images</a>
+        <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">home</a>
+        <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">videos</a>
+        <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">cinemagraphs</a>
+        <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button active">images</a>
+        <span class="htmx-indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
       </div>
     </nav>
 
     <main class="content-area">
-      
+      <div id="content-container">
+        
 <div class="section-header">
   <h1>Images</h1>
   <div class="accent-line"></div>
@@ -110,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+      </div>
     </main>
 
     <footer>
