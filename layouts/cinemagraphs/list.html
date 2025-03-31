@@ -8,8 +8,8 @@
 <div class="video-grid">
   {{ range $index, $item := $.Site.Data.cinemagraphs }}
     <div class="video-grid__item">
-      <video autoplay loop muted playsinline poster="{{ .poster }}">
-        <source src="{{ .url }}" type="video/mp4">
+      <video autoplay loop muted playsinline>
+        <source src="{{ .token }}" type="video/mp4">
       </video>
       <div class="video-grid__metadata">
         <h2>{{ .title }}</h2>
