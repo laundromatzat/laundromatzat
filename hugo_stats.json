@@ -21,6 +21,7 @@
       "script",
       "section",
       "source",
+      "span",
       "title",
       "video"
     ],
@@ -49,6 +50,7 @@
       "home__container",
       "home__content",
       "home__title",
+      "htmx-indicator",
       "image-container",
       "image-grid",
       "image-grid__image",
@@ -91,6 +93,8 @@
       "w-100",
       "w-30-l"
     ],
-    "ids": null
+    "ids": [
+      "content-container"
+    ]
   }
 }
