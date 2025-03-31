@@ -1,26 +1,30 @@
+{{ define "main" }}
 <div class="section-header">
   <h1>Images</h1>
   <div class="accent-line"></div>
 </div>
 
-<div class="video-grid">
-  {{ range .Site.Data.images.items }}
-    <div class="video-grid__item">
-      <img src="{{ .url }}" alt="{{ .title }}">
-      <div class="video-grid__metadata">
-        <h2>{{ .title }}</h2>
-        <div class="video-grid__info-row">
-          <span class="location">{{ .location }}</span>
-          <span class="date">{{ .date }}</span>
+<div class="image-grid">
+  {{ range $index, $item := $.Site.Data.images }}
+    <div class="image-item {{ if .portrait }}portrait{{ end }}">
+      <div class="image-container">
+        <img class="image-grid__image" src="{{ .url }}" alt="{{ .title }}">
+        <div class="image-overlay">
+          <h2>{{ .title }}</h2>
+          <div class="image-metadata">
+            <p class="location">{{ .location }}</p>
+            <p class="date">{{ .date }}</p>
+          </div>
         </div>
       </div>
     </div>
   {{ end }}
 </div>
+{{ end }}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const images = document.querySelectorAll('.video-grid img'); // Updated selector
+  const images = document.querySelectorAll('.image-grid__image'); 
 
   images.forEach(img => {
     img.addEventListener('click', function(e) {
@@ -37,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     img.addEventListener('load', function() {
-      const item = this.closest('.video-grid__item'); // Updated selector
+      const item = this.closest('.image-item'); 
       if (this.naturalHeight > this.naturalWidth) {
         item.classList.add('portrait');
       } else {

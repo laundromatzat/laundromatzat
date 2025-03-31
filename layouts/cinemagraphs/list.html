@@ -1,3 +1,4 @@
+
 {{ define "main" }}
 <div class="section-header">
   <h1>Cinemagraphs</h1>
@@ -5,21 +6,19 @@
 </div>
 
 <div class="video-grid">
-  {{ range .Site.Data.cinemagraphs.items }}
+  {{ range $index, $item := $.Site.Data.cinemagraphs }}
     <div class="video-grid__item">
-      <video poster="{{ .thumbnail }}" autoplay loop muted playsinline>
+      <video autoplay loop muted playsinline poster="{{ .poster }}">
         <source src="{{ .url }}" type="video/mp4">
-        Your browser does not support the video tag.
       </video>
       <div class="video-grid__metadata">
         <h2>{{ .title }}</h2>
         <div class="video-grid__info-row">
-          <span class="location">{{ .location }}</span>
-          <span class="date">{{ .date }}</span>
+          <p class="location">{{ .location }}</p>
+          <p class="date">{{ .date }}</p>
         </div>
       </div>
     </div>
   {{ end }}
 </div>
-
 {{ end }}
