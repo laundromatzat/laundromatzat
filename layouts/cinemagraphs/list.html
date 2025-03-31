@@ -1,110 +1,25 @@
 {{ define "main" }}
-<div class="page-header">
-  <h1>{{ .Title }}</h1>
+<div class="section-header">
+  <h1>Cinemagraphs</h1>
+  <div class="accent-line"></div>
 </div>
 
-<div class="masonry-grid">
-  {{ range .Site.Data.cinemagraphs.cinemagraphs }}
-  <div class="masonry-item">
-    <div class="cinemagraph-container">
-      <video loop muted playsinline preload="metadata" poster="{{ .thumbnail }}">
-        <source src="{{ .token }}" type="video/mp4">
+<div class="video-grid">
+  {{ range .Site.Data.cinemagraphs.items }}
+    <div class="video-grid__item">
+      <video poster="{{ .thumbnail }}" autoplay loop muted playsinline>
+        <source src="{{ .url }}" type="video/mp4">
         Your browser does not support the video tag.
       </video>
-      <div class="cinemagraph-overlay">
+      <div class="video-grid__metadata">
         <h2>{{ .title }}</h2>
-        <div class="cinemagraph-metadata">
-          {{ if .location }}
-          <p class="location">
-            <i class="location-icon"></i>{{ .location }}
-          </p>
-          {{ end }}
-          {{ if .date }}
-          <p class="date">
-            <i class="calendar-icon"></i>{{ .date }}
-          </p>
-          {{ end }}
+        <div class="video-grid__info-row">
+          <span class="location">{{ .location }}</span>
+          <span class="date">{{ .date }}</span>
         </div>
       </div>
     </div>
-  </div>
   {{ end }}
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Masonry
-  var grid = document.querySelector('.masonry-grid');
-  var masonry = new Masonry(grid, {
-    itemSelector: '.masonry-item',
-    columnWidth: '.masonry-item',
-    percentPosition: true,
-    gutter: 15
-  });
-
-  // Re-layout Masonry after images are loaded
-  imagesLoaded(grid).on('progress', function() {
-    masonry.layout();
-  });
-
-  const cinemagraphs = document.querySelectorAll('.masonry-item');
-
-  // Handle hover effects
-  cinemagraphs.forEach(item => {
-    const video = item.querySelector('video');
-
-    // Play on hover
-    item.addEventListener('mouseenter', function() {
-      if (video.paused) {
-        video.play();
-      }
-    });
-
-    // Pause when not hovering
-    item.addEventListener('mouseleave', function() {
-      if (!video.paused) {
-        video.pause();
-      }
-    });
-
-    // Full screen on click
-    item.addEventListener('click', function() {
-      if (video.requestFullscreen) {
-        video.play(); // Ensure it's playing when fullscreen
-        video.requestFullscreen();
-      } else if (video.webkitRequestFullscreen) {
-        video.play();
-        video.webkitRequestFullscreen();
-      } else if (video.msRequestFullscreen) {
-        video.play();
-        video.msRequestFullscreen();
-      }
-    });
-
-    // Continue playing in fullscreen
-    video.addEventListener('fullscreenchange', function() {
-      if (document.fullscreenElement === video) {
-        video.loop = true;
-        video.muted = false; // Optional: unmute in fullscreen
-        video.play();
-      } else {
-        video.muted = true;
-        if (!item.matches(':hover')) {
-          video.pause();
-        }
-      }
-    });
-
-    // Handle aspect ratio detection
-    video.addEventListener('loadedmetadata', function() {
-      // Check if video is portrait or landscape
-      if (video.videoHeight > video.videoWidth) {
-        item.classList.add('portrait');
-      } else {
-        item.classList.add('landscape');
-      }
-    });
-  });
-});
-</script>
 {{ end }}

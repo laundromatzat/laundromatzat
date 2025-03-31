@@ -1,33 +1,22 @@
-
-{{ define "main" }}
 <div class="section-header">
-  <h1>videos</h1>
+  <h1>Videos</h1>
   <div class="accent-line"></div>
 </div>
+
 <div class="video-grid">
-  {{ range .Site.Data.videos.videos }}
-  <div class="video-grid__item">
-    {{ $fullURL := .token }}
-    {{ $thumbnail := .thumbnail }}
-    {{ if not $thumbnail }}
-    {{ $thumbnail = "static/favicon.ico" }}
-    {{ end }}    
-    <div class="video-grid__metadata">
-      <h2>{{ .title }}</h2>
-      <div class="video-grid__info-row">
-        <p class="location">
-          <i class="location-icon"></i>{{ with .location }}{{ . }}{{ else }}Location not specified{{ end }}
-        </p>
-        <p class="date">
-          <i class="calendar-icon"></i>{{ with .date }}{{ . }}{{ else }}Date not specified{{ end }}
-        </p>
+  {{ range .Site.Data.videos.items }}
+    <div class="video-grid__item">
+      <video poster="{{ .thumbnail }}" controls muted loop>
+        <source src="{{ .url }}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="video-grid__metadata">
+        <h2>{{ .title }}</h2>
+        <div class="video-grid__info-row">
+          <span class="location">{{ .location }}</span>
+          <span class="date">{{ .date }}</span>
+        </div>
       </div>
     </div>
-    <video controls preload="metadata" poster="{{ $thumbnail }}">
-      <source src="{{ $fullURL }}">
-      Your browser does not support the video tag.
-    </video>
-  </div>
   {{ end }}
 </div>
-{{ end }}
