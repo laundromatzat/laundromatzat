@@ -34,10 +34,8 @@
       "center",
       "cf",
       "cinemagraph-container",
-      "cinemagraph-details",
       "cinemagraph-metadata",
       "cinemagraph-overlay",
-      "cinemagraph-video",
       "content-area",
       "content-container",
       "content-section",
@@ -74,9 +72,9 @@
       "nested-copy-line-height",
       "pa3",
       "pa4-ns",
+      "page-header",
       "ph3",
       "ph5-l",
-      "portrait",
       "pv3",
       "pv4-l",
       "relative",
@@ -93,8 +91,6 @@
       "w-100",
       "w-30-l"
     ],
-    "ids": [
-      "cinemagraph-grid"
-    ]
+    "ids": null
   }
 }
