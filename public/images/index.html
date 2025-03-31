@@ -1,124 +1,21 @@
-
-<!DOCTYPE html>
-<html lang="en">
-  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=5000&amp;path=livereload" data-no-instant defer></script>
-    <meta charset="utf-8">
-
-    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
-
-    <script>
-      document.addEventListener('htmx:afterSwap', function(event) {
-        
-        document.querySelectorAll('.nav-button').forEach(function(button) {
-          button.classList.remove('active');
-        });
-        
-        
-        const currentPath = window.location.pathname;
-        let targetButton;
-        
-        if (currentPath === '/') {
-          targetButton = document.querySelector('.nav-button[hx-get="/"]');
-        } else if (currentPath.includes('/videos')) {
-          targetButton = document.querySelector('.nav-button[hx-get="/videos"]');
-        } else if (currentPath.includes('/cinemagraphs')) {
-          targetButton = document.querySelector('.nav-button[hx-get="/cinemagraphs"]');
-        } else if (currentPath.includes('/images')) {
-          targetButton = document.querySelector('.nav-button[hx-get="/images"]');
-        }
-        
-        if (targetButton) {
-          targetButton.classList.add('active');
-        }
-      });
-    </script>
-
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="welcome to the laundromat">
-    <title>Images &middot; laundromatzat.com</title>
-
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-
-    
-    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
-    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
-
-
-    
-    <link rel="stylesheet" href="/css/main.min.5d10be61679fed5921febfde1e596eb9b3e5cccb7007e81cd4d172c12dfdc6e3.css" integrity="sha256-XRC&#43;YWef7Vkh/r/eHlluubPlzMtwB&#43;gc1NFywS39xuM=">
-
-    <meta property="og:url" content="https://workspace.StephenMatzat.repl.co:5000/images/">
-  <meta property="og:site_name" content="laundromatzat.com">
-  <meta property="og:title" content="Images">
-  <meta property="og:description" content="welcome to the laundromat">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="website">
-
-  </head>
-  <body>
-    <header class="site-header">
-      <div class="header-container">
-        <nav class="site-nav">
-          <div class="nav-content">
-            <a href="/" class="site-title"><img src="/favicon.ico" alt="Favicon" class="favicon-image" style="height: 1em; vertical-align: middle; margin-right: 0.5em;">laundromatzat.com</a>
-            
-            <div class="main-nav-container">
-              <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">home</a>
-              <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">videos</a>
-              <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button ">cinemagraphs</a>
-              <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button active">images</a>
-              <span class="htmx-indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </header>
-
-    <main class="content-area">
-      <div id="content-container">
-        
-<div class="section-header">
+<script src="/livereload.js?mindelay=10&amp;v=2&amp;port=5000&amp;path=livereload" data-no-instant defer></script><div class="section-header">
   <h1>Images</h1>
   <div class="accent-line"></div>
 </div>
-<div class="image-grid">
-  
-  
-  <div class="image-item">
-    <div class="image-container">
-      <img class="image-grid__image" src="" alt="Love" loading="lazy">
-      <div class="image-overlay">
-        <h2>Love</h2>
-        <div class="image-metadata">
-          
-          <p class="location">
-            <i class="location-icon"></i>Bernal Heights
-          </p>
-          
-          
-          <p class="date">
-            <i class="calendar-icon"></i>03/2025
-          </p>
-          
-        </div>
-      </div>
-    </div>
-  </div>
-  
+
+<div class="video-grid">
   
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const images = document.querySelectorAll('.image-grid__image');
-  
-  
+  const images = document.querySelectorAll('.video-grid img'); 
+
   images.forEach(img => {
     img.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       if (img.requestFullscreen) {
         img.requestFullscreen();
       } else if (img.webkitRequestFullscreen) {  
@@ -127,10 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
         img.msRequestFullscreen();
       }
     });
-    
-    
+
     img.addEventListener('load', function() {
-      const item = this.closest('.image-item');
+      const item = this.closest('.video-grid__item'); 
       if (this.naturalHeight > this.naturalWidth) {
         item.classList.add('portrait');
       } else {
@@ -140,14 +36,3 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
-
-      </div>
-    </main>
-
-    <footer>
-      <div class="header-container">
-        <p>&copy; 2025 laundromatzat.com</p>
-      </div>
-    </footer>
-  </body>
-</html>
