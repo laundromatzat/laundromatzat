@@ -1,46 +1,32 @@
-
-{{ define "main" }}
 <div class="section-header">
   <h1>Images</h1>
   <div class="accent-line"></div>
 </div>
-<div class="image-grid">
-  {{ range .Site.Data.images.images }}
-  {{ if .title }}
-  <div class="image-item">
-    <div class="image-container">
-      <img class="image-grid__image" src="{{ .token }}" alt="{{ .title }}" loading="lazy">
-      <div class="image-overlay">
+
+<div class="video-grid">
+  {{ range .Site.Data.images.items }}
+    <div class="video-grid__item">
+      <img src="{{ .url }}" alt="{{ .title }}">
+      <div class="video-grid__metadata">
         <h2>{{ .title }}</h2>
-        <div class="image-metadata">
-          {{ if .location }}
-          <p class="location">
-            <i class="location-icon"></i>{{ .location }}
-          </p>
-          {{ end }}
-          {{ if .date }}
-          <p class="date">
-            <i class="calendar-icon"></i>{{ .date }}
-          </p>
-          {{ end }}
+        <div class="video-grid__info-row">
+          <span class="location">{{ .location }}</span>
+          <span class="date">{{ .date }}</span>
         </div>
       </div>
     </div>
-  </div>
-  {{ end }}
   {{ end }}
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const images = document.querySelectorAll('.image-grid__image');
-  
-  // Add click event for fullscreen viewing
+  const images = document.querySelectorAll('.video-grid img'); // Updated selector
+
   images.forEach(img => {
     img.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       if (img.requestFullscreen) {
         img.requestFullscreen();
       } else if (img.webkitRequestFullscreen) { /* Safari */
@@ -49,10 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
         img.msRequestFullscreen();
       }
     });
-    
-    // Detect image orientation once loaded
+
     img.addEventListener('load', function() {
-      const item = this.closest('.image-item');
+      const item = this.closest('.video-grid__item'); // Updated selector
       if (this.naturalHeight > this.naturalWidth) {
         item.classList.add('portrait');
       } else {
@@ -62,4 +47,3 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
-{{ end }}
