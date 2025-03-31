@@ -3,7 +3,7 @@
   <h1>{{ .Title }}</h1>
 </div>
 
-<div class="masonry-grid" style="clear: both;">
+<div class="masonry-grid">
   {{ range .Site.Data.cinemagraphs.cinemagraphs }}
   <div class="masonry-item">
     <div class="cinemagraph-container">
@@ -108,48 +108,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {{ end }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Masonry with proper options
-  var grid = document.querySelector('.masonry-grid');
-  
-  // Make sure the grid is initialized with the right parameters
-  var masonry = new Masonry(grid, {
-    itemSelector: '.masonry-item',
-    percentPosition: true,
-    gutter: 15,
-    fitWidth: true // This helps with centering the grid and handling margins
-  });
-  
-  // When all videos/images are loaded, re-layout the grid
-  imagesLoaded(grid).on('progress', function() {
-    masonry.layout();
-  });
-  
-  // After items are loaded, ensure footer is placed correctly
-  imagesLoaded(grid).on('always', function() {
-    document.querySelector('footer').style.display = 'flex';
-  });
-  
-  // Play videos on hover
-  const cinemagraphs = document.querySelectorAll('.masonry-item');
-  
-  cinemagraphs.forEach(item => {
-    const video = item.querySelector('video');
-    
-    // Play on hover
-    item.addEventListener('mouseenter', () => {
-      if (video) {
-        video.play().catch(e => console.log("Video play error:", e));
-      }
-    });
-    
-    // Pause when not hovered
-    item.addEventListener('mouseleave', () => {
-      if (video) {
-        video.pause();
-      }
-    });
-  });
-});
-</script>
