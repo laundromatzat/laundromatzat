@@ -3,6 +3,37 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+
+    <script>
+      document.addEventListener('htmx:afterSwap', function(event) {
+        // Remove 'active' class from all nav buttons
+        document.querySelectorAll('.nav-button').forEach(function(button) {
+          button.classList.remove('active');
+        });
+        
+        // Add 'active' class to the current page's nav button
+        const currentPath = window.location.pathname;
+        let targetButton;
+        
+        if (currentPath === '/') {
+          targetButton = document.querySelector('.nav-button[hx-get="/"]');
+        } else if (currentPath.includes('/videos')) {
+          targetButton = document.querySelector('.nav-button[hx-get="/videos"]');
+        } else if (currentPath.includes('/cinemagraphs')) {
+          targetButton = document.querySelector('.nav-button[hx-get="/cinemagraphs"]');
+        } else if (currentPath.includes('/images')) {
+          targetButton = document.querySelector('.nav-button[hx-get="/images"]');
+        }
+        
+        if (targetButton) {
+          targetButton.classList.add('active');
+        }
+      });
+    </script>
+
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ .Site.Params.description }}">
     <title>{{ if .Title }}{{ .Title }} &middot; {{ end }}{{ .Site.Title }}</title>
@@ -32,15 +63,18 @@
 
     <nav class="main-nav">
       <div class="main-nav-container">
-        <a href="/" class="nav-button {{ if .IsHome }}active{{ end }}">home</a>
-        <a href="/videos" class="nav-button {{ if eq .RelPermalink "/videos/" }}active{{ end }}">videos</a>
-        <a href="/cinemagraphs" class="nav-button {{ if eq .RelPermalink "/cinemagraphs/" }}active{{ end }}">cinemagraphs</a>
-        <a href="/images" class="nav-button {{ if eq .RelPermalink "/images/" }}active{{ end }}">images</a>
+        <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if .IsHome }}active{{ end }}">home</a>
+        <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/videos/" }}active{{ end }}">videos</a>
+        <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/cinemagraphs/" }}active{{ end }}">cinemagraphs</a>
+        <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" class="nav-button {{ if eq .RelPermalink "/images/" }}active{{ end }}">images</a>
+        <span class="htmx-indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
       </div>
     </nav>
 
     <main class="content-area">
-      {{ block "main" . }}{{ end }}
+      <div id="content-container">
+        {{ block "main" . }}{{ end }}
+      </div>
     </main>
 
     <footer>
