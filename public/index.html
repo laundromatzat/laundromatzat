@@ -1,4 +1,6 @@
 
+
+  
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -20,6 +22,11 @@
         initMasonry();
         handleVideoVisibility();
         window.addEventListener('scroll', handleVideoVisibility);
+      });
+      
+      
+      document.addEventListener('htmx:configRequest', function(event) {
+        event.detail.headers['HX-Request'] = 'true';
       });
       
       function updateActiveNavButton() {
@@ -158,3 +165,5 @@
     </footer>
   </body>
 </html>
+  
+
