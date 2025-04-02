@@ -1,0 +1,75 @@
+/* assets/css/_home.css */
+.home__container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Center content vertically */
+  gap: clamp(0.5rem, 2vh, 1rem);
+  padding: 1rem; /* Add some padding */
+  /* Height adjusted calculation */
+  min-height: calc(100vh - 60px - 50px - 2rem); /* Approx header/footer/padding */
+  box-sizing: border-box;
+}
+
+.home__title {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 300;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  color: var(--text); /* Ensure white text */
+}
+
+.video-wrapper { /* Still used for the image wrapper on home */
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem; /* Space below image */
+}
+
+.image-container { /* Container for the home image */
+  width: 100%;
+  height: auto;
+}
+
+.home__content { /* The image itself */
+  display: block;
+  max-height: 60vh;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  margin: 0 auto;
+  transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); /* Faster transition */
+  transform: scale(0.8);
+}
+
+/* Hover effect with prefers-reduced-motion */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .home__content:hover {
+    transform: scale(0.9);
+    animation: color-breathe 15s infinite alternate ease-in-out; /* Adjusted animation */
+  }
+
+  @keyframes color-breathe {
+      0%   { filter: brightness(1.1) sepia(0.8) hue-rotate(0deg)   saturate(100%) opacity(0.9); }
+      25%  { filter: brightness(1.0) sepia(0.6) hue-rotate(60deg)  saturate(130%) opacity(0.85); }
+      50%  { filter: brightness(0.9) sepia(0.4) hue-rotate(180deg) saturate(160%) opacity(0.8); }
+      75%  { filter: brightness(1.0) sepia(0.6) hue-rotate(300deg) saturate(130%) opacity(0.85); }
+      100% { filter: brightness(1.1) sepia(0.8) hue-rotate(360deg) saturate(100%) opacity(0.9); }
+  }
+}
+
+/* No hover animation for touch or reduced motion */
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .home__content:hover {
+    transform: scale(0.8);
+    animation: none;
+  }
+}

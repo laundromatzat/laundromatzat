@@ -1,0 +1,114 @@
+/* assets/css/_base.css */
+/* Global styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  background: var(--background);
+  color: var(--text);
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23ffffff' fill-opacity='0.03' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  min-height: 100vh;
+}
+
+/* Default state: allow scrolling */
+main {
+  flex: 1; /* Allows main to grow and push footer down */
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 80px; /* Ensure space for footer height + buffer */
+}
+
+/* Only apply no-scroll and specific main styling to index.html (home page) */
+body:has(.home__container) {
+  overflow: hidden; /* Prevent body scroll on home */
+}
+
+body:has(.home__container) main {
+  overflow-y: auto; /* Allow scrolling within main on home page */
+  -ms-overflow-style: none; /* Hide scrollbar IE and Edge */
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+  padding-bottom: 0; /* No padding needed when footer is relative */
+}
+
+body:has(.home__container) main::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome, Safari, Opera */
+}
+
+
+/* General element styling */
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.03em; /* Tighter for headings */
+  font-weight: 300; /* Lighter headings by default */
+  color: var(--text); /* Default text color */
+}
+
+h1 { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+h2 { margin-top: 0.4rem; margin-bottom: 0.4rem; }
+h3 { margin-top: 0.3rem; margin-bottom: 0.3rem; }
+
+a {
+  color: var(--accent); /* Default link color */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--accent2);
+}
+
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--primary); }
+::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* HTMX Loading Indicator */
+.htmx-indicator {
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+  color: var(--accent);
+  font-size: 0.9em;
+  margin-left: 10px;
+  display: inline-block; /* Ensure it takes space */
+}
+.htmx-request .htmx-indicator {
+  opacity: 1;
+}
+.htmx-request.htmx-indicator { /* Style indicator itself when request is happening */
+  opacity: 1;
+}
+
+/* Page transition animation */
+#content-container {
+  animation: fadeIn 0.4s ease; /* Slightly slower fade */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); } /* Add slight vertical move */
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive base adjustments */
+@media (max-width: 600px) {
+  body {
+    line-height: 1.5; /* Slightly tighter line height on small screens */
+  }
+}

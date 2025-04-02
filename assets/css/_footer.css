@@ -1,0 +1,51 @@
+/* assets/css/_footer.css */
+footer {
+  width: 100%;
+  font-weight: 200;
+  letter-spacing: 0.02em;
+  background: var(--primary);
+  color: var(--text);
+  padding: 1rem clamp(1rem, 3vw, 2rem); /* Consistent padding */
+  font-size: clamp(0.75rem, 1.5vw, 0.9rem); /* Slightly larger base */
+  text-align: center;
+  margin-top: auto; /* Pushes footer down */
+  z-index: 100;
+  box-sizing: border-box;
+  border-top: 1px solid var(--highlight); /* Subtle top border */
+}
+
+footer p {
+  margin: 0;
+}
+
+/* Footer positioning adjustments based on body context */
+body:has(.home__container) footer {
+  position: relative; /* Keep relative for home */
+}
+
+/* Ensure footer stays below content on short pages (non-home) */
+body:not(:has(.home__container)) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body:not(:has(.home__container)) main {
+  flex-grow: 1;
+}
+
+
+@media (max-width: 600px) {
+  footer {
+     padding-left: 1rem;
+     padding-right: 1rem;
+     padding-top: 0.75rem;
+     padding-bottom: 0.75rem;
+  }
+}
+
+@media (max-height: 500px) and (min-width: 600px) {
+  footer {
+    padding: 0.75rem clamp(1rem, 3vw, 2rem);
+    font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+  }
+}
