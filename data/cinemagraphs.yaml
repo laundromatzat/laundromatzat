@@ -1,4 +1,3 @@
-
 baseURL: ""
 tokenSuffix: ""
 
@@ -10,7 +9,7 @@ cinemagraphs:
     location: "Bernal Heights"
     description: ""
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fbernal-hill-sunrise-cinemagraph.mp4?alt=media&token=f98815bd-4c17-4ef3-9455-7b84cec0ef51"
-    thumbnail: ""
+    thumbnail: "/cinemagraphs/thumbnails/bernal-hill-sunrise.webp" # Added Placeholder
 
   - id: "bernal-hill-sunset-cinemagraph"
     title: "sunset from bernal hill"
@@ -19,7 +18,7 @@ cinemagraphs:
     location: "Bernal Heights"
     description: ""
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fbernal-hill-sunset-cinemagraph.m4v?alt=media&token=e3d47bce-80aa-4b5b-b3e2-209c5cc2122b"
-    thumbnail: ""
+    thumbnail: "/cinemagraphs/thumbnails/bernal-hill-sunset.webp" # Added Placeholder
 
   - id: "fireside-meditation-cinemagraph"
     title: "fireside meditation"
@@ -28,7 +27,7 @@ cinemagraphs:
     location: "The Sea Ranch"
     description: ""
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ffireside-meditation-cinemagraph.mp4?alt=media&token=cb88ee30-c924-40a6-bc50-3703377abc29"
-    thumbnail: ""
+    thumbnail: "/cinemagraphs/thumbnails/fireside-meditation.webp" # Added Placeholder
 
   - id: "pacifica-coast-cinemagraph"
     title: "pacifica coast"
@@ -37,7 +36,7 @@ cinemagraphs:
     location: "Pacifica"
     description: ""
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fpacifica-coast-cinemagraph.mp4?alt=media&token=33ab8ba9-1309-4ec5-a60a-0ca9fcaa29b9"
-    thumbnail: ""
+    thumbnail: "/cinemagraphs/thumbnails/pacifica-coast.webp" # Added Placeholder
 
   - id: "tlc01-cinemagraph"
     title: "tlc01"
@@ -46,7 +45,7 @@ cinemagraphs:
     location: "Unknown"
     description: ""
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftlc01-cinemagraph.mp4?alt=media&token=7b11684e-d143-449a-b3dd-f96861fb61c2"
-    thumbnail: ""
+    thumbnail: "/cinemagraphs/thumbnails/tlc01.webp" # Added Placeholder
 
   - id: "tlc02-cinemagraph"
     title: "tlc02"
@@ -55,7 +54,7 @@ cinemagraphs:
     location: "Unknown"
     description: ""
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftlc02_cinemagraph.mp4?alt=media&token=e55de0bd-a08e-4f40-adff-dbd5a0c6ac1d"
-    thumbnail: ""
+    thumbnail: "/cinemagraphs/thumbnails/tlc02.webp" # Added Placeholder
 
   - id: "tsr-sunet-cinemagraph"
     title: "tsr sunset"
@@ -64,4 +63,4 @@ cinemagraphs:
     location: "The Sea Ranch"
     description: ""
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftsr-sunet-cinemagraph.m4v?alt=media&token=6a01df65-976e-4641-b0f9-f89ddce24274"
-    thumbnail: ""
+    thumbnail: "/cinemagraphs/thumbnails/tsr-sunset.webp" # Added Placeholder

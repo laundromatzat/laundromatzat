@@ -1,22 +1,30 @@
-
 {{ define "main" }}
 <div class="section-header">
   <h1>Cinemagraphs</h1>
   <div class="accent-line"></div>
 </div>
 
-<div class="video-grid">
+{{/* Changed class from video-grid to cinemagraph-grid */}}
+<div class="cinemagraph-grid">
   {{ range $index, $item := $.Site.Data.cinemagraphs.cinemagraphs }}
-    <div class="video-grid__item">
-      <video autoplay loop muted playsinline>
+    {{/* Added cinemagraph-item class */}}
+    <div class="cinemagraph-item">
+      {{/* Removed autoplay, loop, muted. Added preload and poster */}}
+      <video preload="metadata" poster="{{ .thumbnail | default "/images/placeholder.webp" }}" playsinline>
         <source src="{{ .token }}" type="video/mp4">
+        {{/* Added fallback for M4V if needed, assuming token points to MP4/M4V correctly */}}
+        {{ if hasSuffix .token ".m4v" }}
+          <source src="{{ .token }}" type="video/x-m4v">
+        {{ end }}
+        Your browser does not support the video tag.
       </video>
-      <div class="video-grid__metadata">
-        <h2>{{ .title }}</h2>
-        <div class="video-grid__info-row">
-          <p class="location">{{ .location }}</p>
-          <p class="date">{{ .date }}</p>
-        </div>
+      {{/* Optional: Overlay for title/info on hover */}}
+      <div class="cinemagraph-overlay">
+         <h2>{{ .title }}</h2>
+         <div class="cinemagraph-metadata">
+           <p class="location">{{ .location }}</p>
+           <p class="date">{{ .date }}</p>
+         </div>
       </div>
     </div>
   {{ end }}

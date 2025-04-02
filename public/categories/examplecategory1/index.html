@@ -1,105 +1,132 @@
-
-
-  
 <!DOCTYPE html>
 <html lang="en">
-  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=5000&amp;path=livereload" data-no-instant defer></script>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="utf-8">
 
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
     <script>
-      document.addEventListener('htmx:afterSwap', function(event) {
-        updateActiveNavButton();
+      
+      function initializePageContent() {
+        updateActiveNavButton(); 
+        initImageGridMasonry(); 
+        initCinemagraphInteractions(); 
         
-        initMasonry();
-        handleVideoVisibility();
-      });
+      }
+
       
-      document.addEventListener('DOMContentLoaded', function() {
-        updateActiveNavButton();
-        initMasonry();
-        handleVideoVisibility();
-        window.addEventListener('scroll', handleVideoVisibility);
+      document.addEventListener('DOMContentLoaded', initializePageContent);
+      document.addEventListener('htmx:afterSwap', function(event) {
+        
+        initializePageContent();
       });
-      
+
       
       document.addEventListener('htmx:configRequest', function(event) {
         event.detail.headers['HX-Request'] = 'true';
       });
+
       
       function updateActiveNavButton() {
-        
         document.querySelectorAll('.nav-button').forEach(function(button) {
           button.classList.remove('active');
         });
-        
-        
         const currentPath = window.location.pathname;
         let targetButton = null;
         
-        
-        if (currentPath === '/' || currentPath === '') {
+        if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
           targetButton = document.querySelector('.nav-button[hx-get="/"]');
         } else {
           
-          const sections = ['/videos', '/cinemagraphs', '/images'];
-          for (const section of sections) {
-            if (currentPath.startsWith(section)) {
-              targetButton = document.querySelector(`.nav-button[hx-get="${section}"]`);
-              break;
-            }
-          }
+           const sections = ['/videos', '/cinemagraphs', '/images'];
+           for (const section of sections) {
+               
+               
+               if (currentPath.startsWith(section + '/') || currentPath === section) {
+                 targetButton = document.querySelector(`.nav-button[hx-get="${section}"]`);
+                 break;
+               }
+           }
         }
-        
-        
         if (targetButton) {
           targetButton.classList.add('active');
         }
       }
+
       
-      function initMasonry() {
+      function initImageGridMasonry() {
+        const imageGrids = document.querySelectorAll('.image-grid'); 
+        if (!imageGrids.length) return; 
+
         
-        const imageGrids = document.querySelectorAll('.image-grid');
-        imageGrids.forEach(grid => {
-          imagesLoaded(grid, function() {
-            new Masonry(grid, {
-              itemSelector: '.image-grid__item',
-              percentPosition: true
+        if (typeof Masonry !== 'undefined' && typeof imagesLoaded !== 'undefined') {
+          imageGrids.forEach(grid => {
+            imagesLoaded(grid, function() {
+              new Masonry(grid, {
+                itemSelector: '.image-item', 
+                percentPosition: true,
+                
+              });
             });
           });
-        });
-        
-        
-        const videoGrids = document.querySelectorAll('.video-grid');
-        videoGrids.forEach(grid => {
-          imagesLoaded(grid, function() {
-            new Masonry(grid, {
-              itemSelector: '.video-grid__item',
-              percentPosition: true
-            });
-          });
-        });
+        } else {
+          console.warn('Masonry or imagesLoaded script not found.');
+        }
       }
+
       
-      function handleVideoVisibility() {
-        const videos = document.querySelectorAll('video');
-        videos.forEach(video => {
-          const rect = video.getBoundingClientRect();
-          const isVisible = (
-            rect.top >= 0 &&
-            rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-          );
+      function initCinemagraphInteractions() {
+        const cinemagraphItems = document.querySelectorAll('.cinemagraph-item');
+        if (!cinemagraphItems.length) return; 
+
+        cinemagraphItems.forEach(item => {
+          const video = item.querySelector('video');
+          if (!video) return;
+
           
-          if (isVisible) {
-            if (video.paused) video.play();
-          } else {
-            if (!video.paused) video.pause();
-          }
+          item.addEventListener('mouseenter', () => {
+             
+             video.play().catch(e => console.log("Autoplay prevented:", e));
+          });
+          item.addEventListener('mouseleave', () => {
+            video.pause();
+            video.currentTime = 0; 
+          });
+
+          
+          item.addEventListener('click', () => {
+            if (video.requestFullscreen) {
+              video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {  
+              video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {  
+              video.msRequestFullscreen();
+            }
+          });
+
+          
+           video.addEventListener('loadedmetadata', () => {
+               if (video.videoWidth && video.videoHeight) {
+                   if (video.videoHeight > video.videoWidth) {
+                       item.classList.add('portrait');
+                   } else {
+                       item.classList.add('landscape'); 
+                   }
+               }
+           });
+
         });
       }
+
+     
+     
+     
+     
+     
+     
+     
+
+
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -109,41 +136,53 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
     
-    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
-    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+    
 
     
-    <link rel="stylesheet" href="/css/main.min.8ef94218d2d4cac188c84209ad5c6b79f6bfc258377c7bd7f652b5d30f15f954.css" integrity="sha256-jvlCGNLUysGIyEIJrVxrefa/wlg3fHvX9lK10w8V&#43;VQ=">
+    <link rel="stylesheet" href="/css/main.min.9dae55df05bbc92cbb9bd4f9ecc4afcace88ccd4a5b3ca1d62842a71a0dc1e97.css" integrity="sha256-na5V3wW7ySy7m9T57MSvys6IzNSls8odYoQqcaDcHpc=">
 
-    <meta property="og:url" content="https://workspace.StephenMatzat.repl.co:5000/categories/examplecategory1/">
+    <meta property="og:url" content="http://localhost:1313/categories/examplecategory1/">
   <meta property="og:site_name" content="laundromatzat.com">
   <meta property="og:title" content="ExampleCategory1">
   <meta property="og:description" content="welcome to the laundromat">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 
+    
+  <meta itemprop="name" content="ExampleCategory1">
+  <meta itemprop="description" content="welcome to the laundromat">
+  <meta itemprop="datePublished" content="2024-02-23T12:00:00-08:00">
+  <meta itemprop="dateModified" content="2024-02-23T12:00:00-08:00">
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ExampleCategory1">
+  <meta name="twitter:description" content="welcome to the laundromat">
+
+
   </head>
   <body>
     <header class="site-header">
-      <div class="header-container">
-        <nav class="site-nav">
-          <div class="nav-content">
-            <a href="/" class="site-title"><img src="/favicon.ico" alt="Favicon" class="favicon-image" style="height: 1em; vertical-align: middle; margin-right: 0.5em;">laundromatzat.com</a>
+      
+      <nav class="site-nav">
+        <div class="nav-content">
+           <a href="/" class="site-title" hx-get="/" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-indicator="#indicator">
+             <img src="/favicon.ico" alt="Favicon" class="favicon-image">laundromatzat.com
+           </a>
+          <div class="main-nav-container">
             
-            <div class="main-nav-container">
-              <a hx-get="/" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">home</a>
-              <a hx-get="/videos" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">videos</a>
-              <a hx-get="/cinemagraphs" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">cinemagraphs</a>
-              <a hx-get="/images" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">images</a>
-              <span class="htmx-indicator" id="indicator" style="margin-left: 10px; color: var(--accent); display: none;">Loading...</span>
-            </div>
+            <a data-nav-section="/" hx-get="/" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">home</a>
+            <a data-nav-section="/videos" hx-get="/videos" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">videos</a>
+            <a data-nav-section="/cinemagraphs" hx-get="/cinemagraphs" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">cinemagraphs</a>
+            <a data-nav-section="/images" hx-get="/images" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">images</a>
+            <span class="htmx-indicator" id="indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
           </div>
-        </nav>
-      </div>
+        </div>
+      </nav>
     </header>
 
     <main class="content-area">
       <div id="content-container">
+        
         
 <article class="pa3 pa4-ns nested-copy-line-height">
   <section class="cf ph3 ph5-l pv3 pv4-l f4 tc-l center measure-wide lh-copy mid-gray">
@@ -165,11 +204,8 @@
     </main>
 
     <footer>
-      <div class="header-container">
-        <p>&copy; 2025 laundromatzat.com</p>
-      </div>
+       
+       <p>&copy; 2025 laundromatzat.com</p>
     </footer>
   </body>
 </html>
-  
-
