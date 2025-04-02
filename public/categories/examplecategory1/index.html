@@ -1,4 +1,6 @@
 
+
+  
 <!DOCTYPE html>
 <html lang="en">
   <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=5000&amp;path=livereload" data-no-instant defer></script>
@@ -19,6 +21,11 @@
         initMasonry();
         handleVideoVisibility();
         window.addEventListener('scroll', handleVideoVisibility);
+      });
+      
+      
+      document.addEventListener('htmx:configRequest', function(event) {
+        event.detail.headers['HX-Request'] = 'true';
       });
       
       function updateActiveNavButton() {
@@ -164,3 +171,5 @@
     </footer>
   </body>
 </html>
+  
+
