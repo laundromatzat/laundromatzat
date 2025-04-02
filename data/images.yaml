@@ -7,5 +7,7 @@ images:
     url: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/images%2Flove.jpg?alt=media&token=sample-token"
     date: "03/2025"
     location: "Bernal Heights"
-    description: "love"
+    description: "Graffiti art spelling LOVE on a wall" # More descriptive
     thumbnail: "/images/thumbnails/love.webp"
+    width: 1080 # Example dimension
+    height: 720 # Example dimension

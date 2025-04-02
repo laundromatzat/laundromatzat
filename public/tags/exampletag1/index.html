@@ -7,16 +7,19 @@
 
     <script>
       
+      
       function initializePageContent() {
+        console.log("Initializing page content..."); 
         updateActiveNavButton(); 
         initImageGridMasonry(); 
         initCinemagraphInteractions(); 
-        
       }
 
       
       document.addEventListener('DOMContentLoaded', initializePageContent);
+
       document.addEventListener('htmx:afterSwap', function(event) {
+        console.log("HTMX swap finished, re-initializing content..."); 
         
         initializePageContent();
       });
@@ -27,57 +30,71 @@
       });
 
       
+      
       function updateActiveNavButton() {
-        document.querySelectorAll('.nav-button').forEach(function(button) {
-          button.classList.remove('active');
-        });
+        const navButtons = document.querySelectorAll('.nav-button');
+        navButtons.forEach(button => button.classList.remove('active'));
+
         const currentPath = window.location.pathname;
         let targetButton = null;
-        
+
         if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
-          targetButton = document.querySelector('.nav-button[hx-get="/"]');
+          targetButton = document.querySelector('.nav-button[data-nav-section="/"]');
         } else {
-          
-           const sections = ['/videos', '/cinemagraphs', '/images'];
-           for (const section of sections) {
-               
-               
-               if (currentPath.startsWith(section + '/') || currentPath === section) {
-                 targetButton = document.querySelector(`.nav-button[hx-get="${section}"]`);
-                 break;
+           
+           navButtons.forEach(button => {
+               const section = button.getAttribute('data-nav-section');
+               if (section && section !== '/' && (currentPath.startsWith(section + '/') || currentPath === section)) {
+                   targetButton = button;
                }
-           }
+           });
         }
+
         if (targetButton) {
           targetButton.classList.add('active');
+          console.log("Active nav set to:", targetButton.textContent); 
+        } else {
+          console.log("No active nav button found for path:", currentPath); 
         }
       }
 
       
+      
       function initImageGridMasonry() {
-        const imageGrids = document.querySelectorAll('.image-grid'); 
-        if (!imageGrids.length) return; 
+        const imageGrids = document.querySelectorAll('.image-grid');
+        if (!imageGrids.length) {
+            
+            return;
+        }
 
-        
         if (typeof Masonry !== 'undefined' && typeof imagesLoaded !== 'undefined') {
+          console.log("Initializing Masonry for", imageGrids.length, "grid(s)."); 
           imageGrids.forEach(grid => {
+            
             imagesLoaded(grid, function() {
               new Masonry(grid, {
                 itemSelector: '.image-item', 
                 percentPosition: true,
                 
+                
               });
+              console.log("Masonry layout applied to grid:", grid); 
             });
           });
         } else {
-          console.warn('Masonry or imagesLoaded script not found.');
+          console.warn('Masonry or imagesLoaded script not found. Cannot initialize image grid layout.');
         }
       }
 
       
+      
       function initCinemagraphInteractions() {
         const cinemagraphItems = document.querySelectorAll('.cinemagraph-item');
-        if (!cinemagraphItems.length) return; 
+        if (!cinemagraphItems.length) {
+            
+            return;
+        }
+        console.log("Initializing interactions for", cinemagraphItems.length, "cinemagraph(s)."); 
 
         cinemagraphItems.forEach(item => {
           const video = item.querySelector('video');
@@ -85,48 +102,50 @@
 
           
           item.addEventListener('mouseenter', () => {
-             
-             video.play().catch(e => console.log("Autoplay prevented:", e));
+             const playPromise = video.play();
+             if (playPromise !== undefined) {
+                 playPromise.catch(error => {
+                     
+                     console.log("Video play prevented on hover:", error);
+                 });
+             }
           });
+
+          
           item.addEventListener('mouseleave', () => {
             video.pause();
-            video.currentTime = 0; 
+            
           });
 
           
           item.addEventListener('click', () => {
+            console.log("Attempting fullscreen for:", video.src); 
             if (video.requestFullscreen) {
               video.requestFullscreen();
             } else if (video.webkitRequestFullscreen) {  
               video.webkitRequestFullscreen();
             } else if (video.msRequestFullscreen) {  
               video.msRequestFullscreen();
+            } else {
+                console.log("Fullscreen API not supported on this video element.");
             }
           });
 
           
-           video.addEventListener('loadedmetadata', () => {
-               if (video.videoWidth && video.videoHeight) {
-                   if (video.videoHeight > video.videoWidth) {
-                       item.classList.add('portrait');
-                   } else {
-                       item.classList.add('landscape'); 
-                   }
-               }
-           });
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 
         });
       }
-
-     
-     
-     
-     
-     
-     
-     
-
-
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -139,7 +158,9 @@
     
 
     
-    <link rel="stylesheet" href="/css/main.min.9dae55df05bbc92cbb9bd4f9ecc4afcace88ccd4a5b3ca1d62842a71a0dc1e97.css" integrity="sha256-na5V3wW7ySy7m9T57MSvys6IzNSls8odYoQqcaDcHpc=">
+    
+    
+    <link rel="stylesheet" href="/css/main.min.1016c5e143cf6fef42c2d2e4f7d2f994d8781e5538e2dd075e03bacedda52985.css" integrity="sha256-EBbF4UPPb&#43;9CwtLk99L5lNh4HlU44t0HXgO6zt2lKYU=">
 
     <meta property="og:url" content="http://localhost:1313/tags/exampletag1/">
   <meta property="og:site_name" content="laundromatzat.com">
@@ -162,11 +183,11 @@
   </head>
   <body>
     <header class="site-header">
-      
       <nav class="site-nav">
         <div class="nav-content">
            <a href="/" class="site-title" hx-get="/" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-indicator="#indicator">
-             <img src="/favicon.ico" alt="Favicon" class="favicon-image">laundromatzat.com
+             <img src="/favicon.ico" alt="" class="favicon-image"> 
+             laundromatzat.com
            </a>
           <div class="main-nav-container">
             
@@ -174,7 +195,7 @@
             <a data-nav-section="/videos" hx-get="/videos" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">videos</a>
             <a data-nav-section="/cinemagraphs" hx-get="/cinemagraphs" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">cinemagraphs</a>
             <a data-nav-section="/images" hx-get="/images" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">images</a>
-            <span class="htmx-indicator" id="indicator" style="margin-left: 10px; color: var(--accent);">Loading...</span>
+            <span class="htmx-indicator" id="indicator">Loading...</span>
           </div>
         </div>
       </nav>
@@ -204,7 +225,6 @@
     </main>
 
     <footer>
-       
        <p>&copy; 2025 laundromatzat.com</p>
     </footer>
   </body>
