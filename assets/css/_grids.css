@@ -1,10 +1,11 @@
 /* assets/css/_grids.css */
 
-/* Common Grid Header */
+/* --- Common Grid Header --- */
+/* ... (keep existing styles) ... */
 .section-header {
   text-align: center;
   margin-bottom: 2rem;
-  padding: 2rem 1rem 0 1rem; /* Add padding */
+  padding: 2rem 1rem 0 1rem;
 }
 
 .section-header h1 {
@@ -17,9 +18,48 @@
 .accent-line {
   height: 3px;
   width: 60px;
-  margin: 0 auto 1.5rem auto; /* Adjusted margin */
+  margin: 0 auto 1.5rem auto;
   background: var(--accent);
   border-radius: 2px;
+}
+
+/* --- Sort Controls Styling --- */
+.sort-controls {
+  margin-top: -1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--secondary);
+}
+
+.sort-controls span {
+  margin-right: 0.5rem;
+}
+
+.sort-button {
+  padding: 0.3rem 0.7rem;
+  margin: 0 0.25rem;
+  background-color: rgba(0,0,0,0.1);
+  color: var(--text);
+  border: 1px solid var(--secondary);
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.sort-button:hover {
+  background-color: rgba(0,0,0,0.2);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.sort-button.active {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--white);
+  font-weight: bold;
 }
 
 
@@ -32,32 +72,19 @@
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  color: var(--primary); /* Text color inside grid items */
 }
 
 .video-grid__item {
-  background: var(--secondary);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 0;
   transform: translateY(0);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  height: auto; /* Let height be determined by content */
+  background-color: var(--secondary);
   width: 100%;
   max-width: 450px;
   margin: 0 auto;
-}
-
-.video-grid__item video {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: contain;
-  display: block;
-  background-color: var(--primary);
+  position: relative; /* Needed for absolute positioning context */
 }
 
 .video-grid__item:hover {
@@ -65,42 +92,103 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
-.video-grid__metadata {
-  padding: 0.75rem 1rem;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  min-height: 85px;
-  color: var(--text-dark); /* Dark text on light background */
+/* Wrapper for video and overlay */
+.video-grid__thumbnail-wrapper {
+  position: relative; /* Changed to relative if item itself is relative */
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: var(--primary);
+  overflow: hidden;
+  border-radius: 12px; /* Ensure wrapper also has radius */
 }
 
-.video-grid__metadata h2 {
+.video-grid__thumbnail-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- CSS Attempt to Hide/Show Controls --- */
+/* Hide controls by default (targeting WebKit specifically) */
+.video-grid__thumbnail-wrapper video::-webkit-media-controls-panel {
+  display: none !important;
+  /* Using opacity as fallback if display:none fails */
+  opacity: 0;
+  pointer-events: none;
+}
+.video-grid__thumbnail-wrapper video::-webkit-media-controls-play-button {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+}
+/* Add similar rules for other specific control buttons if needed */
+
+/* Show controls on hover of the PARENT item */
+.video-grid__item:hover .video-grid__thumbnail-wrapper video::-webkit-media-controls-panel {
+  display: flex !important; /* Or block, depending on browser default */
+  opacity: 1;
+  pointer-events: auto;
+}
+.video-grid__item:hover .video-grid__thumbnail-wrapper video::-webkit-media-controls-play-button {
+   display: block !important; /* Or inline-block */
+   opacity: 1;
+   pointer-events: auto;
+}
+/* --- End Controls Hide/Show Attempt --- */
+
+
+/* MODIFIED: Metadata Overlay - Bottom Left */
+.video-grid__metadata-overlay {
+  position: absolute;
+  bottom: 0; /* Back to bottom */
+  left: 0;
+  right: 0;
+  padding: 0.75rem 1rem;
+  /* Gradient starts dark at bottom, fades up */
+  background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+  color: var(--text);
+  opacity: 1;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+  border-bottom-left-radius: 12px; /* Match parent radius */
+  border-bottom-right-radius: 12px;
+}
+
+/* Fade out metadata text on hover */
+.video-grid__item:hover .video-grid__metadata-overlay {
+  opacity: 0;
+}
+
+.video-grid__metadata-overlay h2 {
   margin: 0 0 0.25rem;
   font-size: clamp(1.1rem, 1.8vw, 1.2rem);
   line-height: 1.2;
   font-weight: 400;
-  color: var(--text-dark); /* Ensure dark title */
+  color: var(--text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 2.4em;
+  min-height: 0;
 }
 
-.video-grid__metadata p {
+.video-grid__metadata-overlay p {
   margin: 0.1rem 0;
-  color: var(--text-medium);
+  color: var(--text);
   font-size: clamp(0.75rem, 1.4vw, 0.85rem);
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .video-grid__info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto;
-  padding-top: 0.25rem;
+  margin-top: 0;
+  padding-top: 0.1rem;
 }
 
 .location, .date {
@@ -113,6 +201,7 @@
 }
 
 /* --- Cinemagraph Grid --- */
+/* Styles remain the same, but ensure overlay is positioned correctly */
 .cinemagraph-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr));
@@ -151,30 +240,36 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* MODIFIED: Cinemagraph Overlay - Bottom Left */
 .cinemagraph-overlay {
   position: absolute;
-  bottom: 0;
+  bottom: 0; /* Back to bottom */
   left: 0;
   right: 0;
   padding: 0.75rem 1rem;
-  background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+  /* Gradient starts dark at bottom, fades up */
+  background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
   color: var(--text);
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-  pointer-events: none;
-}
-
-.cinemagraph-item:hover .cinemagraph-overlay {
   opacity: 1;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+  border-bottom-left-radius: 10px; /* Match parent radius */
+  border-bottom-right-radius: 10px;
 }
 
+/* Fade out on hover */
+.cinemagraph-item:hover .cinemagraph-overlay {
+  opacity: 0;
+}
+
+/* ... (cinemagraph h2, p styles remain the same) ... */
 .cinemagraph-overlay h2 {
   margin: 0 0 0.25rem;
   font-size: clamp(1rem, 1.8vw, 1.1rem);
-  font-weight: 400; /* Already set globally, maybe adjust */
+  font-weight: 400;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
   line-height: 1.2;
-  color: var(--text); /* Ensure white text */
+  color: var(--text);
 }
 
 .cinemagraph-metadata {
@@ -192,12 +287,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text); /* Ensure white text */
+  color: var(--text);
 }
 
-
 /* --- Image Grid --- */
-/* Assuming Masonry is used here - these styles might need adjustment if using pure CSS grid */
+/* Styles remain the same, but ensure overlay is positioned correctly */
 .image-grid {
    padding: clamp(1rem, 2vw, 1.5rem);
    width: 100%;
@@ -205,23 +299,23 @@
    margin: 0 auto;
 }
 
-/* Style for individual Masonry items */
 .image-item {
-  margin-bottom: 1rem; /* Space below items */
-  background: var(--secondary);
+  margin-bottom: 1rem;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   transition: transform .3s ease, box-shadow .3s ease;
-  width: calc(33.333% - 1rem); /* Example width for 3 columns, adjust as needed */
-  float: left; /* Required for basic Masonry */
+  width: calc(33.333% - 1rem);
+  float: left;
   margin-left: 0.5rem;
   margin-right: 0.5rem;
+  position: relative;
+  background-color: var(--secondary);
 }
 
 .image-item img {
   width: 100%;
-  height: auto; /* Let height adjust based on width */
+  height: auto;
   object-fit: cover;
   display: block;
   cursor: pointer;
@@ -232,14 +326,64 @@
   box-shadow: 0 10px 20px rgba(0,0,0,0.15);
 }
 
-/* Masonry clear fix */
 .image-grid::after {
   content: '';
   display: block;
   clear: both;
 }
 
+/* MODIFIED: Image Overlay - Bottom Left */
+.image-overlay {
+   position: absolute;
+   bottom: 0; /* Back to bottom */
+   left: 0;
+   right: 0;
+   padding: 0.75rem 1rem;
+   /* Gradient starts dark at bottom, fades up */
+   background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+   color: var(--text);
+   opacity: 1;
+   transition: opacity 0.7s ease;
+   pointer-events: none;
+   border-bottom-left-radius: 8px; /* Match parent */
+   border-bottom-right-radius: 8px;
+}
+
+/* Fade out on hover */
+.image-item:hover .image-overlay {
+   opacity: 0;
+}
+
+/* ... (image h2, p styles remain the same) ... */
+.image-overlay h2 {
+   margin: 0 0 0.25rem;
+   font-size: clamp(1rem, 1.8vw, 1.1rem);
+   font-weight: 400;
+   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+   line-height: 1.2;
+   color: var(--text);
+}
+
+.image-metadata {
+   display: flex;
+   justify-content: space-between;
+   flex-wrap: wrap;
+   gap: 0.5rem;
+}
+
+.image-metadata p {
+   margin: 0;
+   font-size: clamp(0.7rem, 1.3vw, 0.8rem);
+   opacity: 0.9;
+   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   color: var(--text);
+}
+
 /* Responsive adjustments for grids */
+/* ... (keep existing responsive styles) ... */
 @media (max-width: 1200px) {
   .image-item {
     width: calc(50% - 1rem); /* 2 columns */
@@ -255,7 +399,7 @@
      max-width: none;
    }
    .image-item {
-      width: calc(50% - 0.75rem); /* Adjust width and margin */
+      width: calc(50% - 0.75rem);
       margin-left: 0.375rem;
       margin-right: 0.375rem;
       margin-bottom: 0.75rem;
@@ -265,12 +409,28 @@
 @media (max-width: 600px) {
   .section-header {
       margin-bottom: 1rem;
-      padding-top: 1rem; /* Add padding back on small screens */
+      padding-top: 1rem;
   }
   .image-item {
-      width: calc(100% - 0.5rem); /* 1 column */
+      width: calc(100% - 0.5rem);
       margin-left: 0.25rem;
       margin-right: 0.25rem;
       margin-bottom: 0.5rem;
+   }
+   .video-grid__metadata-overlay h2,
+   .cinemagraph-overlay h2,
+   .image-overlay h2 {
+      font-size: 1rem;
+      -webkit-line-clamp: 1;
+   }
+   .video-grid__metadata-overlay p,
+   .cinemagraph-metadata p,
+   .image-metadata p {
+      font-size: 0.7rem;
+   }
+   .video-grid__metadata-overlay,
+   .cinemagraph-overlay,
+   .image-overlay {
+       padding: 0.5rem 0.75rem;
    }
 }

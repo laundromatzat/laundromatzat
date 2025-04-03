@@ -1,51 +1,28 @@
+{{/* layouts/images/list.html */}}
 {{ define "main" }}
 <div class="section-header">
   <h1>Images</h1>
   <div class="accent-line"></div>
 </div>
 
+{{/* This div needs to be handled by Masonry JS */}}
 <div class="image-grid">
   {{ range $index, $item := $.Site.Data.images.images }}
     <div class="image-item">
-      <img src="{{ .url }}" alt="{{ .title }}">
-      <div class="image-metadata">
-        <h2>{{ .title }}</h2>
-        <div class="image-info-row">
-          <p class="location">{{ .location }}</p>
-          <p class="date">{{ .date }}</p>
+      <img src="{{ .url }}" alt="{{ .title | default "Image" }}" loading="lazy"> {{/* Added lazy loading */}}
+
+      {{/* NEW: Overlay for metadata */}}
+      <div class="image-overlay">
+        <h2>{{ .title | default "Image" }}</h2>
+        <div class="image-metadata">
+          {{ with .location }}<p class="location">{{ . }}</p>{{ end }}
+          {{ with .date }}<p class="date">{{ . }}</p>{{ end }}
         </div>
       </div>
     </div>
   {{ end }}
 </div>
+
+{{/* Removed the script from here, it should be handled globally in baseof.html */}}
+
 {{ end }}
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const images = document.querySelectorAll('.image-grid__image'); 
-
-  images.forEach(img => {
-    img.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (img.requestFullscreen) {
-        img.requestFullscreen();
-      } else if (img.webkitRequestFullscreen) { /* Safari */
-        img.webkitRequestFullscreen();
-      } else if (img.msRequestFullscreen) { /* IE11 */
-        img.msRequestFullscreen();
-      }
-    });
-
-    img.addEventListener('load', function() {
-      const item = this.closest('.image-item'); 
-      if (this.naturalHeight > this.naturalWidth) {
-        item.classList.add('portrait');
-      } else {
-        item.classList.add('landscape');
-      }
-    });
-  });
-});
-</script>
