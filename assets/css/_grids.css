@@ -79,7 +79,7 @@
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(0);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.7s ease, box-shadow 0.7s ease;
   background-color: var(--secondary);
   width: 100%;
   max-width: 450px;
@@ -141,17 +141,17 @@
 /* MODIFIED: Metadata Overlay - Bottom Left */
 .video-grid__metadata-overlay {
   position: absolute;
-  bottom: 0; /* Back to bottom */
+  bottom: 0;
   left: 0;
   right: 0;
-  padding: 0.75rem 1rem;
+  padding: 0.4rem 0.8rem;
   /* Gradient starts dark at bottom, fades up */
-  background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
   color: var(--text);
   opacity: 1;
   transition: opacity 0.7s ease;
   pointer-events: none;
-  border-bottom-left-radius: 12px; /* Match parent radius */
+  border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
 }
 
@@ -161,9 +161,9 @@
 }
 
 .video-grid__metadata-overlay h2 {
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.1rem;
   font-size: clamp(1.1rem, 1.8vw, 1.2rem);
-  line-height: 1.2;
+  line-height: 0.8;
   font-weight: 400;
   color: var(--text);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
