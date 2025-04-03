@@ -1,31 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
 
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
-<script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><script>
-document.addEventListener('DOMContentLoaded', function() {
-  const images = document.querySelectorAll('.image-grid__image'); 
-
-  images.forEach(img => {
-    img.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (img.requestFullscreen) {
-        img.requestFullscreen();
-      } else if (img.webkitRequestFullscreen) {  
-        img.webkitRequestFullscreen();
-      } else if (img.msRequestFullscreen) {  
-        img.msRequestFullscreen();
+    <script>
+      
+      
+      function initializePageContent() {
+        console.log("Initializing page content..."); 
+        updateActiveNavButton(); 
+        initImageGridMasonry(); 
+        initCinemagraphInteractions(); 
       }
-    });
 
-    img.addEventListener('load', function() {
-      const item = this.closest('.image-item'); 
-      if (this.naturalHeight > this.naturalWidth) {
-        item.classList.add('portrait');
-      } else {
-        item.classList.add('landscape');
+      
+      document.addEventListener('DOMContentLoaded', initializePageContent);
+
+      document.addEventListener('htmx:afterSwap', function(event) {
+        console.log("HTMX swap finished, re-initializing content..."); 
+        
+        initializePageContent();
+      });
+
+      
+      document.addEventListener('htmx:configRequest', function(event) {
+        event.detail.headers['HX-Request'] = 'true';
+      });
+
+      
+      
+      function updateActiveNavButton() {
+        const navButtons = document.querySelectorAll('.nav-button');
+        navButtons.forEach(button => button.classList.remove('active'));
+
+        const currentPath = window.location.pathname;
+        let targetButton = null;
+
+        if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
+          targetButton = document.querySelector('.nav-button[data-nav-section="/"]');
+        } else {
+           
+           navButtons.forEach(button => {
+               const section = button.getAttribute('data-nav-section');
+               if (section && section !== '/' && (currentPath.startsWith(section + '/') || currentPath === section)) {
+                   targetButton = button;
+               }
+           });
+        }
+
+        if (targetButton) {
+          targetButton.classList.add('active');
+          console.log("Active nav set to:", targetButton.textContent); 
+        } else {
+          console.log("No active nav button found for path:", currentPath); 
+        }
       }
-    });
-  });
-});
-</script>
+
+      
+      
+      function initImageGridMasonry() {
+        const imageGrids = document.querySelectorAll('.image-grid');
+        if (!imageGrids.length) {
+            
+            return;
+        }
+
+        if (typeof Masonry !== 'undefined' && typeof imagesLoaded !== 'undefined') {
+          console.log("Initializing Masonry for", imageGrids.length, "grid(s)."); 
+          imageGrids.forEach(grid => {
+            
+            imagesLoaded(grid, function() {
+              new Masonry(grid, {
+                itemSelector: '.image-item', 
+                percentPosition: true,
+                
+                
+              });
+              console.log("Masonry layout applied to grid:", grid); 
+            });
+          });
+        } else {
+          console.warn('Masonry or imagesLoaded script not found. Cannot initialize image grid layout.');
+        }
+      }
+
+      
+      
+      function initCinemagraphInteractions() {
+        const cinemagraphItems = document.querySelectorAll('.cinemagraph-item');
+        if (!cinemagraphItems.length) {
+            
+            return;
+        }
+        console.log("Initializing interactions for", cinemagraphItems.length, "cinemagraph(s)."); 
+
+        cinemagraphItems.forEach(item => {
+          const video = item.querySelector('video');
+          if (!video) return;
+
+          
+          item.addEventListener('mouseenter', () => {
+             const playPromise = video.play();
+             if (playPromise !== undefined) {
+                 playPromise.catch(error => {
+                     
+                     console.log("Video play prevented on hover:", error);
+                 });
+             }
+          });
+
+          
+          item.addEventListener('mouseleave', () => {
+            video.pause();
+            
+          });
+
+          
+          item.addEventListener('click', () => {
+            console.log("Attempting fullscreen for:", video.src); 
+            if (video.requestFullscreen) {
+              video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {  
+              video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {  
+              video.msRequestFullscreen();
+            } else {
+                console.log("Fullscreen API not supported on this video element.");
+            }
+          });
+
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+
+        });
+      }
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="welcome to the laundromat">
+    <title>Images &middot; laundromatzat.com</title>
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    
+     
+      
+      <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js" defer></script>
+      <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js" defer></script>
+    
+
+    
+    
+    
+    
+    <link rel="stylesheet" href="/css/main.min.e59c9eb0bfa0ad7333eeddfee1ca09d938bc7973ce615c3b67af62127dd757e7.css" integrity="sha256-5ZyesL&#43;grXMz7t3&#43;4coJ2Ti8eXPOYVw7Z69iEn3XV&#43;c=">
+
+    <meta property="og:url" content="http://localhost:1313/images/">
+  <meta property="og:site_name" content="laundromatzat.com">
+  <meta property="og:title" content="Images">
+  <meta property="og:description" content="welcome to the laundromat">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="website">
+
+    
+  <meta itemprop="name" content="Images">
+  <meta itemprop="description" content="welcome to the laundromat">
+  <meta itemprop="datePublished" content="2023-05-01T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2023-05-01T00:00:00+00:00">
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Images">
+  <meta name="twitter:description" content="welcome to the laundromat">
+
+
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="site-nav">
+        <div class="nav-content">
+           <a href="/" class="site-title" hx-get="/" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-indicator="#indicator">
+             <img src="/favicon.ico" alt="" class="favicon-image"> 
+             laundromatzat.com
+           </a>
+          <div class="main-nav-container">
+            
+            <a data-nav-section="/" hx-get="/" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">home</a>
+            <a data-nav-section="/videos" hx-get="/videos" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">videos</a>
+            <a data-nav-section="/cinemagraphs" hx-get="/cinemagraphs" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">cinemagraphs</a>
+            <a data-nav-section="/images" hx-get="/images" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button active">images</a>
+            <span class="htmx-indicator" id="indicator">Loading...</span>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="content-area">
+      <div id="content-container">
+        
+        
+<div class="section-header">
+  <h1>Images</h1>
+  <div class="accent-line"></div>
+</div>
+
+
+<div class="image-grid">
+  
+    <div class="image-item">
+      <img src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/images%2Flove.jpg?alt=media&amp;token=sample-token" alt="Love" loading="lazy"> 
+
+      
+      <div class="image-overlay">
+        <h2>Love</h2>
+        <div class="image-metadata">
+          <p class="location">Bernal Heights</p>
+          <p class="date">03/2025</p>
+        </div>
+      </div>
+    </div>
+  
+</div>
+
+
+
+
+      </div>
+    </main>
+
+    <footer>
+       <p>&copy; 2025 laundromatzat.com</p>
+    </footer>
+  </body>
+</html>

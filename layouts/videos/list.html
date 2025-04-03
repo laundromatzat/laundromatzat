@@ -1,24 +1,79 @@
-
+{{/* layouts/videos/list.html */}}
 {{ define "main" }}
 <div class="section-header">
   <h1>Videos</h1>
   <div class="accent-line"></div>
+
+  {{/* --- Sort Controls --- */}}
+  <div class="sort-controls">
+    <span>Sort by:</span>
+    {{/* Get current sort parameter, default to 'date' (newest first) */}}
+    {{ $currentSort := .Page.Param "sort" | default "date" }}
+
+    {{/* Button for Date (Newest First) */}}
+    <a href="{{ .RelPermalink }}?sort=date"
+       hx-get="{{ .RelPermalink }}?sort=date"
+       hx-target="#video-grid-container"
+       hx-select="#video-grid-container"
+       hx-push-url="true"
+       hx-indicator="#indicator"
+       class="sort-button {{ if eq $currentSort "date" }}active{{ end }}">
+       Newest
+    </a>
+
+    {{/* Button for Title (A-Z) */}}
+    <a href="{{ .RelPermalink }}?sort=title"
+       hx-get="{{ .RelPermalink }}?sort=title"
+       hx-target="#video-grid-container"
+       hx-select="#video-grid-container"
+       hx-push-url="true"
+       hx-indicator="#indicator"
+       class="sort-button {{ if eq $currentSort "title" }}active{{ end }}">
+       Title
+    </a>
+  </div>
+  {{/* --- End Sort Controls --- */}}
+
 </div>
 
-<div class="video-grid">
-  {{ range $index, $item := $.Site.Data.videos.videos }}
-    <div class="video-grid__item">
-      <video controls playsinline poster="{{ .thumbnail }}">
-        <source src="{{ .token }}" type="video/mp4">
-      </video>
-      <div class="video-grid__metadata">
-        <h2>{{ .title }}</h2>
-        <div class="video-grid__info-row">
-          <p class="location">{{ .location }}</p>
-          <p class="date">{{ .date }}</p>
+{{/* --- Sorting Logic --- */}}
+{{ $videos := $.Site.Data.videos.videos }}
+{{ $sortedVideos := slice }}
+
+{{ if eq $currentSort "title" }}
+  {{ $sortedVideos = sort $videos "title" "asc" }}
+{{ else }} {{/* Default to date descending (newest first) */}}
+  {{/* Note: Sorting MM/YYYY as strings descending */}}
+  {{ $sortedVideos = sort $videos "date" "desc" }}
+{{ end }}
+{{/* --- End Sorting Logic --- */}}
+
+
+{{/* Add a container ID for HTMX targeting */}}
+<div id="video-grid-container">
+  <div class="video-grid">
+    {{ range $index, $item := $sortedVideos }} {{/* Use the sorted list */}}
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          {{/* Attempt to hide controls via CSS is in _grids.css */}}
+          <video controls playsinline poster="{{ .thumbnail }}">
+            {{ $videoType := "video/mp4" }}
+            {{ if hasSuffix .token ".mov" }}{{ $videoType = "video/quicktime" }}{{ end }}
+            {{/* Add other types if needed */}}
+            <source src="{{ .token }}" type="{{ $videoType }}">
+            Your browser does not support the video tag.
+          </video>
+
+          <div class="video-grid__metadata-overlay">
+            <h2>{{ .title }}</h2>
+            <div class="video-grid__info-row">
+              {{ with .location }}<p class="location">{{ . }}</p>{{ end }}
+              {{ with .date }}<p class="date">{{ . }}</p>{{ end }}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  {{ end }}
+    {{ end }}
+  </div>
 </div>
 {{ end }}

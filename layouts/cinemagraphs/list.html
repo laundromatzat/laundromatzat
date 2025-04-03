@@ -1,33 +1,45 @@
+{{/* layouts/cinemagraphs/list.html */}}
 {{ define "main" }}
 <div class="section-header">
   <h1>Cinemagraphs</h1>
   <div class="accent-line"></div>
 </div>
 
-{{/* Changed class from video-grid to cinemagraph-grid */}}
 <div class="cinemagraph-grid">
   {{ range $index, $item := $.Site.Data.cinemagraphs.cinemagraphs }}
-    {{/* Added cinemagraph-item class */}}
-    <div class="cinemagraph-item">
-      {{/* Removed autoplay, loop, muted. Added preload and poster */}}
-      <video preload="metadata" poster="{{ .thumbnail | default "/images/placeholder.webp" }}" playsinline>
-        <source src="{{ .token }}" type="video/mp4">
-        {{/* Added fallback for M4V if needed, assuming token points to MP4/M4V correctly */}}
+    {{/* Determine if portrait based on thumbnail or video dimensions if available */}}
+    {{/* Placeholder logic: Assume landscape unless specifically known */}}
+    {{ $orientation := "landscape" }}
+    {{/* If you have dimensions in your data, you could use them:
+       {{ if (and .width .height (gt .height .width)) }}
+         {{ $orientation = "portrait" }}
+       {{ end }}
+    */}}
+
+    <div class="cinemagraph-item {{ $orientation }}">
+      {{/* Use 'poster' for initial image, preload="metadata" helps get dimensions */}}
+      <video preload="metadata" poster="{{ .thumbnail | default "/images/placeholder.webp" }}" playsinline loop muted>
+        {{/* Provide correct video source type */}}
+        {{ $videoType := "video/mp4" }}
         {{ if hasSuffix .token ".m4v" }}
-          <source src="{{ .token }}" type="video/x-m4v">
+          {{ $videoType = "video/x-m4v" }}
+        {{ else if hasSuffix .token ".webm" }}
+          {{ $videoType = "video/webm" }}
+         {{ else if hasSuffix .token ".ogg" }}
+           {{ $videoType = "video/ogg" }}
         {{ end }}
+        <source src="{{ .token }}" type="{{ $videoType }}">
         Your browser does not support the video tag.
       </video>
-      {{/* Optional: Overlay for title/info on hover - Corrected Comment Syntax Below */}}
-      {{/*
+
+      {{/* UNCOMMENTED: Overlay for title/info on hover */}}
       <div class="cinemagraph-overlay">
-         <h2>{{ .title }}</h2>
+         <h2>{{ .title | default "Cinemagraph" }}</h2>
          <div class="cinemagraph-metadata">
-           <p class="location">{{ .location }}</p>
-           <p class="date">{{ .date }}</p>
+           {{ with .location }}<p class="location">{{ . }}</p>{{ end }}
+           {{ with .date }}<p class="date">{{ . }}</p>{{ end }}
          </div>
       </div>
-      */}} {{/* Correct closing comment */}}
     </div>
   {{ end }}
 </div>

@@ -34,6 +34,8 @@
       "cf",
       "cinemagraph-grid",
       "cinemagraph-item",
+      "cinemagraph-metadata",
+      "cinemagraph-overlay",
       "content-area",
       "content-container",
       "content-section",
@@ -48,7 +50,12 @@
       "home__title",
       "htmx-indicator",
       "image-container",
+      "image-grid",
+      "image-item",
+      "image-metadata",
+      "image-overlay",
       "justify-around",
+      "landscape",
       "lh-copy",
       "location",
       "main-nav-container",
@@ -70,18 +77,22 @@
       "site-header",
       "site-nav",
       "site-title",
+      "sort-button",
+      "sort-controls",
       "tc-l",
       "video-grid",
       "video-grid__info-row",
       "video-grid__item",
-      "video-grid__metadata",
+      "video-grid__metadata-overlay",
+      "video-grid__thumbnail-wrapper",
       "video-wrapper",
       "w-100",
       "w-30-l"
     ],
     "ids": [
       "content-container",
-      "indicator"
+      "indicator",
+      "video-grid-container"
     ]
   }
 }

@@ -7,60 +7,60 @@ cinemagraphs:
     url: "gs://laundromat-zat.firebasestorage.app/cinemagraphs/bernal-hill-sunrise-cinemagraph.mp4"
     date: "03/2024"
     location: "Bernal Heights"
-    description: "" # Added field
+    description: "" 
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fbernal-hill-sunrise-cinemagraph.mp4?alt=media&token=f98815bd-4c17-4ef3-9455-7b84cec0ef51"
-    thumbnail: "/cinemagraphs/thumbnails/bernal-hill-sunrise.webp" # Updated path
+    thumbnail: "/cinemagraphs/thumbnails/bernal-hill-sunrise-cinemagraph.webp" 
 
   - id: "bernal-hill-sunset-cinemagraph"
     title: "sunset from bernal hill"
     url: "gs://laundromat-zat.firebasestorage.app/cinemagraphs/bernal-hill-sunset-cinemagraph.m4v"
     date: "03/2024"
     location: "Bernal Heights"
-    description: "" # Added field
+    description: "" 
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fbernal-hill-sunset-cinemagraph.m4v?alt=media&token=e3d47bce-80aa-4b5b-b3e2-209c5cc2122b"
-    thumbnail: "/cinemagraphs/thumbnails/bernal-hill-sunset.webp" # Updated path
+    thumbnail: "/cinemagraphs/thumbnails/bernal-hill-sunset-cinemagraph.webp" 
 
   - id: "fireside-meditation-cinemagraph"
     title: "fireside meditation"
     url: "gs://laundromat-zat.firebasestorage.app/cinemagraphs/fireside-meditation-cinemagraph.mp4"
     date: "03/2024"
     location: "The Sea Ranch"
-    description: "" # Added field
+    description: "" 
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ffireside-meditation-cinemagraph.mp4?alt=media&token=cb88ee30-c924-40a6-bc50-3703377abc29"
-    thumbnail: "/cinemagraphs/thumbnails/fireside-meditation.webp" # Updated path
+    thumbnail: "/cinemagraphs/thumbnails/fireside-meditation-cinemagraph.webp" 
 
   - id: "pacifica-coast-cinemagraph"
     title: "pacifica coast"
     url: "gs://laundromat-zat.firebasestorage.app/cinemagraphs/pacifica-coast-cinemagraph.mp4"
     date: ""
     location: "Pacifica"
-    description: "" # Added field
+    description: "" 
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fpacifica-coast-cinemagraph.mp4?alt=media&token=33ab8ba9-1309-4ec5-a60a-0ca9fcaa29b9"
-    thumbnail: "/cinemagraphs/thumbnails/pacifica-coast.webp" # Updated path
+    thumbnail: "/cinemagraphs/thumbnails/pacifica-coast-cinemagraph.webp" 
 
   - id: "tlc01-cinemagraph"
     title: "tlc01"
     url: "gs://laundromat-zat.firebasestorage.app/cinemagraphs/tlc01-cinemagraph.mp4"
     date: ""
     location: "Unknown"
-    description: "" # Added field
+    description: "" 
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftlc01-cinemagraph.mp4?alt=media&token=7b11684e-d143-449a-b3dd-f96861fb61c2"
-    thumbnail: "/cinemagraphs/thumbnails/tlc01.webp" # Updated path
+    thumbnail: "/cinemagraphs/thumbnails/tlc01-cinemagraph.webp" 
 
   - id: "tlc02-cinemagraph"
     title: "tlc02"
     url: "gs://laundromat-zat.firebasestorage.app/cinemagraphs/tlc02_cinemagraph.mp4"
     date: ""
     location: "Unknown"
-    description: "" # Added field
+    description: "" 
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftlc02_cinemagraph.mp4?alt=media&token=e55de0bd-a08e-4f40-adff-dbd5a0c6ac1d"
-    thumbnail: "/cinemagraphs/thumbnails/tlc02.webp" # Updated path
+    thumbnail: "/cinemagraphs/thumbnails/tlc02-cinemagraph.webp" 
 
   - id: "tsr-sunet-cinemagraph"
     title: "tsr sunset"
     url: "gs://laundromat-zat.firebasestorage.app/cinemagraphs/tsr-sunet-cinemagraph.m4v"
     date: ""
     location: "The Sea Ranch"
-    description: "" # Added field
+    description: "" 
     token: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftsr-sunet-cinemagraph.m4v?alt=media&token=6a01df65-976e-4641-b0f9-f89ddce24274"
-    thumbnail: "/cinemagraphs/thumbnails/tsr-sunset.webp" # Updated path
+    thumbnail: "/cinemagraphs/thumbnails/tsr-sunset-cinemagraph.webp" 
