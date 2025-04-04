@@ -3,6 +3,7 @@
 <div class="section-header">
   <h1>cinemagraphs</h1>
   <div class="accent-line"></div>
+  <div class="section-introduction">{{ .Content }}</div>
 </div>
 
 <div class="cinemagraph-grid">
@@ -19,17 +20,6 @@
         <source src="{{ .token }}" type="{{ $videoType }}">
         Your browser does not support the video tag.
       </video>
-
-      {{/* --- NEW: Play Icon Overlay --- */}}
-      <div class="play-icon-overlay">
-        {{/* Simple SVG Play Icon */}}
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 5v14l11-7z"/>
-          <path d="M0 0h24v24H0z" fill="none"/>
-        </svg>
-      </div>
-      {{/* --- End Play Icon Overlay --- */}}
-
 
       <div class="cinemagraph-overlay"> {{/* Metadata overlay remains */}}
          <h2>{{ .title | default "Cinemagraph" }}</h2>

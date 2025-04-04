@@ -6,8 +6,15 @@
     <description>Recent content on laundromatzat.com</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 23 Feb 2024 12:00:00 -0800</lastBuildDate>
+    <lastBuildDate>Fri, 04 Apr 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>about</title>
+      <link>http://localhost:1313/about/</link>
+      <pubDate>Fri, 04 Apr 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/about/</guid>
+      <description>&lt;p&gt;the laundromat is for cleaning clothes.&#xA;the laundromatzat is different.&#xA;i am stephen.&#xA;please enjoy.&#xA;don&amp;rsquo;t be 2 cerious.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>video title</title>
       <link>http://localhost:1313/videos/_template/</link>

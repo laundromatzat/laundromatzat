@@ -45,6 +45,7 @@
             <a data-nav-section="/videos" hx-get="/videos" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button {{ if eq .Section "videos" }}active{{ end }}">videos</a>
             <a data-nav-section="/cinemagraphs" hx-get="/cinemagraphs" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button {{ if eq .Section "cinemagraphs" }}active{{ end }}">cinemagraphs</a>
             <a data-nav-section="/images" hx-get="/images" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button {{ if eq .Section "images" }}active{{ end }}">images</a>
+            <a data-nav-section="/about" hx-get="/about" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button {{ if eq .RelPermalink "/about/" }}active{{ end }}">about</a>
             <span class="htmx-indicator" id="indicator">Loading...</span>
           </div>
         </div>
