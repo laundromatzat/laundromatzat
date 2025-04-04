@@ -1,10 +1,10 @@
 ---
-title: Videos
-description: The Laundromat
+title: videos
+description: my portfolio of music videos
 categories:
-  - ExampleCategory1
-  - ExampleCategory2
+  - category1
+  - category2
 tags:
-  - ExampleTag1
-  - ExampleTag2
+  - tag1
+  - tag2
 ---

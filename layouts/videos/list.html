@@ -1,61 +1,21 @@
 {{/* layouts/videos/list.html */}}
 {{ define "main" }}
 <div class="section-header">
-  <h1>Videos</h1>
+  <h1>videos</h1>
   <div class="accent-line"></div>
-
-  {{/* --- Sort Controls --- */}}
-  <div class="sort-controls">
-    <span>Sort by:</span>
-    {{/* Get current sort parameter, default to 'date' (newest first) */}}
-    {{ $currentSort := .Page.Param "sort" | default "date" }}
-
-    {{/* Button for Date (Newest First) */}}
-    <a href="{{ .RelPermalink }}?sort=date"
-       hx-get="{{ .RelPermalink }}?sort=date"
-       hx-target="#video-grid-container"
-       hx-select="#video-grid-container"
-       hx-push-url="true"
-       hx-indicator="#indicator"
-       class="sort-button {{ if eq $currentSort "date" }}active{{ end }}">
-       Newest
-    </a>
-
-    {{/* Button for Title (A-Z) */}}
-    <a href="{{ .RelPermalink }}?sort=title"
-       hx-get="{{ .RelPermalink }}?sort=title"
-       hx-target="#video-grid-container"
-       hx-select="#video-grid-container"
-       hx-push-url="true"
-       hx-indicator="#indicator"
-       class="sort-button {{ if eq $currentSort "title" }}active{{ end }}">
-       Title
-    </a>
-  </div>
-  {{/* --- End Sort Controls --- */}}
-
+  {{/* Removed non-functional sort controls */}}
 </div>
 
-{{/* --- Sorting Logic --- */}}
+{{/* Removed sorting logic - directly range over original data */}}
 {{ $videos := $.Site.Data.videos.videos }}
-{{ $sortedVideos := slice }}
 
-{{ if eq $currentSort "title" }}
-  {{ $sortedVideos = sort $videos "title" "asc" }}
-{{ else }} {{/* Default to date descending (newest first) */}}
-  {{/* Note: Sorting MM/YYYY as strings descending */}}
-  {{ $sortedVideos = sort $videos "date" "desc" }}
-{{ end }}
-{{/* --- End Sorting Logic --- */}}
-
-
-{{/* Add a container ID for HTMX targeting */}}
+{{/* Container for the grid */}}
 <div id="video-grid-container">
   <div class="video-grid">
-    {{ range $index, $item := $sortedVideos }} {{/* Use the sorted list */}}
+    {{ range $index, $item := $videos }} {{/* Iterate over original data order */}}
       <div class="video-grid__item">
         <div class="video-grid__thumbnail-wrapper">
-          {{/* Attempt to hide controls via CSS is in _grids.css */}}
+          {{/* Controls are visible by default, overlay adjusted in CSS */}}
           <video controls playsinline poster="{{ .thumbnail }}">
             {{ $videoType := "video/mp4" }}
             {{ if hasSuffix .token ".mov" }}{{ $videoType = "video/quicktime" }}{{ end }}
@@ -63,7 +23,6 @@
             <source src="{{ .token }}" type="{{ $videoType }}">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>{{ .title }}</h2>
             <div class="video-grid__info-row">
@@ -74,6 +33,10 @@
         </div>
       </div>
     {{ end }}
-  </div>
-</div>
-{{ end }}
+    {{ if not $videos }}
+      <p>No videos found.</p>
+    {{ end }}
+  </div>{{/* Close video-grid */}}
+</div>{{/* Close video-grid-container */}}
+
+{{ end }} {{/* Close define "main" */}}

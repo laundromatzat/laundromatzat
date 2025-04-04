@@ -6,148 +6,7 @@
 
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
-    <script>
-      
-      
-      function initializePageContent() {
-        console.log("Initializing page content..."); 
-        updateActiveNavButton(); 
-        initImageGridMasonry(); 
-        initCinemagraphInteractions(); 
-      }
 
-      
-      document.addEventListener('DOMContentLoaded', initializePageContent);
-
-      document.addEventListener('htmx:afterSwap', function(event) {
-        console.log("HTMX swap finished, re-initializing content..."); 
-        
-        initializePageContent();
-      });
-
-      
-      document.addEventListener('htmx:configRequest', function(event) {
-        event.detail.headers['HX-Request'] = 'true';
-      });
-
-      
-      
-      function updateActiveNavButton() {
-        const navButtons = document.querySelectorAll('.nav-button');
-        navButtons.forEach(button => button.classList.remove('active'));
-
-        const currentPath = window.location.pathname;
-        let targetButton = null;
-
-        if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
-          targetButton = document.querySelector('.nav-button[data-nav-section="/"]');
-        } else {
-           
-           navButtons.forEach(button => {
-               const section = button.getAttribute('data-nav-section');
-               if (section && section !== '/' && (currentPath.startsWith(section + '/') || currentPath === section)) {
-                   targetButton = button;
-               }
-           });
-        }
-
-        if (targetButton) {
-          targetButton.classList.add('active');
-          console.log("Active nav set to:", targetButton.textContent); 
-        } else {
-          console.log("No active nav button found for path:", currentPath); 
-        }
-      }
-
-      
-      
-      function initImageGridMasonry() {
-        const imageGrids = document.querySelectorAll('.image-grid');
-        if (!imageGrids.length) {
-            
-            return;
-        }
-
-        if (typeof Masonry !== 'undefined' && typeof imagesLoaded !== 'undefined') {
-          console.log("Initializing Masonry for", imageGrids.length, "grid(s)."); 
-          imageGrids.forEach(grid => {
-            
-            imagesLoaded(grid, function() {
-              new Masonry(grid, {
-                itemSelector: '.image-item', 
-                percentPosition: true,
-                
-                
-              });
-              console.log("Masonry layout applied to grid:", grid); 
-            });
-          });
-        } else {
-          console.warn('Masonry or imagesLoaded script not found. Cannot initialize image grid layout.');
-        }
-      }
-
-      
-      
-      function initCinemagraphInteractions() {
-        const cinemagraphItems = document.querySelectorAll('.cinemagraph-item');
-        if (!cinemagraphItems.length) {
-            
-            return;
-        }
-        console.log("Initializing interactions for", cinemagraphItems.length, "cinemagraph(s)."); 
-
-        cinemagraphItems.forEach(item => {
-          const video = item.querySelector('video');
-          if (!video) return;
-
-          
-          item.addEventListener('mouseenter', () => {
-             const playPromise = video.play();
-             if (playPromise !== undefined) {
-                 playPromise.catch(error => {
-                     
-                     console.log("Video play prevented on hover:", error);
-                 });
-             }
-          });
-
-          
-          item.addEventListener('mouseleave', () => {
-            video.pause();
-            
-          });
-
-          
-          item.addEventListener('click', () => {
-            console.log("Attempting fullscreen for:", video.src); 
-            if (video.requestFullscreen) {
-              video.requestFullscreen();
-            } else if (video.webkitRequestFullscreen) {  
-              video.webkitRequestFullscreen();
-            } else if (video.msRequestFullscreen) {  
-              video.msRequestFullscreen();
-            } else {
-                console.log("Fullscreen API not supported on this video element.");
-            }
-          });
-
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-
-        });
-      }
-    </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="welcome to the laundromat">
@@ -162,7 +21,7 @@
     
     
     
-    <link rel="stylesheet" href="/css/main.min.bf1ffe74d60d220fda8d6acb319b2e1b06299dd1e76ee00ca416ec6e45dcb414.css" integrity="sha256-vx/&#43;dNYNIg/ajWrLMZsuGwYpndHnbuAMpBbsbkXctBQ=">
+    <link rel="stylesheet" href="/css/main.min.8fbcaca0918e5fe68439863da723a2ab1c39a5ca0b38fe13ed5912648b459e2c.css" integrity="sha256-j7ysoJGOX&#43;aEOYY9pyOiqxw5pcoLOP4T7VkSZItFniw=">
 
     <meta property="og:url" content="http://localhost:1313/">
   <meta property="og:site_name" content="laundromatzat.com">
@@ -211,7 +70,7 @@
   <div class="video-wrapper"> 
     <div class="image-container">
       
-      <img class="home__content" src="/videos/deb-breathe-transparent.webp" alt="Stylized abstract transparent pulsating human figure">
+      <img class="home__content" src="/videos/deb-breathe-transparent.webp" alt="Stylized abstract transparent pulsating human figure" loading="lazy"> 
     </div>
   </div>
   <h1 class="home__title">welcome to the laundromat</h1>
@@ -223,5 +82,45 @@
     <footer>
        <p>&copy; 2025 laundromatzat.com</p>
     </footer>
+
+    
+
+    
+    
+    
+    
+      <script src="/js/main.f2979a93a325fecf9605263bd141398a311c8e23388ed7dcff74f92f7e632866.js" integrity="sha256-8peak6Ml/s&#43;WBSY70UE5ijEcjiM4jtfc/3T5L35jKGY=" defer></script>
+    
+
+    
+    
+
+    
+    <script>
+      
+      document.addEventListener('DOMContentLoaded', () => {
+          if (typeof initializePageContent === 'function') {
+              initializePageContent();
+          } else {
+              console.error('initializePageContent function not found. Check main.js loading.');
+          }
+      });
+
+      document.addEventListener('htmx:afterSwap', (event) => {
+        console.log("HTMX swap finished, re-initializing content..."); 
+        if (typeof initializePageContent === 'function') {
+            
+            setTimeout(initializePageContent, 50);
+        } else {
+            console.error('initializePageContent function not found after HTMX swap.');
+        }
+      });
+
+      
+      document.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['HX-Request'] = 'true';
+      });
+    </script>
+
   </body>
 </html>

@@ -1,9 +1,10 @@
+{{/* layouts/index.html */}}
 {{ define "main" }}
 <div class="home__container">
   <div class="video-wrapper"> {{/* Keep wrapper class for structure */}}
     <div class="image-container">
       {{/* More descriptive alt text */}}
-      <img class="home__content" src="/videos/deb-breathe-transparent.webp" alt="Stylized abstract transparent pulsating human figure">
+      <img class="home__content" src="/videos/deb-breathe-transparent.webp" alt="Stylized abstract transparent pulsating human figure" loading="lazy"> {{/* Added loading=lazy */}}
     </div>
   </div>
   <h1 class="home__title">welcome to the laundromat</h1>

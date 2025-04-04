@@ -5,152 +5,11 @@
 
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
-    <script>
-      
-      
-      function initializePageContent() {
-        console.log("Initializing page content..."); 
-        updateActiveNavButton(); 
-        initImageGridMasonry(); 
-        initCinemagraphInteractions(); 
-      }
 
-      
-      document.addEventListener('DOMContentLoaded', initializePageContent);
-
-      document.addEventListener('htmx:afterSwap', function(event) {
-        console.log("HTMX swap finished, re-initializing content..."); 
-        
-        initializePageContent();
-      });
-
-      
-      document.addEventListener('htmx:configRequest', function(event) {
-        event.detail.headers['HX-Request'] = 'true';
-      });
-
-      
-      
-      function updateActiveNavButton() {
-        const navButtons = document.querySelectorAll('.nav-button');
-        navButtons.forEach(button => button.classList.remove('active'));
-
-        const currentPath = window.location.pathname;
-        let targetButton = null;
-
-        if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
-          targetButton = document.querySelector('.nav-button[data-nav-section="/"]');
-        } else {
-           
-           navButtons.forEach(button => {
-               const section = button.getAttribute('data-nav-section');
-               if (section && section !== '/' && (currentPath.startsWith(section + '/') || currentPath === section)) {
-                   targetButton = button;
-               }
-           });
-        }
-
-        if (targetButton) {
-          targetButton.classList.add('active');
-          console.log("Active nav set to:", targetButton.textContent); 
-        } else {
-          console.log("No active nav button found for path:", currentPath); 
-        }
-      }
-
-      
-      
-      function initImageGridMasonry() {
-        const imageGrids = document.querySelectorAll('.image-grid');
-        if (!imageGrids.length) {
-            
-            return;
-        }
-
-        if (typeof Masonry !== 'undefined' && typeof imagesLoaded !== 'undefined') {
-          console.log("Initializing Masonry for", imageGrids.length, "grid(s)."); 
-          imageGrids.forEach(grid => {
-            
-            imagesLoaded(grid, function() {
-              new Masonry(grid, {
-                itemSelector: '.image-item', 
-                percentPosition: true,
-                
-                
-              });
-              console.log("Masonry layout applied to grid:", grid); 
-            });
-          });
-        } else {
-          console.warn('Masonry or imagesLoaded script not found. Cannot initialize image grid layout.');
-        }
-      }
-
-      
-      
-      function initCinemagraphInteractions() {
-        const cinemagraphItems = document.querySelectorAll('.cinemagraph-item');
-        if (!cinemagraphItems.length) {
-            
-            return;
-        }
-        console.log("Initializing interactions for", cinemagraphItems.length, "cinemagraph(s)."); 
-
-        cinemagraphItems.forEach(item => {
-          const video = item.querySelector('video');
-          if (!video) return;
-
-          
-          item.addEventListener('mouseenter', () => {
-             const playPromise = video.play();
-             if (playPromise !== undefined) {
-                 playPromise.catch(error => {
-                     
-                     console.log("Video play prevented on hover:", error);
-                 });
-             }
-          });
-
-          
-          item.addEventListener('mouseleave', () => {
-            video.pause();
-            
-          });
-
-          
-          item.addEventListener('click', () => {
-            console.log("Attempting fullscreen for:", video.src); 
-            if (video.requestFullscreen) {
-              video.requestFullscreen();
-            } else if (video.webkitRequestFullscreen) {  
-              video.webkitRequestFullscreen();
-            } else if (video.msRequestFullscreen) {  
-              video.msRequestFullscreen();
-            } else {
-                console.log("Fullscreen API not supported on this video element.");
-            }
-          });
-
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-
-        });
-      }
-    </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="welcome to the laundromat">
-    <title>Images &middot; laundromatzat.com</title>
+    <title>images &middot; laundromatzat.com</title>
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
@@ -165,23 +24,23 @@
     
     
     
-    <link rel="stylesheet" href="/css/main.min.e59c9eb0bfa0ad7333eeddfee1ca09d938bc7973ce615c3b67af62127dd757e7.css" integrity="sha256-5ZyesL&#43;grXMz7t3&#43;4coJ2Ti8eXPOYVw7Z69iEn3XV&#43;c=">
+    <link rel="stylesheet" href="/css/main.min.8fbcaca0918e5fe68439863da723a2ab1c39a5ca0b38fe13ed5912648b459e2c.css" integrity="sha256-j7ysoJGOX&#43;aEOYY9pyOiqxw5pcoLOP4T7VkSZItFniw=">
 
     <meta property="og:url" content="http://localhost:1313/images/">
   <meta property="og:site_name" content="laundromatzat.com">
-  <meta property="og:title" content="Images">
+  <meta property="og:title" content="images">
   <meta property="og:description" content="welcome to the laundromat">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 
     
-  <meta itemprop="name" content="Images">
+  <meta itemprop="name" content="images">
   <meta itemprop="description" content="welcome to the laundromat">
   <meta itemprop="datePublished" content="2023-05-01T00:00:00+00:00">
   <meta itemprop="dateModified" content="2023-05-01T00:00:00+00:00">
     
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Images">
+  <meta name="twitter:title" content="images">
   <meta name="twitter:description" content="welcome to the laundromat">
 
 
@@ -211,7 +70,7 @@
         
         
 <div class="section-header">
-  <h1>Images</h1>
+  <h1>images</h1>
   <div class="accent-line"></div>
 </div>
 
@@ -242,5 +101,48 @@
     <footer>
        <p>&copy; 2025 laundromatzat.com</p>
     </footer>
+
+    
+
+    
+    
+    
+    
+      <script src="/js/main.f2979a93a325fecf9605263bd141398a311c8e23388ed7dcff74f92f7e632866.js" integrity="sha256-8peak6Ml/s&#43;WBSY70UE5ijEcjiM4jtfc/3T5L35jKGY=" defer></script>
+    
+
+    
+     
+      <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js" defer></script>
+      <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js" defer></script>
+    
+
+    
+    <script>
+      
+      document.addEventListener('DOMContentLoaded', () => {
+          if (typeof initializePageContent === 'function') {
+              initializePageContent();
+          } else {
+              console.error('initializePageContent function not found. Check main.js loading.');
+          }
+      });
+
+      document.addEventListener('htmx:afterSwap', (event) => {
+        console.log("HTMX swap finished, re-initializing content..."); 
+        if (typeof initializePageContent === 'function') {
+            
+            setTimeout(initializePageContent, 50);
+        } else {
+            console.error('initializePageContent function not found after HTMX swap.');
+        }
+      });
+
+      
+      document.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['HX-Request'] = 'true';
+      });
+    </script>
+
   </body>
 </html>
