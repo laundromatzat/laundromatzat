@@ -5,19 +5,19 @@
     <loc>http://localhost:1313/categories/</loc>
     <lastmod>2024-02-23T12:00:00-08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/examplecategory1/</loc>
+    <loc>http://localhost:1313/categories/category1/</loc>
     <lastmod>2024-02-23T12:00:00-08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/examplecategory2/</loc>
-    <lastmod>2024-02-23T12:00:00-08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/exampletag1/</loc>
-    <lastmod>2024-02-23T12:00:00-08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/exampletag2/</loc>
+    <loc>http://localhost:1313/categories/category2/</loc>
     <lastmod>2024-02-23T12:00:00-08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/</loc>
+    <lastmod>2024-02-23T12:00:00-08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/tag1/</loc>
+    <lastmod>2024-02-23T12:00:00-08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/tag2/</loc>
     <lastmod>2024-02-23T12:00:00-08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/</loc>

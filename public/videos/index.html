@@ -5,152 +5,11 @@
 
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
-    <script>
-      
-      
-      function initializePageContent() {
-        console.log("Initializing page content..."); 
-        updateActiveNavButton(); 
-        initImageGridMasonry(); 
-        initCinemagraphInteractions(); 
-      }
 
-      
-      document.addEventListener('DOMContentLoaded', initializePageContent);
-
-      document.addEventListener('htmx:afterSwap', function(event) {
-        console.log("HTMX swap finished, re-initializing content..."); 
-        
-        initializePageContent();
-      });
-
-      
-      document.addEventListener('htmx:configRequest', function(event) {
-        event.detail.headers['HX-Request'] = 'true';
-      });
-
-      
-      
-      function updateActiveNavButton() {
-        const navButtons = document.querySelectorAll('.nav-button');
-        navButtons.forEach(button => button.classList.remove('active'));
-
-        const currentPath = window.location.pathname;
-        let targetButton = null;
-
-        if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
-          targetButton = document.querySelector('.nav-button[data-nav-section="/"]');
-        } else {
-           
-           navButtons.forEach(button => {
-               const section = button.getAttribute('data-nav-section');
-               if (section && section !== '/' && (currentPath.startsWith(section + '/') || currentPath === section)) {
-                   targetButton = button;
-               }
-           });
-        }
-
-        if (targetButton) {
-          targetButton.classList.add('active');
-          console.log("Active nav set to:", targetButton.textContent); 
-        } else {
-          console.log("No active nav button found for path:", currentPath); 
-        }
-      }
-
-      
-      
-      function initImageGridMasonry() {
-        const imageGrids = document.querySelectorAll('.image-grid');
-        if (!imageGrids.length) {
-            
-            return;
-        }
-
-        if (typeof Masonry !== 'undefined' && typeof imagesLoaded !== 'undefined') {
-          console.log("Initializing Masonry for", imageGrids.length, "grid(s)."); 
-          imageGrids.forEach(grid => {
-            
-            imagesLoaded(grid, function() {
-              new Masonry(grid, {
-                itemSelector: '.image-item', 
-                percentPosition: true,
-                
-                
-              });
-              console.log("Masonry layout applied to grid:", grid); 
-            });
-          });
-        } else {
-          console.warn('Masonry or imagesLoaded script not found. Cannot initialize image grid layout.');
-        }
-      }
-
-      
-      
-      function initCinemagraphInteractions() {
-        const cinemagraphItems = document.querySelectorAll('.cinemagraph-item');
-        if (!cinemagraphItems.length) {
-            
-            return;
-        }
-        console.log("Initializing interactions for", cinemagraphItems.length, "cinemagraph(s)."); 
-
-        cinemagraphItems.forEach(item => {
-          const video = item.querySelector('video');
-          if (!video) return;
-
-          
-          item.addEventListener('mouseenter', () => {
-             const playPromise = video.play();
-             if (playPromise !== undefined) {
-                 playPromise.catch(error => {
-                     
-                     console.log("Video play prevented on hover:", error);
-                 });
-             }
-          });
-
-          
-          item.addEventListener('mouseleave', () => {
-            video.pause();
-            
-          });
-
-          
-          item.addEventListener('click', () => {
-            console.log("Attempting fullscreen for:", video.src); 
-            if (video.requestFullscreen) {
-              video.requestFullscreen();
-            } else if (video.webkitRequestFullscreen) {  
-              video.webkitRequestFullscreen();
-            } else if (video.msRequestFullscreen) {  
-              video.msRequestFullscreen();
-            } else {
-                console.log("Fullscreen API not supported on this video element.");
-            }
-          });
-
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-
-        });
-      }
-    </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="welcome to the laundromat">
-    <title>Videos &middot; laundromatzat.com</title>
+    <title>videos &middot; laundromatzat.com</title>
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
@@ -161,25 +20,25 @@
     
     
     
-    <link rel="stylesheet" href="/css/main.min.bf1ffe74d60d220fda8d6acb319b2e1b06299dd1e76ee00ca416ec6e45dcb414.css" integrity="sha256-vx/&#43;dNYNIg/ajWrLMZsuGwYpndHnbuAMpBbsbkXctBQ=">
+    <link rel="stylesheet" href="/css/main.min.8fbcaca0918e5fe68439863da723a2ab1c39a5ca0b38fe13ed5912648b459e2c.css" integrity="sha256-j7ysoJGOX&#43;aEOYY9pyOiqxw5pcoLOP4T7VkSZItFniw=">
 
     <meta property="og:url" content="http://localhost:1313/videos/">
   <meta property="og:site_name" content="laundromatzat.com">
-  <meta property="og:title" content="Videos">
-  <meta property="og:description" content="The Laundromat">
+  <meta property="og:title" content="videos">
+  <meta property="og:description" content="my portfolio of music videos">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 
     
-  <meta itemprop="name" content="Videos">
-  <meta itemprop="description" content="The Laundromat">
+  <meta itemprop="name" content="videos">
+  <meta itemprop="description" content="my portfolio of music videos">
   <meta itemprop="datePublished" content="2024-02-23T12:00:00-08:00">
   <meta itemprop="dateModified" content="2024-02-23T12:00:00-08:00">
-  <meta itemprop="keywords" content="ExampleTag1,ExampleTag2">
+  <meta itemprop="keywords" content="Tag1,Tag2">
     
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Videos">
-  <meta name="twitter:description" content="The Laundromat">
+  <meta name="twitter:title" content="videos">
+  <meta name="twitter:description" content="my portfolio of music videos">
 
 
   </head>
@@ -208,48 +67,10 @@
         
         
 <div class="section-header">
-  <h1>Videos</h1>
+  <h1>videos</h1>
   <div class="accent-line"></div>
-
   
-  <div class="sort-controls">
-    <span>Sort by:</span>
-    
-    
-
-    
-    <a href="/videos/?sort=date"
-       hx-get="/videos/?sort=date"
-       hx-target="#video-grid-container"
-       hx-select="#video-grid-container"
-       hx-push-url="true"
-       hx-indicator="#indicator"
-       class="sort-button active">
-       Newest
-    </a>
-
-    
-    <a href="/videos/?sort=title"
-       hx-get="/videos/?sort=title"
-       hx-target="#video-grid-container"
-       hx-select="#video-grid-container"
-       hx-push-url="true"
-       hx-indicator="#indicator"
-       class="sort-button ">
-       Title
-    </a>
-  </div>
-  
-
 </div>
-
-
-
-
-
- 
-  
-  
 
 
 
@@ -268,54 +89,11 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fthe-sound-of-silence.m4v?alt=media&amp;token=d696d19e-08e9-49c9-b5b6-4880c07e2b33" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>The Sound of Silence</h2>
             <div class="video-grid__info-row">
               <p class="location">Oregon Coast</p>
               <p class="date">11/2024</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/shallow.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fshallow.m4v?alt=media&amp;token=6fe8ec05-fa44-4cd6-ab91-0e2277270c4f" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Shallow</h2>
-            <div class="video-grid__info-row">
-              <p class="location">Sedona &amp; Grand Canyon, AZ</p>
-              <p class="date">11/2019</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/drift-away.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fdrift-away.m4v?alt=media&amp;token=0f74b88b-6a93-4c85-ab97-7ae63b9e3d55" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Drift Away</h2>
-            <div class="video-grid__info-row">
-              <p class="location">The Catskills</p>
-              <p class="date">10/2016</p>
             </div>
           </div>
         </div>
@@ -331,96 +109,11 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fi-could-be-the-one.m4v?alt=media&amp;token=2f2cd5bb-5416-46a4-8c50-4d9a8db2592f" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>I Could Be the One</h2>
             <div class="video-grid__info-row">
               <p class="location">Puerto Vallarta</p>
               <p class="date">09/2024</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/flightless-bird-american-mouth.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fflightless-bird-american-mouth.m4v?alt=media&amp;token=7a3989af-86ee-4cd7-817e-4447bc4b6b95" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Flightless Bird, American Mouth</h2>
-            <div class="video-grid__info-row">
-              <p class="location">Seattle &amp; Vancouver</p>
-              <p class="date">09/2021</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/fast-car.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ffast-car.mov?alt=media&amp;token=ce20c5b2-47d0-4c79-9745-1c0a18e4ddf3" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Fast Car</h2>
-            <div class="video-grid__info-row">
-              <p class="location">Crater Lake &amp; Redwoods Nat&#39;l Park</p>
-              <p class="date">09/2013</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/rivers-and-roads.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Frivers-and-roads.m4v?alt=media&amp;token=112d58ad-73d9-4f26-a026-4e80b332f4a7" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Rivers and Roads</h2>
-            <div class="video-grid__info-row">
-              <p class="location">Grand Teton &amp; Yellowstone Nat&#39;l Parks</p>
-              <p class="date">08/2020</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/fly-away-home.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ffly-away-home.m4v?alt=media&amp;token=1e591ef8-d57d-4fc6-b7af-bf8b8109ddaf" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Fly Away Home</h2>
-            <div class="video-grid__info-row">
-              <p class="location">Banff Nat&#39;l Park</p>
-              <p class="date">08/2016</p>
             </div>
           </div>
         </div>
@@ -436,12 +129,51 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fsecond-hand-news.m4v?alt=media&amp;token=d5adb845-b645-40f6-9e28-7485248ce585" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>Second Hand News</h2>
             <div class="video-grid__info-row">
               <p class="location">Big Island, Hawai&#39;i</p>
               <p class="date">07/2024</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/no-apagues-la-luz.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fno-apagues-la-luz.m4v?alt=media&amp;token=077d6a20-a44b-4c95-9f30-f43d9895d22e" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>No Apagues La Luz</h2>
+            <div class="video-grid__info-row">
+              <p class="location">Madrid</p>
+              <p class="date">04/2024</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/winter-song.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ftransatlanticism.mp4?alt=media&amp;token=e0e342ec-2204-4a70-bad7-5cff8afc694f" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Winter Song</h2>
+            <div class="video-grid__info-row">
+              <p class="location">Bear Valley</p>
+              <p class="date">01/2024</p>
             </div>
           </div>
         </div>
@@ -457,12 +189,31 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fboulevard-of-broken-dreams.m4v?alt=media&amp;token=09fcb743-9905-4092-ac93-b4d8003e02ca" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>Boulevard of Broken Dreams</h2>
             <div class="video-grid__info-row">
               <p class="location">Alaska</p>
               <p class="date">07/2023</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/into-the-west.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Finto-the-west.m4v?alt=media&amp;token=b3063b82-2c30-4eaa-85f4-43a342204771" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Into the West</h2>
+            <div class="video-grid__info-row">
+              <p class="location">Big Island, Hawai&#39;i</p>
+              <p class="date">02/2023</p>
             </div>
           </div>
         </div>
@@ -478,12 +229,111 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fojai.m4v?alt=media&amp;token=977f3420-5222-48e6-904e-efa4c7f63825" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>Baba O&#39;Riley</h2>
             <div class="video-grid__info-row">
               <p class="location">Maui, Hawai&#39;i</p>
               <p class="date">06/2022</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/ojai.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fojai.m4v?alt=media&amp;token=977f3420-5222-48e6-904e-efa4c7f63825" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Ojai</h2>
+            <div class="video-grid__info-row">
+              <p class="location">Channel Islands &amp; Ojai</p>
+              <p class="date">03/2022</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/flightless-bird-american-mouth.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fflightless-bird-american-mouth.m4v?alt=media&amp;token=7a3989af-86ee-4cd7-817e-4447bc4b6b95" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Flightless Bird, American Mouth</h2>
+            <div class="video-grid__info-row">
+              <p class="location">Seattle &amp; Vancouver</p>
+              <p class="date">09/2021</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/cowboy-take-me-away.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fcowboy-take-me-away.m4v?alt=media&amp;token=626a988a-285d-4715-9290-0c066d4add57" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Cowboy Take Me Away</h2>
+            <div class="video-grid__info-row">
+              <p class="location">New Mexico</p>
+              <p class="date">04/2021</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/rivers-and-roads.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Frivers-and-roads.m4v?alt=media&amp;token=112d58ad-73d9-4f26-a026-4e80b332f4a7" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Rivers and Roads</h2>
+            <div class="video-grid__info-row">
+              <p class="location">Grand Teton &amp; Yellowstone Nat&#39;l Parks</p>
+              <p class="date">08/2020</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/shallow.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fshallow.m4v?alt=media&amp;token=6fe8ec05-fa44-4cd6-ab91-0e2277270c4f" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Shallow</h2>
+            <div class="video-grid__info-row">
+              <p class="location">Sedona &amp; Grand Canyon, AZ</p>
+              <p class="date">11/2019</p>
             </div>
           </div>
         </div>
@@ -499,12 +349,51 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ftiny-dancer.m4v?alt=media&amp;token=69e08f35-08f9-44d8-acb2-434eede6285c" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>Tiny Dancer</h2>
             <div class="video-grid__info-row">
               <p class="location">Maui, Hawai&#39;i</p>
               <p class="date">06/2019</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/drift-away.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fdrift-away.m4v?alt=media&amp;token=0f74b88b-6a93-4c85-ab97-7ae63b9e3d55" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Drift Away</h2>
+            <div class="video-grid__info-row">
+              <p class="location">The Catskills</p>
+              <p class="date">10/2016</p>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+      <div class="video-grid__item">
+        <div class="video-grid__thumbnail-wrapper">
+          
+          <video controls playsinline poster="/videos/images/thumbnails/fly-away-home.webp">
+            
+            
+            
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ffly-away-home.m4v?alt=media&amp;token=1e591ef8-d57d-4fc6-b7af-bf8b8109ddaf" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-grid__metadata-overlay">
+            <h2>Fly Away Home</h2>
+            <div class="video-grid__info-row">
+              <p class="location">Banff Nat&#39;l Park</p>
+              <p class="date">08/2016</p>
             </div>
           </div>
         </div>
@@ -520,7 +409,6 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ftransatlanticism.mp4?alt=media&amp;token=e0e342ec-2204-4a70-bad7-5cff8afc694f" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>Transatlanticism</h2>
             <div class="video-grid__info-row">
@@ -541,7 +429,6 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fone-of-us.mp4?alt=media&amp;token=ec4c9b7a-9d2e-4691-9b70-4873f2608f39" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>One of Us</h2>
             <div class="video-grid__info-row">
@@ -555,82 +442,18 @@
       <div class="video-grid__item">
         <div class="video-grid__thumbnail-wrapper">
           
-          <video controls playsinline poster="/videos/images/thumbnails/impossible.webp">
+          <video controls playsinline poster="/videos/images/thumbnails/fast-car.webp">
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fimpossible.mov?alt=media&amp;token=a3b132dc-0770-4000-8105-fac319353f2a" type="video/mp4">
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ffast-car.mov?alt=media&amp;token=ce20c5b2-47d0-4c79-9745-1c0a18e4ddf3" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
-            <h2>Impossible</h2>
+            <h2>Fast Car</h2>
             <div class="video-grid__info-row">
-              <p class="location">Oak Creek Apartments</p>
-              <p class="date">05/2012</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/no-apagues-la-luz.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fno-apagues-la-luz.m4v?alt=media&amp;token=077d6a20-a44b-4c95-9f30-f43d9895d22e" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>No Apagues La Luz</h2>
-            <div class="video-grid__info-row">
-              <p class="location">Madrid</p>
-              <p class="date">04/2024</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/cowboy-take-me-away.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fcowboy-take-me-away.m4v?alt=media&amp;token=626a988a-285d-4715-9290-0c066d4add57" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Cowboy Take Me Away</h2>
-            <div class="video-grid__info-row">
-              <p class="location">New Mexico</p>
-              <p class="date">04/2021</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/ojai.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fojai.m4v?alt=media&amp;token=977f3420-5222-48e6-904e-efa4c7f63825" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Ojai</h2>
-            <div class="video-grid__info-row">
-              <p class="location">Channel Islands &amp; Ojai</p>
-              <p class="date">03/2022</p>
+              <p class="location">Crater Lake &amp; Redwoods Nat&#39;l Park</p>
+              <p class="date">09/2013</p>
             </div>
           </div>
         </div>
@@ -646,7 +469,6 @@
             <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fyou-were-meant-for-me.m4v?alt=media&amp;token=1dcfee98-a536-4d69-b1ae-f0c1ef7349e5" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
             <h2>You Were Meant for Me</h2>
             <div class="video-grid__info-row">
@@ -660,47 +482,27 @@
       <div class="video-grid__item">
         <div class="video-grid__thumbnail-wrapper">
           
-          <video controls playsinline poster="/videos/images/thumbnails/into-the-west.webp">
+          <video controls playsinline poster="/videos/images/thumbnails/impossible.webp">
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Finto-the-west.m4v?alt=media&amp;token=b3063b82-2c30-4eaa-85f4-43a342204771" type="video/mp4">
+            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fimpossible.mov?alt=media&amp;token=a3b132dc-0770-4000-8105-fac319353f2a" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
           <div class="video-grid__metadata-overlay">
-            <h2>Into the West</h2>
+            <h2>Impossible</h2>
             <div class="video-grid__info-row">
-              <p class="location">Big Island, Hawai&#39;i</p>
-              <p class="date">02/2023</p>
-            </div>
-          </div>
-        </div>
-      </div>
-     
-      <div class="video-grid__item">
-        <div class="video-grid__thumbnail-wrapper">
-          
-          <video controls playsinline poster="/videos/images/thumbnails/winter-song.webp">
-            
-            
-            
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ftransatlanticism.mp4?alt=media&amp;token=e0e342ec-2204-4a70-bad7-5cff8afc694f" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-
-          <div class="video-grid__metadata-overlay">
-            <h2>Winter Song</h2>
-            <div class="video-grid__info-row">
-              <p class="location">Bear Valley</p>
-              <p class="date">01/2024</p>
+              <p class="location">Oak Creek Apartments</p>
+              <p class="date">05/2012</p>
             </div>
           </div>
         </div>
       </div>
     
+    
   </div>
 </div>
+
 
       </div>
     </main>
@@ -708,5 +510,45 @@
     <footer>
        <p>&copy; 2025 laundromatzat.com</p>
     </footer>
+
+    
+
+    
+    
+    
+    
+      <script src="/js/main.f2979a93a325fecf9605263bd141398a311c8e23388ed7dcff74f92f7e632866.js" integrity="sha256-8peak6Ml/s&#43;WBSY70UE5ijEcjiM4jtfc/3T5L35jKGY=" defer></script>
+    
+
+    
+    
+
+    
+    <script>
+      
+      document.addEventListener('DOMContentLoaded', () => {
+          if (typeof initializePageContent === 'function') {
+              initializePageContent();
+          } else {
+              console.error('initializePageContent function not found. Check main.js loading.');
+          }
+      });
+
+      document.addEventListener('htmx:afterSwap', (event) => {
+        console.log("HTMX swap finished, re-initializing content..."); 
+        if (typeof initializePageContent === 'function') {
+            
+            setTimeout(initializePageContent, 50);
+        } else {
+            console.error('initializePageContent function not found after HTMX swap.');
+        }
+      });
+
+      
+      document.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['HX-Request'] = 'true';
+      });
+    </script>
+
   </body>
 </html>

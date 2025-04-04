@@ -9,17 +9,17 @@
     <lastBuildDate>Fri, 23 Feb 2024 12:00:00 -0800</lastBuildDate>
     <atom:link href="http://localhost:1313/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>ExampleCategory1</title>
-      <link>http://localhost:1313/categories/examplecategory1/</link>
+      <title>Category1</title>
+      <link>http://localhost:1313/categories/category1/</link>
       <pubDate>Fri, 23 Feb 2024 12:00:00 -0800</pubDate>
-      <guid>http://localhost:1313/categories/examplecategory1/</guid>
+      <guid>http://localhost:1313/categories/category1/</guid>
       <description></description>
     </item>
     <item>
-      <title>ExampleCategory2</title>
-      <link>http://localhost:1313/categories/examplecategory2/</link>
+      <title>Category2</title>
+      <link>http://localhost:1313/categories/category2/</link>
       <pubDate>Fri, 23 Feb 2024 12:00:00 -0800</pubDate>
-      <guid>http://localhost:1313/categories/examplecategory2/</guid>
+      <guid>http://localhost:1313/categories/category2/</guid>
       <description></description>
     </item>
   </channel>

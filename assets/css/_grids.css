@@ -144,12 +144,12 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 0.4rem 0.8rem;
-  /* Gradient starts dark at bottom, fades up */
-  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
+  padding: 0.75rem 1rem;
+  /* ADJUSTED: Slightly stronger gradient for contrast */
+  background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.65) 70%, transparent 100%);
   color: var(--text);
   opacity: 1;
-  transition: opacity 0.7s ease;
+  transition: opacity 0.8s ease;
   pointer-events: none;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
@@ -241,19 +241,20 @@
 }
 
 /* MODIFIED: Cinemagraph Overlay - Bottom Left */
+/* Cinemagraph Metadata Overlay - Bottom Left */
 .cinemagraph-overlay {
   position: absolute;
-  bottom: 0; /* Back to bottom */
+  bottom: 0;
   left: 0;
   right: 0;
   padding: 0.75rem 1rem;
-  /* Gradient starts dark at bottom, fades up */
-  background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+  /* ADJUSTED: Slightly stronger gradient for contrast */
+  background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.65) 70%, transparent 100%);
   color: var(--text);
   opacity: 1;
-  transition: opacity 0.7s ease;
+  transition: opacity 0.8s ease;
   pointer-events: none;
-  border-bottom-left-radius: 10px; /* Match parent radius */
+  border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
 }
 
@@ -289,6 +290,37 @@
   text-overflow: ellipsis;
   color: var(--text);
 }
+
+/* --- NEW: Play Icon for Cinemagraphs --- */
+.play-icon-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px; /* Icon size */
+  height: 60px;
+  color: rgba(255, 255, 255, 0.7); /* Icon color */
+  background-color: rgba(0, 0, 0, 0.3); /* Optional subtle background */
+  border-radius: 50%; /* Make background circular */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1; /* Visible by default */
+  transition: opacity 0.8s ease;
+  pointer-events: none; /* Allow clicks through to video */
+  z-index: 5; /* Ensure it's above video, below metadata if needed */
+}
+
+.play-icon-overlay svg {
+    width: 50%; /* Size SVG within the container */
+    height: 50%;
+}
+
+/* Fade out play icon on hover */
+.cinemagraph-item:hover .play-icon-overlay {
+  opacity: 0;
+}
+/* --- End Play Icon Styles --- */
 
 /* --- Image Grid --- */
 /* Styles remain the same, but ensure overlay is positioned correctly */
@@ -333,19 +365,20 @@
 }
 
 /* MODIFIED: Image Overlay - Bottom Left */
+/* Image Overlay - Bottom Left */
 .image-overlay {
    position: absolute;
-   bottom: 0; /* Back to bottom */
+   bottom: 0;
    left: 0;
    right: 0;
    padding: 0.75rem 1rem;
-   /* Gradient starts dark at bottom, fades up */
-   background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+   /* ADJUSTED: Slightly stronger gradient for contrast */
+   background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.65) 70%, transparent 100%);
    color: var(--text);
    opacity: 1;
    transition: opacity 0.7s ease;
    pointer-events: none;
-   border-bottom-left-radius: 8px; /* Match parent */
+   border-bottom-left-radius: 8px;
    border-bottom-right-radius: 8px;
 }
 

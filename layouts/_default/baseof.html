@@ -5,148 +5,7 @@
 
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
-    <script>
-      // --- Core Initializer ---
-      // Runs on initial load and after HTMX swaps to setup dynamic elements
-      function initializePageContent() {
-        console.log("Initializing page content..."); // Debug log
-        updateActiveNavButton(); // Always update nav highlight
-        initImageGridMasonry(); // Setup Masonry layout IF an image grid exists
-        initCinemagraphInteractions(); // Setup hover/click IF cinemagraphs exist
-      }
 
-      // --- Event Listeners ---
-      document.addEventListener('DOMContentLoaded', initializePageContent);
-
-      document.addEventListener('htmx:afterSwap', function(event) {
-        console.log("HTMX swap finished, re-initializing content..."); // Debug log
-        // Re-initialize dynamic content after HTMX swaps
-        initializePageContent();
-      });
-
-      // Ensure the HX-Request header is always sent by HTMX
-      document.addEventListener('htmx:configRequest', function(event) {
-        event.detail.headers['HX-Request'] = 'true';
-      });
-
-      // --- Navigation ---
-      // Updates the visual highlight on the current navigation button
-      function updateActiveNavButton() {
-        const navButtons = document.querySelectorAll('.nav-button');
-        navButtons.forEach(button => button.classList.remove('active'));
-
-        const currentPath = window.location.pathname;
-        let targetButton = null;
-
-        if (currentPath === '/' || currentPath === '/index.html' || currentPath === '') {
-          targetButton = document.querySelector('.nav-button[data-nav-section="/"]');
-        } else {
-           // Match base paths like /videos/, /cinemagraphs/, /images/
-           navButtons.forEach(button => {
-               const section = button.getAttribute('data-nav-section');
-               if (section && section !== '/' && (currentPath.startsWith(section + '/') || currentPath === section)) {
-                   targetButton = button;
-               }
-           });
-        }
-
-        if (targetButton) {
-          targetButton.classList.add('active');
-          console.log("Active nav set to:", targetButton.textContent); // Debug log
-        } else {
-          console.log("No active nav button found for path:", currentPath); // Debug log
-        }
-      }
-
-      // --- Masonry for Image Grid ---
-      // Initializes Masonry layout for elements with the 'image-grid' class
-      function initImageGridMasonry() {
-        const imageGrids = document.querySelectorAll('.image-grid');
-        if (!imageGrids.length) {
-            // console.log("No image grid found for Masonry."); // Optional debug log
-            return;
-        }
-
-        if (typeof Masonry !== 'undefined' && typeof imagesLoaded !== 'undefined') {
-          console.log("Initializing Masonry for", imageGrids.length, "grid(s)."); // Debug log
-          imageGrids.forEach(grid => {
-            // Use imagesLoaded to ensure images are loaded before calculating layout
-            imagesLoaded(grid, function() {
-              new Masonry(grid, {
-                itemSelector: '.image-item', // Selector for grid items
-                percentPosition: true,
-                // columnWidth: '.image-item', // Can sometimes help with sizing
-                // gutter: 10 // Example gutter
-              });
-              console.log("Masonry layout applied to grid:", grid); // Debug log
-            });
-          });
-        } else {
-          console.warn('Masonry or imagesLoaded script not found. Cannot initialize image grid layout.');
-        }
-      }
-
-      // --- Cinemagraph Interactions ---
-      // Adds hover-to-play and click-to-fullscreen for cinemagraphs
-      function initCinemagraphInteractions() {
-        const cinemagraphItems = document.querySelectorAll('.cinemagraph-item');
-        if (!cinemagraphItems.length) {
-            // console.log("No cinemagraph items found."); // Optional debug log
-            return;
-        }
-        console.log("Initializing interactions for", cinemagraphItems.length, "cinemagraph(s)."); // Debug log
-
-        cinemagraphItems.forEach(item => {
-          const video = item.querySelector('video');
-          if (!video) return;
-
-          // Play on Hover (Mouse Enter)
-          item.addEventListener('mouseenter', () => {
-             const playPromise = video.play();
-             if (playPromise !== undefined) {
-                 playPromise.catch(error => {
-                     // Autoplay was prevented.
-                     console.log("Video play prevented on hover:", error);
-                 });
-             }
-          });
-
-          // Pause on Hover (Mouse Leave)
-          item.addEventListener('mouseleave', () => {
-            video.pause();
-            // video.currentTime = 0; // Optional: Reset video to start on mouse leave
-          });
-
-          // Fullscreen on Click
-          item.addEventListener('click', () => {
-            console.log("Attempting fullscreen for:", video.src); // Debug log
-            if (video.requestFullscreen) {
-              video.requestFullscreen();
-            } else if (video.webkitRequestFullscreen) { /* Safari */
-              video.webkitRequestFullscreen();
-            } else if (video.msRequestFullscreen) { /* IE11 */
-              video.msRequestFullscreen();
-            } else {
-                console.log("Fullscreen API not supported on this video element.");
-            }
-          });
-
-          // --- Optional: Set aspect ratio class based on loaded video dimensions ---
-          // video.addEventListener('loadedmetadata', () => {
-          //     if (video.videoWidth && video.videoHeight) {
-          //         item.classList.remove('portrait', 'landscape'); // Clear existing classes
-          //         if (video.videoHeight > video.videoWidth) {
-          //             item.classList.add('portrait');
-          //         } else {
-          //             item.classList.add('landscape');
-          //         }
-          //         console.log("Set aspect ratio class for:", video.src); // Debug log
-          //     }
-          // });
-
-        });
-      }
-    </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ .Site.Params.description | default "Stephen Matzat's Portfolio" }}">
@@ -202,5 +61,51 @@
     <footer>
        <p>&copy; {{ now.Format "2006" }} {{ .Site.Title | default "laundromatzat.com" }}</p>
     </footer>
+{{/* layouts/_default/baseof.html - End of body */}}
+    {{/* ... (footer tag above this) ... */}}
+
+    {{/* --- Load External Javascript --- */}}
+    {{/* Process main.js with Hugo Pipes for fingerprinting/minification */}}
+    {{ $mainJS := resources.Get "js/main.js" | js.Build (dict "minify" true) | fingerprint }}
+    {{ if $mainJS }}
+      <script src="{{ $mainJS.RelPermalink }}" integrity="{{ $mainJS.Data.Integrity }}" defer></script>
+    {{ else }}
+      {{/* Fallback or warning if js/main.js is not found */}}
+      <script>console.error("main.js not found in assets/js/");</script>
+    {{ end }}
+
+    {{/* --- Load Masonry/ImagesLoaded IF needed (e.g., on images page) --- */}}
+    {{ if eq .RelPermalink "/images/" }} {{/* Condition based on your setup */}}
+      <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js" defer></script>
+      <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js" defer></script>
+    {{ end }}
+
+    {{/* --- Inline Script for Initialization & HTMX Hooks --- */}}
+    <script>
+      // Ensure functions from main.js are called after DOM is ready and after HTMX swaps
+      document.addEventListener('DOMContentLoaded', () => {
+          if (typeof initializePageContent === 'function') {
+              initializePageContent();
+          } else {
+              console.error('initializePageContent function not found. Check main.js loading.');
+          }
+      });
+
+      document.addEventListener('htmx:afterSwap', (event) => {
+        console.log("HTMX swap finished, re-initializing content..."); // Debug log
+        if (typeof initializePageContent === 'function') {
+            // Use a small delay to ensure DOM is fully settled after swap, especially for Masonry
+            setTimeout(initializePageContent, 50);
+        } else {
+            console.error('initializePageContent function not found after HTMX swap.');
+        }
+      });
+
+      // Ensure the HX-Request header is always sent by HTMX
+      document.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['HX-Request'] = 'true';
+      });
+    </script>
+
   </body>
 </html>

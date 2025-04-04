@@ -9,17 +9,17 @@
     <lastBuildDate>Fri, 23 Feb 2024 12:00:00 -0800</lastBuildDate>
     <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>ExampleTag1</title>
-      <link>http://localhost:1313/tags/exampletag1/</link>
+      <title>Tag1</title>
+      <link>http://localhost:1313/tags/tag1/</link>
       <pubDate>Fri, 23 Feb 2024 12:00:00 -0800</pubDate>
-      <guid>http://localhost:1313/tags/exampletag1/</guid>
+      <guid>http://localhost:1313/tags/tag1/</guid>
       <description></description>
     </item>
     <item>
-      <title>ExampleTag2</title>
-      <link>http://localhost:1313/tags/exampletag2/</link>
+      <title>Tag2</title>
+      <link>http://localhost:1313/tags/tag2/</link>
       <pubDate>Fri, 23 Feb 2024 12:00:00 -0800</pubDate>
-      <guid>http://localhost:1313/tags/exampletag2/</guid>
+      <guid>http://localhost:1313/tags/tag2/</guid>
       <description></description>
     </item>
   </channel>
