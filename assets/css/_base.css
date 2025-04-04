@@ -31,6 +31,13 @@ main {
   padding-bottom: 80px; /* Ensure space for footer height + buffer */
 }
 
+.section-introduction {
+    margin: 1rem auto 1.5rem auto; /* Adjust spacing as needed */
+    max-width: 650px; /* Optional: constrain width */
+    text-align: center; /* Or left, depending on design */
+    padding: 0 1rem; /* Add horizontal padding */
+}
+
 /* Only apply no-scroll and specific main styling to index.html (home page) */
 body:has(.home__container) {
   overflow: hidden; /* Prevent body scroll on home */
