@@ -14,13 +14,22 @@ title = 'laundromatzat.com'
     weight = 1
 
 [outputs]
-  home = ["HTML", "RSS"]
+  home = ["HTML", "RSS", "JSON"] # Added JSON
   section = ["HTML"]
   page = ["HTML"]
 
 [mediaTypes]
   [mediaTypes."text/html"]
     suffixes = ["html"]
+  [mediaTypes."application/json"] # Added JSON media type
+    suffixes = ["json"]
+
+[outputFormats]
+  [outputFormats.JSON]
+    mediaType = "application/json"
+    baseName = "search-index"
+    isPlainText = true
+    notAlternative = true
 
 [module]
   [[module.mounts]]
