@@ -40,7 +40,7 @@ jobs:
         run: hugo version
 
       - name: Install PostCSS and autoprefixer
-        run: npm install -g postcss-cli autoprefixer
+        run: npm install -g postcss-cli autoprefixer postcss-preset-env
       
       - name: Build Hugo site
         run: hugo --minify  # Removed the --verbose flag
