@@ -19,7 +19,14 @@
           {{ with .location }}<p class="location">{{ . }}</p>{{ end }}
           {{ with .date }}<p class="date">{{ . }}</p>{{ end }}
         </div>
+        <i class="fas fa-camera behind-the-lens__icon"></i>
       </div>
+      {{ with $item.behind_the_lens }}
+      <div class="behind-the-lens__content" style="display: none;">
+        <h3>Behind the Lens</h3>
+        <p>{{ . }}</p>
+      </div>
+      {{ end }}
     </div>
   {{ end }}
 </div>
