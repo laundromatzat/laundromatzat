@@ -134,3 +134,17 @@ function initCinemagraphInteractions() {
     // });
   });
 }
+
+// --- HTMX Error Handling ---
+document.addEventListener('htmx:responseError', function(event) {
+  console.error("HTMX Request Error:", event.detail.error);
+  // Display a user-friendly message
+  // You could enhance this by injecting the message into a specific div or using a toast notification library
+  alert("Oops! Something went wrong. Please try again.");
+
+  // Optionally, log more details for debugging
+  if (event.detail.xhr) {
+    console.error("XHR Status:", event.detail.xhr.status);
+    console.error("XHR Response:", event.detail.xhr.responseText);
+  }
+});
