@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.LanguageCode }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }} - {{ .Site.Title }}</title>
+    {{ partial "head.html" . }}
+    <link rel="stylesheet" href="{{ "/css/style.css" | relURL }}"> <!-- Assuming a main CSS file -->
+</head>
+<body>
+    {{ partial "header.html" . }}
+    <main class="container">
+        <h1>{{ .Title }}</h1>
+        <input type="text" id="searchInput" placeholder="Enter search term...">
+        <div id="searchResults">
+            <p>Search results will appear here.</p>
+        </div>
+    </main>
+    {{ partial "footer.html" . }}
+
+    <script src="{{ "/js/lunr.min.js" | relURL }}"></script>
+    <script src="{{ "/js/search.js" | relURL }}"></script>
+</body>
+</html>

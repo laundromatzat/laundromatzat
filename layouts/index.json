@@ -1,0 +1,42 @@
+{{- $searchIndex := slice -}}
+
+{{- /* Process videos */ -}}
+{{- range site.Data.videos.videos -}}
+  {{- $searchIndex = $searchIndex | append (dict
+    "id" .id
+    "title" .title
+    "description" .description
+    "location" .location
+    "date" .date
+    "type" "video"
+    "url" (printf "/videos/#%s" .id)
+  ) -}}
+{{- end -}}
+
+{{- /* Process cinemagraphs */ -}}
+{{- range site.Data.cinemagraphs.cinemagraphs -}}
+  {{- $searchIndex = $searchIndex | append (dict
+    "id" .id
+    "title" .title
+    "description" .description
+    "location" .location
+    "date" .date
+    "type" "cinemagraph"
+    "url" (printf "/cinemagraphs/#%s" .id)
+  ) -}}
+{{- end -}}
+
+{{- /* Process images */ -}}
+{{- range site.Data.images.images -}}
+  {{- $searchIndex = $searchIndex | append (dict
+    "id" .id
+    "title" .title
+    "description" .description
+    "location" .location
+    "date" .date
+    "type" "image"
+    "url" (printf "/images/#%s" .id)
+  ) -}}
+{{- end -}}
+
+{{- $searchIndex | jsonify -}}
