@@ -31,7 +31,7 @@
     {{ $allStyles := $files | append $rest | append $otherStyles }}
     
     {{ if $allStyles }}
-    {{ $styles := $allStyles | resources.Concat "css/main.css" | resources.PostCSS (dict "config" "./postcss.config.js") |
+    {{ $styles := $allStyles | resources.Concat "css/main.css" | css.PostCSS (dict "config" "./postcss.config.js") |
     resources.Minify | resources.Fingerprint }}
     <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}">
     {{ else }}
