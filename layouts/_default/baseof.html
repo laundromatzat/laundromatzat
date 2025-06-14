@@ -13,6 +13,9 @@
 
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
+    {{/* Font Awesome CDN Link */}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     {{ $needsMasonry := false }}
     {{ if eq .RelPermalink "/images/" }} {{/* Condition to load Masonry only on images page */}}
       {{ $needsMasonry = true }}
@@ -75,6 +78,15 @@
     {{/* ... (footer tag above this) ... */}}
 
     {{/* --- Load External Javascript --- */}}
+    {{/* Process behind-the-lens.js with Hugo Pipes for fingerprinting/minification */}}
+    {{ $behindTheLensJS := resources.Get "js/behind-the-lens.js" | js.Build (dict "minify" true) | fingerprint }}
+    {{ if $behindTheLensJS }}
+      <script src="{{ $behindTheLensJS.RelPermalink }}" integrity="{{ $behindTheLensJS.Data.Integrity }}" defer></script>
+    {{ else }}
+      {{/* Fallback or warning if js/behind-the-lens.js is not found */}}
+      <script>console.error("behind-the-lens.js not found in assets/js/");</script>
+    {{ end }}
+
     {{/* Process main.js with Hugo Pipes for fingerprinting/minification */}}
     {{ $mainJS := resources.Get "js/main.js" | js.Build (dict "minify" true) | fingerprint }}
     {{ if $mainJS }}
