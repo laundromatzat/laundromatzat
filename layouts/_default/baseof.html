@@ -22,8 +22,11 @@
 
     {{/* --- MODIFIED CSS Pipeline (using Concat) --- */}}
     {{ $cssOptions := (dict "targetPath" "css/main.css" "enableSourceMap" true ) }}
-    {{/* Find all CSS files in assets/css, concatenate them, process, minify, fingerprint */}}
-    {{ $styles := resources.Match "css/**.css" | resources.Concat "css/main.css" | resources.Minify | resources.Fingerprint }}
+    {{ $files := slice (resources.Get "css/_variables.css") (resources.Get "css/_base.css") }}
+    {{ $rest := resources.Match "css/_[!vb]*.css" }} {{/* Matches files starting with _ but not _v or _b */}}
+    {{ $otherStyles := resources.Match "css/[^_]*.css" }} {{/* Matches files NOT starting with _ */}}
+    {{ $allStyles := $files | append $rest $otherStyles }}
+    {{ $styles := $allStyles | resources.Concat "css/main.css" | resources.PostCSS (dict "config" "./postcss.config.js") | resources.Minify | resources.Fingerprint }}
     <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}">
 
     {{ template "_internal/opengraph.html" . }}
