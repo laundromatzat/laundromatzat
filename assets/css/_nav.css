@@ -26,11 +26,17 @@
   white-space: nowrap; /* Prevent wrapping */
 }
 
-.nav-button:hover,
-.nav-button.active {
+.nav-button:hover {
   color: var(--accent);
-  border-bottom-color: var(--accent);
-  font-weight: 400; /* Slightly bolder when active/hover */
+  border-bottom-color: var(--accent); /* Keep existing hover border */
+  font-weight: 400; /* Keep existing font weight for hover */
+}
+
+.nav-button.active {
+  color: var(--accent); /* Keep accent text color */
+  background-color: var(--highlight); /* Add background color */
+  border-bottom: 3px solid var(--accent); /* Thicker, solid border */
+  font-weight: 500; /* Bolder than default and hover */
 }
 
 @media (max-width: 600px) {
