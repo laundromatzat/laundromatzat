@@ -9,9 +9,25 @@ title = 'laundromatzat.com'
 
 [menu]
   [[menu.main]]
+    name = "home"
+    pageRef = "/"
+    weight = 0
+  [[menu.main]]
     name = "videos"
-    url = "/videos/"
+    pageRef = "/videos"
     weight = 1
+  [[menu.main]]
+    name = "cinemagraphs"
+    pageRef = "/cinemagraphs"
+    weight = 2
+  [[menu.main]]
+    name = "images"
+    pageRef = "/images"
+    weight = 3
+  [[menu.main]]
+    name = "about"
+    pageRef = "/about.md"
+    weight = 4
 
 [outputs]
   home = ["HTML", "RSS"]
