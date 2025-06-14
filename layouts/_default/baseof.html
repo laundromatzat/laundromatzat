@@ -36,7 +36,7 @@
     <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}">
     {{ else }}
     <link rel="stylesheet" href="/css/fallback.css">
-    {{ warn "CSS pipeline failed, loading fallback styles." }}
+    {{ warnf "CSS pipeline failed, loading fallback styles." }}
     {{ end }}
 
     {{ template "_internal/opengraph.html" . }}
