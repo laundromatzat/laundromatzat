@@ -1,13 +1,9 @@
-baseURL: ""
-tokenSuffix: ""
-
 images:
-  - id: "love"
-    title: "Love"
-    url: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/images%2Flove.jpg?alt=media&token=sample-token"
-    date: "03/2025"
-    location: "Bernal Heights"
-    description: "Graffiti art spelling LOVE on a wall" # More descriptive
-    thumbnail: "/images/thumbnails/love.webp"
-    width: 1080 # Example dimension
-    height: 720 # Example dimension
+  - id: sample-image
+    type: image
+    title: Sample Image
+    firebase_url: https://example.com/sample-image.jpg
+    original_filename: sample-image.jpg
+    alt_text: A sample image
+    width: 1920
+    height: 1080
