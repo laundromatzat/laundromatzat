@@ -1,9 +1,13 @@
 images:
-  - id: sample-image
-    type: image
+  - id: love
+    type: Love
     title: Sample Image
-    firebase_url: https://example.com/sample-image.jpg
-    original_filename: sample-image.jpg
-    alt_text: A sample image
+    firebase_url: https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/images%2Flove.jpg?alt=media&token=sample-token
+    original_filename: images-love.jpg
+    date: 03/2025
+    location: Bernal Heights
+    thumbnail: /images/thumbnails/love.webp
+    description: Graffiti art spelling LOVE on a wall # More descriptive
+    alt_text: love
     width: 1920
     height: 1080
