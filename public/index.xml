@@ -22,5 +22,33 @@
       <guid>http://localhost:1313/videos/_template/</guid>
       <description></description>
     </item>
+    <item>
+      <title>Sample Cinemagraph</title>
+      <link>http://localhost:1313/cinemagraphs/sample-cinemagraph/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/cinemagraphs/sample-cinemagraph/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Sample Image</title>
+      <link>http://localhost:1313/images/sample-image/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/images/sample-image/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Sample Video</title>
+      <link>http://localhost:1313/videos/sample-video/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/videos/sample-video/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Search Results</title>
+      <link>http://localhost:1313/search/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/search/</guid>
+      <description>&lt;p&gt;Search results will appear here.&lt;/p&gt;</description>
+    </item>
   </channel>
 </rss>

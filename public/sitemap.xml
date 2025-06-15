@@ -37,5 +37,13 @@
   </url><url>
     <loc>http://localhost:1313/images/</loc>
     <lastmod>2023-05-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/cinemagraphs/sample-cinemagraph/</loc>
+  </url><url>
+    <loc>http://localhost:1313/images/sample-image/</loc>
+  </url><url>
+    <loc>http://localhost:1313/videos/sample-video/</loc>
+  </url><url>
+    <loc>http://localhost:1313/search/</loc>
   </url>
 </urlset>

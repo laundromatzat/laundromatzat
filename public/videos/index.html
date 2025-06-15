@@ -14,13 +14,22 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    
     
 
     
     
     
     
-    <link rel="stylesheet" href="/css/main.min.5a71fa430320fc45c6f3c092236071e42f3729a8c0d4d8e973e196ccb949bafc.css" integrity="sha256-WnH6QwMg/EXG88CSI2Bx5C83KajA1Njpc&#43;GWzLlJuvw=">
+    
+    
+    
+    
+    
+    <link rel="stylesheet" href="/css/main.min.ddbbf9bde2f3d7cc0ac1bf2447f66731e09dff88d5955bfff44bdedc7572ee39.css" integrity="sha256-3bv5veLz18wKwb8kR/ZnMeCd/4jVlVv/9Eve3HVy7jk=">
+    
 
     <meta property="og:url" content="http://localhost:1313/videos/">
   <meta property="og:site_name" content="laundromatzat.com">
@@ -53,11 +62,57 @@
            </a>
           <div class="main-nav-container">
             
-            <a data-nav-section="/" hx-get="/" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">home</a>
-            <a data-nav-section="/videos" hx-get="/videos" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button active">videos</a>
-            <a data-nav-section="/cinemagraphs" hx-get="/cinemagraphs" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">cinemagraphs</a>
-            <a data-nav-section="/images" hx-get="/images" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">images</a>
-            <a data-nav-section="/about" hx-get="/about" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-trigger="click" hx-indicator="#indicator" class="nav-button ">about</a>
+            
+              <a data-nav-section="/videos/"
+                 hx-get="/videos/"
+                 hx-select="#content-container"
+                 hx-target="#content-container"
+                 hx-push-url="true"
+                 hx-trigger="click"
+                 hx-indicator="#indicator"
+                 class="nav-button active"
+                 href="/videos/">videos</a>
+            
+              <a data-nav-section="/cinemagraphs/"
+                 hx-get="/cinemagraphs/"
+                 hx-select="#content-container"
+                 hx-target="#content-container"
+                 hx-push-url="true"
+                 hx-trigger="click"
+                 hx-indicator="#indicator"
+                 class="nav-button "
+                 href="/cinemagraphs/">cinemagraphs</a>
+            
+              <a data-nav-section="/images/"
+                 hx-get="/images/"
+                 hx-select="#content-container"
+                 hx-target="#content-container"
+                 hx-push-url="true"
+                 hx-trigger="click"
+                 hx-indicator="#indicator"
+                 class="nav-button "
+                 href="/images/">images</a>
+            
+              <a data-nav-section="/about/"
+                 hx-get="/about/"
+                 hx-select="#content-container"
+                 hx-target="#content-container"
+                 hx-push-url="true"
+                 hx-trigger="click"
+                 hx-indicator="#indicator"
+                 class="nav-button "
+                 href="/about/">about</a>
+            
+              <a data-nav-section="/"
+                 hx-get="/"
+                 hx-select="#content-container"
+                 hx-target="#content-container"
+                 hx-push-url="true"
+                 hx-trigger="click"
+                 hx-indicator="#indicator"
+                 class="nav-button "
+                 href="/">home</a>
+            
             <span class="htmx-indicator" id="indicator">Loading...</span>
           </div>
         </div>
@@ -89,16 +144,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fthe-sound-of-silence.m4v?alt=media&amp;token=d696d19e-08e9-49c9-b5b6-4880c07e2b33" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>The Sound of Silence</h2>
             <div class="video-grid__info-row">
               <p class="location">Oregon Coast</p>
-              <p class="date">11/2024</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -109,16 +166,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fi-could-be-the-one.m4v?alt=media&amp;token=2f2cd5bb-5416-46a4-8c50-4d9a8db2592f" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>I Could Be the One</h2>
             <div class="video-grid__info-row">
               <p class="location">Puerto Vallarta</p>
-              <p class="date">09/2024</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -129,16 +188,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fsecond-hand-news.m4v?alt=media&amp;token=d5adb845-b645-40f6-9e28-7485248ce585" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Second Hand News</h2>
             <div class="video-grid__info-row">
               <p class="location">Big Island, Hawai&#39;i</p>
-              <p class="date">07/2024</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -149,16 +210,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fno-apagues-la-luz.m4v?alt=media&amp;token=077d6a20-a44b-4c95-9f30-f43d9895d22e" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>No Apagues La Luz</h2>
             <div class="video-grid__info-row">
               <p class="location">Madrid</p>
-              <p class="date">04/2024</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -169,16 +232,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ftransatlanticism.mp4?alt=media&amp;token=e0e342ec-2204-4a70-bad7-5cff8afc694f" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Winter Song</h2>
             <div class="video-grid__info-row">
               <p class="location">Bear Valley</p>
-              <p class="date">01/2024</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -189,16 +254,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fboulevard-of-broken-dreams.m4v?alt=media&amp;token=09fcb743-9905-4092-ac93-b4d8003e02ca" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Boulevard of Broken Dreams</h2>
             <div class="video-grid__info-row">
               <p class="location">Alaska</p>
-              <p class="date">07/2023</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -209,16 +276,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Finto-the-west.m4v?alt=media&amp;token=b3063b82-2c30-4eaa-85f4-43a342204771" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Into the West</h2>
             <div class="video-grid__info-row">
               <p class="location">Big Island, Hawai&#39;i</p>
-              <p class="date">02/2023</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -229,16 +298,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fojai.m4v?alt=media&amp;token=977f3420-5222-48e6-904e-efa4c7f63825" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Baba O&#39;Riley</h2>
             <div class="video-grid__info-row">
               <p class="location">Maui, Hawai&#39;i</p>
-              <p class="date">06/2022</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -249,16 +320,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fojai.m4v?alt=media&amp;token=977f3420-5222-48e6-904e-efa4c7f63825" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Ojai</h2>
             <div class="video-grid__info-row">
               <p class="location">Channel Islands &amp; Ojai</p>
-              <p class="date">03/2022</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -269,16 +342,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fflightless-bird-american-mouth.m4v?alt=media&amp;token=7a3989af-86ee-4cd7-817e-4447bc4b6b95" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Flightless Bird, American Mouth</h2>
             <div class="video-grid__info-row">
               <p class="location">Seattle &amp; Vancouver</p>
-              <p class="date">09/2021</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -289,16 +364,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fcowboy-take-me-away.m4v?alt=media&amp;token=626a988a-285d-4715-9290-0c066d4add57" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Cowboy Take Me Away</h2>
             <div class="video-grid__info-row">
               <p class="location">New Mexico</p>
-              <p class="date">04/2021</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -309,16 +386,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Frivers-and-roads.m4v?alt=media&amp;token=112d58ad-73d9-4f26-a026-4e80b332f4a7" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Rivers and Roads</h2>
             <div class="video-grid__info-row">
               <p class="location">Grand Teton &amp; Yellowstone Nat&#39;l Parks</p>
-              <p class="date">08/2020</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -329,16 +408,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fshallow.m4v?alt=media&amp;token=6fe8ec05-fa44-4cd6-ab91-0e2277270c4f" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Shallow</h2>
             <div class="video-grid__info-row">
               <p class="location">Sedona &amp; Grand Canyon, AZ</p>
-              <p class="date">11/2019</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -349,16 +430,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ftiny-dancer.m4v?alt=media&amp;token=69e08f35-08f9-44d8-acb2-434eede6285c" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Tiny Dancer</h2>
             <div class="video-grid__info-row">
               <p class="location">Maui, Hawai&#39;i</p>
-              <p class="date">06/2019</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -369,16 +452,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fdrift-away.m4v?alt=media&amp;token=0f74b88b-6a93-4c85-ab97-7ae63b9e3d55" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Drift Away</h2>
             <div class="video-grid__info-row">
               <p class="location">The Catskills</p>
-              <p class="date">10/2016</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -389,16 +474,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ffly-away-home.m4v?alt=media&amp;token=1e591ef8-d57d-4fc6-b7af-bf8b8109ddaf" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Fly Away Home</h2>
             <div class="video-grid__info-row">
               <p class="location">Banff Nat&#39;l Park</p>
-              <p class="date">08/2016</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -409,16 +496,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ftransatlanticism.mp4?alt=media&amp;token=e0e342ec-2204-4a70-bad7-5cff8afc694f" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Transatlanticism</h2>
             <div class="video-grid__info-row">
               <p class="location">Iceland</p>
-              <p class="date">06/2015</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -429,16 +518,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fone-of-us.mp4?alt=media&amp;token=ec4c9b7a-9d2e-4691-9b70-4873f2608f39" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>One of Us</h2>
             <div class="video-grid__info-row">
               <p class="location">Milan &amp; Austria</p>
-              <p class="date">05/2014</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -449,16 +540,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Ffast-car.mov?alt=media&amp;token=ce20c5b2-47d0-4c79-9745-1c0a18e4ddf3" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Fast Car</h2>
             <div class="video-grid__info-row">
               <p class="location">Crater Lake &amp; Redwoods Nat&#39;l Park</p>
-              <p class="date">09/2013</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -469,16 +562,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fyou-were-meant-for-me.m4v?alt=media&amp;token=1dcfee98-a536-4d69-b1ae-f0c1ef7349e5" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>You Were Meant for Me</h2>
             <div class="video-grid__info-row">
               <p class="location">Humboldt Redwoods</p>
-              <p class="date">03/2013</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
      
@@ -489,16 +584,18 @@
             
             
             
-            <source src="https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fimpossible.mov?alt=media&amp;token=a3b132dc-0770-4000-8105-fac319353f2a" type="video/mp4">
+            <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
             <h2>Impossible</h2>
             <div class="video-grid__info-row">
               <p class="location">Oak Creek Apartments</p>
-              <p class="date">05/2012</p>
+              
             </div>
+            <i class="fas fa-camera behind-the-lens__icon"></i>
           </div>
+          
         </div>
       </div>
     
@@ -520,7 +617,13 @@
     
     
     
-      <script src="/js/main.f2979a93a325fecf9605263bd141398a311c8e23388ed7dcff74f92f7e632866.js" integrity="sha256-8peak6Ml/s&#43;WBSY70UE5ijEcjiM4jtfc/3T5L35jKGY=" defer></script>
+      <script src="/js/behind-the-lens.3b91db3555e7f89232591b5274fc5b284d87851e0005774ea01e6ca5439e1f43.js" integrity="sha256-O5HbNVXn&#43;JIyWRtSdPxbKE2HhR4ABXdOoB5spUOeH0M=" defer></script>
+    
+
+    
+    
+    
+      <script src="/js/main.3abe11002ff557755e9760f9f5cacf30ff973d70ee66b8470c785731aa86ccd1.js" integrity="sha256-Or4RAC/1V3Vel2D59crPMP&#43;XPXDuZrhHDHhXMaqGzNE=" defer></script>
     
 
     

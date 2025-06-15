@@ -6,7 +6,30 @@
     "path": "^0.12.7"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.5",
     "postcss-cli": "^11.0.1",
     "postcss-preset-env": "^10.2.3"
-  }
+  },
+  "name": "laundromatzat",
+  "version": "1.0.0",
+  "description": "This repository contains the source code for my personal website/portfolio, built using the [Hugo](https://gohugo.io/) static site generator.",
+  "main": "postcss.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laundromatzat/laundromatzat.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/laundromatzat/laundromatzat/issues"
+  },
+  "homepage": "https://github.com/laundromatzat/laundromatzat#readme"
 }
