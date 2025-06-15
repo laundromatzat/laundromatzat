@@ -8,6 +8,20 @@ videos:
     thumbnail: /videos/images/thumbnails/the-sound-of-silence.webp
     description: "#vanlife from SF to Oregon Coast."
 
+  - id: the-sound-of-silence
+    type: "video"
+    title: "The Sound of Silence"
+    firebase_url: "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fthe-sound-of-silence.m4v?alt=media&token=d696d19e-08e9-49c9-b5b6-4880c07e2b33"
+    original_filename: "the-sound-of-silence.m4v"
+    location: "Oregon Coast"
+    thumbnail: "/videos/images/thumbnails/the-sound-of-silence.webp"
+    description: "#vanlife from SF to Oregon Coast."
+    behind_the_lens: | # Using '|' for multi-line text
+      This was our opportunity to live the hashtag vanlife
+      and yes, it is complicated to operate a van.
+      There is gas and electricity and gray water and black water.
+      So don't get them mixed up.
+
   - id: i-could-be-the-one
     type: video
     title: I Could Be the One
