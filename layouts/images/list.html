@@ -10,7 +10,7 @@
 <div class="image-grid">
   {{ range $index, $item := $.Site.Data.images.images }}
     <div class="image-item">
-      <img src="{{ .url }}" alt="{{ .title | default "Image" }}" loading="lazy"> {{/* Added lazy loading */}}
+      <img src="{{ .firebase_url }}" alt="{{ .title | default "Image" }}" loading="lazy"> {{/* Added lazy loading */}}
 
       {{/* NEW: Overlay for metadata */}}
       <div class="image-overlay">
