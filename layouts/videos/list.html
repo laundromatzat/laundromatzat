@@ -16,7 +16,7 @@
       <div class="video-grid__item">
         <div class="video-grid__thumbnail-wrapper">
           {{/* Controls are visible by default, overlay adjusted in CSS */}}
-          <video controls playsinline poster="{{ .thumbnail }}">
+          <video controls playsinline poster="{{ .thumbnail | default "/images/placeholder.webp" | relURL }}">
             {{ $videoType := "video/mp4" }}
             {{ if hasSuffix .token ".mov" }}{{ $videoType = "video/quicktime" }}{{ end }}
             {{/* Add other types if needed */}}
