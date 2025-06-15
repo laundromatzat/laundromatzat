@@ -2,24 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on laundromatzat.com</title>
-    <link>http://laundromatzat.com/categories/</link>
+    <link>http://localhost:1313/categories/</link>
     <description>Recent content in Categories on laundromatzat.com</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 23 Feb 2024 12:00:00 -0800</lastBuildDate>
-    <atom:link href="http://laundromatzat.com/categories/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Category1</title>
-      <link>http://laundromatzat.com/categories/category1/</link>
+      <link>http://localhost:1313/categories/category1/</link>
       <pubDate>Fri, 23 Feb 2024 12:00:00 -0800</pubDate>
-      <guid>http://laundromatzat.com/categories/category1/</guid>
+      <guid>http://localhost:1313/categories/category1/</guid>
       <description></description>
     </item>
     <item>
       <title>Category2</title>
-      <link>http://laundromatzat.com/categories/category2/</link>
+      <link>http://localhost:1313/categories/category2/</link>
       <pubDate>Fri, 23 Feb 2024 12:00:00 -0800</pubDate>
-      <guid>http://laundromatzat.com/categories/category2/</guid>
+      <guid>http://localhost:1313/categories/category2/</guid>
       <description></description>
     </item>
   </channel>
