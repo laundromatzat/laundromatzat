@@ -14,10 +14,10 @@
     <div class="cinemagraph-item {{ $orientation }}">
       <video preload="metadata" poster="{{ .thumbnail | default "/images/placeholder.webp" }}" playsinline loop muted>
         {{ $videoType := "video/mp4" }}
-        {{ if hasSuffix .token ".m4v" }}{{ $videoType = "video/x-m4v" }}{{ end }}
-        {{ if hasSuffix .token ".webm" }}{{ $videoType = "video/webm" }}{{ end }}
-        {{ if hasSuffix .token ".ogg" }}{{ $videoType = "video/ogg" }}{{ end }}
-        <source src="{{ .token }}" type="{{ $videoType }}">
+        {{ if hasSuffix .firebase_url ".m4v" }}{{ $videoType = "video/x-m4v" }}{{ end }}
+        {{ if hasSuffix .firebase_url ".webm" }}{{ $videoType = "video/webm" }}{{ end }}
+        {{ if hasSuffix .firebase_url ".ogg" }}{{ $videoType = "video/ogg" }}{{ end }}
+        <source src="{{ .firebase_url }}" type="{{ $videoType }}">
         Your browser does not support the video tag.
       </video>
 

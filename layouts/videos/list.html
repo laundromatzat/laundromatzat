@@ -18,9 +18,9 @@
           {{/* Controls are visible by default, overlay adjusted in CSS */}}
           <video controls playsinline poster="{{ .thumbnail }}">
             {{ $videoType := "video/mp4" }}
-            {{ if hasSuffix .token ".mov" }}{{ $videoType = "video/quicktime" }}{{ end }}
+            {{ if hasSuffix .firebase_url ".mov" }}{{ $videoType = "video/quicktime" }}{{ end }}
             {{/* Add other types if needed */}}
-            <source src="{{ .token }}" type="{{ $videoType }}">
+            <source src="{{ .firebase_url }}" type="{{ $videoType }}">
             Your browser does not support the video tag.
           </video>
           <div class="video-grid__metadata-overlay">
