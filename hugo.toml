@@ -1,6 +1,7 @@
 baseURL = 'http://laundromatzat.com/'
 languageCode = 'en-us'
 title = 'laundromatzat.com'
+disableLiveReload = true
 
 [params]
   description = "welcome to the laundromat"
