@@ -2,53 +2,53 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>laundromatzat.com</title>
-    <link>http://localhost:1313/</link>
+    <link>http://laundromatzat.com/</link>
     <description>Recent content on laundromatzat.com</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 04 Apr 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://laundromatzat.com/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>about</title>
-      <link>http://localhost:1313/about/</link>
+      <link>http://laundromatzat.com/about/</link>
       <pubDate>Fri, 04 Apr 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/about/</guid>
-      <description>&lt;p&gt;the laundromat is for cleaning clothes.&lt;br&gt;&#xA;the laundromatzat is different.&lt;br&gt;&#xA;i am stephen.&lt;br&gt;&#xA;please enjoy.&lt;br&gt;&#xA;don&amp;rsquo;t be 2 cerious.&lt;br&gt;&lt;/p&gt;</description>
+      <guid>http://laundromatzat.com/about/</guid>
+      <description>the laundromat is for cleaning clothes.&#xA;the laundromatzat is different.&#xA;i am stephen.&#xA;please enjoy.&#xA;don&amp;rsquo;t be 2 cerious.</description>
     </item>
     <item>
       <title>video title</title>
-      <link>http://localhost:1313/videos/_template/</link>
+      <link>http://laundromatzat.com/videos/_template/</link>
       <pubDate>Fri, 23 Feb 2024 12:00:00 -0800</pubDate>
-      <guid>http://localhost:1313/videos/_template/</guid>
+      <guid>http://laundromatzat.com/videos/_template/</guid>
       <description></description>
     </item>
     <item>
       <title>Sample Cinemagraph</title>
-      <link>http://localhost:1313/cinemagraphs/sample-cinemagraph/</link>
+      <link>http://laundromatzat.com/cinemagraphs/sample-cinemagraph/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/cinemagraphs/sample-cinemagraph/</guid>
+      <guid>http://laundromatzat.com/cinemagraphs/sample-cinemagraph/</guid>
       <description></description>
     </item>
     <item>
       <title>Sample Image</title>
-      <link>http://localhost:1313/images/sample-image/</link>
+      <link>http://laundromatzat.com/images/sample-image/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/images/sample-image/</guid>
+      <guid>http://laundromatzat.com/images/sample-image/</guid>
       <description></description>
     </item>
     <item>
       <title>Sample Video</title>
-      <link>http://localhost:1313/videos/sample-video/</link>
+      <link>http://laundromatzat.com/videos/sample-video/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/videos/sample-video/</guid>
+      <guid>http://laundromatzat.com/videos/sample-video/</guid>
       <description></description>
     </item>
     <item>
       <title>Search Results</title>
-      <link>http://localhost:1313/search/</link>
+      <link>http://laundromatzat.com/search/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/search/</guid>
-      <description>&lt;p&gt;Search results will appear here.&lt;/p&gt;</description>
+      <guid>http://laundromatzat.com/search/</guid>
+      <description>Search results will appear here.</description>
     </item>
   </channel>
 </rss>

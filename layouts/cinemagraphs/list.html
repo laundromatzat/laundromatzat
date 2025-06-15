@@ -12,7 +12,7 @@
     {{/* Add logic here if you store dimensions */}}
 
     <div class="cinemagraph-item {{ $orientation }}">
-      <video preload="metadata" poster="{{ .thumbnail | default "/images/placeholder.webp" }}" playsinline loop muted>
+      <video preload="metadata" poster="{{ .thumbnail | default "/images/placeholder.webp" | relURL }}" playsinline loop muted>
         {{ $videoType := "video/mp4" }}
         {{ if hasSuffix .firebase_url ".m4v" }}{{ $videoType = "video/x-m4v" }}{{ end }}
         {{ if hasSuffix .firebase_url ".webm" }}{{ $videoType = "video/webm" }}{{ end }}
