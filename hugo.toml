@@ -83,3 +83,6 @@ disableLiveReload = true
 
 [build]
   writeStats = true  # Enable build statistics
+  [build.processing]
+    [build.processing.postcss]
+      path = "node_modules/postcss-cli/postcss.js"

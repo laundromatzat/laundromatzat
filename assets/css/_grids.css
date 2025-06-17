@@ -1,7 +1,6 @@
 /* assets/css/_grids.css */
 
 /* --- Common Grid Header --- */
-/* ... (keep existing styles) ... */
 .section-header {
   text-align: center;
   margin-bottom: 2rem;
@@ -75,16 +74,15 @@
 }
 
 .video-grid__item {
+  position: relative; /* Needed for absolute positioning of children */
+  aspect-ratio: 16 / 9; /* Maintain aspect ratio */
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(0);
   transition: transform 0.7s ease, box-shadow 0.7s ease;
   background-color: var(--secondary);
-  width: 100%;
-  max-width: 450px;
-  margin: 0 auto;
-  position: relative; /* Needed for absolute positioning context */
+  cursor: pointer;
 }
 
 .video-grid__item:hover {
@@ -92,50 +90,17 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Wrapper for video and overlay */
-.video-grid__thumbnail-wrapper {
-  position: relative; /* Changed to relative if item itself is relative */
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background-color: var(--primary);
-  overflow: hidden;
-  border-radius: 12px; /* Ensure wrapper also has radius */
-}
-
-.video-grid__thumbnail-wrapper video {
+.video-grid__thumbnail {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* This is the key property */
   display: block;
+  transition: transform 0.4s ease;
 }
 
-/* --- CSS Attempt to Hide/Show Controls --- */
-/* Hide controls by default (targeting WebKit specifically) */
-.video-grid__thumbnail-wrapper video::-webkit-media-controls-panel {
-  display: none !important;
-  /* Using opacity as fallback if display:none fails */
-  opacity: 0;
-  pointer-events: none;
+.video-grid__item:hover .video-grid__thumbnail {
+    transform: scale(1.05); /* Subtle zoom on hover */
 }
-.video-grid__thumbnail-wrapper video::-webkit-media-controls-play-button {
-    display: none !important;
-    opacity: 0;
-    pointer-events: none;
-}
-/* Add similar rules for other specific control buttons if needed */
-
-/* Show controls on hover of the PARENT item */
-.video-grid__item:hover .video-grid__thumbnail-wrapper video::-webkit-media-controls-panel {
-  display: flex !important; /* Or block, depending on browser default */
-  opacity: 1;
-  pointer-events: auto;
-}
-.video-grid__item:hover .video-grid__thumbnail-wrapper video::-webkit-media-controls-play-button {
-   display: block !important; /* Or inline-block */
-   opacity: 1;
-   pointer-events: auto;
-}
-/* --- End Controls Hide/Show Attempt --- */
 
 
 /* MODIFIED: Metadata Overlay - Bottom Left */
@@ -145,7 +110,6 @@
   left: 0;
   right: 0;
   padding: 0.75rem 1rem;
-  /* ADJUSTED: Slightly stronger gradient for contrast */
   background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.65) 70%, transparent 100%);
   color: var(--text);
   opacity: 1;
@@ -155,10 +119,44 @@
   border-bottom-right-radius: 12px;
 }
 
-/* Fade out metadata text on hover */
+/* --- Play and Camera Icons --- */
+.video-grid__play-icon, .behind-the-lens__icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: clamp(3.5rem, 8vw, 4.5rem);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: auto; /* Make icons clickable */
+    z-index: 10;
+}
+
+.behind-the-lens__icon {
+    font-size: clamp(2rem, 5vw, 2.5rem); /* Smaller camera icon */
+    top: auto;
+    left: auto;
+    right: 20px;
+    bottom: 60px; /* Position it above the text overlay */
+    transform: none;
+    opacity: 1; /* Always visible until hovered */
+}
+
+
+.video-grid__item:hover .video-grid__play-icon {
+    opacity: 1;
+}
+
 .video-grid__item:hover .video-grid__metadata-overlay {
   opacity: 0;
 }
+
+.video-grid__item:hover .behind-the-lens__icon {
+    opacity: 0;
+}
+
 
 .video-grid__metadata-overlay h2 {
   margin: 0 0 0.1rem;
@@ -201,7 +199,6 @@
 }
 
 /* --- Cinemagraph Grid --- */
-/* Styles remain the same, but ensure overlay is positioned correctly */
 .cinemagraph-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr));
@@ -227,7 +224,7 @@
    aspect-ratio: 9 / 16;
 }
 
-.cinemagraph-item video {
+.cinemagraph-item__thumbnail {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -235,35 +232,29 @@
   transition: transform 0.4s ease;
 }
 
+.cinemagraph-item:hover .cinemagraph-item__thumbnail {
+  transform: scale(1.05);
+}
+
 .cinemagraph-item:hover {
   transform: translateY(-5px) scale(1.02);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* MODIFIED: Cinemagraph Overlay - Bottom Left */
-/* Cinemagraph Metadata Overlay - Bottom Left */
 .cinemagraph-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   padding: 0.75rem 1rem;
-  /* ADJUSTED: Slightly stronger gradient for contrast */
   background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.65) 70%, transparent 100%);
   color: var(--text);
   opacity: 1;
-  transition: opacity 0.8s ease;
-  pointer-events: none;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
 }
-
-/* Fade out on hover */
 .cinemagraph-item:hover .cinemagraph-overlay {
   opacity: 0;
 }
 
-/* ... (cinemagraph h2, p styles remain the same) ... */
 .cinemagraph-overlay h2 {
   margin: 0 0 0.25rem;
   font-size: clamp(1rem, 1.8vw, 1.1rem);
@@ -291,39 +282,34 @@
   color: var(--text);
 }
 
-/* --- NEW: Play Icon for Cinemagraphs --- */
 .play-icon-overlay {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60px; /* Icon size */
+  width: 60px;
   height: 60px;
-  color: rgba(255, 255, 255, 0.7); /* Icon color */
-  background-color: rgba(0, 0, 0, 0.3); /* Optional subtle background */
-  border-radius: 50%; /* Make background circular */
+  color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  opacity: 1; /* Visible by default */
+  opacity: 1;
   transition: opacity 0.8s ease;
-  pointer-events: none; /* Allow clicks through to video */
-  z-index: 5; /* Ensure it's above video, below metadata if needed */
+  pointer-events: none;
+  z-index: 5;
 }
 
-.play-icon-overlay svg {
-    width: 50%; /* Size SVG within the container */
-    height: 50%;
+.play-icon-overlay i {
+    font-size: 2rem;
 }
 
-/* Fade out play icon on hover */
 .cinemagraph-item:hover .play-icon-overlay {
   opacity: 0;
 }
-/* --- End Play Icon Styles --- */
 
 /* --- Image Grid --- */
-/* Styles remain the same, but ensure overlay is positioned correctly */
 .image-grid {
    padding: clamp(1rem, 2vw, 1.5rem);
    width: 100%;
@@ -364,15 +350,12 @@
   clear: both;
 }
 
-/* MODIFIED: Image Overlay - Bottom Left */
-/* Image Overlay - Bottom Left */
 .image-overlay {
    position: absolute;
    bottom: 0;
    left: 0;
    right: 0;
    padding: 0.75rem 1rem;
-   /* ADJUSTED: Slightly stronger gradient for contrast */
    background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.65) 70%, transparent 100%);
    color: var(--text);
    opacity: 1;
@@ -382,12 +365,10 @@
    border-bottom-right-radius: 8px;
 }
 
-/* Fade out on hover */
 .image-item:hover .image-overlay {
    opacity: 0;
 }
 
-/* ... (image h2, p styles remain the same) ... */
 .image-overlay h2 {
    margin: 0 0 0.25rem;
    font-size: clamp(1rem, 1.8vw, 1.1rem);
@@ -416,10 +397,9 @@
 }
 
 /* Responsive adjustments for grids */
-/* ... (keep existing responsive styles) ... */
 @media (max-width: 1200px) {
   .image-item {
-    width: calc(50% - 1rem); /* 2 columns */
+    width: calc(50% - 1rem);
   }
 }
 

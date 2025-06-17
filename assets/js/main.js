@@ -1,150 +1,97 @@
+
 // assets/js/main.js
 
-// --- Core Initializer ---
-// Runs on initial load and after HTMX swaps to setup dynamic elements
 function initializePageContent() {
-  console.log("Initializing page content from main.js..."); // Debug log
-  updateActiveNavButton(); // Always update nav highlight
-  initImageGridMasonry(); // Setup Masonry layout IF an image grid exists
-  initCinemagraphInteractions(); // Setup hover/click IF cinemagraphs exist
+    const videoGrid = document.getElementById('video-grid-container');
+    const cinemagraphGrid = document.getElementById('cinemagraph-grid-container');
+    const videoPopup = document.getElementById('video-popup');
+    const btlPopup = document.getElementById('btl-popup');
+    const videoPlayer = videoPopup ? videoPopup.querySelector('.video-popup__player') : null;
+    const videoCloseButton = videoPopup ? videoPopup.querySelector('.video-popup__close') : null;
+    const btlCloseButton = btlPopup ? btlPopup.querySelector('.btl-popup__close') : null;
+
+    function openVideoPopup(videoUrl) {
+        if (!videoPopup || !videoPlayer) return;
+        videoPlayer.src = videoUrl;
+        videoPopup.classList.add('show');
+        videoPlayer.play();
+    }
+
+    function closeVideoPopup() {
+        if (!videoPopup || !videoPlayer) return;
+        videoPopup.classList.remove('show');
+        videoPlayer.pause();
+        videoPlayer.src = '';
+    }
+
+    function openBtlPopup(content) {
+        if (!btlPopup) return;
+        const btlContent = btlPopup.querySelector('.btl-popup__content');
+        if(btlContent) {
+            btlContent.innerHTML = content;
+            btlPopup.classList.add('show');
+        }
+    }
+
+    function closeBtlPopup() {
+        if (!btlPopup) return;
+        btlPopup.classList.remove('show');
+    }
+
+    if (videoGrid) {
+        videoGrid.addEventListener('click', (event) => {
+            const item = event.target.closest('.video-grid__item');
+            if (!item) return;
+
+            if (event.target.classList.contains('behind-the-lens__icon')) {
+                event.stopPropagation(); // Prevent the video player from opening
+                const content = item.querySelector('.behind-the-lens__content');
+                if (content) {
+                    openBtlPopup(content.innerHTML);
+                }
+                return;
+            }
+            
+            const videoUrl = item.dataset.videoUrl;
+            if (videoUrl) {
+                openVideoPopup(videoUrl);
+            }
+        });
+    }
+
+    if (cinemagraphGrid) {
+        cinemagraphGrid.addEventListener('click', (event) => {
+            const item = event.target.closest('.cinemagraph-item');
+            if (item && item.dataset.videoUrl) {
+                openVideoPopup(item.dataset.videoUrl);
+            }
+        });
+    }
+
+    if (videoCloseButton) {
+        videoCloseButton.addEventListener('click', closeVideoPopup);
+    }
+    
+    if(btlCloseButton) {
+        btlCloseButton.addEventListener('click', closeBtlPopup);
+    }
+
+    if (videoPopup) {
+        videoPopup.addEventListener('click', (event) => {
+            if (event.target === videoPopup) {
+                closeVideoPopup();
+            }
+        });
+    }
+    
+    if (btlPopup) {
+        btlPopup.addEventListener('click', (event) => {
+            if (event.target === btlPopup) {
+                closeBtlPopup();
+            }
+        });
+    }
 }
 
-// --- Navigation ---
-// Updates the visual highlight on the current navigation button
-function updateActiveNavButton() {
-  const navButtons = document.querySelectorAll('.nav-button');
-  navButtons.forEach(button => button.classList.remove('active'));
-
-  const currentPath = window.location.pathname;
-  let targetButton = null;
-
-  // Handle trailing slash consistency
-  const normalizedPath = currentPath.endsWith('/') ? currentPath : currentPath + '/';
-  const homePaths = ['/', '/index.html', '']; // Add empty string for root case
-
-  if (homePaths.includes(currentPath) || normalizedPath === '/') {
-      targetButton = document.querySelector('.nav-button[data-nav-section="/"]');
-  } else {
-     // Match base paths like /videos/, /cinemagraphs/, /images/
-     navButtons.forEach(button => {
-         const section = button.getAttribute('data-nav-section');
-         // Ensure section has trailing slash for comparison if it's not root
-         const normalizedSection = (section && section !== '/') ? (section.endsWith('/') ? section : section + '/') : section;
-
-         if (section && section !== '/' && normalizedPath.startsWith(normalizedSection)) {
-             targetButton = button;
-         } else if (section === currentPath) { // Exact match for paths without trailing slash like /about
-             targetButton = button;
-         }
-     });
-  }
-
-  if (targetButton) {
-    targetButton.classList.add('active');
-    console.log("Active nav set to:", targetButton.textContent); // Debug log
-  } else {
-    console.log("No active nav button found for path:", currentPath); // Debug log
-  }
-}
-
-// --- Masonry for Image Grid ---
-// Initializes Masonry layout for elements with the 'image-grid' class
-function initImageGridMasonry() {
-  const imageGrids = document.querySelectorAll('.image-grid');
-  if (!imageGrids.length) {
-      // console.log("No image grid found for Masonry."); // Optional debug log
-      return;
-  }
-
-  // Check if Masonry and imagesLoaded are available
-  if (typeof Masonry === 'undefined' || typeof imagesLoaded === 'undefined') {
-      console.warn('Masonry or imagesLoaded script not found. Cannot initialize image grid layout. Make sure they are included in baseof.html for the relevant pages.');
-      return;
-  }
-
-  console.log("Initializing Masonry for", imageGrids.length, "grid(s)."); // Debug log
-  imageGrids.forEach(grid => {
-    // Use imagesLoaded to ensure images are loaded before calculating layout
-    imagesLoaded(grid, function() {
-      // Initialize Masonry after images are loaded
-      const msnry = new Masonry(grid, {
-        itemSelector: '.image-item', // Selector for grid items
-        percentPosition: true,
-        // columnWidth might need adjustment based on your grid structure/CSS
-        // columnWidth: '.image-item', // Example: if items have consistent width
-        // gutter: 10 // Example: space between items
-      });
-       console.log("Masonry layout applied to grid:", grid); // Debug log
-    });
-  });
-}
-
-// --- Cinemagraph Interactions ---
-// Adds hover-to-play and click-to-fullscreen for cinemagraphs
-function initCinemagraphInteractions() {
-  const cinemagraphItems = document.querySelectorAll('.cinemagraph-item');
-  if (!cinemagraphItems.length) {
-      // console.log("No cinemagraph items found."); // Optional debug log
-      return;
-  }
-  console.log("Initializing interactions for", cinemagraphItems.length, "cinemagraph(s)."); // Debug log
-
-  cinemagraphItems.forEach(item => {
-    const video = item.querySelector('video');
-    if (!video) return;
-
-    // Play on Hover (Mouse Enter)
-    item.addEventListener('mouseenter', () => {
-       const playPromise = video.play();
-       if (playPromise !== undefined) {
-           playPromise.catch(error => {
-               // Autoplay was prevented - common browser policy
-               console.log("Video play prevented on hover:", error);
-           });
-       }
-    });
-
-    // Pause on Hover (Mouse Leave)
-    item.addEventListener('mouseleave', () => {
-      video.pause();
-      // video.currentTime = 0; // Optional: Reset video to start on mouse leave
-    });
-
-    // Fullscreen on Click (Consider accessibility alternatives for non-mouse users)
-    item.addEventListener('click', () => {
-      console.log("Attempting fullscreen for:", video.src); // Debug log
-      if (video.requestFullscreen) {
-        video.requestFullscreen();
-      } else if (video.webkitRequestFullscreen) { /* Safari */
-        video.webkitRequestFullscreen();
-      } else if (video.msRequestFullscreen) { /* IE11 */
-        video.msRequestFullscreen();
-      } else {
-          console.log("Fullscreen API not supported on this video element.");
-      }
-    });
-
-    // Add loadedmetadata listener if you need to dynamically set classes (e.g., portrait/landscape)
-    // video.addEventListener('loadedmetadata', () => {
-    //     // Example: Set aspect ratio class (adjust if needed)
-    //     if (video.videoWidth && video.videoHeight) {
-    //         item.classList.remove('portrait', 'landscape');
-    //         item.classList.add(video.videoHeight > video.videoWidth ? 'portrait' : 'landscape');
-    //     }
-    // });
-  });
-}
-
-// --- HTMX Error Handling ---
-document.addEventListener('htmx:responseError', function(event) {
-  console.error("HTMX Request Error:", event.detail.error);
-  // Display a user-friendly message
-  // You could enhance this by injecting the message into a specific div or using a toast notification library
-  alert("Oops! Something went wrong. Please try again.");
-
-  // Optionally, log more details for debugging
-  if (event.detail.xhr) {
-    console.error("XHR Status:", event.detail.xhr.status);
-    console.error("XHR Response:", event.detail.xhr.responseText);
-  }
-});
+document.addEventListener('DOMContentLoaded', initializePageContent);
+document.addEventListener('htmx:afterSwap', initializePageContent);
