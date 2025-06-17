@@ -2,55 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
-
-
-
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ .Site.Params.description | default "Stephen Matzat's Portfolio" }}">
     <title>{{ if .Title }}{{ .Title }} &middot; {{ end }}{{ .Site.Title | default "laundromatzat.com" }}</title>
-
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-
-    {{/* Font Awesome CDN Link */}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     {{ $needsMasonry := false }}
-    {{ if eq .RelPermalink "/images/" }} {{/* Condition to load Masonry only on images page */}}
+    {{ if eq .RelPermalink "/images/" }}
       {{ $needsMasonry = true }}
       <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js" defer></script>
       <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js" defer></script>
     {{ end }}
 
-    {{/* --- MODIFIED CSS Pipeline (using Concat) --- */}}
     {{ $cssOptions := (dict "targetPath" "css/main.css" "enableSourceMap" true ) }}
-    {{ $files := slice (resources.Get "css/_variables.css") (resources.Get "css/_base.css") }}
+    {{ $files := slice (resources.Get "css/_variables.css") (resources.Get "css/_base.css") (resources.Get "css/_modal.css") }}
     {{ $rest := resources.Match "css/_[!vb]*.css" }}
     {{ $otherStyles := resources.Match "css/[^_]*.css" }}
     {{ $allStyles := $files | append $rest | append $otherStyles }}
     
     {{ if $allStyles }}
-    {{ $styles := $allStyles | resources.Concat "css/main.css" | css.PostCSS (dict "config" "./postcss.config.js") |
-    resources.Minify | resources.Fingerprint }}
-
-    <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}">
+      {{ $styles := $allStyles | resources.Concat "css/main.css" | resources.PostCSS (dict "config" "./postcss.config.js") | resources.Minify | resources.Fingerprint }}
+      <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}">
     {{ else }}
-    <link rel="stylesheet" href="/css/fallback.css">
-    {{ warnf "CSS pipeline failed, loading fallback styles." }}
+      <link rel="stylesheet" href="/css/fallback.css">
+      {{ warnf "CSS pipeline failed, loading fallback styles." }}
     {{ end }}
 
     {{ template "_internal/opengraph.html" . }}
     {{ template "_internal/schema.html" . }}
     {{ template "_internal/twitter_cards.html" . }}
-
   </head>
   <body>
     <header class="site-header">
       <nav class="site-nav">
         <div class="nav-content">
            <a href="/" class="site-title" hx-get="/" hx-select="#content-container" hx-target="#content-container" hx-push-url="true" hx-indicator="#indicator">
-             <img src="/favicon.ico" alt="" class="favicon-image"> {{/* Alt empty as it's decorative next to text */}}
+             <img src="/favicon.ico" alt="" class="favicon-image">
              laundromatzat.com
            </a>
           <div class="main-nav-container">
@@ -74,45 +63,42 @@
 
     <main class="content-area">
       <div id="content-container">
-        {{/* The main content block is rendered here */}}
         {{ block "main" . }}{{ end }}
       </div>
     </main>
 
+    <div id="video-popup" class="video-popup">
+      <span class="video-popup__close">&times;</span>
+      <video class="video-popup__player" controls></video>
+      <button id="video-popup-btl-button" style="display: none;">Behind the Lens</button>
+    </div>
+
+    <div id="btl-popup" class="btl-popup">
+        <div class="btl-popup__dialog">
+            <span class="btl-popup__close">&times;</span>
+            <div class="btl-popup__content">
+                <!-- BTL Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
     <footer>
        <p>&copy; {{ now.Format "2006" }} {{ .Site.Title | default "laundromatzat.com" }}</p>
     </footer>
-{{/* layouts/_default/baseof.html - End of body */}}
-    {{/* ... (footer tag above this) ... */}}
 
-    {{/* --- Load External Javascript --- */}}
-    {{/* Process behind-the-lens.js with Hugo Pipes for fingerprinting/minification */}}
-    {{ $behindTheLensJS := resources.Get "js/behind-the-lens.js" | js.Build (dict "minify" true) | fingerprint }}
-    {{ if $behindTheLensJS }}
-      <script src="{{ $behindTheLensJS.RelPermalink }}" integrity="{{ $behindTheLensJS.Data.Integrity }}" defer></script>
-    {{ else }}
-      {{/* Fallback or warning if js/behind-the-lens.js is not found */}}
-      <script>console.error("behind-the-lens.js not found in assets/js/");</script>
-    {{ end }}
-
-    {{/* Process main.js with Hugo Pipes for fingerprinting/minification */}}
     {{ $mainJS := resources.Get "js/main.js" | js.Build (dict "minify" true) | fingerprint }}
     {{ if $mainJS }}
       <script src="{{ $mainJS.RelPermalink }}" integrity="{{ $mainJS.Data.Integrity }}" defer></script>
     {{ else }}
-      {{/* Fallback or warning if js/main.js is not found */}}
       <script>console.error("main.js not found in assets/js/");</script>
     {{ end }}
 
-    {{/* --- Load Masonry/ImagesLoaded IF needed (e.g., on images page) --- */}}
-    {{ if eq .RelPermalink "/images/" }} {{/* Condition based on your setup */}}
+    {{ if eq .RelPermalink "/images/" }}
       <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js" defer></script>
       <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js" defer></script>
     {{ end }}
 
-    {{/* --- Inline Script for Initialization & HTMX Hooks --- */}}
     <script>
-      // Ensure functions from main.js are called after DOM is ready and after HTMX swaps
       document.addEventListener('DOMContentLoaded', () => {
           if (typeof initializePageContent === 'function') {
               initializePageContent();
@@ -122,20 +108,16 @@
       });
 
       document.addEventListener('htmx:afterSwap', (event) => {
-        console.log("HTMX swap finished, re-initializing content..."); // Debug log
         if (typeof initializePageContent === 'function') {
-            // Use a small delay to ensure DOM is fully settled after swap, especially for Masonry
             setTimeout(initializePageContent, 50);
         } else {
             console.error('initializePageContent function not found after HTMX swap.');
         }
       });
 
-      // Ensure the HX-Request header is always sent by HTMX
       document.addEventListener('htmx:configRequest', (event) => {
         event.detail.headers['HX-Request'] = 'true';
       });
     </script>
-
   </body>
 </html>

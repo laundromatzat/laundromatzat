@@ -1,40 +1,24 @@
-{{/* layouts/cinemagraphs/list.html */}}
 {{ define "main" }}
 <div class="section-header">
-  <h1>cinemagraphs</h1>
+  <h1>Cinemagraphs</h1>
   <div class="accent-line"></div>
   <div class="section-introduction">{{ .Content }}</div>
 </div>
 
-<div class="cinemagraph-grid">
-  {{ range $index, $item := $.Site.Data.cinemagraphs.cinemagraphs }}
-    {{ $orientation := "landscape" }} {{/* Basic orientation default */}}
-    {{/* Add logic here if you store dimensions */}}
-
-    <div class="cinemagraph-item {{ $orientation }}">
-      <video preload="metadata" poster="{{ .thumbnail | default "/images/placeholder.webp" | relURL }}" playsinline loop muted>
-        {{ $videoType := "video/mp4" }}
-        {{ if hasSuffix .firebase_url ".m4v" }}{{ $videoType = "video/x-m4v" }}{{ end }}
-        {{ if hasSuffix .firebase_url ".webm" }}{{ $videoType = "video/webm" }}{{ end }}
-        {{ if hasSuffix .firebase_url ".ogg" }}{{ $videoType = "video/ogg" }}{{ end }}
-        <source src="{{ .firebase_url }}" type="{{ $videoType }}">
-        Your browser does not support the video tag.
-      </video>
-
-      <div class="cinemagraph-overlay"> {{/* Metadata overlay remains */}}
-         <h2>{{ .title | default "Cinemagraph" }}</h2>
-         <div class="cinemagraph-metadata">
-           {{ with .location }}<p class="location">{{ . }}</p>{{ end }}
-           {{ with .date }}<p class="date">{{ . }}</p>{{ end }}
-         </div>
-         <i class="fas fa-camera behind-the-lens__icon"></i>
+<div id="cinemagraph-grid-container" class="cinemagraph-grid">
+  {{ range .Site.Data.cinemagraphs.cinemagraphs }}
+    <div class="cinemagraph-item" data-video-url="{{ .firebase_url }}">
+      <img src="{{ .thumbnail | default "/images/placeholder.webp" | relURL }}" alt="{{ .title }}" class="cinemagraph-item__thumbnail">
+      <div class="cinemagraph-overlay">
+        <h2>{{ .title }}</h2>
+        <div class="cinemagraph-metadata">
+          <p class="location">{{ .location }}</p>
+          <p class="date">{{ .date }}</p>
+        </div>
       </div>
-      {{ with $item.behind_the_lens }}
-      <div class="behind-the-lens__content" style="display: none;">
-        <h3>Behind the Lens</h3>
-        <p>{{ . }}</p>
+      <div class="play-icon-overlay">
+        <i class="fas fa-play-circle"></i>
       </div>
-      {{ end }}
     </div>
   {{ end }}
 </div>
