@@ -211,11 +211,12 @@ function NavigationBar() {
   return (
     <nav className="navigation-bar" aria-label="Main navigation">
       <div className="nav-container">
-        <a href="/" className="site-title" aria-label="Homepage">My Portfolio</a>
+        <a href="/" className="site-title" aria-label="Homepage">laundromatzat.com</a>
         <div className="menu-links">
-          <a href="#home">Home</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
+          <a href="#home">home</a>
+          <a href="#wash-fold">wash&fold</a>
+          <a href="#dry-cleaning">dry cleaning</a>
+          <a href="#tailoring-alterations">tailoring&alterations</a>
         </div>
       </div>
     </nav>
