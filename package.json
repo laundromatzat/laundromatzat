@@ -1,35 +1,23 @@
 {
+  "name": "laundromatzat-redesign",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "fluent-ffmpeg": "^2.1.3",
-    "fs-extra": "^11.3.0",
-    "js-yaml": "^4.1.0",
-    "path": "^0.12.7"
+    "@google/genai": "^0.7.0",
+    "react": "^19.1.0",
+    "react/jsx-runtime": "^19.0.0",
+    "react-dom/client": "^19.0.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.5",
-    "postcss-cli": "^11.0.1",
-    "postcss-preset-env": "^10.2.3"
-  },
-  "name": "laundromatzat",
-  "version": "1.0.0",
-  "description": "This repository contains the source code for my personal website/portfolio, built using the [Hugo](https://gohugo.io/) static site generator.",
-  "main": "postcss.config.js",
-  "directories": {
-    "doc": "docs"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/laundromatzat/laundromatzat.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/laundromatzat/laundromatzat/issues"
-  },
-  "homepage": "https://github.com/laundromatzat/laundromatzat#readme"
+    "@types/node": "^22.14.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0"
+  }
 }
