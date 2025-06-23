@@ -206,17 +206,66 @@ function parsePortfolioDate(dateString?: string): Date | null {
   return null; // Could not parse
 }
 
+interface NavigationBarProps {
+  availableTypes: string[];
+  activeType: string | null;
+  onSetActiveType: (type: string) => void;
+  dateSortOrder: 'new' | 'old';
+  onDateSortToggle: () => void;
+  viewMode: 'grid' | 'map';
+  onViewModeToggle: () => void;
+  hasGpsData: boolean;
+}
 
-function NavigationBar() {
+function NavigationBar({
+  availableTypes,
+  activeType,
+  onSetActiveType,
+  dateSortOrder,
+  onDateSortToggle,
+  viewMode,
+  onViewModeToggle,
+  hasGpsData
+}: NavigationBarProps) {
   return (
     <nav className="navigation-bar" aria-label="Main navigation">
       <div className="nav-container">
         <a href="/" className="site-title" aria-label="Homepage">laundromatzat.com</a>
-        <div className="menu-links">
-          <a href="#home">home</a>
-          <a href="#wash-fold">wash&fold</a>
-          <a href="#dry-cleaning">dry cleaning</a>
-          <a href="#tailoring-alterations">tailoring&alterations</a>
+        <div className="menu-links" role="menubar" aria-label="Filter by content type">
+          {availableTypes.map(type => (
+            <button
+              key={type}
+              role="menuitemradio"
+              aria-checked={activeType === type}
+              onClick={() => onSetActiveType(type)}
+              className={`nav-type-link ${activeType === type ? 'active' : ''}`}
+            >
+              {(type + 's').toLowerCase()}
+            </button>
+          ))}
+        </div>
+        <div className="nav-action-controls">
+          <button
+            onClick={onDateSortToggle}
+            className="date-sort-button"
+            aria-label={`Sort by date. Currently ${dateSortOrder === 'new' ? 'newest first' : 'oldest first'}. Press to toggle.`}
+            title={`Current sort: ${dateSortOrder === 'new' ? 'Newest First' : 'Oldest First'}. Click to change.`}
+          >
+            <span>date</span>
+            <span className="sort-arrow" aria-hidden="true">
+              {dateSortOrder === 'new' ? '▼' : '▲'}
+            </span>
+          </button>
+          {hasGpsData && (
+            <button 
+              onClick={onViewModeToggle} 
+              className="view-mode-toggle-button"
+              aria-label={viewMode === 'grid' ? "Switch to Map View" : "Switch to Grid View"}
+              title={viewMode === 'grid' ? "Switch to Map View" : "Switch to Grid View"}
+            >
+              <span aria-hidden="true" className="map-icon">🗺️</span>
+            </button>
+          )}
         </div>
       </div>
     </nav>
@@ -229,7 +278,6 @@ interface PortfolioItemProps {
 }
 
 function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
@@ -249,8 +297,6 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
     <div
       ref={itemRef}
       className="portfolio-item"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       role="group" 
@@ -262,94 +308,17 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
         style={{ backgroundImage: `url(${item.coverImage})` }}
         aria-hidden="true"
       ></div>
-      {isHovered && (
-        <div className="item-overlay" aria-hidden="true">
-          <h3 id={`item-title-${item.id}-hover`} className="item-title">{item.title}</h3>
-          {item.date && <p className="item-detail item-date">{item.date}</p>}
-          {item.location && <p className="item-detail item-location">{item.location}</p>}
-        </div>
-      )}
+      <div className="item-overlay" aria-hidden="true">
+        <h3 id={`item-title-${item.id}-hover`} className="item-title">{item.title}</h3>
+        {item.date && <p className="item-detail item-date">{item.date}</p>}
+        {item.location && <p className="item-detail item-location">{item.location}</p>}
+      </div>
       <span id={`item-title-${item.id}`} className="sr-only">{item.title}</span>
     </div>
   );
 }
 
-const ALL_POSSIBLE_TYPES = ['image', 'video', 'cinemagraph']; // Define this based on your data
-
-interface FilterSortControlsProps {
-  availableTypes: string[];
-  selectedTypes: string[];
-  onToggleTypeFilter: (type: string) => void;
-  sortBy: string;
-  onSortByChange: (sort: string) => void;
-  viewMode: 'grid' | 'map';
-  onViewModeToggle: () => void;
-  onClearAll: () => void;
-  hasGpsData: boolean;
-}
-
-function FilterSortControls({
-  availableTypes,
-  selectedTypes,
-  onToggleTypeFilter,
-  sortBy,
-  onSortByChange,
-  viewMode,
-  onViewModeToggle,
-  onClearAll,
-  hasGpsData
-}: FilterSortControlsProps) {
-  return (
-    <div className="filter-sort-controls-container" aria-label="Filter, sort, and view controls">
-      <div className="filter-group">
-        <span id="type-filter-label" className="filter-label">Show Types:</span>
-        <div className="type-buttons" role="group" aria-labelledby="type-filter-label">
-          {availableTypes.map(type => (
-            <button
-              key={type}
-              onClick={() => onToggleTypeFilter(type)}
-              className={`type-button ${selectedTypes.includes(type) ? 'active' : ''}`}
-              data-type={type} // Added data-type for specific CSS styling
-              aria-pressed={selectedTypes.includes(type)}
-              title={`Toggle ${type.charAt(0).toUpperCase() + type.slice(1)}`}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}s
-            </button>
-          ))}
-        </div>
-      </div>
-      
-      <div className="filter-group">
-        <label htmlFor="sort-by" className="filter-label">Sort by:</label>
-        <select id="sort-by" value={sortBy} onChange={(e) => onSortByChange(e.target.value)}>
-          <option value="default">Default</option>
-          <option value="title_asc">Title (A-Z)</option>
-          <option value="title_desc">Title (Z-A)</option>
-          <option value="date_new">Date (Newest First)</option>
-          <option value="date_old">Date (Oldest First)</option>
-        </select>
-      </div>
-
-      <div className="filter-group view-mode-group">
-        {hasGpsData && (
-          <button 
-            onClick={onViewModeToggle} 
-            className="view-mode-toggle-button"
-            aria-label={viewMode === 'grid' ? "Switch to Map View" : "Switch to Grid View"}
-          >
-            <span aria-hidden="true" className="map-icon">🗺️</span>
-            {viewMode === 'grid' ? 'View on Map' : 'View as Grid'}
-          </button>
-        )}
-      </div>
-      
-      <div className="filter-group clear-group">
-        <button onClick={onClearAll} className="clear-filters-button" aria-label="Clear all filters, sorting, and reset view">Clear All</button>
-      </div>
-    </div>
-  );
-}
-
+const ALL_POSSIBLE_TYPES = ['image', 'video', 'cinemagraph']; 
 
 interface PortfolioGridProps {
   items: PortfolioItemData[];
@@ -407,16 +376,13 @@ function PortfolioMap({ items, onItemClick }: PortfolioMapProps) {
   
   const getPosition = (lat: number, lon: number, mapWidth: number, mapHeight: number) => {
     if (!bounds) return { x: 0, y: 0 };
-    // Normalize longitude (x-axis)
     const lonRange = bounds.maxLon - bounds.minLon;
     let x = lonRange === 0 ? 0.5 : (lon - bounds.minLon) / lonRange;
     
-    // Normalize latitude (y-axis) - latitude typically decreases from top to bottom on maps
     const latRange = bounds.maxLat - bounds.minLat;
     let y = latRange === 0 ? 0.5 : (bounds.maxLat - lat) / latRange;
 
-    // Add padding (e.g., 10%)
-    const padding = 0.05; // 5% padding
+    const padding = 0.05; 
     x = padding + x * (1 - 2 * padding);
     y = padding + y * (1 - 2 * padding);
 
@@ -431,8 +397,8 @@ function PortfolioMap({ items, onItemClick }: PortfolioMapProps) {
     <div ref={mapRef} className="portfolio-map-container" role="application" aria-label="Portfolio items map">
       <p className="sr-only">Map of portfolio items. Use tab to navigate through items.</p>
       {itemsWithGps.map((item, index) => {
-        const mapWidth = mapRef.current?.clientWidth || 600; // default width
-        const mapHeight = mapRef.current?.clientHeight || 400; // default height
+        const mapWidth = mapRef.current?.clientWidth || 600; 
+        const mapHeight = mapRef.current?.clientHeight || 400; 
         const { x, y } = getPosition(item.lat, item.lon, mapWidth, mapHeight);
         
         const markerRef = React.createRef<HTMLButtonElement>();
@@ -536,8 +502,6 @@ function Modal({ isOpen, onClose, item }: ModalProps) {
   const titleId = `modal-title-${item.id}`;
 
   let mediaElement;
-  // const displaySource = (item.type === 'video' || item.type === 'cinemagraph') && item.sourceUrl ? item.sourceUrl : item.coverImage;
-
 
   if (item.type === 'video' && item.sourceUrl) { 
     mediaElement = <video src={item.sourceUrl} controls autoPlay muted playsInline aria-describedby={titleId} key={`${item.id}-video`}></video>;
@@ -598,6 +562,14 @@ function Modal({ isOpen, onClose, item }: ModalProps) {
   );
 }
 
+function Footer() {
+  const currentYear = new Date().getFullYear();
+  return (
+    <footer className="app-footer">
+      <p>&copy; {currentYear} laundromatzat.com</p>
+    </footer>
+  );
+}
 
 function App() {
   const [allPortfolioItems, setAllPortfolioItems] = useState<PortfolioItemData[]>([]);
@@ -609,8 +581,8 @@ function App() {
   const [lastFocusedElement, setLastFocusedElement] = useState<HTMLElement | null>(null);
 
   const [availableTypesInSheet, setAvailableTypesInSheet] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<string>('default');
+  const [activeType, setActiveType] = useState<string | null>(null); 
+  const [dateSortOrder, setDateSortOrder] = useState<'new' | 'old'>('new');
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [hasAnyGpsData, setHasAnyGpsData] = useState<boolean>(false);
 
@@ -654,7 +626,14 @@ function App() {
         
         const sortedTypes = ALL_POSSIBLE_TYPES.filter(t => typesFromData.has(t));
         setAvailableTypesInSheet(sortedTypes);
-        setSelectedTypes(sortedTypes); // Initially select all available types
+        
+        if (sortedTypes.includes('video')) {
+          setActiveType('video');
+        } else if (sortedTypes.length > 0) {
+          setActiveType(sortedTypes[0]);
+        } else {
+          setActiveType(null);
+        }
         setHasAnyGpsData(foundGps);
 
       } catch (e: any) {
@@ -670,47 +649,32 @@ function App() {
   useEffect(() => {
     let itemsToProcess = [...allPortfolioItems];
 
-    // Apply Type Filter
-    if (selectedTypes.length > 0 && selectedTypes.length < availableTypesInSheet.length) { // Only filter if not all or none are selected
-      itemsToProcess = itemsToProcess.filter(item => selectedTypes.includes(item.type.toLowerCase()));
-    } else if (selectedTypes.length === 0 && availableTypesInSheet.length > 0) {
-      // If user deselects all, show none. User must click "Clear All" or re-select.
-      // This behavior is modified by handleToggleTypeFilter ensuring it re-selects all if empty.
+    if (activeType) {
+      itemsToProcess = itemsToProcess.filter(item => item.type.toLowerCase() === activeType);
+    } else if (availableTypesInSheet.length > 0) { 
+      itemsToProcess = [];
     }
+        
+    itemsToProcess.sort((a, b) => {
+        const dateObjA = parsePortfolioDate(a.date);
+        const dateObjB = parsePortfolioDate(b.date);
 
+        const timeA = dateObjA ? dateObjA.getTime() : NaN;
+        const timeB = dateObjB ? dateObjB.getTime() : NaN;
+        
+        const isValidA = !isNaN(timeA);
+        const isValidB = !isNaN(timeB);
 
-    // Apply Sorting
-    if (sortBy !== 'default') {
-      itemsToProcess.sort((a, b) => {
-        if (sortBy === 'title_asc') {
-          return a.title.localeCompare(b.title);
+        if (isValidA && isValidB) {
+            return dateSortOrder === 'new' ? timeB - timeA : timeA - timeB;
         }
-        if (sortBy === 'title_desc') {
-          return b.title.localeCompare(a.title);
-        }
-        if (sortBy === 'date_new' || sortBy === 'date_old') {
-            const dateObjA = parsePortfolioDate(a.date);
-            const dateObjB = parsePortfolioDate(b.date);
-
-            const timeA = dateObjA ? dateObjA.getTime() : NaN;
-            const timeB = dateObjB ? dateObjB.getTime() : NaN;
-            
-            const isValidA = !isNaN(timeA);
-            const isValidB = !isNaN(timeB);
-
-            if (isValidA && isValidB) {
-                return sortBy === 'date_new' ? timeB - timeA : timeA - timeB;
-            }
-            // Sort items with valid dates before items with invalid/missing dates
-            if (isValidA) return -1; 
-            if (isValidB) return 1;
-            return 0; // Both invalid or equal in terms of validity
-        }
+        if (isValidA) return dateSortOrder === 'new' ? -1 : 1;
+        if (isValidB) return dateSortOrder === 'new' ? 1 : -1;
         return 0;
-      });
-    }
+    });
+    
     setDisplayedItems(itemsToProcess);
-  }, [allPortfolioItems, selectedTypes, sortBy, availableTypesInSheet]);
+  }, [allPortfolioItems, activeType, dateSortOrder, availableTypesInSheet]);
 
 
   const handleOpenModal = (item: PortfolioItemData, targetElement: HTMLElement) => {
@@ -725,46 +689,31 @@ function App() {
     lastFocusedElement?.focus();
   };
 
-  const handleToggleTypeFilter = (typeToToggle: string) => {
-    setSelectedTypes(prevSelectedTypes => {
-      const newSelectedTypes = prevSelectedTypes.includes(typeToToggle)
-        ? prevSelectedTypes.filter(t => t !== typeToToggle)
-        : [...prevSelectedTypes, typeToToggle];
-
-      if (newSelectedTypes.length === 0 && availableTypesInSheet.length > 0) {
-        return [...availableTypesInSheet];
-      }
-      return newSelectedTypes;
-    });
+  const handleSetActiveType = (typeToSet: string) => {
+    setActiveType(typeToSet);
+  };
+  
+  const handleDateSortToggle = () => {
+    setDateSortOrder(prevOrder => prevOrder === 'new' ? 'old' : 'new');
   };
 
   const handleViewModeToggle = () => {
     setViewMode(prevMode => prevMode === 'grid' ? 'map' : 'grid');
   };
 
-  const handleClearAllFilters = () => {
-    setSelectedTypes([...availableTypesInSheet]); // Select all available types
-    setSortBy('default');
-    setViewMode('grid');
-  };
-
   return (
     <div className="app-container">
-      <NavigationBar />
+      <NavigationBar 
+        availableTypes={availableTypesInSheet}
+        activeType={activeType}
+        onSetActiveType={handleSetActiveType}
+        dateSortOrder={dateSortOrder}
+        onDateSortToggle={handleDateSortToggle}
+        viewMode={viewMode}
+        onViewModeToggle={handleViewModeToggle}
+        hasGpsData={hasAnyGpsData}
+      />
       <main id="main-content-area" aria-live="polite">
-        {!loading && !error && allPortfolioItems.length > 0 && (
-          <FilterSortControls
-            availableTypes={availableTypesInSheet}
-            selectedTypes={selectedTypes}
-            onToggleTypeFilter={handleToggleTypeFilter}
-            sortBy={sortBy}
-            onSortByChange={setSortBy}
-            viewMode={viewMode}
-            onViewModeToggle={handleViewModeToggle}
-            onClearAll={handleClearAllFilters}
-            hasGpsData={hasAnyGpsData}
-          />
-        )}
         {loading && <p className="status-message">Loading portfolio from Google Sheet...</p>}
         {error && <p className="status-message error-message">{error}</p>}
         
@@ -784,6 +733,7 @@ function App() {
         onClose={handleCloseModal} 
         item={selectedModalItem} 
       />
+      <Footer />
     </div>
   );
 }
