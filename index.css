@@ -79,7 +79,6 @@ a {
   width: 100%; 
   margin: 0 auto;
   display: flex;
-  /* justify-content: space-between; /* site-title, menu-links, nav-action-controls will space out */
   align-items: flex-end; 
   padding: 0 1.5rem 0.3rem 1.5rem; 
 }
@@ -104,13 +103,12 @@ a {
 .nav-action-controls {
   display: flex;
   align-items: flex-end;
-  gap: 0.75rem; /* Gap between date sort and map toggle */
+  gap: 0.75rem; /* Gap between date sort and map toggle group */
   margin-bottom: 0.1rem;
 }
 
 .menu-links .nav-type-link,
-.nav-action-controls .date-sort-button,
-.nav-action-controls .view-mode-toggle-button {
+.nav-action-controls .date-sort-button {
   background: none;
   border: none;
   padding: 0.25rem 0.5rem;
@@ -142,7 +140,7 @@ a {
 }
 
 
-/* Date Sort and View Mode buttons in Nav Bar */
+/* Date Sort button in Nav Bar */
 .nav-action-controls .date-sort-button {
   gap: 0.35rem; 
   color: var(--color-dark-accent); 
@@ -156,21 +154,53 @@ a {
   line-height: 1; 
 }
 
-.nav-action-controls .view-mode-toggle-button {
-  padding: 0.5rem; /* Slightly larger padding for icon button */
-  color: var(--color-text); 
-}
-.nav-action-controls .view-mode-toggle-button .map-icon {
-  font-size: 1.5em; 
-}
-.nav-action-controls .view-mode-toggle-button:hover,
-.nav-action-controls .view-mode-toggle-button:focus-visible {
-  color: var(--color-dark-accent); 
+/* View Mode Toggle Group (List/Map) */
+.view-mode-toggle-group {
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden; /* To make child button borders look shared */
+  border: 1px solid var(--color-text); /* Overall border for the group */
 }
 
-.nav-action-controls button:focus-visible {
+.view-mode-button {
+  background-color: transparent;
+  border: none; /* Individual borders removed, group has one */
+  padding: 0.35rem 0.6rem; /* Adjust padding for icon fit */
+  cursor: pointer;
+  color: var(--color-text); /* Icon color for inactive state */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  line-height: 1; /* Ensure icon vertical alignment */
+}
+
+.view-mode-button:not(:last-child) {
+   border-right: 1px solid var(--color-text); /* Separator line */
+}
+
+.view-mode-button:hover:not(.active) {
+  background-color: rgba(0,0,0,0.05); /* Subtle hover for inactive */
+}
+
+.view-mode-button.active {
+  background-color: var(--color-dark-accent);
+  color: var(--color-light-text-on-dark); /* Icon color for active state */
+  cursor: default;
+}
+
+.view-mode-button svg {
+  width: 1.1em; /* Control SVG size relative to button font size */
+  height: 1.1em;
+  display: block;
+}
+
+
+.nav-action-controls button:focus-visible,
+.view-mode-button:focus-visible {
   outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
+  outline-offset: 1px;
+  z-index: 1; /* Ensure focus ring is visible over adjacent elements */
 }
 
 
@@ -312,42 +342,16 @@ a {
   background-color: var(--color-secondary-bg); 
   position: relative; 
   overflow: hidden; 
-  border: 1px solid var(--color-accent); 
-  border-radius: 8px; 
+  /* border: 1px solid var(--color-accent); Removed for Leaflet */
+  /* border-radius: 8px; Removed for Leaflet */
 }
 
-.map-marker {
-  position: absolute;
-  width: 40px; 
-  height: 40px; 
-  border-radius: 50%; 
-  background-color: rgba(174, 221, 241, 0.8); 
-  border: 2px solid var(--color-light-text-on-dark); 
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); 
-  cursor: pointer;
-  transform: translate(-50%, -50%); 
-  transition: transform 0.2s ease-out, background-color 0.2s;
-  background-size: cover;
-  background-position: center;
-}
+/* Leaflet's default marker is used, no custom .map-marker style needed for now */
+/* .map-marker { ... } */
 
-.map-marker:hover,
-.map-marker:focus {
-  transform: translate(-50%, -50%) scale(1.2); 
-  background-color: rgba(174, 221, 241, 1); 
-  z-index: 10; 
-}
+/* Leaflet handles its own attribution. */
+/* .map-attribution { ... } */
 
-.map-attribution {
-  position: absolute;
-  bottom: 5px;
-  right: 10px;
-  font-size: 0.7rem;
-  color: var(--color-text); 
-  background-color: rgba(255, 255, 255, 0.7); 
-  padding: 2px 5px;
-  border-radius: 3px;
-}
 
 /* Footer Styles */
 .app-footer {
@@ -376,14 +380,12 @@ a {
     font-size: 1.9rem;
   }
   .menu-links .nav-type-link,
-  .nav-action-controls .date-sort-button,
-  .nav-action-controls .view-mode-toggle-button  {
+  .nav-action-controls .date-sort-button {
     font-size: 0.875rem; 
   }
-
-  .map-marker {
-    width: 44px;
-    height: 44px;
+  .view-mode-button svg {
+    width: 1em;
+    height: 1em;
   }
 }
 
@@ -409,18 +411,16 @@ a {
     font-size: 2rem;
   }
    .menu-links .nav-type-link,
-   .nav-action-controls .date-sort-button,
-   .nav-action-controls .view-mode-toggle-button {
+   .nav-action-controls .date-sort-button {
     font-size: 1rem;
     padding: 0.5rem 0.75rem; 
   }
-   .nav-action-controls .view-mode-toggle-button {
-      padding: 0.5rem; /* Maintain specific padding for icon button if needed */
-   }
-
-   .map-marker {
-    width: 48px;
-    height: 48px;
+  .view-mode-button {
+    padding: 0.45rem 0.7rem; /* Adjust padding for larger icons if needed */
+  }
+  .view-mode-button svg {
+    width: 1.2em; /* Slightly larger icons on bigger screens */
+    height: 1.2em;
   }
    .portfolio-map-container {
     min-height: 600px;
@@ -434,7 +434,7 @@ a {
 /* Accessibility: Focus visible */
 .portfolio-item:focus, 
 .modal-close-button:focus,
-.map-marker:focus {
+.leaflet-marker-icon:focus { /* For Leaflet markers */
   outline: 2px solid var(--color-focus-ring); 
   outline-offset: 2px;
   box-shadow: 0 0 0 2px rgba(92, 148, 186, 0.25); 
@@ -493,32 +493,36 @@ a {
 }
 
 .modal-content {
-  overflow-y: auto; 
-  padding-top: 20px; 
+  flex-grow: 1; /* Allows content to take up space */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Important for flex children to not overflow */
+  overflow: hidden; /* Fallback, should be managed by children */
 }
 
 .modal-title {
   font-size: 1.6rem; 
   font-weight: 600;
   margin-top: 0;
-  margin-bottom: 20px; 
+  margin-bottom: 15px; /* Reduced from 20px */
   color: var(--color-dark-text); 
   padding-right: 40px; 
+  flex-shrink: 0; /* Prevent title from shrinking */
 }
 
 .modal-media-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-grow: 1; 
-  margin-bottom: 20px; 
-  min-height: 200px; 
+  margin-bottom: 15px; /* Reduced from 20px */
+  flex-shrink: 1; /* Allow media to shrink if needed */
+  min-height: 0; /* Allow shrinking below its content size */
 }
 
 .modal-media-container img,
 .modal-media-container video {
   max-width: 100%;
-  max-height: calc(90vh - 220px); 
+  max-height: 100%; /* Max height relative to its container */
   object-fit: contain; 
   border-radius: 4px; 
 }
@@ -526,22 +530,52 @@ a {
 .modal-details {
   font-size: 0.95rem; 
   color: var(--color-text); 
+  overflow-y: hidden; /* Clip text if too long */
+  flex-shrink: 0; /* Prevent details block from shrinking vertically */
 }
 
 .modal-details p {
-  margin: 10px 0; 
-  line-height: 1.5;
+  margin: 8px 0; /* Reduced from 10px */
+  line-height: 1.4; /* Reduced from 1.5 */
+}
+.modal-details p:first-child {
+  margin-top: 0;
+}
+.modal-details p:last-child {
+  margin-bottom: 0;
 }
 
-.modal-details strong {
+.modal-details strong { /* No longer used in reformatted text, but kept for GPS/EasterEgg */
   color: var(--color-dark-text); 
 }
 
-.modal-description {
+.modal-description-reformatted {
   font-style: italic;
 }
+.modal-info-line {
+  /* Style for the location/date/feat line if needed */
+}
+
 
 .modal-easter-egg {
   opacity: 0.7; 
   font-size: 0.8rem;
+}
+
+/* Leaflet Popup Customizations (Optional) */
+.leaflet-popup-content-wrapper {
+  border-radius: 4px !important; /* Example: Match app's border radius */
+}
+.leaflet-popup-content {
+  margin: 10px !important; /* Adjust padding inside popup */
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.leaflet-popup-content strong {
+  font-weight: 600;
+  color: var(--color-dark-text);
+}
+.leaflet-popup-content em {
+  font-size: 0.85rem;
+  color: var(--color-text);
 }
