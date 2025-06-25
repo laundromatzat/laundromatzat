@@ -4,6 +4,8 @@
 */
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
+import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
 // !!! IMPORTANT: REPLACE WITH YOUR ACTUAL PUBLISHED GOOGLE SHEET CSV URL !!!
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQTTlqDzuJCj-vRQiSNTtdSlaeb4VhJEVzia25ETVWaG1TC7UViLUrPFWKKK9PFdBiumGNSxX2fUKUa/pub?gid=0&single=true&output=csv';
@@ -206,6 +208,27 @@ function parsePortfolioDate(dateString?: string): Date | null {
   return null; // Could not parse
 }
 
+const ListIconSVG = ({ width = "20", height = "20", style }: { width?: string, height?: string, style?: React.CSSProperties }) => (
+  <svg viewBox="0 0 24 24" width={width} height={height} fill="currentColor" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', ...style }} aria-hidden="true">
+    <rect x="3" y="6.5" width="3" height="3" rx="0.5"/>
+    <rect x="3" y="10.5" width="3" height="3" rx="0.5"/>
+    <rect x="3" y="14.5" width="3" height="3" rx="0.5"/>
+    <rect x="8" y="7" width="13" height="2" rx="1"/>
+    <rect x="8" y="11" width="13" height="2" rx="1"/>
+    <rect x="8" y="15" width="13" height="2" rx="1"/>
+  </svg>
+);
+
+const MapIconSVG = ({ width = "20", height = "20", style }: { width?: string, height?: string, style?: React.CSSProperties }) => (
+  <svg viewBox="0 0 24 24" width={width} height={height} xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', ...style }} aria-hidden="true">
+    <path d="M4 4C3.44772 4 3 4.44772 3 5V19C3 19.5523 3.44772 20 4 20H8V4H4Z" stroke="currentColor" strokeWidth="1" fill="transparent"/>
+    <path d="M8 4L9.57735 3H14.4226L16 4V20L14.4226 21H9.57735L8 20V4Z" stroke="currentColor" strokeWidth="1" fill="transparent"/>
+    <path d="M16 4H20C20.5523 4 21 4.44772 21 5V19C21 19.5523 20.5523 20 20 20H16V4Z" stroke="currentColor" strokeWidth="1" fill="transparent"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M18 7C16.8954 7 16 7.89543 16 9C16 10.9306 18 14 18 14C18 14 20 10.9306 20 9C20 7.89543 19.1046 7 18 7ZM18 10.5C17.1716 10.5 16.5 9.82843 16.5 9C16.5 8.17157 17.1716 7.5 18 7.5C18.8284 7.5 19.5 8.17157 19.5 9C19.5 9.82843 18.8284 10.5 18 10.5Z" fill="currentColor"/>
+  </svg>
+);
+
+
 interface NavigationBarProps {
   availableTypes: string[];
   activeType: string | null;
@@ -257,14 +280,26 @@ function NavigationBar({
             </span>
           </button>
           {hasGpsData && (
-            <button 
-              onClick={onViewModeToggle} 
-              className="view-mode-toggle-button"
-              aria-label={viewMode === 'grid' ? "Switch to Map View" : "Switch to Grid View"}
-              title={viewMode === 'grid' ? "Switch to Map View" : "Switch to Grid View"}
-            >
-              <span aria-hidden="true" className="map-icon">🗺️</span>
-            </button>
+             <div className="view-mode-toggle-group" role="group" aria-label="View mode">
+              <button
+                onClick={() => { if (viewMode !== 'grid') onViewModeToggle(); }}
+                className={`view-mode-button ${viewMode === 'grid' ? 'active' : ''}`}
+                aria-pressed={viewMode === 'grid'}
+                aria-label="Switch to List View"
+                title="Switch to List View"
+              >
+                <ListIconSVG />
+              </button>
+              <button
+                onClick={() => { if (viewMode !== 'map') onViewModeToggle(); }}
+                className={`view-mode-button ${viewMode === 'map' ? 'active' : ''}`}
+                aria-pressed={viewMode === 'map'}
+                aria-label="Switch to Map View"
+                title="Switch to Map View"
+              >
+                <MapIconSVG />
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -343,10 +378,28 @@ interface PortfolioMapProps {
   onItemClick: (item: PortfolioItemData, targetElement: HTMLElement) => void;
 }
 
+interface ItemWithParsedGps extends PortfolioItemData {
+  lat: number;
+  lon: number;
+}
+
+// Helper component to change map view based on bounds
+function ChangeView({ bounds }: { bounds: L.LatLngBounds | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (bounds && bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [50, 50] });
+    } else if (!bounds) { // No items, reset to world view
+      map.setView([20, 0], 2); // Or your preferred default view
+    }
+  }, [bounds, map]);
+  return null;
+}
+
 function PortfolioMap({ items, onItemClick }: PortfolioMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const itemsWithGps = useMemo(() => {
+  const itemsWithGps = useMemo((): ItemWithParsedGps[] => {
     return items.filter(item => {
       if (!item.gpsCoords) return false;
       const parts = item.gpsCoords.split(',');
@@ -357,75 +410,52 @@ function PortfolioMap({ items, onItemClick }: PortfolioMapProps) {
     });
   }, [items]);
 
-  const bounds = useMemo(() => {
+  const leafletBounds = useMemo(() => {
     if (itemsWithGps.length === 0) return null;
-    let minLat = itemsWithGps[0].lat, maxLat = itemsWithGps[0].lat;
-    let minLon = itemsWithGps[0].lon, maxLon = itemsWithGps[0].lon;
-    itemsWithGps.forEach(item => {
-      minLat = Math.min(minLat, item.lat);
-      maxLat = Math.max(maxLat, item.lat);
-      minLon = Math.min(minLon, item.lon);
-      maxLon = Math.max(maxLon, item.lon);
-    });
-    return { minLat, maxLat, minLon, maxLon };
+    const lBounds = L.latLngBounds(itemsWithGps.map(item => [item.lat, item.lon]));
+    return lBounds.isValid() ? lBounds : null;
   }, [itemsWithGps]);
 
-  if (itemsWithGps.length === 0) {
+  if (itemsWithGps.length === 0 && items.length > 0) { // Items exist, but none have GPS for current filter
     return <p className="status-message">No items with GPS coordinates to display on the map for the current filters. Try adjusting filters or adding GPS data to your sheet.</p>;
   }
-  
-  const getPosition = (lat: number, lon: number, mapWidth: number, mapHeight: number) => {
-    if (!bounds) return { x: 0, y: 0 };
-    const lonRange = bounds.maxLon - bounds.minLon;
-    let x = lonRange === 0 ? 0.5 : (lon - bounds.minLon) / lonRange;
-    
-    const latRange = bounds.maxLat - bounds.minLat;
-    let y = latRange === 0 ? 0.5 : (bounds.maxLat - lat) / latRange;
-
-    const padding = 0.05; 
-    x = padding + x * (1 - 2 * padding);
-    y = padding + y * (1 - 2 * padding);
-
-    return {
-      x: x * mapWidth,
-      y: y * mapHeight,
-    };
-  };
+   if (items.length === 0 && itemsWithGps.length === 0) { // No items at all for current filter
+     return <p className="status-message">No portfolio items match your criteria.</p>;
+   }
 
 
   return (
     <div ref={mapRef} className="portfolio-map-container" role="application" aria-label="Portfolio items map">
-      <p className="sr-only">Map of portfolio items. Use tab to navigate through items.</p>
-      {itemsWithGps.map((item, index) => {
-        const mapWidth = mapRef.current?.clientWidth || 600; 
-        const mapHeight = mapRef.current?.clientHeight || 400; 
-        const { x, y } = getPosition(item.lat, item.lon, mapWidth, mapHeight);
-        
-        const markerRef = React.createRef<HTMLButtonElement>();
-
-        return (
-          <button
+      <MapContainer
+        center={itemsWithGps.length > 0 ? [itemsWithGps[0].lat, itemsWithGps[0].lon] : [20, 0]}
+        zoom={itemsWithGps.length > 0 ? 5 : 2}
+        style={{ height: "100%", width: "100%" }}
+        scrollWheelZoom={true}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <ChangeView bounds={leafletBounds} />
+        {itemsWithGps.map((item) => (
+          <Marker
             key={item.id}
-            ref={markerRef}
-            className="map-marker"
-            style={{ 
-              left: `${x}px`, 
-              top: `${y}px`,
-              backgroundImage: `url(${item.coverImage})` 
+            position={[item.lat, item.lon]}
+            eventHandlers={{
+              click: (e) => {
+                onItemClick(item, e.originalEvent.target as HTMLElement);
+              },
             }}
-            onClick={() => {
-              if (markerRef.current) {
-                onItemClick(item, markerRef.current);
-              }
-            }}
-            aria-label={`View details for ${item.title} located at ${item.location || 'unknown location'}`}
-            title={`${item.title}${item.location ? ` - ${item.location}` : ''}`}
           >
-            <span className="sr-only">{item.title}</span>
-          </button>
-        );
-      })}
-       <div className="map-attribution">Simplified map view. Not to scale.</div>
+            <Popup autoPan={false}> 
+              <div style={{textAlign: 'center'}}>
+                <strong>{item.title}</strong>
+                {item.location && <><br/><em>{item.location}</em></>}
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
     </div>
   );
 }
@@ -518,6 +548,17 @@ function Modal({ isOpen, onClose, item }: ModalProps) {
   } else {
     mediaElement = <p>Media not available.</p>;
   }
+  
+  // Restructured details
+  let infoLineText = '';
+  if (item.location) infoLineText += item.location;
+  if (item.date) infoLineText += (infoLineText ? ' ' : '') + item.date;
+  if (item.feat) {
+    infoLineText += (infoLineText ? '. feat ' : 'feat ') + item.feat;
+  } else if (infoLineText) {
+    infoLineText += '.';
+  }
+
 
   return (
     <div
@@ -549,10 +590,8 @@ function Modal({ isOpen, onClose, item }: ModalProps) {
             {mediaElement}
           </div>
           <div className="modal-details">
-            {item.description && <p className="modal-description"><strong>Description:</strong> {item.description}</p>}
-            {item.date && <p className="modal-date"><strong>Date:</strong> {item.date}</p>}
-            {item.location && <p className="modal-location"><strong>Location:</strong> {item.location}</p>}
-            {item.feat && <p className="modal-feat"><strong>Featuring:</strong> {item.feat}</p>}
+            {infoLineText && <p className="modal-info-line">{infoLineText}</p>}
+            {item.description && <p className="modal-description-reformatted">{item.description}</p>}
             {item.gpsCoords && <p className="modal-gps"><strong>GPS:</strong> {item.gpsCoords}</p>}
             {item.easterEgg && <p className="modal-easter-egg">🤫: {item.easterEgg}</p>}
           </div>
