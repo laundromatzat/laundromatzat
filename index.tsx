@@ -387,12 +387,19 @@ interface ItemWithParsedGps extends PortfolioItemData {
 function ChangeView({ bounds }: { bounds: L.LatLngBounds | null }) {
   const map = useMap();
   useEffect(() => {
-    if (bounds && bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [50, 50] });
-    } else if (!bounds) { // No items, reset to world view
-      map.setView([20, 0], 2); // Or your preferred default view
-    }
-  }, [bounds, map]);
+    // Delay the map operations slightly to ensure the container is sized
+    const timer = setTimeout(() => {
+      if (bounds && bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      } else if (!bounds) { // No items, reset to world view
+        map.setView([20, 0], 2); // Or your preferred default view
+      }
+      map.invalidateSize(); // Explicitly invalidate size
+    }, 100); // 100ms delay, can be adjusted
+
+    return () => clearTimeout(timer); // Cleanup timer on component unmount or re-render
+  }, [bounds, map]); // Rerun effect if bounds or map instance changes
+
   return null;
 }
 
