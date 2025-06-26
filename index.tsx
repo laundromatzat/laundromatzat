@@ -235,7 +235,19 @@ function NavigationBar({
   return (
     <nav className="navigation-bar" aria-label="Main navigation">
       <div className="nav-container">
-        <a href="/" className="site-title" aria-label="Homepage">laundromatzat.com</a>
+        <a href="/" className="site-title" aria-label="Homepage">
+          {/* 1️⃣ Add your icon here */}
+          <img
+            src="/laundromatzat-icon.png"
+            alt="laundromatzat.com logo"
+            className="site-icon"
+          />
+          {/* 2️⃣ Wrap your text in a span so we can hide/show it */}
+          <span className="site-title-text">
+            laundromatzat.com
+          </span>
+        </a>
+
         <div className="menu-links" role="menubar" aria-label="Filter by content type">
           {availableTypes.map(type => (
             <button
@@ -249,6 +261,7 @@ function NavigationBar({
             </button>
           ))}
         </div>
+
         <div className="nav-action-controls">
           <button
             onClick={onDateSortToggle}
@@ -261,7 +274,6 @@ function NavigationBar({
               {dateSortOrder === 'new' ? '▼' : '▲'}
             </span>
           </button>
-          {/* Map view toggle removed */}
         </div>
       </div>
     </nav>
