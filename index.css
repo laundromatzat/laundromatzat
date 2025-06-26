@@ -332,25 +332,8 @@ a {
   grid-template-columns: 1fr;
 }
 
-/* Portfolio Map Styles */
-.portfolio-map-container {
-  width: calc(100% - 2rem); 
-  max-width: 1200px;
-  margin: 0 auto 1rem auto; /* Top margin is 0 */
-  flex-grow: 1; 
-  min-height: 400px; 
-  background-color: var(--color-secondary-bg); 
-  position: relative; 
-  overflow: hidden; 
-  /* border: 1px solid var(--color-accent); Removed for Leaflet */
-  /* border-radius: 8px; Removed for Leaflet */
-}
-
-/* Leaflet's default marker is used, no custom .map-marker style needed for now */
-/* .map-marker { ... } */
-
-/* Leaflet handles its own attribution. */
-/* .map-attribution { ... } */
+/* Portfolio Map Styles Removed */
+/* .portfolio-map-container and related styles for .leaflet-container have been removed. */
 
 
 /* Footer Styles */
@@ -390,13 +373,11 @@ a {
 }
 
 @media (min-width: 768px) {
-   .portfolio-map-container, .portfolio-grid {
+   .portfolio-grid { /* .portfolio-map-container removed */
      width: calc(100% - 4rem);
      max-width: calc(1200px - 4rem);
    }
-    .portfolio-map-container {
-      min-height: 500px;
-    }
+    /* .portfolio-map-container media query styles removed */
 }
 
 
@@ -415,17 +396,9 @@ a {
     font-size: 1rem;
     padding: 0.5rem 0.75rem; 
   }
-  .view-mode-button {
-    padding: 0.45rem 0.7rem; /* Adjust padding for larger icons if needed */
-  }
-  .view-mode-button svg {
-    width: 1.2em; /* Slightly larger icons on bigger screens */
-    height: 1.2em;
-  }
-   .portfolio-map-container {
-    min-height: 600px;
-   }
-   .portfolio-map-container, .portfolio-grid {
+  /* .view-mode-button media query styles removed */
+  /* .portfolio-map-container media query styles removed */
+   .portfolio-grid { /* .portfolio-map-container removed */
      width: calc(100% - 5rem);
      max-width: calc(1200px - 5rem);
    }
@@ -433,8 +406,7 @@ a {
 
 /* Accessibility: Focus visible */
 .portfolio-item:focus, 
-.modal-close-button:focus,
-.leaflet-marker-icon:focus { /* For Leaflet markers */
+.modal-close-button:focus { /* .leaflet-marker-icon:focus removed */
   outline: 2px solid var(--color-focus-ring); 
   outline-offset: 2px;
   box-shadow: 0 0 0 2px rgba(92, 148, 186, 0.25); 
@@ -517,6 +489,7 @@ a {
   margin-bottom: 15px; /* Reduced from 20px */
   flex-shrink: 1; /* Allow media to shrink if needed */
   min-height: 0; /* Allow shrinking below its content size */
+  background-color: #000; /* Added to make letterboxing/pillarboxing black */
 }
 
 .modal-media-container img,
@@ -562,20 +535,4 @@ a {
   font-size: 0.8rem;
 }
 
-/* Leaflet Popup Customizations (Optional) */
-.leaflet-popup-content-wrapper {
-  border-radius: 4px !important; /* Example: Match app's border radius */
-}
-.leaflet-popup-content {
-  margin: 10px !important; /* Adjust padding inside popup */
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-.leaflet-popup-content strong {
-  font-weight: 600;
-  color: var(--color-dark-text);
-}
-.leaflet-popup-content em {
-  font-size: 0.85rem;
-  color: var(--color-text);
-}
+/* Leaflet Popup Customizations Removed */

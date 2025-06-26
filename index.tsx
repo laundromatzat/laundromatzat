@@ -4,8 +4,6 @@
 */
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
-import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
 // !!! IMPORTANT: REPLACE WITH YOUR ACTUAL PUBLISHED GOOGLE SHEET CSV URL !!!
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQTTlqDzuJCj-vRQiSNTtdSlaeb4VhJEVzia25ETVWaG1TC7UViLUrPFWKKK9PFdBiumGNSxX2fUKUa/pub?gid=0&single=true&output=csv';
@@ -219,25 +217,12 @@ const ListIconSVG = ({ width = "20", height = "20", style }: { width?: string, h
   </svg>
 );
 
-const MapIconSVG = ({ width = "20", height = "20", style }: { width?: string, height?: string, style?: React.CSSProperties }) => (
-  <svg viewBox="0 0 24 24" width={width} height={height} xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', ...style }} aria-hidden="true">
-    <path d="M4 4C3.44772 4 3 4.44772 3 5V19C3 19.5523 3.44772 20 4 20H8V4H4Z" stroke="currentColor" strokeWidth="1" fill="transparent"/>
-    <path d="M8 4L9.57735 3H14.4226L16 4V20L14.4226 21H9.57735L8 20V4Z" stroke="currentColor" strokeWidth="1" fill="transparent"/>
-    <path d="M16 4H20C20.5523 4 21 4.44772 21 5V19C21 19.5523 20.5523 20 20 20H16V4Z" stroke="currentColor" strokeWidth="1" fill="transparent"/>
-    <path fillRule="evenodd" clipRule="evenodd" d="M18 7C16.8954 7 16 7.89543 16 9C16 10.9306 18 14 18 14C18 14 20 10.9306 20 9C20 7.89543 19.1046 7 18 7ZM18 10.5C17.1716 10.5 16.5 9.82843 16.5 9C16.5 8.17157 17.1716 7.5 18 7.5C18.8284 7.5 19.5 8.17157 19.5 9C19.5 9.82843 18.8284 10.5 18 10.5Z" fill="currentColor"/>
-  </svg>
-);
-
-
 interface NavigationBarProps {
   availableTypes: string[];
   activeType: string | null;
   onSetActiveType: (type: string) => void;
   dateSortOrder: 'new' | 'old';
   onDateSortToggle: () => void;
-  viewMode: 'grid' | 'map';
-  onViewModeToggle: () => void;
-  hasGpsData: boolean;
 }
 
 function NavigationBar({
@@ -245,10 +230,7 @@ function NavigationBar({
   activeType,
   onSetActiveType,
   dateSortOrder,
-  onDateSortToggle,
-  viewMode,
-  onViewModeToggle,
-  hasGpsData
+  onDateSortToggle
 }: NavigationBarProps) {
   return (
     <nav className="navigation-bar" aria-label="Main navigation">
@@ -279,28 +261,7 @@ function NavigationBar({
               {dateSortOrder === 'new' ? '▼' : '▲'}
             </span>
           </button>
-          {hasGpsData && (
-             <div className="view-mode-toggle-group" role="group" aria-label="View mode">
-              <button
-                onClick={() => { if (viewMode !== 'grid') onViewModeToggle(); }}
-                className={`view-mode-button ${viewMode === 'grid' ? 'active' : ''}`}
-                aria-pressed={viewMode === 'grid'}
-                aria-label="Switch to List View"
-                title="Switch to List View"
-              >
-                <ListIconSVG />
-              </button>
-              <button
-                onClick={() => { if (viewMode !== 'map') onViewModeToggle(); }}
-                className={`view-mode-button ${viewMode === 'map' ? 'active' : ''}`}
-                aria-pressed={viewMode === 'map'}
-                aria-label="Switch to Map View"
-                title="Switch to Map View"
-              >
-                <MapIconSVG />
-              </button>
-            </div>
-          )}
+          {/* Map view toggle removed */}
         </div>
       </div>
     </nav>
@@ -373,92 +334,9 @@ function PortfolioGrid({ items, onItemClick }: PortfolioGridProps) {
   );
 }
 
-interface PortfolioMapProps {
-  items: PortfolioItemData[];
-  onItemClick: (item: PortfolioItemData, targetElement: HTMLElement) => void;
-}
-
-interface ItemWithParsedGps extends PortfolioItemData {
-  lat: number;
-  lon: number;
-}
-
-// Helper component to change map view based on bounds
-function ChangeView({ bounds }: { bounds: L.LatLngBounds | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (bounds && bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [50, 50] });
-    } else if (!bounds) { // No items, reset to world view
-      map.setView([20, 0], 2); // Or your preferred default view
-    }
-  }, [bounds, map]);
-  return null;
-}
-
-function PortfolioMap({ items, onItemClick }: PortfolioMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-
-  const itemsWithGps = useMemo((): ItemWithParsedGps[] => {
-    return items.filter(item => {
-      if (!item.gpsCoords) return false;
-      const parts = item.gpsCoords.split(',');
-      return parts.length === 2 && !isNaN(parseFloat(parts[0])) && !isNaN(parseFloat(parts[1]));
-    }).map(item => {
-      const parts = item.gpsCoords!.split(',');
-      return { ...item, lat: parseFloat(parts[0]), lon: parseFloat(parts[1]) };
-    });
-  }, [items]);
-
-  const leafletBounds = useMemo(() => {
-    if (itemsWithGps.length === 0) return null;
-    const lBounds = L.latLngBounds(itemsWithGps.map(item => [item.lat, item.lon]));
-    return lBounds.isValid() ? lBounds : null;
-  }, [itemsWithGps]);
-
-  if (itemsWithGps.length === 0 && items.length > 0) { // Items exist, but none have GPS for current filter
-    return <p className="status-message">No items with GPS coordinates to display on the map for the current filters. Try adjusting filters or adding GPS data to your sheet.</p>;
-  }
-   if (items.length === 0 && itemsWithGps.length === 0) { // No items at all for current filter
-     return <p className="status-message">No portfolio items match your criteria.</p>;
-   }
-
-
-  return (
-    <div ref={mapRef} className="portfolio-map-container" role="application" aria-label="Portfolio items map">
-      <MapContainer
-        center={itemsWithGps.length > 0 ? [itemsWithGps[0].lat, itemsWithGps[0].lon] : [20, 0]}
-        zoom={itemsWithGps.length > 0 ? 5 : 2}
-        style={{ height: "100%", width: "100%" }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <ChangeView bounds={leafletBounds} />
-        {itemsWithGps.map((item) => (
-          <Marker
-            key={item.id}
-            position={[item.lat, item.lon]}
-            eventHandlers={{
-              click: (e) => {
-                onItemClick(item, e.originalEvent.target as HTMLElement);
-              },
-            }}
-          >
-            <Popup autoPan={false}> 
-              <div style={{textAlign: 'center'}}>
-                <strong>{item.title}</strong>
-                {item.location && <><br/><em>{item.location}</em></>}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
-  );
-}
+// PortfolioMap component and related interfaces/logic removed.
+// ChangeView component removed.
+// ItemWithParsedGps interface removed.
 
 
 interface ModalProps {
@@ -622,8 +500,7 @@ function App() {
   const [availableTypesInSheet, setAvailableTypesInSheet] = useState<string[]>([]);
   const [activeType, setActiveType] = useState<string | null>(null); 
   const [dateSortOrder, setDateSortOrder] = useState<'new' | 'old'>('new');
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
-  const [hasAnyGpsData, setHasAnyGpsData] = useState<boolean>(false);
+  // viewMode and hasAnyGpsData state removed
 
 
   useEffect(() => {
@@ -657,10 +534,10 @@ function App() {
         setAllPortfolioItems(data);
         
         const typesFromData = new Set<string>();
-        let foundGps = false;
+        // let foundGps = false; // Removed
         data.forEach(item => {
           if (item.type) typesFromData.add(item.type.toLowerCase());
-          if (item.gpsCoords && item.gpsCoords.includes(',')) foundGps = true;
+          // if (item.gpsCoords && item.gpsCoords.includes(',')) foundGps = true; // Removed
         });
         
         const sortedTypes = ALL_POSSIBLE_TYPES.filter(t => typesFromData.has(t));
@@ -673,7 +550,7 @@ function App() {
         } else {
           setActiveType(null);
         }
-        setHasAnyGpsData(foundGps);
+        // setHasAnyGpsData(foundGps); // Removed
 
       } catch (e: any) {
         console.error("Failed to fetch or parse portfolio data:", e);
@@ -736,9 +613,7 @@ function App() {
     setDateSortOrder(prevOrder => prevOrder === 'new' ? 'old' : 'new');
   };
 
-  const handleViewModeToggle = () => {
-    setViewMode(prevMode => prevMode === 'grid' ? 'map' : 'grid');
-  };
+  // handleViewModeToggle function removed
 
   return (
     <div className="app-container">
@@ -748,23 +623,16 @@ function App() {
         onSetActiveType={handleSetActiveType}
         dateSortOrder={dateSortOrder}
         onDateSortToggle={handleDateSortToggle}
-        viewMode={viewMode}
-        onViewModeToggle={handleViewModeToggle}
-        hasGpsData={hasAnyGpsData}
+        // viewMode, onViewModeToggle, and hasGpsData props removed
       />
       <main id="main-content-area" aria-live="polite">
         {loading && <p className="status-message">Loading portfolio from Google Sheet...</p>}
         {error && <p className="status-message error-message">{error}</p>}
         
-        {!loading && !error && viewMode === 'grid' && (
+        {!loading && !error && ( // Always render PortfolioGrid if not loading and no error
           <PortfolioGrid items={displayedItems} onItemClick={handleOpenModal} />
         )}
-        {!loading && !error && viewMode === 'map' && hasAnyGpsData && (
-          <PortfolioMap items={displayedItems} onItemClick={handleOpenModal} />
-        )}
-         {!loading && !error && viewMode === 'map' && !hasAnyGpsData && (
-          <p className="status-message">Map view is selected, but no items in your sheet have GPS data. Add GPS coordinates to use the map.</p>
-        )}
+        {/* PortfolioMap and related conditional rendering removed */}
 
       </main>
       <Modal 
