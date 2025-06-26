@@ -84,12 +84,66 @@ a {
 }
 
 .site-title {
+  display: inline-flex;
+  align-items: center;
   font-size: 1.8rem; 
   font-weight: 200; 
   color: var(--color-dark-text); 
   line-height: 1; 
   margin-bottom: 0.1rem; 
   margin-right: auto; /* Pushes other items to the right */
+}
+
+.site-icon {
+  width: 2.0rem;
+  height: 2.0rem;
+}
+
+/* ensure transforms don’t affect inline layout */
+.site-icon {
+  display: inline-block;
+}
+
+@keyframes shake {
+  /* start at center */
+  0%   { transform: translateX(0); }
+
+  /* rapid shakes: every 4% of the timeline (0 – 20%) */
+  4%   { transform: translateX(-2px); }
+  6%   { transform: translateX(2px); }
+  8%   { transform: translateX(-2px); }
+  10%  { transform: translateX(2px); }
+  12%  { transform: translateX(-2px); }
+  14%  { transform: translateX(2px); }
+  16%  { transform: translateX(-2px); }
+  18%  { transform: translateX(2px); }
+  20%  { transform: translateX(0); }
+
+  /* medium shakes: 20 – 60% */
+  40%  { transform: translateX(-1px); }
+  60%  { transform: translateX(1px); }
+
+  /* slowest shake and rest: 80 – 100% */
+  80%  { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
+
+.site-icon:hover {
+  /* 1s total, ease-out so shakes naturally decelerate, run once */
+  animation: shake 1s ease-out 1;
+}
+
+/* hide the text by default */
+.site-title-text {
+  display: none;
+  margin-left: 0.5rem;
+}
+
+/* once you hit, say, 600px, show the text */
+@media (min-width: 600px) {
+  .site-title-text {
+    display: inline;
+  }
 }
 
 .menu-links {
