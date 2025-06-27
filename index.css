@@ -291,8 +291,8 @@ a {
   gap: 0.2rem; 
   padding: 0.2rem; 
   width: 100%; 
-  max-width: 1200px; 
-  margin: 0 auto; /* Top margin is 0 */
+  max-width: 2200px; 
+  margin: 0 auto; 
 }
 
 /* Portfolio Item */
@@ -384,11 +384,7 @@ a {
 /* Responsive Grid Columns */
 .portfolio-grid {
   grid-template-columns: 1fr;
-}
-
-/* Portfolio Map Styles Removed */
-/* .portfolio-map-container and related styles for .leaflet-container have been removed. */
-
+}	
 
 /* Footer Styles */
 .app-footer {

@@ -238,7 +238,7 @@ function NavigationBar({
         <a href="/" className="site-title" aria-label="Homepage">
           {/* 1️⃣ Add your icon here */}
           <img
-            src="/laundromatzat-icon.png"
+            src="/images/laundromatzat-icon.png"
             alt="laundromatzat.com logo"
             className="site-icon"
           />
