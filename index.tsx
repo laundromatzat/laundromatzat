@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import siteIcon from './images/laundromatzat-icon.png';
 import ReactDOM from 'react-dom/client';
 
 // !!! IMPORTANT: REPLACE WITH YOUR ACTUAL PUBLISHED GOOGLE SHEET CSV URL !!!
@@ -238,7 +239,7 @@ function NavigationBar({
         <a href="/" className="site-title" aria-label="Homepage">
           {/* 1️⃣ Add your icon here */}
           <img
-            src="/images/laundromatzat-icon.png"
+            src={siteIcon}
             alt="laundromatzat.com logo"
             className="site-icon"
           />
