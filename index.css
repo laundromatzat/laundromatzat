@@ -475,43 +475,50 @@ a {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.75); 
+  background-color: rgba(0, 0, 0, 0);
+  animation: fadeInBackdrop 2s forwards;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000; 
-  padding: 20px; 
+  z-index: 2000;
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+
+@keyframes fadeInBackdrop {
+  from { background-color: rgba(0, 0, 0, 0); }
+  to { background-color: rgba(0, 0, 0, 0.7); }
 }
 
 .modal-dialog {
-  background-color: var(--color-bg); 
+  background-color: transparent;
   border-radius: 8px;
-  box-shadow: 0 5px 20px var(--color-shadow-base); 
-  padding: 25px; 
+  box-shadow: none;
+  padding: 25px;
   position: relative;
-  max-width: 90vw; 
-  max-height: 90vh; 
+  max-width: 90vw;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .modal-close-button {
   position: absolute;
-  top: 15px; 
-  right: 15px; 
+  top: 15px;
+  right: 15px;
   background: none;
   border: none;
-  font-size: 2.2rem; 
+  font-size: 2.2rem;
   line-height: 1;
-  color: var(--color-text); 
+  color: var(--color-light-text-on-dark);
   cursor: pointer;
   padding: 0.25rem 0.5rem;
 }
 
 .modal-close-button:hover,
 .modal-close-button:focus {
-  color: var(--color-dark-accent); 
+  color: var(--color-accent);
 }
 
 .modal-content {
@@ -523,12 +530,12 @@ a {
 }
 
 .modal-title {
-  font-size: 1.6rem; 
+  font-size: 1.6rem;
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 15px; /* Reduced from 20px */
-  color: var(--color-dark-text); 
-  padding-right: 40px; 
+  color: var(--color-light-text-on-dark);
+  padding-right: 40px;
   flex-shrink: 0; /* Prevent title from shrinking */
 }
 
@@ -551,8 +558,8 @@ a {
 }
 
 .modal-details {
-  font-size: 0.95rem; 
-  color: var(--color-text); 
+  font-size: 0.95rem;
+  color: var(--color-light-text-on-dark);
   overflow-y: hidden; /* Clip text if too long */
   flex-shrink: 0; /* Prevent details block from shrinking vertically */
 }
@@ -569,7 +576,7 @@ a {
 }
 
 .modal-details strong { /* No longer used in reformatted text, but kept for GPS/EasterEgg */
-  color: var(--color-dark-text); 
+  color: var(--color-light-text-on-dark);
 }
 
 .modal-description-reformatted {
@@ -581,8 +588,27 @@ a {
 
 
 .modal-easter-egg {
-  opacity: 0.7; 
+  opacity: 0.7;
   font-size: 0.8rem;
+  color: var(--color-light-text-on-dark);
 }
+
+.modal-nav {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: none;
+  border: none;
+  color: var(--color-light-text-on-dark);
+  cursor: pointer;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-nav.prev { left: 0; }
+.modal-nav.next { right: 0; }
 
 /* Leaflet Popup Customizations Removed */
