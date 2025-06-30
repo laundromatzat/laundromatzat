@@ -356,9 +356,11 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   item: PortfolioItemData | null;
+  onPrev: () => void;
+  onNext: () => void;
 }
 
-function Modal({ isOpen, onClose, item }: ModalProps) {
+function Modal({ isOpen, onClose, item, onPrev, onNext }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -455,16 +457,23 @@ function Modal({ isOpen, onClose, item }: ModalProps) {
     <div
       className="modal-backdrop"
       onClick={onClose}
-      role="presentation" 
+      role="presentation"
     >
+      <button
+        className="modal-nav prev"
+        onClick={e => { e.stopPropagation(); onPrev(); }}
+        aria-label="Previous item"
+      >
+        ‹
+      </button>
       <div
         ref={modalRef}
         className="modal-dialog"
-        onClick={e => e.stopPropagation()} 
+        onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        aria-describedby={contentId} 
+        aria-describedby={contentId}
       >
         <button
           id={`modal-close-button-${item.id}`}
@@ -488,6 +497,13 @@ function Modal({ isOpen, onClose, item }: ModalProps) {
           </div>
         </div>
       </div>
+      <button
+        className="modal-nav next"
+        onClick={e => { e.stopPropagation(); onNext(); }}
+        aria-label="Next item"
+      >
+        ›
+      </button>
     </div>
   );
 }
@@ -508,6 +524,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedModalItem, setSelectedModalItem] = useState<PortfolioItemData | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [lastFocusedElement, setLastFocusedElement] = useState<HTMLElement | null>(null);
 
   const [availableTypesInSheet, setAvailableTypesInSheet] = useState<string[]>([]);
@@ -608,14 +625,31 @@ function App() {
 
   const handleOpenModal = (item: PortfolioItemData, targetElement: HTMLElement) => {
     setLastFocusedElement(targetElement || document.activeElement as HTMLElement);
+    const index = displayedItems.findIndex(i => i.id === item.id);
+    setCurrentIndex(index);
     setSelectedModalItem(item);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedModalItem(null); 
+    setSelectedModalItem(null);
+    setCurrentIndex(-1);
     lastFocusedElement?.focus();
+  };
+
+  const handleNextModalItem = () => {
+    if (displayedItems.length === 0) return;
+    const nextIndex = (currentIndex + 1) % displayedItems.length;
+    setCurrentIndex(nextIndex);
+    setSelectedModalItem(displayedItems[nextIndex]);
+  };
+
+  const handlePrevModalItem = () => {
+    if (displayedItems.length === 0) return;
+    const prevIndex = (currentIndex - 1 + displayedItems.length) % displayedItems.length;
+    setCurrentIndex(prevIndex);
+    setSelectedModalItem(displayedItems[prevIndex]);
   };
 
   const handleSetActiveType = (typeToSet: string) => {
@@ -648,10 +682,12 @@ function App() {
         {/* PortfolioMap and related conditional rendering removed */}
 
       </main>
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
-        item={selectedModalItem} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        item={selectedModalItem}
+        onPrev={handlePrevModalItem}
+        onNext={handleNextModalItem}
       />
       <Footer />
     </div>
