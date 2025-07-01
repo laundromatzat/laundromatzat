@@ -75,12 +75,34 @@ export default function Modal({ isOpen, onClose, item, onPrev, onNext }: ModalPr
   let mediaElement;
 
   if (item.type === 'video' && item.sourceUrl) {
-    mediaElement = <video src={item.sourceUrl} controls autoPlay muted playsInline aria-describedby={titleId} key={`${item.id}-video`}></video>;
+    mediaElement = (
+      <video
+        src={item.sourceUrl}
+        controls
+        preload="metadata"
+        playsInline
+        aria-describedby={titleId}
+        key={`${item.id}-video`}
+      ></video>
+    );
   } else if (item.type === 'cinemagraph') {
     const sourceToUse = item.sourceUrl || item.coverImage;
     const isVideoFormat = /\.(mp4|webm|ogv)$/i.test(sourceToUse);
     if (isVideoFormat) {
-      mediaElement = <video src={sourceToUse} autoPlay loop muted playsInline aria-label={`${item.title} (cinemagraph)`} aria-describedby={titleId} key={`${item.id}-cinemagraph-video`}></video>;
+      mediaElement = (
+        <video
+          src={sourceToUse}
+          autoPlay
+          loop
+          muted
+          playsInline
+          controls
+          preload="metadata"
+          aria-label={`${item.title} (cinemagraph)`}
+          aria-describedby={titleId}
+          key={`${item.id}-cinemagraph-video`}
+        ></video>
+      );
     } else {
       mediaElement = <img src={sourceToUse} alt={`${item.title} (cinemagraph)`} aria-describedby={titleId} key={`${item.id}-cinemagraph-img`}/>;
     }
