@@ -500,7 +500,7 @@ a {
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .modal-close-button {
@@ -548,6 +548,7 @@ a {
   background-color: #000; /* Added to make letterboxing/pillarboxing black */
   width: 100%;
   aspect-ratio: 16 / 9; /* Keep a consistent area while media loads */
+  position: relative;
 }
 
 .modal-media-container img,
@@ -558,10 +559,23 @@ a {
   border-radius: 4px;
 }
 
+@supports not (aspect-ratio: 16 / 9) {
+  .modal-media-container {
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 */
+  }
+  .modal-media-container img,
+  .modal-media-container video {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
+
 .modal-details {
   font-size: 0.95rem;
   color: var(--color-light-text-on-dark);
-  overflow-y: hidden; /* Clip text if too long */
+  overflow-y: auto;
   flex-shrink: 0; /* Prevent details block from shrinking vertically */
   background-color: rgba(0, 0, 0, 0.6); /* Ensure text contrast against backdrop */
   padding: 10px;
