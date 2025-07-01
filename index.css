@@ -545,31 +545,19 @@ a {
   align-items: center;
   margin-bottom: 15px; /* Reduced from 20px */
   flex-shrink: 1; /* Allow media to shrink if needed */
-  background-color: #000; /* Added to make letterboxing/pillarboxing black */
+  background-color: #000; /* Makes letterboxing/pillarboxing black */
   width: 100%;
-  aspect-ratio: 16 / 9; /* Keep a consistent area while media loads */
-  position: relative;
+  max-height: 80vh;
 }
 
 .modal-media-container img,
 .modal-media-container video {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
   object-fit: contain;
   border-radius: 4px;
-}
-
-@supports not (aspect-ratio: 16 / 9) {
-  .modal-media-container {
-    height: 0;
-    padding-bottom: 56.25%; /* 16:9 */
-  }
-  .modal-media-container img,
-  .modal-media-container video {
-    position: absolute;
-    left: 0;
-    top: 0;
-  }
 }
 
 .modal-details {
