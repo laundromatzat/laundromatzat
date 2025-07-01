@@ -545,16 +545,17 @@ a {
   align-items: center;
   margin-bottom: 15px; /* Reduced from 20px */
   flex-shrink: 1; /* Allow media to shrink if needed */
-  min-height: 0; /* Allow shrinking below its content size */
   background-color: #000; /* Added to make letterboxing/pillarboxing black */
+  width: 100%;
+  aspect-ratio: 16 / 9; /* Keep a consistent area while media loads */
 }
 
 .modal-media-container img,
 .modal-media-container video {
-  max-width: 100%;
-  max-height: 100%; /* Max height relative to its container */
-  object-fit: contain; 
-  border-radius: 4px; 
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
 .modal-details {
@@ -562,6 +563,9 @@ a {
   color: var(--color-light-text-on-dark);
   overflow-y: hidden; /* Clip text if too long */
   flex-shrink: 0; /* Prevent details block from shrinking vertically */
+  background-color: rgba(0, 0, 0, 0.6); /* Ensure text contrast against backdrop */
+  padding: 10px;
+  border-radius: 4px;
 }
 
 .modal-details p {
@@ -594,10 +598,9 @@ a {
 }
 
 .modal-nav {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--color-light-text-on-dark);
@@ -606,9 +609,12 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  z-index: 2100; /* Ensure arrows sit above the modal */
 }
 
-.modal-nav.prev { left: 0; }
-.modal-nav.next { right: 0; }
+.modal-nav.prev { left: 10px; }
+.modal-nav.next { right: 10px; }
 
 /* Leaflet Popup Customizations Removed */
