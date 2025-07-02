@@ -8,6 +8,7 @@ import { PortfolioItemData, parseCSVToPortfolioItems, parsePortfolioDate } from 
 import NavigationBar from './components/NavigationBar';
 import PortfolioGrid from './components/PortfolioGrid';
 import Modal from './components/Modal';
+import SpecialPage from './components/SpecialPage';
 
 // !!! IMPORTANT: REPLACE WITH YOUR ACTUAL PUBLISHED GOOGLE SHEET CSV URL !!!
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQTTlqDzuJCj-vRQiSNTtdSlaeb4VhJEVzia25ETVWaG1TC7UViLUrPFWKKK9PFdBiumGNSxX2fUKUa/pub?gid=0&single=true&output=csv';
@@ -216,7 +217,11 @@ function App() {
 const rootElement = document.getElementById('root');
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
-  root.render(<App />);
+  if (window.location.pathname === '/special') {
+    root.render(<SpecialPage />);
+  } else {
+    root.render(<App />);
+  }
 } else {
   console.error("Root element not found");
 }

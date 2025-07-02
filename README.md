@@ -7,12 +7,16 @@ This project powers [laundromatzat.com](https://laundromatzat.com), a simple por
 **Prerequisites:** Node.js 20+
 
 1. Install dependencies: `npm install`
-2. Copy `.env.local.example` to `.env.local` and set the `GEMINI_API_KEY` used by the site.
+2. Copy `.env.local.example` to `.env.local` and set the `GEMINI_API_KEY` and `VITE_GOOGLE_CLIENT_ID` values used by the site.
 3. Update the `GOOGLE_SHEET_CSV_URL` constant in `index.tsx` with the URL of your published Google Sheet CSV.
 4. Start the development server with `npm run dev`.
 
 ## Building and deploying
 
 To create a production build run `npm run build`. You can preview the build locally using `npm run preview`.
+
+## Special Page
+
+Visiting `/special` loads a tool that generates a clinic SOAP note using the Google Gemini API. Users must sign in with Google using `VITE_GOOGLE_CLIENT_ID` and be listed in `APPROVED_USERS` in `SpecialPage.tsx` to access the tool.
 
 The repository includes a GitHub Actions workflow that builds the project and deploys the `dist` directory to GitHub Pages whenever changes are pushed to the `master` branch.
