@@ -168,6 +168,20 @@ export function parseCSVToPortfolioItems(csvText: string): PortfolioItemData[] {
     portfolioItems.push(itemData);
   }
   console.log("Successfully parsed portfolio items:", portfolioItems);
+  // Add a blank item to the beginning of the array
+  portfolioItems.unshift({
+    id: 0,
+    title: ' ',
+    type: 'video',
+    coverImage: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+    sourceUrl: undefined,
+    date: undefined,
+    location: undefined,
+    gpsCoords: undefined,
+    feat: undefined,
+    description: undefined,
+    easterEgg: undefined,
+  });
   return portfolioItems;
 }
 

@@ -193,7 +193,7 @@ function App() {
         // viewMode, onViewModeToggle, and hasGpsData props removed
       />
       <main id="main-content-area" aria-live="polite">
-        {loading && <p className="status-message">Loading portfolio from Google Sheet...</p>}
+        {loading && <p className="status-message">loading portfolio...</p>}
         {error && <p className="status-message error-message">{error}</p>}
         
         {!loading && !error && ( // Always render PortfolioGrid if not loading and no error

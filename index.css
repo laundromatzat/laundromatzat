@@ -491,13 +491,15 @@ a {
 }
 
 .modal-dialog {
-  background-color: transparent;
+  background-color: #000;
   border-radius: 8px;
-  box-shadow: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   padding: 25px;
   position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
+  width: calc(100vw - 200px);
+  height: calc(100vh - 200px);
+  max-width: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -547,13 +549,14 @@ a {
   flex-shrink: 1; /* Allow media to shrink if needed */
   background-color: #000; /* Makes letterboxing/pillarboxing black */
   width: 100%;
-  max-height: 80vh;
+  flex-grow: 1;
+  min-height: 0;
 }
 
 .modal-media-container img,
 .modal-media-container video {
   max-width: 100%;
-  max-height: 80vh;
+  max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -620,3 +623,21 @@ a {
 .modal-nav.next { right: 10px; }
 
 /* Leaflet Popup Customizations Removed */
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.loading-overlay span {
+  color: #fff;
+  font-size: 1.2rem;
+}

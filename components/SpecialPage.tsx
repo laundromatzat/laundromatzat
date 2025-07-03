@@ -3,7 +3,7 @@ import { GoogleGenAI } from '@google/genai';
 
 // Emails of users allowed to access the tool. Replace with real admin-managed list.
 const APPROVED_USERS = [
-  'admin@example.com'
+  'sjmatzat@gmail.com'
 ];
 
 interface VisitParams {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PortfolioItemData } from '../utils/parseCSV';
 
 export interface ModalProps {
@@ -12,6 +12,7 @@ export interface ModalProps {
 export default function Modal({ isOpen, onClose, item, onPrev, onNext }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [aspectRatio, setAspectRatio] = useState<number>(16 / 9); // Default aspect ratio
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -72,17 +73,28 @@ export default function Modal({ isOpen, onClose, item, onPrev, onNext }: ModalPr
   const contentId = `modal-content-${item.id}`;
   const titleId = `modal-title-${item.id}`;
 
+  const handleMediaLoad = (event: React.SyntheticEvent<HTMLImageElement | HTMLVideoElement>) => {
+    const media = event.currentTarget;
+    if (media instanceof HTMLVideoElement) {
+      setAspectRatio(media.videoWidth / media.videoHeight);
+    } else if (media instanceof HTMLImageElement) {
+      setAspectRatio(media.naturalWidth / media.naturalHeight);
+    }
+  };
+
   let mediaElement;
 
   if (item.type === 'video' && item.sourceUrl) {
     mediaElement = (
       <video
         src={item.sourceUrl}
+        poster={item.coverImage}
         controls
         preload="metadata"
         playsInline
         aria-describedby={titleId}
         key={`${item.id}-video`}
+        onLoadedData={handleMediaLoad}
       ></video>
     );
   } else if (item.type === 'cinemagraph') {
@@ -92,6 +104,7 @@ export default function Modal({ isOpen, onClose, item, onPrev, onNext }: ModalPr
       mediaElement = (
         <video
           src={sourceToUse}
+          poster={item.coverImage}
           autoPlay
           loop
           muted
@@ -101,13 +114,14 @@ export default function Modal({ isOpen, onClose, item, onPrev, onNext }: ModalPr
           aria-label={`${item.title} (cinemagraph)`}
           aria-describedby={titleId}
           key={`${item.id}-cinemagraph-video`}
+          onLoadedData={handleMediaLoad}
         ></video>
       );
     } else {
-      mediaElement = <img src={sourceToUse} alt={`${item.title} (cinemagraph)`} aria-describedby={titleId} key={`${item.id}-cinemagraph-img`}/>;
+      mediaElement = <img src={sourceToUse} alt={`${item.title} (cinemagraph)`} aria-describedby={titleId} key={`${item.id}-cinemagraph-img`} onLoad={handleMediaLoad}/>;
     }
   } else if (item.coverImage) {
-    mediaElement = <img src={item.coverImage} alt={item.title} aria-describedby={titleId} key={`${item.id}-image`}/>;
+    mediaElement = <img src={item.coverImage} alt={item.title} aria-describedby={titleId} key={`${item.id}-image`} onLoad={handleMediaLoad}/>;
   } else {
     mediaElement = <p>Media not available.</p>;
   }
@@ -150,7 +164,9 @@ export default function Modal({ isOpen, onClose, item, onPrev, onNext }: ModalPr
         </button>
         <div className="modal-content" id={contentId}>
           <h2 id={titleId} className="modal-title">{item.title}</h2>
-          <div className="modal-media-container">{mediaElement}</div>
+          <div className="modal-media-container" style={{ aspectRatio: aspectRatio ? `${aspectRatio}` : '16 / 9' }}>
+            {mediaElement}
+          </div>
           <div className="modal-details">
             {infoLineText && <p className="modal-info-line">{infoLineText}</p>}
             {item.description && <p className="modal-description-reformatted">{item.description}</p>}
