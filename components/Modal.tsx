@@ -170,7 +170,6 @@ export default function Modal({ isOpen, onClose, item, onPrev, onNext }: ModalPr
           <div className="modal-details">
             {infoLineText && <p className="modal-info-line">{infoLineText}</p>}
             {item.description && <p className="modal-description-reformatted">{item.description}</p>}
-            {item.gpsCoords && <p className="modal-gps"><strong>GPS:</strong> {item.gpsCoords}</p>}
             {item.easterEgg && <p className="modal-easter-egg">🤫: {item.easterEgg}</p>}
           </div>
         </div>
