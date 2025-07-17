@@ -383,8 +383,8 @@ a {
 
 /* Responsive Grid Columns */
 .portfolio-grid {
-  grid-template-columns: 1fr;
-}	
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
 
 /* Footer Styles */
 .app-footer {

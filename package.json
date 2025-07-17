@@ -20,5 +20,21 @@
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
     "vitest": "^3.2.4"
-  }
+  },
+  "description": "This project powers [laundromatzat.com](https://laundromatzat.com), a simple portfolio site built with React and Vite. Data for the portfolio items is loaded from a published Google Sheet in CSV format.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laundromatzat/laundromatzat.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/laundromatzat/laundromatzat/issues"
+  },
+  "homepage": "https://github.com/laundromatzat/laundromatzat#readme"
 }
