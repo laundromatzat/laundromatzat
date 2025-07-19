@@ -1,6 +1,5 @@
 import React from 'react';
 import siteIcon from '../images/laundromatzat-icon.png';
-import { PortfolioItemData } from '../utils/parseCSV';
 
 export interface NavigationBarProps {
   availableTypes: string[];
@@ -8,6 +7,8 @@ export interface NavigationBarProps {
   onSetActiveType: (type: string) => void;
   dateSortOrder: 'new' | 'old';
   onDateSortToggle: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 export default function NavigationBar({
@@ -15,7 +16,9 @@ export default function NavigationBar({
   activeType,
   onSetActiveType,
   dateSortOrder,
-  onDateSortToggle
+  onDateSortToggle,
+  searchQuery,
+  onSearchChange
 }: NavigationBarProps) {
   return (
     <nav className="navigation-bar" aria-label="Main navigation">
@@ -38,6 +41,14 @@ export default function NavigationBar({
           ))}
         </div>
         <div className="nav-action-controls">
+          <input
+            type="search"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="search-input"
+            aria-label="Search portfolio"
+          />
           <button
             onClick={onDateSortToggle}
             className="date-sort-button"

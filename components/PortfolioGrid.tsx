@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { PortfolioItemData } from '../utils/parseCSV';
 
 export interface PortfolioItemProps {
@@ -8,6 +8,42 @@ export interface PortfolioItemProps {
 
 function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
   const itemRef = useRef<HTMLDivElement>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      {
+        rootMargin: '0px 0px 200px 0px', // Pre-load images 200px below the viewport
+      }
+    );
+
+    if (itemRef.current) {
+      observer.observe(itemRef.current);
+    }
+
+    return () => {
+      if (itemRef.current) {
+        observer.unobserve(itemRef.current);
+      }
+    };
+  }, [itemRef]);
+
+  useEffect(() => {
+    if (isVisible) {
+      const img = new Image();
+      img.src = item.coverImage;
+      img.onload = () => {
+        setIsLoaded(true);
+      };
+    }
+  }, [isVisible, item.coverImage]);
 
   const handleClick = () => {
     if (itemRef.current) {
@@ -33,8 +69,8 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
       tabIndex={0}
     >
       <div
-        className="item-cover-image"
-        style={{ backgroundImage: `url(${item.coverImage})` }}
+        className={`item-cover-image ${isLoaded ? 'loaded' : ''}`}
+        style={{ backgroundImage: isLoaded ? `url(${item.coverImage})` : 'none' }}
         aria-hidden="true"
       ></div>
       <div className="item-overlay" aria-hidden="true">

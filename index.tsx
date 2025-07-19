@@ -50,6 +50,7 @@ function App() {
   const [availableTypesInSheet, setAvailableTypesInSheet] = useState<string[]>([]);
   const [activeType, setActiveType] = useState<string | null>(null); 
   const [dateSortOrder, setDateSortOrder] = useState<'new' | 'old'>('new');
+  const [searchQuery, setSearchQuery] = useState<string>("");
   // viewMode and hasAnyGpsData state removed
 
 
@@ -112,12 +113,64 @@ function App() {
     fetchData();
   }, []);
 
+
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    const sort = params.get('sort');
+    const q = params.get('q');
+    const id = params.get('id');
+
+    if (type) {
+      setActiveType(type);
+    }
+    if (sort === 'old' || sort === 'new') {
+      setDateSortOrder(sort);
+    }
+    if (q) {
+      setSearchQuery(q);
+    }
+
+    if (id && allPortfolioItems.length > 0) {
+      const item = allPortfolioItems.find(i => i.id.toString() === id);
+      if (item) {
+        setSelectedModalItem(item);
+        setIsModalOpen(true);
+      }
+    }
+  }, [allPortfolioItems]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (activeType) {
+      params.set('type', activeType);
+    }
+    if (dateSortOrder) {
+      params.set('sort', dateSortOrder);
+    }
+    if (searchQuery) {
+      params.set('q', searchQuery);
+    }
+    if (isModalOpen && selectedModalItem) {
+      params.set('id', selectedModalItem.id.toString());
+    }
+    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+
     let itemsToProcess = [...allPortfolioItems];
+
+    if (searchQuery) {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      itemsToProcess = itemsToProcess.filter(item => 
+        item.title.toLowerCase().includes(lowercasedQuery) ||
+        item.description?.toLowerCase().includes(lowercasedQuery) ||
+        item.feat?.toLowerCase().includes(lowercasedQuery) ||
+        item.location?.toLowerCase().includes(lowercasedQuery)
+      );
+    }
 
     if (activeType) {
       itemsToProcess = itemsToProcess.filter(item => item.type.toLowerCase() === activeType);
-    } else if (availableTypesInSheet.length > 0) { 
+    } else if (availableTypesInSheet.length > 0 && !searchQuery) { 
       itemsToProcess = [];
     }
         
@@ -140,7 +193,7 @@ function App() {
     });
     
     setDisplayedItems(itemsToProcess);
-  }, [allPortfolioItems, activeType, dateSortOrder, availableTypesInSheet]);
+  }, [allPortfolioItems, activeType, dateSortOrder, searchQuery, isModalOpen, selectedModalItem, availableTypesInSheet]);
 
 
   const handleOpenModal = (item: PortfolioItemData, targetElement: HTMLElement) => {
@@ -180,6 +233,10 @@ function App() {
     setDateSortOrder(prevOrder => prevOrder === 'new' ? 'old' : 'new');
   };
 
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
+
   // handleViewModeToggle function removed
 
   return (
@@ -190,6 +247,8 @@ function App() {
         onSetActiveType={handleSetActiveType}
         dateSortOrder={dateSortOrder}
         onDateSortToggle={handleDateSortToggle}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
         // viewMode, onViewModeToggle, and hasGpsData props removed
       />
       <main id="main-content-area" aria-live="polite">
