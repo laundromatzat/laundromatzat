@@ -58,6 +58,15 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
     }
   };
 
+  const typeIcons: Record<string, string> = {
+    wash: '🧺',
+    dry: '🔥',
+    fold: '📦',
+    video: '📹',
+    image: '🖼️',
+    cinemagraph: '🎞️'
+  };
+
   return (
     <div
       ref={itemRef}
@@ -74,6 +83,7 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
         aria-hidden="true"
       ></div>
       <div className="item-overlay" aria-hidden="true">
+        <span className="item-type-icon" aria-hidden="true">{typeIcons[item.type] || '◻︎'}</span>
         <h3 id={`item-title-${item.id}-hover`} className="item-title">{item.title}</h3>
         {item.date && <p className="item-detail item-date">{item.date}</p>}
         {item.location && <p className="item-detail item-location">{item.location}</p>}

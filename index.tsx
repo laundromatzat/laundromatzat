@@ -4,6 +4,7 @@ import { PortfolioItemData, parsePortfolioDate } from './utils/parseCSV';
 import NavigationBar from './components/NavigationBar';
 import PortfolioGrid from './components/PortfolioGrid';
 import Modal from './components/Modal';
+import MapSection from './components/MapSection';
 import SpecialPage from './components/SpecialPage';
 import { usePortfolioLogic } from './hooks/usePortfolioLogic';
 import { useUrlSync } from './hooks/useUrlSync';
@@ -168,14 +169,17 @@ function App() {
         onDateSortToggle={handleDateSortToggle}
       />
       <div className="search-bar-container">
-        <input
-          type="search"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="search-input"
-          aria-label="Search portfolio"
-        />
+        <div className="search-wrapper">
+          <span className="search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="search"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="search-input"
+            aria-label="Search portfolio"
+          />
+        </div>
       </div>
       <main id="main-content-area" aria-live="polite">
         {loading && <p className="status-message">loading portfolio...</p>}
@@ -195,6 +199,7 @@ function App() {
         onPrev={handlePrevModalItem}
         onNext={handleNextModalItem}
       />
+      <MapSection items={allPortfolioItems} />
       <Footer />
     </div>
   );

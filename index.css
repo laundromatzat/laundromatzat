@@ -1,11 +1,11 @@
 /* Global Resets and Base Styles */
 :root {
-  --color-bg: #FFFFFF; /* White */
-  --color-secondary-bg: #BED0D8; /* Light Steel Blue / Muted Blue-Gray */
-  --color-text: #000000; /* Black */
-  --color-dark-text: #000000; /* Black */
-  --color-accent: #AEDDF1; /* Light Sky Blue */
-  --color-dark-accent: #5C94BA; /* Steel Blue / Medium Blue */
+  --color-bg: #F9F9F9;
+  --color-secondary-bg: #DDE8EE;
+  --color-text: #222222;
+  --color-dark-text: #000000;
+  --color-accent: #F4B400;
+  --color-dark-accent: #007BFF;
 
   --color-light-text-on-dark: #FFFFFF; /* White for text on dark backgrounds */
   --color-focus-ring: var(--color-dark-accent); 
@@ -18,7 +18,7 @@
 body, html {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--color-bg); 
   color: var(--color-text); 
   line-height: 1.6;
@@ -102,35 +102,13 @@ a {
 /* ensure transforms don’t affect inline layout */
 .site-icon {
   display: inline-block;
+  opacity: 0;
+  animation: slideIn 0.6s ease forwards;
 }
 
-@keyframes shake {
-  /* start at center */
-  0%   { transform: translateX(0); }
-
-  /* rapid shakes: every 4% of the timeline (0 – 20%) */
-  4%   { transform: translateX(-2px); }
-  6%   { transform: translateX(2px); }
-  8%   { transform: translateX(-2px); }
-  10%  { transform: translateX(2px); }
-  12%  { transform: translateX(-2px); }
-  14%  { transform: translateX(2px); }
-  16%  { transform: translateX(-2px); }
-  18%  { transform: translateX(2px); }
-  20%  { transform: translateX(0); }
-
-  /* medium shakes: 20 – 60% */
-  40%  { transform: translateX(-1px); }
-  60%  { transform: translateX(1px); }
-
-  /* slowest shake and rest: 80 – 100% */
-  80%  { transform: translateX(-1px); }
-  100% { transform: translateX(0); }
-}
-
-.site-icon:hover {
-  /* 1s total, ease-out so shakes naturally decelerate, run once */
-  animation: shake 1s ease-out 1;
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* hide the text by default */
@@ -177,6 +155,22 @@ a {
   align-items: center;
 }
 
+.gallery-link {
+  margin-right: 1rem;
+  font-size: 1rem;
+  color: var(--color-dark-accent);
+}
+.gallery-link:hover {
+  text-decoration: underline;
+}
+
+.type-icon {
+  margin-right: 0.25rem;
+}
+.type-label {
+  text-transform: capitalize;
+}
+
 .menu-links .nav-type-link {
   color: var(--color-text);
 }
@@ -202,25 +196,44 @@ a {
 }
 
 .search-bar-container {
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   text-align: center;
+  position: sticky;
+  top: var(--nav-bar-height);
+  background-color: var(--color-bg);
+  box-shadow: 0 1px 3px var(--color-shadow-base);
+  z-index: 900;
+}
+
+.search-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--color-dark-accent);
 }
 
 .search-input {
   width: 100%;
-  max-width: 400px;
-  padding: 0.5rem 1rem;
+  max-width: 500px;
+  padding: 0.6rem 1rem 0.6rem 2.2rem;
   border-radius: 20px;
   border: 1px solid var(--color-secondary-bg);
   background-color: var(--color-bg);
-  font-size: 1rem;
+  font-size: 1.1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--color-dark-accent);
-  box-shadow: 0 0 0 3px rgba(92, 148, 186, 0.25);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
 .nav-action-controls .date-sort-button:hover {
@@ -420,6 +433,11 @@ a {
   opacity: .9;
 }
 
+.item-type-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .item-title {
   font-size: 1.25rem;
   font-weight: 600;
@@ -558,10 +576,16 @@ a {
   to { background-color: rgba(0, 0, 0, 0.7); }
 }
 
+@keyframes zoomIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 .modal-dialog {
   background-color: #000;
   border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  animation: zoomIn 0.3s ease-out;
   padding: 25px;
   position: relative;
   width: calc(100vw - 200px);
@@ -732,4 +756,16 @@ a {
 .loading-overlay span {
   color: #fff;
   font-size: 1.2rem;
+}
+
+/* Map section */
+.map-section {
+  padding: 2rem 1rem;
+  background-color: var(--color-secondary-bg);
+}
+
+.map-heading {
+  text-align: center;
+  margin: 0 0 1rem 0;
+  color: var(--color-dark-text);
 }
