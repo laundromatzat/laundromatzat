@@ -201,11 +201,26 @@ a {
   font-weight: 500;
 }
 
+.search-bar-container {
+  padding: 1rem 0;
+  text-align: center;
+}
+
 .search-input {
-  margin-right: 1rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  border: 1px solid var(--color-dark-accent);
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid var(--color-secondary-bg);
+  background-color: var(--color-bg);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-dark-accent);
+  box-shadow: 0 0 0 3px rgba(92, 148, 186, 0.25);
 }
 
 .nav-action-controls .date-sort-button:hover {
@@ -294,14 +309,46 @@ a {
 
 
 /* Portfolio Grid */
+.portfolio-grid-wrapper {
+  max-width: 2200px;
+  margin: 0 auto;
+  padding: 0 0.2rem;
+}
+
 .portfolio-grid {
   display: grid;
   gap: 0.2rem; 
-  padding: 0.2rem; 
   width: 100%; 
-  max-width: 2200px; 
-  margin: 0 auto; 
 }
+
+.year-group {
+  /* No specific width/margin here; handled by parent container */
+}
+
+.year-group + .year-group {
+  margin-top: 2rem;
+}
+
+.year-subheader {
+  position: relative;
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: var(--color-dark-text);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+}
+
+.year-subheader::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  width: 33%;
+  background: linear-gradient(to right, var(--color-dark-text), transparent);
+}
+
+
 
 /* Portfolio Item */
 .portfolio-item {

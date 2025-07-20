@@ -84,19 +84,28 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
 }
 
 export interface PortfolioGridProps {
-  items: PortfolioItemData[];
+  items: Record<string, PortfolioItemData[]>;
   onItemClick: (item: PortfolioItemData, targetElement: HTMLElement) => void;
 }
 
 export default function PortfolioGrid({ items, onItemClick }: PortfolioGridProps) {
-  if (!items || items.length === 0) {
+  const years = Object.keys(items).sort((a, b) => parseInt(b) - parseInt(a));
+
+  if (years.length === 0) {
     return <p className="status-message">No portfolio items match your criteria. Try adjusting filters or ensure your Google Sheet is set up correctly.</p>;
   }
   return (
-    <div className="portfolio-grid" role="list">
-      {items.map(item => (
-        <PortfolioItem key={item.id} item={item} onItemClick={onItemClick} />
+    <>
+      {years.map(year => (
+        <div key={year} className="year-group">
+          <h2 className="year-subheader">{year}</h2>
+          <div className="portfolio-grid" role="list">
+            {items[year].map(item => (
+              <PortfolioItem key={item.id} item={item} onItemClick={onItemClick} />
+            ))}
+          </div>
+        </div>
       ))}
-    </div>
+    </>
   );
 }
