@@ -319,6 +319,7 @@ a {
   display: grid;
   gap: 0.2rem;
   width: 100%;
+  grid-template-columns: repeat(2, 1fr);
 }
 
 /* Grid layout for each year group */
@@ -326,7 +327,7 @@ a {
   display: grid;
   gap: 0.2rem;
   width: 100%;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .year-group {
@@ -451,7 +452,7 @@ a {
 
 /* Responsive Grid Columns */
 .portfolio-grid {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
 }
 
 /* Footer Styles */
@@ -472,7 +473,7 @@ a {
 
 @media (min-width: 600px) {
   .portfolio-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
   .nav-container {
     padding: 0 2rem 0.3rem 2rem;
@@ -501,7 +502,7 @@ a {
 
 @media (min-width: 992px) {
   .portfolio-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
   .nav-container {
     padding: 0 2.5rem 0.3rem 2.5rem;
