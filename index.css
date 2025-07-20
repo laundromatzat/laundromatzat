@@ -317,8 +317,16 @@ a {
 
 .portfolio-grid {
   display: grid;
-  gap: 0.2rem; 
-  width: 100%; 
+  gap: 0.2rem;
+  width: 100%;
+}
+
+/* Grid layout for each year group */
+.year-group .portfolio-grid {
+  display: grid;
+  gap: 0.2rem;
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .year-group {
@@ -483,11 +491,11 @@ a {
 }
 
 @media (min-width: 768px) {
-   .portfolio-grid { /* .portfolio-map-container removed */
+   .portfolio-grid-wrapper {
      width: calc(100% - 4rem);
      max-width: calc(1200px - 4rem);
    }
-    /* .portfolio-map-container media query styles removed */
+   /* .portfolio-map-container media query styles removed */
 }
 
 
@@ -508,7 +516,7 @@ a {
   }
   /* .view-mode-button media query styles removed */
   /* .portfolio-map-container media query styles removed */
-   .portfolio-grid { /* .portfolio-map-container removed */
+   .portfolio-grid-wrapper {
      width: calc(100% - 5rem);
      max-width: calc(1200px - 5rem);
    }
