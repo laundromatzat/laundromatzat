@@ -20,11 +20,12 @@ function Footer() {
 
 function App() {
   const { allPortfolioItems, loading, error, availableTypesInSheet } = usePortfolioLogic();
-  const [displayedItems, setDisplayedItems] = useState<Record<string, PortfolioItemData[]>>({});
+  const [displayedItems, setDisplayedItems] = useState<PortfolioItemData[]>([]);
   
   const [activeType, setActiveType] = useState<string | null>(null);
   const [dateSortOrder, setDateSortOrder] = useState<'new' | 'old'>('new');
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid'); // New state for view mode
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedModalItem, setSelectedModalItem] = useState<PortfolioItemData | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
@@ -44,7 +45,7 @@ function App() {
       if (type) {
         setActiveType(type);
       } else if (availableTypesInSheet.includes('video')) {
-        setActiveType('video');
+        setActiveType('video'); // Default to 'videos'
       } else if (availableTypesInSheet.length > 0) {
         setActiveType(availableTypesInSheet[0]);
       }
@@ -102,23 +103,12 @@ function App() {
         return 0;
     });
 
-    const groupedItems = itemsToProcess.reduce((acc, item) => {
-      const dateObj = parsePortfolioDate(item.date);
-      const year = dateObj ? dateObj.getFullYear().toString() : 'Undated';
-      if (!acc[year]) {
-        acc[year] = [];
-      }
-      acc[year].push(item);
-      return acc;
-    }, {} as Record<string, PortfolioItemData[]>);
-    
-    setDisplayedItems(groupedItems);
+    setDisplayedItems(itemsToProcess); // No longer grouping by year
   }, [allPortfolioItems, activeType, dateSortOrder, searchQuery, availableTypesInSheet]);
 
   const handleOpenModal = (item: PortfolioItemData, targetElement: HTMLElement) => {
     setLastFocusedElement(targetElement || document.activeElement as HTMLElement);
-    const allItems = Object.values(displayedItems).flat();
-    const index = allItems.findIndex(i => i.id === item.id);
+    const index = displayedItems.findIndex(i => i.id === item.id); // Use displayedItems directly
     setCurrentIndex(index);
     setSelectedModalItem(item);
     setIsModalOpen(true);
@@ -132,25 +122,23 @@ function App() {
   };
 
   const handleNextModalItem = () => {
-    const allItems = Object.values(displayedItems).flat();
-    if (allItems.length === 0) return;
-    const nextIndex = (currentIndex + 1) % allItems.length;
+    if (displayedItems.length === 0) return;
+    const nextIndex = (currentIndex + 1) % displayedItems.length;
     setCurrentIndex(nextIndex);
-    setSelectedModalItem(allItems[nextIndex]);
+    setSelectedModalItem(displayedItems[nextIndex]);
   };
 
   const handlePrevModalItem = () => {
-    const allItems = Object.values(displayedItems).flat();
-    if (allItems.length === 0) return;
-    const prevIndex = (currentIndex - 1 + allItems.length) % allItems.length;
+    if (displayedItems.length === 0) return;
+    const prevIndex = (currentIndex - 1 + displayedItems.length) % displayedItems.length;
     setCurrentIndex(prevIndex);
-    setSelectedModalItem(allItems[prevIndex]);
+    setSelectedModalItem(displayedItems[prevIndex]);
   };
 
   const handleSetActiveType = (typeToSet: string) => {
     setActiveType(typeToSet);
-  };
-  
+  }; 
+
   const handleDateSortToggle = () => {
     setDateSortOrder(prevOrder => prevOrder === 'new' ? 'old' : 'new');
   };
@@ -165,8 +153,6 @@ function App() {
         availableTypes={availableTypesInSheet}
         activeType={activeType}
         onSetActiveType={handleSetActiveType}
-        dateSortOrder={dateSortOrder}
-        onDateSortToggle={handleDateSortToggle}
       />
       <div className="search-bar-container">
         <div className="search-wrapper">
@@ -180,15 +166,33 @@ function App() {
             aria-label="Search portfolio"
           />
         </div>
+        <button
+            onClick={handleDateSortToggle}
+            className="date-sort-button"
+            aria-label={`Sort by date. Currently ${dateSortOrder === 'new' ? 'newest first' : 'oldest first'}. Press to toggle.`}
+            title={`Current sort: ${dateSortOrder === 'new' ? 'Newest First' : 'Oldest First'}. Click to change.`}
+          >
+            <span>date</span>
+            <span className="sort-arrow" aria-hidden="true">
+              {dateSortOrder === 'new' ? '▼' : '▲'}
+            </span>
+          </button>
+          <button onClick={() => setViewMode(viewMode === 'grid' ? 'map' : 'grid')} className="view-mode-button">
+            {viewMode === 'grid' ? 'map' : 'grid'}
+        </button>
       </div>
       <main id="main-content-area" aria-live="polite">
         {loading && <p className="status-message">loading portfolio...</p>}
         {error && <p className="status-message error-message">{error}</p>}
         
         {!loading && !error && (
-          <div className="portfolio-grid-wrapper">
-            <PortfolioGrid items={displayedItems} onItemClick={handleOpenModal} />
-          </div>
+          viewMode === 'grid' ? (
+            <div className="portfolio-grid-wrapper">
+              <PortfolioGrid items={displayedItems} onItemClick={handleOpenModal} />
+            </div>
+          ) : (
+            <MapSection items={allPortfolioItems} />
+          )
         )}
 
       </main>
@@ -199,7 +203,6 @@ function App() {
         onPrev={handlePrevModalItem}
         onNext={handleNextModalItem}
       />
-      <MapSection items={allPortfolioItems} />
       <Footer />
     </div>
   );
@@ -216,3 +219,15 @@ if (rootElement) {
 } else {
   console.error("Root element not found");
 }
+
+// Global keydown listener for modal navigation
+document.addEventListener('keydown', (e) => {
+  const modalOpen = document.body.classList.contains('body-modal-open');
+  if (modalOpen) {
+    if (e.key === 'ArrowRight') {
+      document.querySelector('.modal-nav.next')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    } else if (e.key === 'ArrowLeft') {
+      document.querySelector('.modal-nav.prev')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }
+  }
+});

@@ -58,15 +58,6 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
     }
   };
 
-  const typeIcons: Record<string, string> = {
-    wash: '🧺',
-    dry: '🔥',
-    fold: '📦',
-    video: '📹',
-    image: '🖼️',
-    cinemagraph: '🎞️'
-  };
-
   return (
     <div
       ref={itemRef}
@@ -83,7 +74,6 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
         aria-hidden="true"
       ></div>
       <div className="item-overlay" aria-hidden="true">
-        <span className="item-type-icon" aria-hidden="true">{typeIcons[item.type] || '◻︎'}</span>
         <h3 id={`item-title-${item.id}-hover`} className="item-title">{item.title}</h3>
         {item.date && <p className="item-detail item-date">{item.date}</p>}
         {item.location && <p className="item-detail item-location">{item.location}</p>}
@@ -94,28 +84,19 @@ function PortfolioItem({ item, onItemClick }: PortfolioItemProps) {
 }
 
 export interface PortfolioGridProps {
-  items: Record<string, PortfolioItemData[]>;
+  items: PortfolioItemData[];
   onItemClick: (item: PortfolioItemData, targetElement: HTMLElement) => void;
 }
 
 export default function PortfolioGrid({ items, onItemClick }: PortfolioGridProps) {
-  const years = Object.keys(items).sort((a, b) => parseInt(b) - parseInt(a));
-
-  if (years.length === 0) {
+  if (items.length === 0) {
     return <p className="status-message">No portfolio items match your criteria. Try adjusting filters or ensure your Google Sheet is set up correctly.</p>;
   }
   return (
-    <>
-      {years.map(year => (
-        <div key={year} className="year-group">
-          <h2 className="year-subheader">{year}</h2>
-          <div className="portfolio-grid" role="list">
-            {items[year].map(item => (
-              <PortfolioItem key={item.id} item={item} onItemClick={onItemClick} />
-            ))}
-          </div>
-        </div>
+    <div className="portfolio-grid" role="list">
+      {items.map(item => (
+        <PortfolioItem key={item.id} item={item} onItemClick={onItemClick} />
       ))}
-    </>
+    </div>
   );
 }

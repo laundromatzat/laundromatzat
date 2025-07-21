@@ -770,3 +770,94 @@ a {
   margin: 0 0 1rem 0;
   color: var(--color-dark-text);
 }
+
+
+/* Leaflet Map Container */
+.portfolio-map-container {
+  height: 400px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px var(--color-shadow-base);
+  background-color: #ddd; /* Placeholder background */
+}
+
+/* Leaflet Marker Icon Customizations Removed */
+
+/* Leaflet Popup Customizations Removed */
+
+/* Leaflet Control Customizations */
+.leaflet-control-zoom-in, .leaflet-control-zoom-out {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 4px var(--color-shadow-base) !important;
+}
+
+.leaflet-control-zoom-in:hover, .leaflet-control-zoom-out:hover {
+  background-color: var(--color-secondary-bg) !important;
+}
+
+/* Leaflet Attribution Control */
+.leaflet-control-attribution {
+  font-size: 0.7rem !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--color-dark-accent) !important;
+}
+
+/* Special Page Styles */
+.special-page {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: var(--color-secondary-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--color-shadow-base);
+}
+
+.special-page h1 {
+  color: var(--color-dark-text);
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.special-page p {
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.special-page a {
+  color: var(--color-dark-accent);
+  text-decoration: underline;
+}
+
+.special-page a:hover {
+  color: var(--color-accent);
+}
+
+.special-page .home-link {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-dark-accent);
+  color: var(--color-light-text-on-dark);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.special-page .home-link:hover {
+  background-color: var(--color-accent);
+}
+
+/* Media query for smaller screens */
+@media (max-width: 600px) {
+  .special-page {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
