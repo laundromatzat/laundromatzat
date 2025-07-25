@@ -156,7 +156,9 @@ function App() {
       />
       <div className="search-bar-container">
         <div className="search-wrapper">
-          <span className="search-icon" aria-hidden="true">🔍</span>
+          <span className="search-icon" aria-hidden="true">
+            <img src="images/magnifyingglass-symbol.png" alt="Search" style={{ height: '1em' }} />
+          </span>
           <input
             type="search"
             placeholder="Search..."
@@ -165,6 +167,13 @@ function App() {
             className="search-input"
             aria-label="Search portfolio"
           />
+        <button onClick={() => setViewMode(viewMode === 'grid' ? 'map' : 'grid')} className="view-mode-button">
+            {viewMode === 'grid' ? (
+              <img src="images/map-symbol.png" alt="Map View" style={{ height: '1em' }} />
+            ) : (
+              <img src="images/grid-symbol.png" alt="Grid View" style={{ height: '1em' }} />
+            )}
+        </button>
         </div>
         <button
             onClick={handleDateSortToggle}
@@ -174,12 +183,13 @@ function App() {
           >
             <span>date</span>
             <span className="sort-arrow" aria-hidden="true">
-              {dateSortOrder === 'new' ? '▼' : '▲'}
+              {dateSortOrder === 'new' ? (
+                <img src="images/arrowtriangledown-symbol.png" alt="Sort descending" style={{ height: '0.8em' }} />
+              ) : (
+                <img src="images/arrowtriangleup-symbol.png" alt="Sort ascending" style={{ height: '0.8em' }} />
+              )}
             </span>
           </button>
-          <button onClick={() => setViewMode(viewMode === 'grid' ? 'map' : 'grid')} className="view-mode-button">
-            {viewMode === 'grid' ? 'map' : 'grid'}
-        </button>
       </div>
       <main id="main-content-area" aria-live="polite">
         {loading && <p className="status-message">loading portfolio...</p>}
@@ -191,7 +201,9 @@ function App() {
               <PortfolioGrid items={displayedItems} onItemClick={handleOpenModal} />
             </div>
           ) : (
-            <MapSection items={allPortfolioItems} />
+            <div className="map-view-area">
+              <MapSection items={allPortfolioItems} onItemClick={handleOpenModal} />
+            </div>
           )
         )}
 

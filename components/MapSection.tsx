@@ -6,9 +6,10 @@ import 'leaflet/dist/leaflet.css';
 
 interface MapSectionProps {
   items: PortfolioItemData[];
+  onItemClick: (item: PortfolioItemData, targetElement: HTMLElement) => void;
 }
 
-const defaultCenter: LatLngExpression = [40.7128, -74.006];
+const defaultCenter: LatLngExpression = [39.8283, -98.5795];
 
 // Fix default icon paths in Leaflet when using webpack/vite
 import L from 'leaflet';
@@ -23,23 +24,34 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow
 });
 
-export default function MapSection({ items }: MapSectionProps) {
+export default function MapSection({ items, onItemClick }: MapSectionProps) {
   const markers = items
     .filter(i => i.gpsCoords)
     .map(i => {
       const [lat, lng] = i.gpsCoords!.split(',').map(Number);
       return (
         <Marker position={[lat, lng]} key={i.id}>
-          <Popup>{i.title}</Popup>
+          <Popup>
+            <div className="map-popup-content">
+              <div className="map-popup-image-container" onClick={() => onItemClick(i, document.body)}>
+                <img src={i.coverImage} alt={i.title} />
+              </div>
+              <h3>{i.title}</h3>
+              <p>{i.date}</p>
+              <p>{i.location}</p>
+            </div>
+          </Popup>
         </Marker>
       );
     });
 
   return (
     <section className="map-section">
-      <h2 className="map-heading">Find us here</h2>
-      <MapContainer center={defaultCenter} zoom={13} style={{ height: '300px', width: '100%' }}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <MapContainer center={defaultCenter} zoom={4} style={{ height: '100%', width: '100%' }}>
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        />
         {markers}
       </MapContainer>
     </section>

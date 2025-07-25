@@ -189,25 +189,66 @@ a {
 
 
 /* Date Sort button in Nav Bar */
-.nav-action-controls .date-sort-button {
-  gap: 0.35rem; 
-  color: var(--color-dark-accent); 
+.date-sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-dark-text);
   font-weight: 500;
+  background: none;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: color 0.2s ease-in-out;
+}
+
+.date-sort-button:hover {
+  color: var(--color-dark-accent);
+}
+
+.sort-arrow img {
+  display: block;
+  height: 1em;
+  width: 1em;
 }
 
 .search-bar-container {
-  padding: 0.75rem 0;
-  text-align: center;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
   position: sticky;
   top: var(--nav-bar-height);
   background-color: var(--color-bg);
-  box-shadow: 0 1px 3px var(--color-shadow-base);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   z-index: 900;
 }
 
 .search-wrapper {
   position: relative;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+  max-width: 500px;
+}
+
+.view-mode-button {
+    background: none;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    font-size: 1.5rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out, font-weight 0.2s ease-in-out, opacity 0.2s;
+    border-radius: 4px;
+    white-space: nowrap;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
 }
 
 .search-icon {
@@ -759,105 +800,138 @@ a {
   font-size: 1.2rem;
 }
 
-/* Map section */
 .map-section {
-  padding: 2rem 1rem;
-  background-color: var(--color-secondary-bg);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.map-heading {
-  text-align: center;
-  margin: 0 0 1rem 0;
-  color: var(--color-dark-text);
+.map-view-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
 }
 
-
-/* Leaflet Map Container */
-.portfolio-map-container {
-  height: 400px;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px var(--color-shadow-base);
-  background-color: #ddd; /* Placeholder background */
-}
-
-/* Leaflet Marker Icon Customizations Removed */
-
-/* Leaflet Popup Customizations Removed */
-
-/* Leaflet Control Customizations */
-.leaflet-control-zoom-in, .leaflet-control-zoom-out {
-  background-color: var(--color-bg) !important;
-  color: var(--color-text) !important;
-  border-radius: 4px !important;
-  box-shadow: 0 1px 4px var(--color-shadow-base) !important;
-}
-
-.leaflet-control-zoom-in:hover, .leaflet-control-zoom-out:hover {
+/* Styles for Leaflet Popups */
+.leaflet-popup-content-wrapper {
+  width: 240px; /* Set a fixed width for the popup */
+  border-radius: 8px !important;
   background-color: var(--color-secondary-bg) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
 }
 
-/* Leaflet Attribution Control */
-.leaflet-control-attribution {
-  font-size: 0.7rem !important;
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 12px !important;
+  font-family: 'Inter', sans-serif;
+  color: var(--color-text);
 }
 
-.leaflet-control-attribution a {
-  color: var(--color-dark-accent) !important;
+.leaflet-popup-tip-container {
+  display: none; /* Hides the little triangle tip */
 }
 
-/* Special Page Styles */
-.special-page {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: var(--color-secondary-bg);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px var(--color-shadow-base);
+.map-popup-content h3 {
+  margin: 8px 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.special-page h1 {
-  color: var(--color-dark-text);
-  border-bottom: 2px solid var(--color-accent);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1.5rem;
+.map-popup-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1; /* Reduced line height for tighter spacing */
 }
 
-.special-page p {
-  line-height: 1.7;
-  margin-bottom: 1rem;
-}
-
-.special-page a {
-  color: var(--color-dark-accent);
-  text-decoration: underline;
-}
-
-.special-page a:hover {
-  color: var(--color-accent);
-}
-
-.special-page .home-link {
-  display: inline-block;
-  margin-top: 2rem;
-  padding: 0.75rem 1.5rem;
-  background-color: var(--color-dark-accent);
-  color: var(--color-light-text-on-dark);
+.map-popup-image-container {
+  width: 100%;
+  padding-top: 66.66%; /* Creates a 3:2 aspect ratio container */
+  position: relative;
+  background-color: var(--color-bg);
   border-radius: 4px;
-  text-decoration: none;
+  overflow: hidden;
+  transition: transform 0.8s ease-out, box-shadow 0.3s ease-out;
+}
+
+.fullscreen-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
   transition: background-color 0.2s ease;
 }
 
-.special-page .home-link:hover {
-  background-color: var(--color-accent);
+.fullscreen-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
-/* Media query for smaller screens */
-@media (max-width: 600px) {
-  .special-page {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
+.fullscreen-button img {
+  filter: invert(1);
+}
+
+.modal-dialog.fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  border-radius: 0;
+  padding: 0;
+}
+
+.modal-dialog.fullscreen .modal-content {
+  height: 100%;
+  justify-content: center;
+}
+
+.modal-dialog.fullscreen .modal-title,
+.modal-dialog.fullscreen .modal-details {
+  display: none;
+}
+
+.modal-dialog.fullscreen .modal-media-container {
+  height: 100%;
+  width: 100%;
+}
+
+.modal-dialog.fullscreen .modal-nav {
+  display: none;
+}
+
+.modal-dialog.fullscreen .modal-close-button {
+  top: 20px;
+  right: 20px;
+  font-size: 3rem;
+  z-index: 11;
+}
+
+.map-popup-image-container:hover {
+  cursor: pointer;
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px var(--color-shadow-base);
+}
+
+.map-popup-image-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* This will crop the image to fit, not distort it */
+}
+
+.map-view-area .leaflet-container {
+  flex-grow: 1;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px var(--color-shadow-base);
 }
