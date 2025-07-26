@@ -157,7 +157,7 @@ function App() {
       <div className="search-bar-container">
         <div className="search-wrapper">
           <span className="search-icon" aria-hidden="true">
-            <img src="images/magnifyingglass-symbol.png" alt="Search" style={{ height: '1em' }} />
+            <img src="/images/magnifyingglass-symbol.png" alt="Search" style={{ height: '1em' }} />
           </span>
           <input
             type="search"
@@ -169,9 +169,9 @@ function App() {
           />
         <button onClick={() => setViewMode(viewMode === 'grid' ? 'map' : 'grid')} className="view-mode-button">
             {viewMode === 'grid' ? (
-              <img src="images/map-symbol.png" alt="Map View" style={{ height: '1em' }} />
+              <img src="/images/map-symbol.png" alt="Map View" style={{ height: '1em' }} />
             ) : (
-              <img src="images/grid-symbol.png" alt="Grid View" style={{ height: '1em' }} />
+              <img src="/images/grid-symbol.png" alt="Grid View" style={{ height: '1em' }} />
             )}
         </button>
         </div>
@@ -184,9 +184,9 @@ function App() {
             <span>date</span>
             <span className="sort-arrow" aria-hidden="true">
               {dateSortOrder === 'new' ? (
-                <img src="images/arrowtriangledown-symbol.png" alt="Sort descending" style={{ height: '0.8em' }} />
+                <img src="/images/arrowtriangledown-symbol.png" alt="Sort descending" style={{ height: '0.8em' }} />
               ) : (
-                <img src="images/arrowtriangleup-symbol.png" alt="Sort ascending" style={{ height: '0.8em' }} />
+                <img src="/images/arrowtriangleup-symbol.png" alt="Sort ascending" style={{ height: '0.8em' }} />
               )}
             </span>
           </button>
