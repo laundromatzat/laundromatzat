@@ -15,8 +15,4 @@ This project powers [laundromatzat.com](https://laundromatzat.com), a simple por
 
 To create a production build run `npm run build`. You can preview the build locally using `npm run preview`.
 
-## Special Page
-
-Visiting `/special` loads a tool that generates a clinic SOAP note using the Google Gemini API. Users must sign in with Google using `VITE_GOOGLE_CLIENT_ID` and be listed in `APPROVED_USERS` in `SpecialPage.tsx` to access the tool.
-
 The repository includes a GitHub Actions workflow that builds the project and deploys the `dist` directory to GitHub Pages whenever changes are pushed to the `master` branch.
