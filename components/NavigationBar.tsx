@@ -1,5 +1,4 @@
 import React from 'react';
-import siteIcon from '../images/laundromatzat-icon.png';
 
 export interface NavigationBarProps {
   availableTypes: string[];
@@ -16,7 +15,7 @@ export default function NavigationBar({
     <nav className="navigation-bar" aria-label="Main navigation">
       <div className="nav-container">
         <a href="/" className="site-title" aria-label="Homepage">
-          <img src={siteIcon} alt="laundromatzat.com logo" className="site-icon" />
+          <img src="/images/laundromatzat-icon.png" alt="laundromatzat.com logo" className="site-icon" />
           <span className="site-title-text">laundromatzat.com</span>
         </a>
         <div className="menu-links" role="menubar" aria-label="Filter by content type">

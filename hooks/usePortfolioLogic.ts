@@ -21,8 +21,7 @@ export function usePortfolioLogic() {
       try {
         setLoading(true);
         setError(null);
-        const cacheBustUrl = `${GOOGLE_SHEET_CSV_URL}${GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?'}cb=${new Date().getTime()}`;
-        const response = await fetch(cacheBustUrl);
+        const response = await fetch(GOOGLE_SHEET_CSV_URL);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}. Failed to fetch from Google Sheet. Ensure the URL is correct, the sheet is published as CSV, and accessible.`);
