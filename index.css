@@ -364,6 +364,7 @@ a {
 
 /* Portfolio Grid */
 .portfolio-grid-wrapper {
+  width: 100%;
   max-width: 2200px;
   margin: 0 auto;
   padding: 0 0.2rem;
@@ -378,10 +379,6 @@ a {
 
 /* Grid layout for each year group */
 .year-group .portfolio-grid {
-  display: grid;
-  gap: 0.2rem;
-  width: 100%;
-  grid-template-columns: repeat(2, 1fr);
 }
 
 .year-group {
@@ -510,9 +507,6 @@ a {
 
 
 /* Responsive Grid Columns */
-.portfolio-grid {
-  grid-template-columns: repeat(2, 1fr);
-}
 
 /* Footer Styles */
 .app-footer {
@@ -532,7 +526,7 @@ a {
 
 @media (min-width: 600px) {
   .portfolio-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
   .nav-container {
     padding: 0 2rem 0.3rem 2rem;
