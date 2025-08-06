@@ -27,7 +27,7 @@ export default function NavigationBar({
               onClick={() => onSetActiveType(type)}
               className={`nav-type-link ${activeType === type ? 'active' : ''}`}
             >
-              <span className="type-label">{(type + 's').toLowerCase()}</span>
+              <span className="type-label">{type}s</span>
             </button>
           ))}
         </div>

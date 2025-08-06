@@ -156,9 +156,6 @@ function App() {
       />
       <div className="search-bar-container">
         <div className="search-wrapper">
-          <span className="search-icon" aria-hidden="true">
-            <img src="/images/magnifyingglass-symbol.png" alt="Search" style={{ height: '1em' }} />
-          </span>
           <input
             type="search"
             placeholder="Search..."
@@ -167,29 +164,40 @@ function App() {
             className="search-input"
             aria-label="Search portfolio"
           />
-        <button onClick={() => setViewMode(viewMode === 'grid' ? 'map' : 'grid')} className="view-mode-button">
-            {viewMode === 'grid' ? (
-              <img src="/images/map-symbol.png" alt="Map View" style={{ height: '1em' }} />
-            ) : (
-              <img src="/images/grid-symbol.png" alt="Grid View" style={{ height: '1em' }} />
-            )}
-        </button>
         </div>
-        <button
-            onClick={handleDateSortToggle}
-            className="date-sort-button"
-            aria-label={`Sort by date. Currently ${dateSortOrder === 'new' ? 'newest first' : 'oldest first'}. Press to toggle.`}
-            title={`Current sort: ${dateSortOrder === 'new' ? 'Newest First' : 'Oldest First'}. Click to change.`}
-          >
-            <span>date</span>
-            <span className="sort-arrow" aria-hidden="true">
-              {dateSortOrder === 'new' ? (
-                <img src="/images/arrowtriangledown-symbol.png" alt="Sort descending" style={{ height: '0.8em' }} />
-              ) : (
-                <img src="/images/arrowtriangleup-symbol.png" alt="Sort ascending" style={{ height: '0.8em' }} />
-              )}
-            </span>
-          </button>
+        <div className="nav-action-controls">
+          <button
+              onClick={handleDateSortToggle}
+              className="date-sort-button"
+              aria-label={`Sort by date. Currently ${dateSortOrder === 'new' ? 'newest first' : 'oldest first'}. Press to toggle.`}
+              title={`Current sort: ${dateSortOrder === 'new' ? 'Newest First' : 'Oldest First'}. Click to change.`}
+            >
+              <span>date</span>
+              <span className="sort-arrow" aria-hidden="true">
+                {dateSortOrder === 'new' ? (
+                  <img src="/images/arrowtriangledown-symbol.png" alt="Sort descending" style={{ height: '0.8em' }} />
+                ) : (
+                  <img src="/images/arrowtriangleup-symbol.png" alt="Sort ascending" style={{ height: '0.8em' }} />
+                )}
+              </span>
+            </button>
+          <div className="view-mode-toggle-group">
+            <button 
+              onClick={() => setViewMode('grid')} 
+              className={`view-mode-button ${viewMode === 'grid' ? 'active' : ''}`}
+              aria-label="Grid view"
+            >
+              <img src="/images/grid-symbol.png" alt="Grid View" style={{ height: '1em' }} />
+            </button>
+            <button 
+              onClick={() => setViewMode('map')} 
+              className={`view-mode-button ${viewMode === 'map' ? 'active' : ''}`}
+              aria-label="Map view"
+            >
+              <img src="/images/map-symbol.png" alt="Map View" style={{ height: '1em' }} />
+            </button>
+          </div>
+        </div>
       </div>
       <main id="main-content-area" aria-live="polite">
         {loading && <p className="status-message">loading portfolio...</p>}
