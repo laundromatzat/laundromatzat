@@ -165,6 +165,16 @@ function App() {
             aria-label="Search portfolio"
           />
         </div>
+        <div className="search-wrapper">
+          <input
+            type="search"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="search-input"
+            aria-label="Search portfolio"
+          />
+        </div>
         <div className="nav-action-controls">
           <button
               onClick={handleDateSortToggle}
