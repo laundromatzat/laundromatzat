@@ -26,18 +26,18 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build site
-        run: npm run build
+        run: npm run build -w frontend
 
       - name: Ensure CNAME file
-        run: echo "laundromatzat.com" > dist/CNAME
+        run: echo "laundromatzat.com" > frontend/dist/CNAME
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./frontend/dist
 
   deploy:
     needs: build
