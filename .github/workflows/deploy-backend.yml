@@ -52,16 +52,12 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          allow_unauthenticated: true
+          flags: --allow-unauthenticated        # <-- move here
           env_vars: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
             API_KEY=${{ secrets.GEMINI_API_KEY }}
 
       - name: Show deployed URL
-        run: gcloud run services describe ${{ env.SERVICE_NAME }} \
-             --platform managed \
-             --region ${{ env.REGION }} \
-             --format 'value(status.url)'
+        run: gcloud run services describe "${{ env.SERVICE_NAME }}" --region "${{ env.REGION }}" --format='value(status.url)'
 
       - name: Verify health
         run: |
