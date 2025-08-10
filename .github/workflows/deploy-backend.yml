@@ -36,8 +36,8 @@ jobs:
 
       - name: Install dependencies and build API
         run: |
-          npm ci
-          npm run build:api
+          npm install
+          npm run build -w backend
 
       - name: Build and push (sha + latest)
         run: |
