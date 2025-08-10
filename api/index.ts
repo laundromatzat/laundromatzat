@@ -6,7 +6,8 @@ import knexConfig from './knexfile.ts';
 const db = knex(knexConfig.development);
 
 const app = express();
-const port = process.env.PORT || 3001;
+// Cloud Run sets process.env.PORT; fall back to 8080 for local dev
+const port = Number(process.env.PORT) || 8080;
 
 const allowedOrigins = [
   'http://localhost:5173',

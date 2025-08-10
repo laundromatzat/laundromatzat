@@ -3,13 +3,13 @@ name: Deploy Backend to Cloud Run
 on:
   push:
     branches:
-      - main # Or your main branch, e.g., master
+      - main
 
 env:
   PROJECT_ID: laundromat-zat
   REGION: us-west2
-  SERVICE_NAME: laundromatzat-api # Name of your Cloud Run service
-  IMAGE_NAME: laundromatzat-backend # Name of your Artifact Registry repository
+  SERVICE_NAME: laundromatzat-api
+  IMAGE_NAME: laundromatzat-backend
 
 jobs:
   deploy:
@@ -17,24 +17,26 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Google Auth
-        id: auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
 
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${REGION}-docker.pkg.dev
+      - name: Install dependencies and build API
+        run: |
+          npm ci
+          npm run build:api
 
-      - name: Build and Push Docker Image
+      - name: Build and push Docker image
         run: |
           docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }} .
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }}
@@ -45,10 +47,12 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }}
-          # You can add environment variables here if needed, e.g.:
-          # env_vars: |
-          #   DATABASE_URL=${{ secrets.DATABASE_URL }}
-          #   API_KEY=${{ secrets.API_KEY }}
+          env_vars: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            API_KEY=${{ secrets.GEMINI_API_KEY }}
 
       - name: Show deployed URL
-        run: gcloud run services describe ${{ env.SERVICE_NAME }} --platform managed --region ${{ env.REGION }} --format 'value(status.url)'
+        run: gcloud run services describe ${{ env.SERVICE_NAME }} \
+             --platform managed \
+             --region ${{ env.REGION }} \
+             --format 'value(status.url)'

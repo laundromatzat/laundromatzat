@@ -3,14 +3,18 @@ name: Deploy Vite React Site
 on:
   push:
     branches:
-      - master
+      - main        # changed from "master" so pushes actually trigger
   schedule:
-    - cron: '0 0 * * 0'  # Weekly Sunday midnight
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:                                # expose secrets to the build
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+      GOOGLE_SHEET_CSV_URL: ${{ secrets.GOOGLE_SHEET_CSV_URL }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,14 +25,13 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build site
         run: npm run build
 
       - name: Ensure CNAME file
-        run: |
-          echo "laundromatzat.com" > dist/CNAME
+        run: echo "laundromatzat.com" > dist/CNAME
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -37,15 +40,12 @@ jobs:
 
   deploy:
     needs: build
+    runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
-
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -57,14 +57,11 @@ jobs:
     steps:
       - name: Wait for DNS propagation
         run: sleep 60
-
       - name: Verify deployment
         run: |
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://laundromatzat.com)
           echo "Status code: $HTTP_STATUS"
           if [[ "$HTTP_STATUS" -ne 200 ]]; then
-            echo "Warning: Non-200 status"
+            echo "Warning: Non‑200 status"
           else
             echo "Site is live"
-          fi
-        continue-on-error: true
