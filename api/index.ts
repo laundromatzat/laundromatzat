@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import knex from 'knex';
-import knexConfig from './knexfile.ts';
+import knexConfig from './knexfile';
 
 const db = knex(knexConfig.development);
 

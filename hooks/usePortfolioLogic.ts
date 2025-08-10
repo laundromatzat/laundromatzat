@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import { PortfolioItemData, parseCSVToPortfolioItems, parsePortfolioDate as _parsePortfolioDate } from './utils/parseCSV';
+import {
+  PortfolioItemData,
+  parseCSVToPortfolioItems,
+  parsePortfolioDate as _parsePortfolioDate
+} from '../utils/parseCSV';
+
 
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQTTlqDzuJCj-vRQiSNTtdSlaeb4VhJEVzia25ETVWaG1TC7UViLUrPFWKKK9PFdBiumGNSxX2fUKUa/pub?gid=0&single=true&output=csv';
 const ALL_POSSIBLE_TYPES = ['image', 'video', 'cinemagraph'];
