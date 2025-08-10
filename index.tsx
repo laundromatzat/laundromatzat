@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { PortfolioItemData, parsePortfolioDate } from './utils/parseCSV';
+import { parsePortfolioDate } from './utils/parseCSV';
 import NavigationBar from './components/NavigationBar';
 import PortfolioGrid from './components/PortfolioGrid';
 import Modal from './components/Modal';
@@ -8,6 +8,17 @@ import MapSection from './components/MapSection';
 import SpecialPage from './components/SpecialPage';
 import { usePortfolioLogic } from './hooks/usePortfolioLogic';
 import { useUrlSync } from './hooks/useUrlSync';
+
+// Minimal item shape used by the UI; optional fields allow both API and CSV-driven data
+type UIItem = {
+  id: number;
+  title: string;
+  type: string;
+  date?: string;
+  description?: string;
+  feat?: string;
+  location?: string;
+};
 
 function Footer() {
   const currentYear = new Date().getFullYear();
@@ -19,15 +30,15 @@ function Footer() {
 }
 
 function App() {
-  const { allPortfolioItems, loading, error, availableTypesInSheet } = usePortfolioLogic();
-  const [displayedItems, setDisplayedItems] = useState<PortfolioItemData[]>([]);
-  
+  const { items, loading, error, availableTypesInSheet } = usePortfolioLogic();
+  const [displayedItems, setDisplayedItems] = useState<UIItem[]>([]);
+
   const [activeType, setActiveType] = useState<string | null>(null);
   const [dateSortOrder, setDateSortOrder] = useState<'new' | 'old'>('new');
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid'); // New state for view mode
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedModalItem, setSelectedModalItem] = useState<PortfolioItemData | null>(null);
+  const [selectedModalItem, setSelectedModalItem] = useState<UIItem | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [lastFocusedElement, setLastFocusedElement] = useState<HTMLElement | null>(null);
   const [initialUrlParamsProcessed, setInitialUrlParamsProcessed] = useState(false);
@@ -35,7 +46,7 @@ function App() {
   useUrlSync(activeType, dateSortOrder, searchQuery, isModalOpen, selectedModalItem, initialUrlParamsProcessed);
 
   useEffect(() => {
-    if (allPortfolioItems.length > 0 && !initialUrlParamsProcessed) {
+    if (items.length > 0 && !initialUrlParamsProcessed) {
       const params = new URLSearchParams(window.location.search);
       const type = params.get('type');
       const sort = params.get('sort');
@@ -58,7 +69,7 @@ function App() {
       }
 
       if (id) {
-        const item = allPortfolioItems.find(i => i.id.toString() === id);
+        const item = items.find(i => i.id.toString() === id);
         if (item) {
           setSelectedModalItem(item);
           setIsModalOpen(true);
@@ -66,14 +77,14 @@ function App() {
       }
       setInitialUrlParamsProcessed(true);
     }
-  }, [allPortfolioItems, initialUrlParamsProcessed, availableTypesInSheet]);
+  }, [items, initialUrlParamsProcessed, availableTypesInSheet]);
 
   useEffect(() => {
-    let itemsToProcess = [...allPortfolioItems];
+    let itemsToProcess = [...items];
 
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
-      itemsToProcess = itemsToProcess.filter(item => 
+      itemsToProcess = itemsToProcess.filter(item =>
         item.title.toLowerCase().includes(lowercasedQuery) ||
         item.description?.toLowerCase().includes(lowercasedQuery) ||
         item.feat?.toLowerCase().includes(lowercasedQuery) ||
@@ -84,14 +95,14 @@ function App() {
     if (activeType) {
       itemsToProcess = itemsToProcess.filter(item => item.type.toLowerCase() === activeType);
     }
-        
+
     itemsToProcess.sort((a, b) => {
-        const dateObjA = parsePortfolioDate(a.date);
-        const dateObjB = parsePortfolioDate(b.date);
+        const dateObjA = parsePortfolioDate(a?.date || '');
+        const dateObjB = parsePortfolioDate(b?.date || '');
 
         const timeA = dateObjA ? dateObjA.getTime() : NaN;
         const timeB = dateObjB ? dateObjB.getTime() : NaN;
-        
+
         const isValidA = !isNaN(timeA);
         const isValidB = !isNaN(timeB);
 
@@ -104,9 +115,9 @@ function App() {
     });
 
     setDisplayedItems(itemsToProcess); // No longer grouping by year
-  }, [allPortfolioItems, activeType, dateSortOrder, searchQuery, availableTypesInSheet]);
+  }, [items, activeType, dateSortOrder, searchQuery, availableTypesInSheet]);
 
-  const handleOpenModal = (item: PortfolioItemData, targetElement: HTMLElement) => {
+  const handleOpenModal = (item: UIItem, targetElement: HTMLElement) => {
     setLastFocusedElement(targetElement || document.activeElement as HTMLElement);
     const index = displayedItems.findIndex(i => i.id === item.id); // Use displayedItems directly
     setCurrentIndex(index);
@@ -220,7 +231,7 @@ function App() {
             </div>
           ) : (
             <div className="map-view-area">
-              <MapSection items={allPortfolioItems} onItemClick={handleOpenModal} />
+              <MapSection items={items} onItemClick={handleOpenModal} />
             </div>
           )
         )}

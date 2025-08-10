@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { fetchPortfolio } from '../utils/api'; // adjust relative path if needed
+import { useEffect, useMemo, useState } from 'react';
+import { fetchPortfolio, type PortfolioItem } from '../utils/api';
 
 export function usePortfolioLogic() {
-  const [items, setItems] = useState<Array<{id:number; title:string; type:string}>>([]);
+  const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -11,7 +11,7 @@ export function usePortfolioLogic() {
       try {
         const data = await fetchPortfolio();
         setItems(data);
-      } catch (e:any) {
+      } catch (e: any) {
         setError(e?.message ?? 'Failed to load portfolio');
       } finally {
         setLoading(false);
@@ -19,5 +19,12 @@ export function usePortfolioLogic() {
     })();
   }, []);
 
-  return { items, loading, error };
+  const availableTypesInSheet = useMemo(() => {
+    const s = new Set<string>();
+    for (const it of items) if (it.type) s.add(it.type.toLowerCase());
+    return Array.from(s);
+  }, [items]);
+
+  // Preserve previous API for callers that expect these names
+  return { items, loading, error, allPortfolioItems: items, availableTypesInSheet };
 }
