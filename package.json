@@ -2,10 +2,11 @@
   "name": "laundromatzat-redesign",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "nodemon --watch 'api/**/*.ts' --exec 'ts-node' api/index.ts",
     "build": "tsc && vite build",
+    "build:api": "tsc -p tsconfig.server.json",
     "preview": "vite preview",
     "test": "vitest run"
   },
@@ -23,9 +24,11 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "@types/node": "^22.17.0",
+    "@types/leaflet": "^1.9.20",
+    "@types/node": "^22.17.1",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
+    "@types/react-leaflet": "^2.8.3",
     "@vitest/browser": "^3.2.4",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
