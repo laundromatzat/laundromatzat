@@ -61,6 +61,12 @@ jobs:
 
       - name: Verify health
         run: |
-          URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format='value(status.url)')
+          set -euo pipefail
+          URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --region "${{ env.REGION }}" --format='value(status.url)')
           echo "Service URL: $URL"
-          curl -sSf "$URL/healthz" || curl -sSf "$URL/"   # whichever you have
+          echo "Checking /healthz …"
+          curl -sSf "$URL/healthz" >/dev/null
+          echo "Checking /healthz/db …"
+          curl -sSf "$URL/healthz/db" >/dev/null || { echo "DB health check failed"; exit 1; }
+          echo "Checking /api/portfolio …"
+          curl -sSf "$URL/api/portfolio" >/dev/null
