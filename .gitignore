@@ -76,4 +76,10 @@ functions/serviceAccountKey.json
 /examples
 
 # OS specific
-**/.DS_Store.env.local
+.DS_Store
+
+# Build output
+dist/
+dist-api/
+frontend/dist/
+backend/dist-api/
