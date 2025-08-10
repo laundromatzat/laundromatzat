@@ -8,8 +8,6 @@ const isProd = isCloudRun || process.env.NODE_ENV === 'production';
 // On Cloud Run, only /tmp is writable. Use SQLite there if DATABASE_URL not set.
 const sqlitePath = process.env.SQLITE_PATH || (isProd ? '/tmp/dev.sqlite3' : 'backend/api/data/dev.sqlite3');
 
-// After tsc, this file lives in backend/dist-api/knexfile.js.
-// So __dirname === "<repo>/backend/dist-api". Build migration/seed paths from there.
 const migrationsDir = path.join(__dirname, 'data', 'migrations');
 const seedsDir = path.join(__dirname, 'seeds');
 
