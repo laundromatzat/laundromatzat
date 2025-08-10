@@ -1,0 +1,54 @@
+name: Deploy Backend to Cloud Run
+
+on:
+  push:
+    branches:
+      - main # Or your main branch, e.g., master
+
+env:
+  PROJECT_ID: laundromat-zat
+  REGION: us-west2
+  SERVICE_NAME: laundromatzat-api # Name of your Cloud Run service
+  IMAGE_NAME: laundromatzat-backend # Name of your Artifact Registry repository
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${REGION}-docker.pkg.dev
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }} .
+          docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }}
+          # You can add environment variables here if needed, e.g.:
+          # env_vars: |
+          #   DATABASE_URL=${{ secrets.DATABASE_URL }}
+          #   API_KEY=${{ secrets.API_KEY }}
+
+      - name: Show deployed URL
+        run: gcloud run services describe ${{ env.SERVICE_NAME }} --platform managed --region ${{ env.REGION }} --format 'value(status.url)'
