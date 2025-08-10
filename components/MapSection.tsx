@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { LatLngExpression, Icon } from 'leaflet';
 import { PortfolioItemData } from '../utils/parseCSV';

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { GoogleGenAI } from '@google/genai';
+import * as GoogleGenAIModule from '@google/genai';
+const GoogleGenerativeAI = GoogleGenAIModule.GoogleGenerativeAI || GoogleGenAIModule.default.GoogleGenerativeAI;
 
 // Emails of users allowed to access the tool. Replace with real admin-managed list.
 const APPROVED_USERS = [
@@ -76,7 +77,7 @@ export default function SpecialPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const ai = new GoogleGenAI({ apiKey: (import.meta as any).env.GEMINI_API_KEY });
+    const ai = new GoogleGenerativeAI({ apiKey: (import.meta as any).env.GEMINI_API_KEY });
     const model = ai.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `Create an outpatient clinic SOAP note using the following details:\n` +
       `Age: ${params.patientAge}\nSex: ${params.patientSex}\n` +
