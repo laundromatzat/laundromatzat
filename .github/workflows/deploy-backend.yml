@@ -32,24 +32,27 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Configure Docker auth for Artifact Registry
-        run: gcloud auth configure-docker ${REGION}-docker.pkg.dev -q
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev -q
 
       - name: Install dependencies and build API
         run: |
           npm ci
           npm run build:api
 
-      - name: Build and push Docker image
+      - name: Build and push (sha + latest)
         run: |
-          docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }} .
+          docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }} \
+                       -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:latest .
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }}
+          docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:latest
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
-          image: ${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}/${SERVICE_NAME}:${{ github.sha }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          allow_unauthenticated: true
           env_vars: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             API_KEY=${{ secrets.GEMINI_API_KEY }}
@@ -59,3 +62,9 @@ jobs:
              --platform managed \
              --region ${{ env.REGION }} \
              --format 'value(status.url)'
+
+      - name: Verify health
+        run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format='value(status.url)')
+          echo "Service URL: $URL"
+          curl -sSf "$URL/healthz" || curl -sSf "$URL/"   # whichever you have
