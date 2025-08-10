@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PortfolioItemData, parsePortfolioDate as _parsePortfolioDate } from './utils/parseCSV';
+import { PortfolioItemData, parseCSVToPortfolioItems, parsePortfolioDate as _parsePortfolioDate } from './utils/parseCSV';
 
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQTTlqDzuJCj-vRQiSNTtdSlaeb4VhJEVzia25ETVWaG1TC7UViLUrPFWKKK9PFdBiumGNSxX2fUKUa/pub?gid=0&single=true&output=csv';
 const ALL_POSSIBLE_TYPES = ['image', 'video', 'cinemagraph'];
@@ -31,12 +31,12 @@ export function usePortfolioLogic() {
             throw new Error("Fetched CSV data is empty. Check your Google Sheet content and publishing settings.");
         }
         
-        const data = parseCSVToPortfolioItems(csvText);
+        const data: PortfolioItemData[] = parseCSVToPortfolioItems(csvText);
         setAllPortfolioItems(data);
         
         const typesFromData = new Set<string>();
-        data.forEach(item => {
-          if (item.type) typesFromData.add(item.type.toLowerCase());
+        data.forEach((item: PortfolioItemData) => {
+            if (item.type) typesFromData.add(item.type.toLowerCase());
         });
         
         const sortedTypes = ALL_POSSIBLE_TYPES.filter(t => typesFromData.has(t));
