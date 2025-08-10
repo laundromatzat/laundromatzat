@@ -78,7 +78,7 @@ export default function SpecialPage() {
     e.preventDefault();
     setLoading(true);
     const ai = new GoogleGenerativeAI({ apiKey: (import.meta as any).env.GEMINI_API_KEY });
-    const model = ai.getGenerativeModel({ model: 'gemini-pro' });
+    const model = ai.getModel({ model: 'gemini-pro' });
     const prompt = `Create an outpatient clinic SOAP note using the following details:\n` +
       `Age: ${params.patientAge}\nSex: ${params.patientSex}\n` +
       `Chief complaint: ${params.chiefComplaint}\nHistory: ${params.history}\n` +
