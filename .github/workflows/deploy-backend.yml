@@ -64,9 +64,9 @@ jobs:
           set -euo pipefail
           URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" --region "${{ env.REGION }}" --format='value(status.url)')
           echo "Service URL: $URL"
-          echo "Checking /healthz …"
-          curl -sSf "$URL/healthz" >/dev/null
-          echo "Checking /healthz/db …"
-          curl -sSf "$URL/healthz/db" >/dev/null || { echo "DB health check failed"; exit 1; }
+          echo "Checking /api/healthz …"
+          curl -sSf "$URL/api/healthz" >/dev/null
+          echo "Checking /api/healthz/db …"
+          curl -sSf "$URL/api/healthz/db" >/dev/null || { echo "DB health check failed"; exit 1; }
           echo "Checking /api/portfolio …"
           curl -sSf "$URL/api/portfolio" >/dev/null
