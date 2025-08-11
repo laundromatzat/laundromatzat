@@ -52,8 +52,8 @@ app.get('/api/portfolio', async (_req, res) => {
 });
 
 // Health/version probes (handy for CI and debugging)
-app.get('/healthz', (_req, res) => res.status(200).send('ok'));
-app.get('/healthz/db', async (_req, res) => {
+app.get('/api/healthz', (_req, res) => res.status(200).send('ok'));
+app.get('/api/healthz/db', async (_req, res) => {
   try {
     await db.raw('select 1');
     res.send('ok');
