@@ -1,19 +1,19 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noEmit": false,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
     "outDir": "./dist-api",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "allowJs": true,
+    "rootDir": "./api",
+
     "esModuleInterop": true,
-    "allowImportingTsExtensions": false
+    "resolveJsonModule": true,
+    "types": ["node"],
+
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
   },
-  "include": [
-    "api/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["api/**/*.ts"]
 }
