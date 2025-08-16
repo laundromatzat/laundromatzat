@@ -15,4 +15,4 @@ This project powers [laundromatzat.com](https://laundromatzat.com), a simple por
 
 To create a production build run `npm run build`. You can preview the build locally using `npm run preview`.
 
-The repository includes a GitHub Actions workflow that builds the project and deploys the `dist` directory to GitHub Pages whenever changes are pushed to the `master` branch.
+The repository includes a GitHub Actions workflow that builds the project and deploys the `dist` directory to GitHub Pages whenever changes are pushed to the `main` branch.
