@@ -2,19 +2,25 @@
   "name": "backend",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon --watch 'api/**/*.ts' --exec 'ts-node' api/index.ts",
-    "build": "tsc -p tsconfig.server.json"
+    "dev": "nodemon --watch 'api/**/*.ts' --exec 'ts-node -r dotenv/config' api/index.ts",
+    "build": "tsc -p tsconfig.server.json",
+    "migrate": "node --loader ts-node/esm -r dotenv/config api/run-migrations.ts",
+    "seed": "ts-node -r dotenv/config api/run-seed.ts"
   },
   "dependencies": {
     "@google/genai": "^0.7.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^5.1.0",
     "knex": "^3.1.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "papaparse": "^5.4.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3"
+    "@types/express": "^5.0.3",
+    "@types/papaparse": "^5.3.14"
   }
 }
