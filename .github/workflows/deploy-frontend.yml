@@ -36,7 +36,11 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build
-        run: npm run build # Assumes build output is in a 'build' or 'dist' folder
+        run: npm run build
+        env:
+          VITE_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - name: Verify build output
+        run: ls -R
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
