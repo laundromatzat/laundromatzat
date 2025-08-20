@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { SparklesIcon } from './icons/SparklesIcon';
+
 
 const NavItem: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => {
   return (
@@ -27,7 +27,7 @@ function Header(): React.ReactNode {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <NavLink to="/" className="flex-shrink-0 flex items-center gap-2 text-white font-bold text-xl">
-              <SparklesIcon className="h-6 w-6 text-brand-accent" />
+              <img src="/laundromatzat-icon.png" alt="Laundromatzat Icon" className="h-6 w-6" />
               <span>Laundromatzat</span>
             </NavLink>
           </div>

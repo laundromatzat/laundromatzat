@@ -1,0 +1,47 @@
+{
+  // Toggles the master switch for all Gemini features in VS Code.
+  // Setting this to `true` is the first step to enable any functionality.
+  "gemini.enabled": true,
+
+  // Enables the core chat functionality, allowing you to ask questions
+  // in the Gemini side panel.
+  "gemini.chat.enabled": true,
+
+  // Enables inline code suggestions that appear as you type. This is
+  // similar to GitHub Copilot's core feature.
+  "gemini.code.inlineSuggestions.enabled": true,
+
+  // Enables code actions (the lightbulb icon) and right-click context menu
+  // items for tasks like "Gemini: Explain this code," "Gemini: Find bugs,"
+  // and "Gemini: Generate docs."
+  "gemini.code.actions.enabled": true,
+
+  // Allows Gemini to scan and index your entire workspace to provide more
+  // contextually-aware answers and suggestions. This is highly recommended
+  // for getting the most relevant help.
+  "gemini.code.projectContext.enabled": true,
+
+  // Opt-in to experimental features that are still in development.
+  // This gives you early access to new tools and capabilities.
+  "gemini.experimentalFeatures.enabled": true,
+
+  // Automatically generate commit messages based on your staged changes.
+  // A useful tool for streamlining your Git workflow.
+  "gemini.tools.git.commitMessages.enabled": true,
+
+  // Enables a tool that can help automatically generate or fix unit tests.
+  // This can be a huge time-saver for maintaining code quality.
+  "gemini.tools.testing.enabled": true,
+
+  // Specifies which files and folders to exclude from Gemini's context.
+  // It's good practice to exclude dependency folders, build outputs, and
+  // sensitive directories to improve performance and privacy.
+  "gemini.code.exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.git/**",
+    "**/.vscode/**",
+    "**/*.log"
+  ]
+}
