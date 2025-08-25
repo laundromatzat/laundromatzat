@@ -10,8 +10,8 @@ function VideosPage(): React.ReactNode {
   return (
      <div className="space-y-8">
       <section>
-        <h1 className="text-4xl font-bold text-brand-text mb-2">Videography</h1>
-        <p className="text-lg text-brand-text-secondary">Stories in motion.</p>
+        <h1 className="text-4xl font-bold text-brand-text mb-2">videos</h1>
+        <p className="text-lg text-brand-text-secondary">welcome.</p>
       </section>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {videoProjects.map(project => (

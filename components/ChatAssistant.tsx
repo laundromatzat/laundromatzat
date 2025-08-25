@@ -1,29 +1,38 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Chat } from '@google/genai';
-import { ChatMessage } from '../types';
-import { createChatSession } from '../services/geminiService';
+import { ChatMessage, Project } from '../types';
+import { createChatSession } from '../services/geminiService'; // Import the function
 import { ChatIcon } from './icons/ChatIcon';
 import { CloseIcon } from './icons/CloseIcon';
 import { SendIcon } from './icons/SendIcon';
 import { UserIcon } from './icons/UserIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 
+interface ChatAssistantProps {
+  onSearch: (projects: Project[]) => void;
+}
 
-function ChatAssistant(): React.ReactNode {
+function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatRef = useRef<Chat | null>(null);
+  const chatRef = useRef<Chat | null>(null); // Initialize chatRef to null
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      chatRef.current = createChatSession();
-      setMessages([
-        { id: 'initial', sender: 'ai', text: 'Hello! How can I help you explore this creative portfolio?' }
-      ]);
+      const chatSession = createChatSession();
+      chatRef.current = chatSession; // Assign the result of createChatSession
+      if (chatSession) { // Check if the session was created successfully
+        setMessages([
+          { id: 'initial', sender: 'ai', text: 'Hello! How can I help you explore this creative portfolio?' }
+        ]);
+      } else {
+        //Handle the case where the chat session failed to initialize
+        setMessages([{id: 'error', sender: 'ai', text: 'Sorry, I am unable to connect right now.'}])
+        console.warn("Chat session could not be initialized.  Check your API key.");
+      }
     }
   }, [isOpen]);
 
@@ -32,7 +41,7 @@ function ChatAssistant(): React.ReactNode {
   }, [messages]);
 
   const handleSendMessage = useCallback(async () => {
-    if (!userInput.trim() || isLoading || !chatRef.current) return;
+    if (!userInput.trim() || isLoading || !chatRef.current) return; // Ensure chatRef.current is not null
 
     const userMessage: ChatMessage = { id: Date.now().toString(), sender: 'user', text: userInput };
     setMessages(prev => [...prev, userMessage]);
@@ -43,24 +52,44 @@ function ChatAssistant(): React.ReactNode {
     setMessages(prev => [...prev, { id: aiMessageId, sender: 'ai', text: '' }]);
 
     try {
-      const stream = await chatRef.current.sendMessageStream({ message: userInput });
-      
-      let fullText = '';
-      for await (const chunk of stream) {
-        fullText += chunk.text;
-        setMessages(prev => prev.map(msg => 
-          msg.id === aiMessageId ? { ...msg, text: fullText } : msg
-        ));
+      if(chatRef.current){
+        const stream = await chatRef.current.sendMessageStream({ message: userInput });
+        let fullText = '';
+        for await (const chunk of stream) {
+          fullText += chunk.text;
+          setMessages(prev => prev.map(msg =>
+            msg.id === aiMessageId ? { ...msg, text: fullText } : msg
+          ));
+        }
+
+        const jsonMatch = fullText.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch && jsonMatch[1]) {
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            if (parsed.projects) {
+              onSearch(parsed.projects);
+              setMessages(prev => prev.map(msg =>
+                msg.id === aiMessageId ? { ...msg, text: "I've updated the grid with your search results." } : msg
+              ));
+            }
+          } catch (e) {
+            console.error("Error parsing JSON from AI response:", e);
+            // Not a valid JSON response, treat as plain text
+          }
+        } else {
+          // Not a JSON response, do nothing (or handle as plain text if needed)
+        }
       }
+
     } catch (error) {
       console.error('Error sending message:', error);
-      setMessages(prev => prev.map(msg => 
+      setMessages(prev => prev.map(msg =>
         msg.id === aiMessageId ? { ...msg, text: 'Sorry, something went wrong. Please try again.' } : msg
       ));
     } finally {
       setIsLoading(false);
     }
-  }, [userInput, isLoading]);
+  }, [userInput, isLoading, onSearch]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
@@ -127,4 +156,3 @@ function ChatAssistant(): React.ReactNode {
 }
 
 export default ChatAssistant;
-

@@ -10,8 +10,8 @@ function ImagesPage(): React.ReactNode {
   return (
     <div className="space-y-8">
       <section>
-        <h1 className="text-4xl font-bold text-brand-text mb-2">Images</h1>
-        <p className="text-lg text-brand-text-secondary">Static moments, captured and cleaned.</p>
+        <h1 className="text-4xl font-bold text-brand-text mb-2">images</h1>
+        <p className="text-lg text-brand-text-secondary">static moments.</p>
       </section>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {photoProjects.map(project => (

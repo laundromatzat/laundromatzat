@@ -23,7 +23,7 @@ function App(): React.ReactNode {
             <Route path="/tools" element={<ToolsPage />} />
           </Routes>
         </main>
-        <ChatAssistant />
+        
       </div>
     </HashRouter>
   );

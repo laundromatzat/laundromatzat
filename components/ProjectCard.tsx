@@ -16,7 +16,7 @@ function ProjectCard({ project }: ProjectCardProps): React.ReactNode {
         <h3 className="text-xl font-bold text-brand-text mb-2">{project.title}</h3>
         <p className="text-brand-text-secondary text-base mb-4">{project.description}</p>
         <div className="flex flex-wrap gap-2">
-          {project.tags.map(tag => (
+          {(project.tags || []).map(tag => (
             <span key={tag} className="px-2 py-1 bg-brand-primary text-brand-accent text-xs font-semibold rounded-full">
               #{tag}
             </span>
