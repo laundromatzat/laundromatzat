@@ -14,6 +14,9 @@ export interface Project {
   imageUrl: string;
   projectUrl?: string;
   tags: string[];
+  date: string;
+  location?: string;
+  gpsCoords?: string;
 }
 
 export interface ChatMessage {

@@ -5,7 +5,7 @@ import { ProjectType } from '../types';
 import ProjectCard from '../components/ProjectCard';
 
 function ToolsPage(): React.ReactNode {
-  const toolProjects = PROJECTS.filter(p => p.type === ProjectType.Tool);
+  const toolProjects = PROJECTS.filter(p => p.type === ProjectType.Tool).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
      <div className="space-y-8">
