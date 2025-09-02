@@ -97,14 +97,14 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
     <>
       <button
         onClick={toggleChat}
-        className={`fixed bottom-6 right-6 w-16 h-16 rounded-full bg-brand-accent text-brand-primary flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110 z-50 ${isOpen ? 'opacity-0 scale-0' : 'opacity-100 scale-100'}`}
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-16 h-16 rounded-full bg-brand-accent text-brand-primary flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110 z-50 ${isOpen ? 'opacity-0 scale-0' : 'opacity-100 scale-100'}`}
         aria-label="Open chat assistant"
       >
         <ChatIcon className="w-8 h-8" />
       </button>
 
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-full max-w-sm h-[70vh] max-h-[600px] bg-brand-secondary rounded-lg shadow-2xl flex flex-col z-50 animate-slide-in-up">
+        <div className="fixed bottom-0 right-0 w-full h-full sm:w-full sm:max-w-sm sm:h-[70vh] sm:max-h-[600px] bg-brand-secondary rounded-lg shadow-2xl flex flex-col z-50 animate-slide-in-up">
           <header className="flex items-center justify-between p-4 border-b border-brand-primary">
             <h3 className="text-lg font-bold text-brand-text">AI Assistant</h3>
             <button onClick={toggleChat} className="text-brand-text-secondary hover:text-brand-text">
