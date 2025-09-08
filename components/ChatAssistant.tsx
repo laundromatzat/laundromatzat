@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Chat } from '@google/genai';
 import { ChatMessage, Project } from '../types';
-import { createChatSession } from '../services/geminiService'; // Import the function
+import { createChatSession, searchProjects } from '../services/geminiService'; // Import the function and searchProjects
 import { ChatIcon } from './icons/ChatIcon';
 import { CloseIcon } from './icons/CloseIcon';
 import { SendIcon } from './icons/SendIcon';
@@ -52,7 +52,7 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
     setMessages(prev => [...prev, { id: aiMessageId, sender: 'ai', text: '' }]);
 
     try {
-      if(chatRef.current){
+      if (chatRef.current) {
         const stream = await chatRef.current.sendMessageStream({ message: userInput });
         let fullText = '';
         for await (const chunk of stream) {
@@ -62,25 +62,48 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
           ));
         }
 
+        // 1) Try direct JSON (function‑call style)
+        try {
+          const sanitizedText = fullText.trim().replace(/^```json\n?/, '').replace(/```$/, '');
+          const obj = JSON.parse(sanitizedText);
+          if (obj?.name === 'searchProjects' && obj.arguments?.query) {
+            const results = searchProjects(obj.arguments.query);
+            onSearch(results);
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === aiMessageId
+                  ? { ...msg, text: `Found ${results.length} projects for “${obj.arguments.query}”.` }
+                  : msg
+              )
+            );
+            return; // done
+          }
+        } catch {
+          /* not a bare JSON object; fall through */
+        }
+
+        // 2) Fallback to ```json fenced block (legacy behaviour)
         const jsonMatch = fullText.match(/```json\n([\s\S]*?)\n```/);
         if (jsonMatch && jsonMatch[1]) {
           try {
             const parsed = JSON.parse(jsonMatch[1]);
             if (parsed.projects) {
               onSearch(parsed.projects);
-              setMessages(prev => prev.map(msg =>
-                msg.id === aiMessageId ? { ...msg, text: "I've updated the grid with your search results." } : msg
-              ));
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === aiMessageId
+                    ? { ...msg, text: "I've updated the grid with your search results." }
+                    : msg
+                )
+              );
+              return;
             }
           } catch (e) {
-            console.error("Error parsing JSON from AI response:", e);
-            // Not a valid JSON response, treat as plain text
+            console.error("Error parsing fenced JSON:", e);
           }
-        } else {
-          // Not a JSON response, do nothing (or handle as plain text if needed)
         }
+        // Otherwise leave the AI text as‑is
       }
-
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => prev.map(msg =>
