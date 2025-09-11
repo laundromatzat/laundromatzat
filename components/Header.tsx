@@ -31,7 +31,7 @@ function Header(): React.ReactNode {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <NavLink to="/" className="flex-shrink-0 flex items-center gap-2 text-white font-bold text-xl">
-              <img src="/laundromatzat-icon.png" alt="Laundromatzat Icon" className="h-6 w-6" />
+              <img src={`${import.meta.env.BASE_URL}laundromatzat-icon.png`} alt="Laundromatzat Icon" className="h-6 w-6" />
               <span>laundromatzat</span>
             </NavLink>
           </div>

@@ -66,40 +66,66 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
         try {
           const sanitizedText = fullText.trim().replace(/^```json\n?/, '').replace(/```$/, '');
           const obj = JSON.parse(sanitizedText);
-          if (obj?.name === 'searchProjects' && obj.arguments?.query) {
-            const results = searchProjects(obj.arguments.query);
+          if (obj?.name === 'searchProjects' && obj.arguments?.query !== undefined) {
+            const q = obj.arguments.query as string;
+            const opts = (obj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
+            const results = searchProjects(q, opts);
             onSearch(results);
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === aiMessageId
-                  ? { ...msg, text: `Found ${results.length} projects for “${obj.arguments.query}”.` }
-                  : msg
-              )
-            );
-            return; // done
+            setMessages(prev => prev.map(msg =>
+              msg.id === aiMessageId
+                ? { ...msg, text: `Found ${results.length} project${results.length===1?'':'s'} for “${q}”${opts?.type?` (type: ${opts.type})`:''}.` }
+                : msg
+            ));
+            return;
           }
         } catch {
           /* not a bare JSON object; fall through */
         }
 
-        // 2) Fallback to ```json fenced block (legacy behaviour)
-        const jsonMatch = fullText.match(/```json\n([\s\S]*?)\n```/);
-        if (jsonMatch && jsonMatch[1]) {
+        // 2) Fallback: tolerate ``` + (optional) json on next line
+        let parsedObj: any | null = null;
+        const fenceMatch = fullText.match(/```(?:json)?\s*\n([\s\S]*?)\n```/i);
+        if (fenceMatch && fenceMatch[1]) {
           try {
-            const parsed = JSON.parse(jsonMatch[1]);
-            if (parsed.projects) {
-              onSearch(parsed.projects);
-              setMessages(prev =>
-                prev.map(msg =>
-                  msg.id === aiMessageId
-                    ? { ...msg, text: "I've updated the grid with your search results." }
-                    : msg
-                )
-              );
-              return;
-            }
+            parsedObj = JSON.parse(fenceMatch[1]);
           } catch (e) {
             console.error("Error parsing fenced JSON:", e);
+          }
+        }
+        // 3) Last‑ditch: extract any JSON block that contains a searchProjects call
+        if (!parsedObj) {
+          const looseMatch = fullText.match(/({[\s\S]*"name"\s*:\s*"searchProjects"[\s\S]*})/);
+          if (looseMatch && looseMatch[1]) {
+            try {
+              parsedObj = JSON.parse(looseMatch[1]);
+            } catch (e) {
+              console.error("Error parsing loose JSON block:", e);
+            }
+          }
+        }
+        if (parsedObj) {
+          if (parsedObj?.name === 'searchProjects' && parsedObj.arguments?.query !== undefined) {
+            const q = parsedObj.arguments.query as string;
+            const opts = (parsedObj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
+            const results = searchProjects(q, opts);
+            onSearch(results);
+            setMessages(prev => prev.map(msg =>
+              msg.id === aiMessageId
+                ? { ...msg, text: `Found ${results.length} project${results.length===1?'':'s'} for “${q}”${opts?.type?` (type: ${opts.type})`:''}.` }
+                : msg
+            ));
+            return;
+          }
+          if (parsedObj.projects) {
+            onSearch(parsedObj.projects);
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === aiMessageId
+                  ? { ...msg, text: "I've updated the grid with your search results." }
+                  : msg
+              )
+            );
+            return;
           }
         }
         // Otherwise leave the AI text as‑is
