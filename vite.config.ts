@@ -4,6 +4,5 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  // IMPORTANT: use your actual repo name here
-  base: '/laundromatzat/', 
+   
 });
