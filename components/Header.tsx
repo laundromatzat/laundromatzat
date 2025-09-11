@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import MenuIcon from './icons/MenuIcon';
@@ -42,6 +41,7 @@ function Header(): React.ReactNode {
               <NavItem to="/videos">videos</NavItem>
               <NavItem to="/cinemagraphs">cinemagraphs</NavItem>
               <NavItem to="/tools">tools</NavItem>
+              <NavItem to="/links">☻</NavItem>
             </div>
           </div>
           <div className="-mr-2 flex md:hidden">
@@ -67,6 +67,7 @@ function Header(): React.ReactNode {
             <NavItem to="/videos">videos</NavItem>
             <NavItem to="/cinemagraphs">cinemagraphs</NavItem>
             <NavItem to="/tools">tools</NavItem>
+            <NavItem to="/links">☻</NavItem>
           </div>
         </div>
       )}

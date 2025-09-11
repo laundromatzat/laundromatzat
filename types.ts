@@ -1,4 +1,3 @@
-
 export enum ProjectType {
   Photo = 'photo',
   Video = 'video',
@@ -23,4 +22,9 @@ export interface ChatMessage {
   id: string;
   sender: 'user' | 'ai';
   text: string;
+}
+
+export interface Link {
+  url: string;
+  description: string;
 }

@@ -8,6 +8,7 @@ import ImagesPage from './pages/ImagesPage';
 import VideosPage from './pages/VideosPage';
 import ToolsPage from './pages/ToolsPage';
 import CinemagraphsPage from './pages/CinemagraphsPage';
+import LinksPage from './pages/LinksPage';
 
 function App(): React.ReactNode {
   return (
@@ -21,6 +22,7 @@ function App(): React.ReactNode {
             <Route path="/videos" element={<VideosPage />} />
             <Route path="/cinemagraphs" element={<CinemagraphsPage />} />
             <Route path="/tools" element={<ToolsPage />} />
+            <Route path="/links" element={<LinksPage />} />
           </Routes>
         </main>
         

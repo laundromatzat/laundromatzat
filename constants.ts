@@ -1,4 +1,4 @@
-import { Project, ProjectType } from './types';
+import { Project, ProjectType, Link } from './types';
 
 export const PROJECTS: Project[] = [
   { id: 34, type: ProjectType.Video, title: `Sea of Love`, description: `Exploring the 'American Alps.'`, imageUrl: `https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fsea-of-love.webp?alt=media&token=00e26245-0840-4b6b-a442-8a0650613b72`, projectUrl: `https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fsea-of-love.m4v?alt=media&token=b951aa18-f18f-47d3-a550-324f921b4d96`, date: '07/2025', location: 'Glacier National Park', gpsCoords: '48.656564, -113.789418', tags: ["Michael", "Glacier National Park", "video"] },
@@ -36,6 +36,8 @@ export const PROJECTS: Project[] = [
   { id: 29, type: ProjectType.Video, title: `You Were Meant for Me`, description: `Camping trip to Humboldt State Redwoods State Park from March 20 - 22, 2013.`, imageUrl: `https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fyou-were-meant-for-me.webp?alt=media&token=ced56daf-97f0-4c95-9bd7-d99076888748`, projectUrl: `https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fyou-were-meant-for-me.m4v?alt=media&token=1dcfee98-a536-4d69-b1ae-f0c1ef7349e5`, date: '03/2013', location: 'Humboldt Redwoods State Park', gpsCoords: '40.32981, -123.92448', tags: ["Michael", "Humboldt Redwoods State Park", "video"] },
   { id: 30, type: ProjectType.Video, title: `Impossible`, description: `Stephen and Michael are at it once again, this time with an artistic rendition of 'Impossible' from the 1997 classic live-action remake of Cinderella. No rendition of this song could do it justice without also having an 'all-star, multi-racial cast,' as Stephen and Michael bring to the table.`, imageUrl: `https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fimpossible.webp?alt=media&token=2d295064-f01c-49b8-bef3-cd9a5b84abb1`, projectUrl: `https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fimpossible.mov?alt=media&token=a3b132dc-0770-4000-8105-fac319353f2a`, date: '05/2012', location: 'Oak Creek Apartments | Stanford', gpsCoords: '37.40345, -122.14780', tags: ["Michael", "Oak Creek Apartments | Stanford", "video"] }
 ];
+
+export const LINKS: Link[] = [];
 
 export const AI_SYSTEM_PROMPT = `You are the assistant for a personal creative portfolio website called laundromatzat.com, showcasing videos, images, cinemagraphs, and interactive web apps built by the user. Your goals are:
 
