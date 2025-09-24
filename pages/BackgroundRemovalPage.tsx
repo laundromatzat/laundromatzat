@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { removeBackground } from '@imgly/background-removal';
 
@@ -11,80 +11,161 @@ type StatusMessage = {
 
 const downloadFilename = 'laundromatzat-background-removed.png';
 
+const buildDownloadFilename = (fileName: string): string => {
+  const baseName = fileName.replace(/\.[^/.]+$/, '').trim();
+  if (!baseName) {
+    return downloadFilename;
+  }
+  return `${baseName}-background-removed.png`;
+};
+
+type BackgroundRemovalJob = {
+  id: string;
+  fileName: string;
+  sourcePreview: string;
+  resultPreview: string | null;
+  processingState: ProcessingState;
+  statusMessage: StatusMessage;
+  progressMessage: string | null;
+};
+
+const statusToneClasses: Record<StatusMessage['tone'], string> = {
+  default: 'border-brand-secondary/60 bg-brand-secondary/20 text-brand-text-secondary',
+  success: 'border-emerald-300/60 bg-emerald-400/10 text-emerald-200',
+  error: 'border-rose-300/60 bg-rose-400/10 text-rose-200',
+};
+
 function BackgroundRemovalPage(): React.ReactNode {
-  const [sourcePreview, setSourcePreview] = useState<string | null>(null);
-  const [resultPreview, setResultPreview] = useState<string | null>(null);
-  const [processingState, setProcessingState] = useState<ProcessingState>('idle');
-  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(null);
-  const [progressMessage, setProgressMessage] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<BackgroundRemovalJob[]>([]);
+  const urlRegistry = useRef<Set<string>>(new Set());
 
-  const reset = useCallback(() => {
-    setProcessingState('idle');
-    setStatusMessage(null);
-    setProgressMessage(null);
-    setResultPreview(prev => {
-      if (prev) {
-        URL.revokeObjectURL(prev);
-      }
-      return null;
-    });
-    setSourcePreview(prev => {
-      if (prev) {
-        URL.revokeObjectURL(prev);
-      }
-      return null;
-    });
+  const registerUrl = useCallback((url: string) => {
+    urlRegistry.current.add(url);
   }, []);
 
-  const showStatus = useCallback((label: string, tone: StatusMessage['tone'] = 'default') => {
-    setStatusMessage({ label, tone });
+  const cleanupAllUrls = useCallback(() => {
+    urlRegistry.current.forEach(storedUrl => {
+      URL.revokeObjectURL(storedUrl);
+    });
+    urlRegistry.current.clear();
   }, []);
 
-  const handleFile = useCallback(async (file: File) => {
-    reset();
-    const previewUrl = URL.createObjectURL(file);
-    setSourcePreview(previewUrl);
-    setProcessingState('loading');
-    showStatus('Preparing your photo…');
+  useEffect(() => {
+    return () => {
+      cleanupAllUrls();
+    };
+  }, [cleanupAllUrls]);
 
-    try {
-      const blob = await removeBackground(file, {
-        progress: (key, current, total) => {
-          const percent = total > 0 ? Math.round((current / total) * 100) : 0;
-          setProgressMessage(`${key.replace(/_/g, ' ')} ${percent}%`);
-        },
+  const processFile = useCallback(
+    async (jobId: string, file: File) => {
+      try {
+        const blob = await removeBackground(file, {
+          progress: (key, current, total) => {
+            const percent = total > 0 ? Math.round((current / total) * 100) : 0;
+            const progressLabel = `${key.replace(/_/g, ' ')} ${percent}%`;
+            setJobs(previousJobs =>
+              previousJobs.map(job =>
+                job.id === jobId
+                  ? {
+                      ...job,
+                      progressMessage: progressLabel,
+                    }
+                  : job,
+              ),
+            );
+          },
+        });
+
+        const resultUrl = URL.createObjectURL(blob);
+        registerUrl(resultUrl);
+
+        setJobs(previousJobs =>
+          previousJobs.map(job =>
+            job.id === jobId
+              ? {
+                  ...job,
+                  resultPreview: resultUrl,
+                  processingState: 'success',
+                  statusMessage: {
+                    label: 'Background removed! Download the PNG below.',
+                    tone: 'success',
+                  },
+                  progressMessage: null,
+                }
+              : job,
+          ),
+        );
+      } catch (error) {
+        console.error('Background removal failed', error);
+        setJobs(previousJobs =>
+          previousJobs.map(job =>
+            job.id === jobId
+              ? {
+                  ...job,
+                  processingState: 'error',
+                  statusMessage: {
+                    label: 'Something went wrong while processing the photo. Please try another image.',
+                    tone: 'error',
+                  },
+                  progressMessage: null,
+                }
+              : job,
+          ),
+        );
+      }
+    },
+    [registerUrl],
+  );
+
+  const handleFiles = useCallback(
+    (files: FileList | File[]) => {
+      const fileArray = Array.from(files ?? []);
+      if (fileArray.length === 0) {
+        return;
+      }
+
+      const jobsToAdd = fileArray.map(file => {
+        const sourcePreview = URL.createObjectURL(file);
+        registerUrl(sourcePreview);
+
+        return {
+          id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2, 10)}`,
+          fileName: file.name,
+          sourcePreview,
+          resultPreview: null,
+          processingState: 'loading' as ProcessingState,
+          statusMessage: { label: 'Preparing your photo…', tone: 'default' as const },
+          progressMessage: null,
+        } satisfies BackgroundRemovalJob;
       });
 
-      const resultUrl = URL.createObjectURL(blob);
-      setResultPreview(resultUrl);
-      setProcessingState('success');
-      showStatus('Background removed! Download the PNG below.', 'success');
-      setProgressMessage(null);
-    } catch (error) {
-      console.error('Background removal failed', error);
-      setProcessingState('error');
-      showStatus('Something went wrong while processing the photo. Please try another image.', 'error');
-      setProgressMessage(null);
-    }
-  }, [reset, showStatus]);
+      setJobs(previousJobs => [...previousJobs, ...jobsToAdd]);
+
+      jobsToAdd.forEach((job, index) => {
+        const file = fileArray[index];
+        void processFile(job.id, file);
+      });
+    },
+    [processFile, registerUrl],
+  );
 
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        void handleFile(file);
+      const { files } = event.target;
+      if (files && files.length > 0) {
+        handleFiles(files);
       }
       event.target.value = '';
     },
-    [handleFile],
+    [handleFiles],
   );
 
   const dropHandlers = useMemo(() => {
     const onDrop = (event: React.DragEvent<HTMLLabelElement>) => {
       event.preventDefault();
-      const file = event.dataTransfer.files && event.dataTransfer.files[0];
-      if (file) {
-        void handleFile(file);
+      const { files } = event.dataTransfer;
+      if (files && files.length > 0) {
+        handleFiles(files);
       }
     };
 
@@ -93,39 +174,12 @@ function BackgroundRemovalPage(): React.ReactNode {
     };
 
     return { onDrop, onDragOver };
-  }, [handleFile]);
+  }, [handleFiles]);
 
-  const downloadLink = useMemo(() => {
-    if (!resultPreview) {
-      return null;
-    }
-
-    return (
-      <a
-        href={resultPreview}
-        download={downloadFilename}
-        className="inline-flex items-center justify-center rounded-md bg-brand-accent px-4 py-2 font-medium text-brand-primary shadow-lg transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:ring-offset-brand-primary"
-      >
-        download png
-      </a>
-    );
-  }, [resultPreview]);
-
-  useEffect(() => {
-    return () => {
-      if (sourcePreview) {
-        URL.revokeObjectURL(sourcePreview);
-      }
-    };
-  }, [sourcePreview]);
-
-  useEffect(() => {
-    return () => {
-      if (resultPreview) {
-        URL.revokeObjectURL(resultPreview);
-      }
-    };
-  }, [resultPreview]);
+  const clearAll = useCallback(() => {
+    cleanupAllUrls();
+    setJobs([]);
+  }, [cleanupAllUrls]);
 
   return (
     <div className="space-y-10">
@@ -138,11 +192,11 @@ function BackgroundRemovalPage(): React.ReactNode {
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-brand-text">background remover</h1>
         <p className="text-lg text-brand-text-secondary max-w-2xl">
-          Upload a photo and our in-browser model will isolate the main subject. You&apos;ll get a transparent PNG you can drop into decks, composites, or anything else that needs a clean cutout.
+          Upload one or many photos and our in-browser model will isolate the main subject. You&apos;ll get transparent PNGs you can drop into decks, composites, or anything else that needs a clean cutout.
         </p>
       </section>
 
-      <section className="grid gap-8 lg:grid-cols-2">
+      <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
         <div className="space-y-6">
           <label
             htmlFor="background-remover-input"
@@ -153,67 +207,97 @@ function BackgroundRemovalPage(): React.ReactNode {
               id="background-remover-input"
               type="file"
               accept="image/*"
+              multiple
               onChange={handleInputChange}
               className="hidden"
             />
             <div className="flex flex-col items-center gap-2">
               <span className="text-sm uppercase tracking-wide">drop or click</span>
-              <span className="text-2xl font-semibold text-brand-text">your photo</span>
+              <span className="text-2xl font-semibold text-brand-text">your photos</span>
             </div>
             <p className="max-w-xs text-sm text-brand-text-secondary">
-              PNG and JPEG work best. We keep everything in the browser, so nothing ever leaves this page.
+              PNG and JPEG work best. Add as many as you like — everything stays in the browser.
             </p>
           </label>
 
-          {statusMessage && (
-            <div
-              className={`rounded-lg border px-4 py-3 text-sm ${
-                statusMessage.tone === 'success'
-                  ? 'border-emerald-300/60 bg-emerald-400/10 text-emerald-200'
-                  : statusMessage.tone === 'error'
-                    ? 'border-rose-300/60 bg-rose-400/10 text-rose-200'
-                    : 'border-brand-secondary/60 bg-brand-secondary/20 text-brand-text-secondary'
-              }`}
+          {jobs.length > 0 && (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="inline-flex items-center justify-center rounded-md border border-brand-secondary/60 bg-brand-secondary/10 px-4 py-2 text-sm font-medium text-brand-text-secondary transition-colors hover:border-brand-accent hover:bg-brand-secondary/20 hover:text-brand-text"
             >
-              {statusMessage.label}
-              {progressMessage && (
-                <span className="mt-1 block text-xs opacity-80">{progressMessage}</span>
-              )}
-            </div>
+              clear all photos
+            </button>
           )}
-
-          {processingState === 'success' && downloadLink}
         </div>
 
-        <div className="grid gap-6">
-          <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-text-secondary">original</h2>
-            <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
-              {sourcePreview ? (
-                <img src={sourcePreview} alt="Uploaded" className="max-h-full max-w-full object-contain" />
-              ) : (
-                <span className="text-sm text-brand-text-secondary">no image yet</span>
-              )}
-            </div>
-          </div>
+        <div className="space-y-10">
+          {jobs.length === 0 ? (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-text-secondary">original</h2>
+                <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
+                  <span className="text-sm text-brand-text-secondary">no photos yet — add some to get started.</span>
+                </div>
+              </div>
 
-          <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-text-secondary">background removed</h2>
-            <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
-              {processingState === 'loading' && (
-                <span className="text-sm text-brand-text-secondary">processing… this can take a moment the first time.</span>
-              )}
-              {processingState === 'success' && resultPreview && (
-                <img src={resultPreview} alt="Background removed result" className="max-h-full max-w-full object-contain" />
-              )}
-              {processingState === 'idle' && !resultPreview && (
-                <span className="text-sm text-brand-text-secondary">result preview will show here</span>
-              )}
-              {processingState === 'error' && (
-                <span className="text-sm text-rose-200">we couldn&apos;t process that image. try another one?</span>
-              )}
+              <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-text-secondary">background removed</h2>
+                <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
+                  <span className="text-sm text-brand-text-secondary">your processed previews will appear here.</span>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            jobs.map(job => (
+              <div key={job.id} className="grid gap-6 lg:grid-cols-2">
+                <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-text-secondary">original</h2>
+                    <span className="truncate text-xs font-medium text-brand-text-secondary/80" title={job.fileName}>
+                      {job.fileName}
+                    </span>
+                  </div>
+                  <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
+                    <img src={job.sourcePreview} alt={`Uploaded ${job.fileName}`} className="max-h-full max-w-full object-contain" />
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
+                  <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${statusToneClasses[job.statusMessage.tone]}`}>
+                    {job.statusMessage.label}
+                    {job.progressMessage && (
+                      <span className="mt-1 block text-xs opacity-80">{job.progressMessage}</span>
+                    )}
+                  </div>
+                  <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
+                    {job.processingState === 'loading' && (
+                      <span className="text-sm text-brand-text-secondary">processing… this can take a moment the first time.</span>
+                    )}
+                    {job.processingState === 'success' && job.resultPreview && (
+                      <img
+                        src={job.resultPreview}
+                        alt={`Background removed result for ${job.fileName}`}
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    )}
+                    {job.processingState === 'error' && (
+                      <span className="text-sm text-rose-200">we couldn&apos;t process that image. try another one?</span>
+                    )}
+                  </div>
+                  {job.processingState === 'success' && job.resultPreview && (
+                    <a
+                      href={job.resultPreview}
+                      download={buildDownloadFilename(job.fileName)}
+                      className="mt-4 inline-flex items-center justify-center rounded-md bg-brand-accent px-4 py-2 text-sm font-medium text-brand-primary shadow-lg transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:ring-offset-brand-primary"
+                    >
+                      download png
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
     </div>
