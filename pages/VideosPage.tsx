@@ -2,7 +2,7 @@
 import React from 'react';
 import { PROJECTS } from '../constants';
 import { ProjectType } from '../types';
-import ProjectCard from '../components/ProjectCard';
+import ProjectGrid from '../components/ProjectGrid';
 
 function VideosPage(): React.ReactNode {
   const videoProjects = PROJECTS.filter(p => p.type === ProjectType.Video).sort((a, b) => {
@@ -19,11 +19,7 @@ function VideosPage(): React.ReactNode {
         <h1 className="text-3xl sm:text-4xl font-bold text-brand-text mb-2">videos</h1>
         <p className="text-lg text-brand-text-secondary">welcome.</p>
       </section>
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {videoProjects.map(project => (
-          <ProjectCard key={project.id} project={project} />
-        ))}
-      </div>
+      <ProjectGrid projects={videoProjects} />
     </div>
   );
 }

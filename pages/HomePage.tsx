@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PROJECTS } from '../constants';
 import { Project } from '../types';
-import ProjectCard from '../components/ProjectCard';
+import ProjectGrid from '../components/ProjectGrid';
 import ChatAssistant from '../components/ChatAssistant';
 
 function HomePage(): React.ReactNode {
@@ -29,11 +29,10 @@ function HomePage(): React.ReactNode {
             featured
           </h2>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayedProjects.map(project => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
+        <ProjectGrid
+          projects={displayedProjects}
+          gridClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        />
       </section>
       <ChatAssistant onSearch={handleAiSearch} />
     </div>
