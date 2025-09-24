@@ -4,7 +4,13 @@ import MenuIcon from './icons/MenuIcon';
 import { CloseIcon } from './icons/CloseIcon';
 
 
-const NavItem: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => {
+type NavItemProps = {
+  to: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+};
+
+const NavItem: React.FC<NavItemProps> = ({ to, children, onClick }) => {
   return (
     <NavLink
       to={to}
@@ -15,6 +21,7 @@ const NavItem: React.FC<{ to: string; children: React.ReactNode }> = ({ to, chil
             : 'text-brand-text-secondary hover:bg-brand-secondary hover:text-brand-text'
         }`
       }
+      onClick={onClick}
     >
       {children}
     </NavLink>
@@ -62,12 +69,24 @@ function Header(): React.ReactNode {
       {isMenuOpen && (
         <div className="md:hidden" id="mobile-menu">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <NavItem to="/">home</NavItem>
-            <NavItem to="/images">images</NavItem>
-            <NavItem to="/videos">videos</NavItem>
-            <NavItem to="/cinemagraphs">cinemagraphs</NavItem>
-            <NavItem to="/tools">tools</NavItem>
-            <NavItem to="/links">☻</NavItem>
+            <NavItem to="/" onClick={() => setIsMenuOpen(false)}>
+              home
+            </NavItem>
+            <NavItem to="/images" onClick={() => setIsMenuOpen(false)}>
+              images
+            </NavItem>
+            <NavItem to="/videos" onClick={() => setIsMenuOpen(false)}>
+              videos
+            </NavItem>
+            <NavItem to="/cinemagraphs" onClick={() => setIsMenuOpen(false)}>
+              cinemagraphs
+            </NavItem>
+            <NavItem to="/tools" onClick={() => setIsMenuOpen(false)}>
+              tools
+            </NavItem>
+            <NavItem to="/links" onClick={() => setIsMenuOpen(false)}>
+              ☻
+            </NavItem>
           </div>
         </div>
       )}
