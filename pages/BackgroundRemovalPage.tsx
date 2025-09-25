@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { removeBackground } from '@imgly/background-removal';
+import {
+  clearStoredBackgroundRemovalResults,
+  getStoredBackgroundRemovalResults,
+  saveBackgroundRemovalResult,
+} from '../services/backgroundRemovalStorage';
 
 type ProcessingState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -23,6 +28,7 @@ type BackgroundRemovalJob = {
   id: string;
   fileName: string;
   sourcePreview: string;
+  sourceDataUrl: string | null;
   resultPreview: string | null;
   processingState: ProcessingState;
   statusMessage: StatusMessage;
@@ -34,6 +40,18 @@ const statusToneClasses: Record<StatusMessage['tone'], string> = {
   success: 'border-emerald-300/60 bg-emerald-400/10 text-emerald-200',
   error: 'border-rose-300/60 bg-rose-400/10 text-rose-200',
 };
+
+const readFileAsDataUrl = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(typeof reader.result === 'string' ? reader.result : '');
+    };
+    reader.onerror = () => {
+      reject(reader.error ?? new Error('Failed to read file as data URL.'));
+    };
+    reader.readAsDataURL(file);
+  });
 
 function BackgroundRemovalPage(): React.ReactNode {
   const [jobs, setJobs] = useState<BackgroundRemovalJob[]>([]);
@@ -57,7 +75,7 @@ function BackgroundRemovalPage(): React.ReactNode {
   }, [cleanupAllUrls]);
 
   const processFile = useCallback(
-    async (jobId: string, file: File) => {
+    async (targetJob: BackgroundRemovalJob, file: File) => {
       try {
         const blob = await removeBackground(file, {
           progress: (key, current, total) => {
@@ -65,7 +83,7 @@ function BackgroundRemovalPage(): React.ReactNode {
             const progressLabel = `${key.replace(/_/g, ' ')} ${percent}%`;
             setJobs(previousJobs =>
               previousJobs.map(job =>
-                job.id === jobId
+                job.id === targetJob.id
                   ? {
                       ...job,
                       progressMessage: progressLabel,
@@ -79,9 +97,20 @@ function BackgroundRemovalPage(): React.ReactNode {
         const resultUrl = URL.createObjectURL(blob);
         registerUrl(resultUrl);
 
+        try {
+          await saveBackgroundRemovalResult({
+            id: targetJob.id,
+            fileName: targetJob.fileName,
+            sourceDataUrl: targetJob.sourceDataUrl,
+            resultBlob: blob,
+          });
+        } catch (storageError) {
+          console.error('Failed to store background removal result', storageError);
+        }
+
         setJobs(previousJobs =>
           previousJobs.map(job =>
-            job.id === jobId
+            job.id === targetJob.id
               ? {
                   ...job,
                   resultPreview: resultUrl,
@@ -99,7 +128,7 @@ function BackgroundRemovalPage(): React.ReactNode {
         console.error('Background removal failed', error);
         setJobs(previousJobs =>
           previousJobs.map(job =>
-            job.id === jobId
+            job.id === targetJob.id
               ? {
                   ...job,
                   processingState: 'error',
@@ -118,32 +147,42 @@ function BackgroundRemovalPage(): React.ReactNode {
   );
 
   const handleFiles = useCallback(
-    (files: FileList | File[]) => {
+    async (files: FileList | File[]) => {
       const fileArray = Array.from(files ?? []);
       if (fileArray.length === 0) {
         return;
       }
 
-      const jobsToAdd = fileArray.map(file => {
-        const sourcePreview = URL.createObjectURL(file);
-        registerUrl(sourcePreview);
+      const jobsToAdd = await Promise.all(
+        fileArray.map(async file => {
+          const sourcePreview = URL.createObjectURL(file);
+          registerUrl(sourcePreview);
+          let sourceDataUrl: string | null = null;
 
-        return {
-          id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2, 10)}`,
-          fileName: file.name,
-          sourcePreview,
-          resultPreview: null,
-          processingState: 'loading' as ProcessingState,
-          statusMessage: { label: 'Preparing your photo…', tone: 'default' as const },
-          progressMessage: null,
-        } satisfies BackgroundRemovalJob;
-      });
+          try {
+            sourceDataUrl = await readFileAsDataUrl(file);
+          } catch (readError) {
+            console.error('Failed to cache original photo for persistence', readError);
+          }
+
+          return {
+            id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2, 10)}`,
+            fileName: file.name,
+            sourcePreview,
+            sourceDataUrl,
+            resultPreview: null,
+            processingState: 'loading' as ProcessingState,
+            statusMessage: { label: 'Preparing your photo…', tone: 'default' as const },
+            progressMessage: null,
+          } satisfies BackgroundRemovalJob;
+        }),
+      );
 
       setJobs(previousJobs => [...previousJobs, ...jobsToAdd]);
 
       jobsToAdd.forEach((job, index) => {
         const file = fileArray[index];
-        void processFile(job.id, file);
+        void processFile(job, file);
       });
     },
     [processFile, registerUrl],
@@ -153,7 +192,7 @@ function BackgroundRemovalPage(): React.ReactNode {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const { files } = event.target;
       if (files && files.length > 0) {
-        handleFiles(files);
+        void handleFiles(files);
       }
       event.target.value = '';
     },
@@ -165,7 +204,7 @@ function BackgroundRemovalPage(): React.ReactNode {
       event.preventDefault();
       const { files } = event.dataTransfer;
       if (files && files.length > 0) {
-        handleFiles(files);
+        void handleFiles(files);
       }
     };
 
@@ -178,8 +217,61 @@ function BackgroundRemovalPage(): React.ReactNode {
 
   const clearAll = useCallback(() => {
     cleanupAllUrls();
+    void clearStoredBackgroundRemovalResults();
     setJobs([]);
   }, [cleanupAllUrls]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadStoredResults = async () => {
+      try {
+        const storedResults = await getStoredBackgroundRemovalResults();
+        if (isCancelled || storedResults.length === 0) {
+          return;
+        }
+
+        setJobs(previousJobs => {
+          const knownIds = new Set(previousJobs.map(job => job.id));
+
+          const storedJobs = storedResults
+            .filter(result => !knownIds.has(result.id))
+            .map(result => {
+              const resultUrl = URL.createObjectURL(result.resultBlob);
+              registerUrl(resultUrl);
+
+              return {
+                id: result.id,
+                fileName: result.fileName,
+                sourcePreview: result.sourceDataUrl ?? resultUrl,
+                sourceDataUrl: result.sourceDataUrl,
+                resultPreview: resultUrl,
+                processingState: 'success' as ProcessingState,
+                statusMessage: {
+                  label: 'Background removed! Download the PNG below.',
+                  tone: 'success' as const,
+                },
+                progressMessage: null,
+              } satisfies BackgroundRemovalJob;
+            });
+
+          if (storedJobs.length === 0) {
+            return previousJobs;
+          }
+
+          return [...storedJobs, ...previousJobs];
+        });
+      } catch (storageError) {
+        console.error('Failed to load saved background removal results', storageError);
+      }
+    };
+
+    void loadStoredResults();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [registerUrl]);
 
   return (
     <div className="space-y-10">
