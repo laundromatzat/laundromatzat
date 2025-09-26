@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { removeBackground } from '@imgly/background-removal';
+import {
+  clearBackgroundRemovalJobs,
+  loadBackgroundRemovalJobs,
+  persistBackgroundRemovalJob,
+} from '../services/backgroundRemovalStorage';
 
 type ProcessingState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -27,6 +32,7 @@ type BackgroundRemovalJob = {
   processingState: ProcessingState;
   statusMessage: StatusMessage;
   progressMessage: string | null;
+  createdAt: number;
 };
 
 const statusToneClasses: Record<StatusMessage['tone'], string> = {
@@ -57,7 +63,7 @@ function BackgroundRemovalPage(): React.ReactNode {
   }, [cleanupAllUrls]);
 
   const processFile = useCallback(
-    async (jobId: string, file: File) => {
+    async (jobId: string, file: File, createdAt: number) => {
       try {
         const blob = await removeBackground(file, {
           progress: (key, current, total) => {
@@ -95,6 +101,20 @@ function BackgroundRemovalPage(): React.ReactNode {
               : job,
           ),
         );
+
+        const sourceBlob = file.slice(0, file.size, file.type);
+
+        try {
+          await persistBackgroundRemovalJob({
+            id: jobId,
+            fileName: file.name,
+            createdAt,
+            sourceBlob,
+            resultBlob: blob,
+          });
+        } catch (storageError) {
+          console.warn('Failed to persist background removal result', storageError);
+        }
       } catch (error) {
         console.error('Background removal failed', error);
         setJobs(previousJobs =>
@@ -136,6 +156,7 @@ function BackgroundRemovalPage(): React.ReactNode {
           processingState: 'loading' as ProcessingState,
           statusMessage: { label: 'Preparing your photo…', tone: 'default' as const },
           progressMessage: null,
+          createdAt: Date.now(),
         } satisfies BackgroundRemovalJob;
       });
 
@@ -143,7 +164,7 @@ function BackgroundRemovalPage(): React.ReactNode {
 
       jobsToAdd.forEach((job, index) => {
         const file = fileArray[index];
-        void processFile(job.id, file);
+        void processFile(job.id, file, job.createdAt);
       });
     },
     [processFile, registerUrl],
@@ -179,7 +200,73 @@ function BackgroundRemovalPage(): React.ReactNode {
   const clearAll = useCallback(() => {
     cleanupAllUrls();
     setJobs([]);
+    void clearBackgroundRemovalJobs().catch(error => {
+      console.warn('Failed to clear stored background removal jobs', error);
+    });
   }, [cleanupAllUrls]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void (async () => {
+      try {
+        const storedJobs = await loadBackgroundRemovalJobs();
+        if (!isMounted || storedJobs.length === 0) {
+          return;
+        }
+
+        const restoredJobs = storedJobs
+          .map(storedJob => {
+            const sourcePreview = URL.createObjectURL(storedJob.sourceBlob);
+            registerUrl(sourcePreview);
+
+            const resultPreview = storedJob.resultBlob ? URL.createObjectURL(storedJob.resultBlob) : null;
+            if (resultPreview) {
+              registerUrl(resultPreview);
+            }
+
+            return {
+              id: storedJob.id,
+              fileName: storedJob.fileName,
+              sourcePreview,
+              resultPreview,
+              processingState: resultPreview ? ('success' as ProcessingState) : ('idle' as ProcessingState),
+              statusMessage: resultPreview
+                ? ({
+                    label: 'Background removed! Download the PNG below.',
+                    tone: 'success' as const,
+                  } satisfies StatusMessage)
+                : ({
+                    label: 'Preparing your photo…',
+                    tone: 'default' as const,
+                  } satisfies StatusMessage),
+              progressMessage: null,
+              createdAt: storedJob.createdAt,
+            } satisfies BackgroundRemovalJob;
+          })
+          .sort((a, b) => a.createdAt - b.createdAt);
+
+        setJobs(previousJobs => {
+          const existingIds = new Set(previousJobs.map(job => job.id));
+          const mergedJobs = [...previousJobs];
+
+          restoredJobs.forEach(restoredJob => {
+            if (!existingIds.has(restoredJob.id)) {
+              mergedJobs.push(restoredJob);
+            }
+          });
+
+          return mergedJobs.sort((a, b) => a.createdAt - b.createdAt);
+        });
+      } catch (error) {
+        console.error('Failed to restore stored background removal jobs', error);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [registerUrl]);
 
   return (
     <div className="space-y-10">
