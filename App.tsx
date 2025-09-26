@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
-import ChatAssistant from './components/ChatAssistant';
 import HomePage from './pages/HomePage';
 import ImagesPage from './pages/ImagesPage';
 import VideosPage from './pages/VideosPage';
@@ -27,7 +25,6 @@ function App(): React.ReactNode {
             <Route path="/links/background-removal" element={<BackgroundRemovalPage />} />
           </Routes>
         </main>
-        
       </div>
     </HashRouter>
   );

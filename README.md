@@ -26,6 +26,7 @@ context to the work, making the site feel more like an interactive gallery than 
 - **Frontend framework:** React 19 with Vite 6 for lightning-fast HMR.
 - **Language:** TypeScript throughout the app, including strongly typed portfolio data.
 - **Styling:** Tailwind CSS utility classes (see component files for patterns).
+- **Secure backend API:** Express 5 + TypeScript powers the mailing-list service with rate limiting, validation, and admin tooling.
 - **AI assistant:** Google Gemini API powers the in-app conversational guide.
 - **Media handling:** Background removal and ONNX Runtime enable richer visual presentations.
 
@@ -39,14 +40,19 @@ cd laundromatzat
 npm install
 ```
 
-Once dependencies are installed, start the dev server with hot reloading:
+Once dependencies are installed, start both the secure mailing-list API and the Vite dev server:
 
 ```bash
+# Terminal 1 – secure mailing list API
+npm run server
+
+# Terminal 2 – frontend
 npm run dev
 ```
 
-The site will be available at http://localhost:5173. Any changes inside `components`, `pages`, or `services` will refresh
-automatically.
+The site will be available at http://localhost:5173 and the API at http://localhost:3001. Vite proxies `/api/*` to the backend
+during development, so the signup form works without additional configuration. Any changes inside `components`, `pages`, or
+`services` will refresh automatically.
 
 ### Working with TypeScript types
 
@@ -55,13 +61,16 @@ relevant type first to keep IntelliSense and editor hints accurate.
 
 ## Project scripts
 
-| Command         | Description                                      |
-| --------------- | ------------------------------------------------ |
-| `npm run dev`   | Start a local development server with HMR.       |
-| `npm run build` | Create an optimized production build in `dist/`. |
-| `npm run preview` | Serve the production build locally for QA.     |
+| Command           | Description                                                    |
+| ----------------- | -------------------------------------------------------------- |
+| `npm run dev`     | Start the Vite development server with hot module reloading.   |
+| `npm run server`  | Boot the secure Express mailing-list API on http://localhost:3001. |
+| `npm run build`   | Create an optimized production build in `dist/`.               |
+| `npm run preview` | Serve the production build locally for QA.                     |
 
 ## Environment configuration
+
+### Gemini assistant
 
 The Gemini assistant requires an API key exposed to the frontend at build time.
 
@@ -73,6 +82,28 @@ The Gemini assistant requires an API key exposed to the frontend at build time.
    ```
 
 3. Restart the dev server whenever the key changes.
+
+### Mailing list API
+
+Create a `.env` file in the project root (also ignored by git) for backend-only secrets:
+
+```bash
+MAILING_LIST_ADMIN_KEY=replace-with-a-long-random-string
+MAILING_LIST_FROM_EMAIL=studio@laundromatzat.com
+# Optional: use an SMTP connection string (e.g. SMTP URL) to deliver real emails.
+MAILING_LIST_SMTP_URL=smtp://user:pass@mail.yourprovider.com:587
+# Optional: comma-separated origins that can call the API in production.
+CORS_ORIGINS=https://laundromatzat.com
+```
+
+Additional advanced settings:
+
+- `MAILING_LIST_STORAGE_PATH` – override where subscriber data is stored (defaults to `data/subscribers.json`).
+- `MAILING_LIST_OUTBOX_PATH` – change the folder where JSON email receipts are archived (defaults to `data/outbox`).
+- `PORT` – change the API port (defaults to `3001`).
+
+The API enforces an admin API key for management endpoints (list, delete, send updates). Keep the key secret and rotate it
+regularly.
 
 ## Deployment
 
@@ -87,8 +118,10 @@ The `main` branch is continuously deployed to GitHub Pages.
 ```
 ├── App.tsx            # Route wiring and layout chrome
 ├── components/        # Reusable UI pieces (cards, modals, chat interface)
+├── data/              # Subscriber database + email outbox snapshots (gitignored)
 ├── pages/             # Page-level routes powered by React Router
-├── services/          # Gemini API client helpers and data fetching
+├── server/            # Secure Express mailing-list API
+├── services/          # Gemini + mailing list client helpers
 ├── constants.ts       # Portfolio data + chat system prompts
 ├── types.ts           # Shared TypeScript interfaces
 └── public/            # Static assets and favicon
