@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider } from '@dr.pogodin/react-helmet';
 import App from './App';
 import HomePage from './pages/HomePage';
 import ImagesPage from './pages/ImagesPage';
@@ -10,6 +10,7 @@ import CinemagraphsPage from './pages/CinemagraphsPage';
 import ToolsPage from './pages/ToolsPage';
 import LinksPage from './pages/LinksPage';
 import BackgroundRemovalPage from './pages/BackgroundRemovalPage';
+import ColorPalettePage from './pages/ColorPalettePage';
 import NotFoundPage from './pages/NotFoundPage';
 import './styles/base.css';
 
@@ -26,8 +27,9 @@ const router = createBrowserRouter(
         { path: 'videos', element: <VideosPage /> },
         { path: 'cinemagraphs', element: <CinemagraphsPage /> },
         { path: 'tools', element: <ToolsPage /> },
+        { path: 'tools/background-removal', element: <BackgroundRemovalPage /> },
+        { path: 'tools/color-palette', element: <ColorPalettePage /> },
         { path: 'links', element: <LinksPage /> },
-        { path: 'links/background-removal', element: <BackgroundRemovalPage /> },
       ],
     },
     { path: '*', element: <NotFoundPage /> },

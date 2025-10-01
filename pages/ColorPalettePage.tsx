@@ -1,4 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import PageMetadata from '../components/PageMetadata';
 
 interface ExtractedColor {
   hex: string;
@@ -115,7 +117,7 @@ function kMeans(pixels: [number, number, number][], k: number): [number, number,
   return centroids;
 }
 
-const ColorPaletteTool: React.FC = () => {
+const ColorPalettePage: React.FC = () => {
   const [palette, setPalette] = useState<ExtractedColor[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -243,6 +245,26 @@ const ColorPaletteTool: React.FC = () => {
   const placeholders = useMemo(() => new Array(PALETTE_SIZE).fill(null), []);
 
   return (
+    <div className="space-y-10">
+      <PageMetadata
+        title="Color Palette Extractor"
+        description="Upload an image and instantly generate a five-color palette with copy-ready values."
+        path="/tools/color-palette"
+        type="article"
+      />
+      <section className="space-y-4">
+        <div className="flex items-center gap-4 text-brand-text-secondary">
+          <Link to="/tools" className="text-brand-accent hover:underline">
+            ← back to tools
+          </Link>
+          <span className="text-sm">extract a color palette from an image.</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-bold text-brand-text">color palette extractor</h1>
+        <p className="text-lg text-brand-text-secondary max-w-2xl">
+          Upload an image and instantly generate a five-color palette with copy-ready values.
+        </p>
+      </section>
+
     <section className="rounded-3xl border border-brand-secondary/60 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
       <div className="flex flex-col gap-6 lg:flex-row">
         <div className="lg:w-1/2">
@@ -360,7 +382,8 @@ const ColorPaletteTool: React.FC = () => {
 
       <canvas ref={canvasRef} className="hidden" />
     </section>
+    </div>
   );
 };
 
-export default ColorPaletteTool;
+export default ColorPalettePage;

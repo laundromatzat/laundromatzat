@@ -1,18 +1,8 @@
-import React, { useMemo } from 'react';
-import { PROJECTS } from '../constants';
-import { ProjectType } from '../types';
-import ProjectGrid from '../components/ProjectGrid';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import PageMetadata from '../components/PageMetadata';
 
 function ToolsPage(): React.ReactNode {
-  const toolProjects = useMemo(
-    () =>
-      PROJECTS.filter(project => project.type === ProjectType.Tool).sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      ),
-    [],
-  );
-
   return (
     <div className="space-y-space-5">
       <PageMetadata
@@ -27,17 +17,36 @@ function ToolsPage(): React.ReactNode {
           Try in-browser experiments that streamline post-production and inspire new ideas.
         </p>
       </header>
-      <ProjectGrid
-        projects={toolProjects}
-        emptyState={
-          <div className="rounded-radius-md border border-brand-surface-highlight/60 bg-brand-secondary/40 px-6 py-12 text-center">
-            <p className="text-lg font-semibold text-brand-text">New experiments coming soon</p>
-            <p className="mt-2 text-sm text-brand-text-secondary">
-              Sign up for the newsletter to hear when the next creative tool goes live.
+
+      <section className="space-y-space-4" aria-label="Featured tools">
+        <Link
+          to="/tools/background-removal"
+          className="block rounded-radius-lg border border-brand-surface-highlight/60 bg-brand-secondary/40 p-6 shadow-layer-1 transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+        >
+          <div className="flex flex-col gap-3 text-brand-text">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">New</span>
+            <h2 className="text-2xl font-semibold">Remove a background</h2>
+            <p className="text-brand-text-secondary">
+              Launch the in-browser background removal tool to generate a transparent PNG that&apos;s ready to download in seconds.
             </p>
+            <span className="text-sm font-medium text-brand-accent">Try the background removal tool</span>
           </div>
-        }
-      />
+        </Link>
+
+                <Link
+          to="/tools/color-palette"
+          className="block rounded-radius-lg border border-brand-surface-highlight/60 bg-brand-secondary/40 p-6 shadow-layer-1 transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+        >
+          <div className="flex flex-col gap-3 text-brand-text">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">New</span>
+            <h2 className="text-2xl font-semibold">Extract a color palette</h2>
+            <p className="text-brand-text-secondary">
+              Upload an image and instantly generate a five-color palette with copy-ready values.
+            </p>
+            <span className="text-sm font-medium text-brand-accent">Try the color palette tool</span>
+          </div>
+        </Link>
+      </section>
     </div>
   );
 }

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nylon Fabric Project Designer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 2rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .input-section h2 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .generate-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        .generate-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            display: none;
+            background: #fee;
+            color: #c00;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .results-section {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .results-header h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+        }
+
+        .new-project-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s ease;
+        }
+
+        .new-project-button:hover {
+            opacity: 0.8;
+        }
+
+        .results-content {
+            line-height: 1.8;
+        }
+
+        .results-content h3 {
+            color: #764ba2;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+
+        .results-content h4 {
+            color: #667eea;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .results-content ul, .results-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .results-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .results-content p {
+            margin-bottom: 1rem;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .image-container {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .image-caption {
+            padding: 1rem;
+            background: #f8f8f8;
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .tip-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .tip-box strong {
+            color: #667eea;
+        }
+
+        .placeholder-text {
+            color: #999;
+            font-style: italic;
+        }
+
+        .examples {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .example-chip {
+            background: #f0f4ff;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .example-chip:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 id="mainTitle">Nylon Fabric Project Designer</h1>
+        <p class="subtitle" id="subtitle">Describe your project and get professional sewing guidance with cutting templates and visual previews</p>
+    </header>
+
+    <div class="container">
+        <div class="input-section" id="inputSection">
+            <h2 id="inputTitle">Describe Your Project</h2>
+            <p style="color: #666; margin-bottom: 1rem;" id="inputInstructions">Tell us what you want to make with nylon fabric. Be as detailed as possible about the item, its purpose, size, and any specific features you'd like.</p>
+            
+            <textarea id="projectDescription" placeholder="Example: I want to make a lightweight stuff sack for camping gear, approximately 12 inches tall and 8 inches in diameter, with a drawstring closure at the top. It should be durable and water-resistant..."></textarea>
+            
+            <div class="examples">
+                <div class="example-chip" onclick="fillExample('stuffsack')">Stuff Sack</div>
+                <div class="example-chip" onclick="fillExample('tote')">Tote Bag</div>
+                <div class="example-chip" onclick="fillExample('pouch')">Zipper Pouch</div>
+                <div class="example-chip" onclick="fillExample('apron')">Work Apron</div>
+            </div>
+            
+            <button class="generate-button" id="generateBtn" onclick="generateGuide()">Generate Sewing Guide</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 1rem; font-size: 1.2rem; color: #667eea;" id="analyzingMessage">Analyzing your project...</p>
+            <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;" id="waitMessage">Researching best practices and generating your custom guide</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>Your Custom Sewing Guide</h2>
+                <button class="new-project-button" onclick="startNewProject()">New Project</button>
+            </div>
+            <div class="results-content" id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const TRANSLATIONS = {
+            "en-US": {
+                "mainTitle": "Nylon Fabric Project Designer",
+                "subtitle": "Describe your project and get professional sewing guidance with cutting templates and visual previews",
+                "inputTitle": "Describe Your Project",
+                "inputInstructions": "Tell us what you want to make with nylon fabric. Be as detailed as possible about the item, its purpose, size, and any specific features you'd like.",
+                "generateBtn": "Generate Sewing Guide",
+                "analyzingMessage": "Analyzing your project...",
+                "waitMessage": "Researching best practices and generating your custom guide",
+                "enterDescription": "Please enter a project description",
+                "errorGenerating": "Error generating guide:",
+                "apiRequestFailed": "API request failed:"
+            }
+        };
+
+        const appLocale = '{{APP_LOCALE}}';
+        const browserLocale = navigator.languages?.[0] || navigator.language || 'en-US';
+        const findMatchingLocale = (locale) => {
+            if (TRANSLATIONS[locale]) return locale;
+            const lang = locale.split('-')[0];
+            const match = Object.keys(TRANSLATIONS).find(key => key.startsWith(lang + '-'));
+            return match || 'en-US';
+        };
+        const locale = (appLocale !== '{{APP_LOCALE}}') ? findMatchingLocale(appLocale) : findMatchingLocale(browserLocale);
+        const t = (key) => TRANSLATIONS[locale]?.[key] || TRANSLATIONS['en-US'][key] || key;
+
+        document.getElementById('mainTitle').textContent = t('mainTitle');
+        document.getElementById('subtitle').textContent = t('subtitle');
+        document.getElementById('inputTitle').textContent = t('inputTitle');
+        document.getElementById('inputInstructions').textContent = t('inputInstructions');
+        document.getElementById('generateBtn').textContent = t('generateBtn');
+        document.getElementById('analyzingMessage').textContent = t('analyzingMessage');
+        document.getElementById('waitMessage').textContent = t('waitMessage');
+
+        const examples = {
+            stuffsack: "I want to make a lightweight stuff sack for camping gear, approximately 12 inches tall and 8 inches in diameter, with a drawstring closure at the top. It should be durable and water-resistant for storing sleeping bags or clothing.",
+            tote: "I'd like to create a medium-sized tote bag for grocery shopping, about 15 inches wide, 14 inches tall, and 6 inches deep. I want sturdy handles and maybe an internal pocket for keys and phone.",
+            pouch: "I want to make a rectangular zipper pouch for toiletries, roughly 10 inches by 6 inches by 3 inches. It should have a waterproof lining and be able to stand up on its own.",
+            apron: "I need a work apron for my woodshop with multiple pockets for tools. It should be about 24 inches long with adjustable straps and reinforced pocket corners for durability."
+        };
+
+        function fillExample(type) {
+            document.getElementById('projectDescription').value = examples[type];
+        }
+
+        async function generateGuide() {
+            const description = document.getElementById('projectDescription').value.trim();
+            
+            if (!description) {
+                showError(t('enterDescription'));
+                return;
+            }
+
+            document.getElementById('inputSection').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            showError('');
+
+            try {
+                // First, get the text-based guide
+                const guideResponse = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 16000,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `You are an expert in hand-sewing nylon fabric and crafting. Analyze the following project description and create a comprehensive hand-sewing guide.
+
+CRITICAL REQUIREMENTS:
+- ALL instructions must be for HAND SEWING ONLY - NO sewing machines
+- Use handheld needle and thread exclusively
+- Can recommend Speedy Stitcher sewing awl tool for heavy-duty seams
+- Reference techniques from MYOG (Make Your Own Gear) hand-sewing guides
+- Focus on hand-sewing stitches: running stitch, backstitch, whipstitch, saddle stitch, etc.
+
+Research and reference techniques from:
+- MYOG (Make Your Own Gear) hand-sewing guides
+- Bushcraft and camping gear repair techniques
+- Leather working hand-sewing methods (applicable to heavy nylon)
+- Traditional sailmaking hand-sewing techniques
+- DIY ultralight backpacking hand-sewing guides
+
+Format your response with clear HTML structure using these tags:
+- <h3> for major sections
+- <h4> for subsections
+- <p> for paragraphs
+- <ul> and <ol> for lists
+- <strong> for emphasis
+- <div class="tip-box"> for tips and notes
+
+Include these sections:
+1. Project Overview & Analysis
+2. Materials Needed (specific nylon types, waxed thread, bonded nylon thread, notions)
+3. Tools Required (needles, Speedy Stitcher if needed, awl, scissors, pins, clips)
+4. Fabric Cutting Guide (with measurements and diagram descriptions)
+5. Step-by-Step Hand-Sewing Assembly Instructions
+   - Where to place folds
+   - Where to hand-stitch (backstitch, running stitch, whipstitch, saddle stitch, etc.)
+   - When to use Speedy Stitcher for heavy-duty seams
+   - Hem instructions (hand-rolled, whipstitch, etc.)
+   - How to connect pieces by hand
+6. Hand-Sewing Finishing Techniques
+7. Pro Tips & Common Mistakes to Avoid
+
+Use professional hand-sewing terminology and explain techniques like:
+- Hand-stitch types and when to use them (backstitch for strength, running stitch for basting, whipstitch for edges)
+- Proper seam allowances for hand-sewn nylon
+- How to lock stitches at beginning and end
+- Edge finishing methods by hand
+- Tips for working with slippery nylon fabric when hand-sewing
+- When to use Speedy Stitcher awl for thick seams or heavy-duty work
+
+PROJECT DESCRIPTION:
+${description}
+
+Generate the complete guide now:`
+                            }
+                        ]
+                    })
+                });
+
+                if (!guideResponse.ok) {
+                    throw new Error(`${t('apiRequestFailed')} ${guideResponse.status}`);
+                }
+
+                const guideData = await guideResponse.json();
+                let guideContent = guideData.content[0].text;
+
+                // Display the guide
+                document.getElementById('resultsContent').innerHTML = guideContent;
+                
+                // Now generate images (this happens in the background)
+                generateProjectImages(description);
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('resultsSection').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(t('errorGenerating') + ' ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
+            }
+        }
+
+        async function generateProjectImages(description) {
+            // Add a placeholder for images
+            const imageSection = document.createElement('div');
+            imageSection.innerHTML = '<h3>Visual Blueprints & Renderings</h3><div id="imageGallery" class="image-gallery"><p style="color: #667eea;">Generating visual diagrams and product renderings...</p></div>';
+            document.getElementById('resultsContent').appendChild(imageSection);
+
+            try {
+                // Generate SVG diagrams and ASCII art representations using Claude
+                const visualsResponse = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 8000,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `For this hand-sewn nylon fabric project: "${description}"
+
+Create 3 visual representations using SVG code. Generate complete, valid SVG markup for:
+
+1. CUTTING PATTERN DIAGRAM - Show the pattern pieces laid out with measurements, fold lines, and cutting instructions
+2. ASSEMBLY DIAGRAM - Show how pieces connect with stitch lines, seam allowances, and assembly order
+3. FINISHED PRODUCT RENDERING - Show an isometric or 3D-style view of the completed item
+
+Return ONLY a JSON array (no markdown, no backticks) with this structure:
+[
+  {
+    "stage": "Cutting Pattern",
+    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
+  },
+  {
+    "stage": "Assembly Diagram", 
+    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
+  },
+  {
+    "stage": "Finished Product",
+    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
+  }
+]
+
+Make the SVGs detailed, technical, and professional looking with:
+- Clear labels and measurements
+- Different colors for different pattern pieces
+- Dotted lines for fold lines
+- Dashed lines for stitch lines
+- Arrows showing assembly direction
+- Realistic proportions`
+                            }
+                        ]
+                    })
+                });
+
+                const visualsData = await visualsResponse.json();
+                let responseText = visualsData.content[0].text;
+                responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+                const visuals = JSON.parse(responseText);
+
+                // Display the generated SVG diagrams
+                const gallery = document.getElementById('imageGallery');
+                gallery.innerHTML = '';
+                
+                visuals.forEach((visual, index) => {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-container';
+                    imageContainer.innerHTML = `
+                        <div style="background: white; padding: 1rem; min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                            ${visual.svg}
+                        </div>
+                        <div class="image-caption"><strong>${visual.stage}</strong></div>
+                    `;
+                    gallery.appendChild(imageContainer);
+                });
+
+            } catch (error) {
+                console.error('Error generating visuals:', error);
+                const gallery = document.getElementById('imageGallery');
+                if (gallery) {
+                    gallery.innerHTML = `
+                        <div class="image-container">
+                            <div style="background: #f8f8f8; padding: 2rem; text-align: center; color: #666;">
+                                <p style="margin-bottom: 1rem;">Visual diagrams are being generated...</p>
+                                <p style="font-size: 0.9rem;">Please try regenerating the guide if diagrams don't appear.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function startNewProject() {
+            document.getElementById('projectDescription').value = '';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('inputSection').style.display = 'block';
+            showError('');
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            if (message) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            } else {
+                errorEl.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -274,13 +274,13 @@ function BackgroundRemovalPage(): React.ReactNode {
       <PageMetadata
         title="Background removal tool"
         description="Upload photos and quickly export transparent PNGs generated entirely in the browser."
-        path="/links/background-removal"
+        path="/tools/background-removal"
         type="article"
       />
       <section className="space-y-4">
         <div className="flex items-center gap-4 text-brand-text-secondary">
-          <Link to="/links" className="text-brand-accent hover:underline">
-            ← back to links
+          <Link to="/tools" className="text-brand-accent hover:underline">
+            ← back to tools
           </Link>
           <span className="text-sm">remove backgrounds right in the browser.</span>
         </div>
