@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { removeBackground } from '@imgly/background-removal';
+import PageMetadata from '../components/PageMetadata';
 import {
   clearBackgroundRemovalJobs,
   loadBackgroundRemovalJobs,
@@ -36,9 +37,9 @@ type BackgroundRemovalJob = {
 };
 
 const statusToneClasses: Record<StatusMessage['tone'], string> = {
-  default: 'border-brand-secondary/60 bg-brand-secondary/20 text-brand-text-secondary',
-  success: 'border-emerald-300/60 bg-emerald-400/10 text-emerald-200',
-  error: 'border-rose-300/60 bg-rose-400/10 text-rose-200',
+  default: 'border-brand-surface-highlight/60 bg-brand-secondary/40 text-brand-text-secondary',
+  success: 'border-status-success-text/40 bg-status-success-bg text-status-success-text',
+  error: 'border-status-error-text/40 bg-status-error-bg text-status-error-text',
 };
 
 function BackgroundRemovalPage(): React.ReactNode {
@@ -270,6 +271,12 @@ function BackgroundRemovalPage(): React.ReactNode {
 
   return (
     <div className="space-y-10">
+      <PageMetadata
+        title="Background removal tool"
+        description="Upload photos and quickly export transparent PNGs generated entirely in the browser."
+        path="/links/background-removal"
+        type="article"
+      />
       <section className="space-y-4">
         <div className="flex items-center gap-4 text-brand-text-secondary">
           <Link to="/links" className="text-brand-accent hover:underline">

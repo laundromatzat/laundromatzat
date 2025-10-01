@@ -1,0 +1,86 @@
+@import '@fontsource-variable/inter/index.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --color-bg-canvas: #0d0d0d;
+  --color-bg-panel: #141414;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #b3b3b3;
+  --color-accent-default: #00f5d4;
+  --color-accent-strong: #00c2a6;
+  --color-on-accent: #00110c;
+  --color-status-success-bg: #12361f;
+  --color-status-success-text: #2ed47a;
+  --color-status-error-bg: #3c1010;
+  --color-status-error-text: #ff6b6b;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-bg-canvas);
+    color: var(--color-text-primary);
+    font-family: 'Inter Variable', Inter, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid rgba(0, 245, 212, 0.6);
+    outline-offset: 2px;
+  }
+
+  main:focus {
+    outline: none;
+  }
+}
+
+@layer components {
+  .skip-link {
+    position: fixed;
+    inset-inline-start: 1.5rem;
+    inset-block-start: 1.5rem;
+    transform: translateY(-150%);
+    background-color: var(--color-accent-default);
+    color: var(--color-on-accent);
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    z-index: 1500;
+    transition: transform 120ms ease, opacity 120ms ease;
+    opacity: 0;
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

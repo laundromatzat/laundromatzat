@@ -1,18 +1,24 @@
 import React, { FormEvent, useId, useState } from 'react';
+import clsx from 'clsx';
 import { subscribeToMailingList } from '../services/mailingListClient';
 
 function MailingListSignup(): React.ReactNode {
   const emailId = useId();
   const nameId = useId();
+  const descriptionId = useId();
+  const statusId = useId();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
 
     setIsSubmitting(true);
     setStatus('idle');
@@ -20,93 +26,101 @@ function MailingListSignup(): React.ReactNode {
 
     try {
       await subscribeToMailingList({
-        email,
+        email: email.trim(),
         name: name.trim() ? name.trim() : undefined,
       });
 
       setStatus('success');
-      setMessage('Success! You are on the list. Watch your inbox for the next drop.');
+      setMessage('You are on the list. Expect a monthly roundup of new work and tools.');
       setEmail('');
       setName('');
     } catch (error) {
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'Unable to join the list right now.');
+      setMessage(error instanceof Error ? error.message : 'Unable to join the newsletter right now. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isDisabled = isSubmitting || email.trim().length === 0;
+  const disabled = isSubmitting || email.trim().length === 0;
+  const statusRole = status === 'success' ? 'status' : 'alert';
 
   return (
-    <section className="bg-brand-surface/60 border border-brand-surface-highlight/50 rounded-sm shadow-sm p-2 sm:p-3 space-y-1 animate-fade-in text-xs">
-      <div className="flex justify-end -mt-2 -mb-2">
-        <button
-          type="button"
-          onClick={() => setIsMinimized(!isMinimized)}
-          className="text-xxs text-brand-text-secondary hover:text-brand-text"
-        >
-          <span aria-hidden="true">{isMinimized ? '◂' : '▾'}</span>
-        </button>
-      </div>
+    <section
+      aria-labelledby={descriptionId}
+      className="rounded-radius-lg border border-brand-surface-highlight/60 bg-brand-secondary/60 p-6 shadow-layer-1"
+    >
+      <div className="mx-auto flex max-w-2xl flex-col gap-6">
+        <div className="space-y-2 text-left">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">Newsletter</p>
+          <h2 id={descriptionId} className="text-2xl font-semibold text-brand-text">
+            Stay in the loop
+          </h2>
+          <p className="text-sm text-brand-text-secondary">
+            Get one email per month featuring new films, photos, and creative experiments. No spam, unsubscribe anytime.
+          </p>
+        </div>
 
-      {!isMinimized && (
-        <>
-          <div>
-            <h2 className="text-xxs font-extralight text-brand-text mt-1.5 mb-1.5 ml-1">stay in the loop - SUBSCRIBE TO UPDATES!</h2>
+        <form className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end" onSubmit={handleSubmit} noValidate>
+          <div className="space-y-1">
+            <label htmlFor={emailId} className="text-sm font-medium text-brand-text">
+              Email address
+            </label>
+            <input
+              id={emailId}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={event => setEmail(event.target.value)}
+              className="w-full rounded-radius-md border border-brand-surface-highlight/60 bg-brand-primary/60 px-3 py-2 text-brand-text placeholder:text-brand-text-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+            />
+            <p className="text-xs text-brand-text-secondary">We&apos;ll never share your email address.</p>
           </div>
 
-          <form className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end" onSubmit={handleSubmit} noValidate>
-            <div className="space-y-0.5">
-              <input
-                id={emailId}
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={event => setEmail(event.target.value)}
-                className="w-full rounded-md border border-brand-surface-highlight bg-brand-primary/60 px-2 py-1.5 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-accent"
-                placeholder="email"
-              />
-            </div>
+          <div className="space-y-1">
+            <label htmlFor={nameId} className="text-sm font-medium text-brand-text">
+              Name <span className="text-brand-text-secondary">(optional)</span>
+            </label>
+            <input
+              id={nameId}
+              type="text"
+              autoComplete="name"
+              value={name}
+              maxLength={120}
+              onChange={event => setName(event.target.value)}
+              className="w-full rounded-radius-md border border-brand-surface-highlight/60 bg-brand-primary/60 px-3 py-2 text-brand-text placeholder:text-brand-text-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+            />
+          </div>
 
-            <div className="space-y-0.5">
-              <input
-                id={nameId}
-                type="text"
-                autoComplete="name"
-                value={name}
-                onChange={event => setName(event.target.value)}
-                className="w-full rounded-md border border-brand-surface-highlight bg-brand-primary/60 px-2 py-1.5 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-accent"
-                placeholder="name (optional)"
-                maxLength={120}
-              />
-            </div>
+          <button
+            type="submit"
+            disabled={disabled}
+            className="inline-flex items-center justify-center rounded-radius-md bg-brand-accent px-space-4 py-3 text-sm font-semibold text-brand-on-accent transition hover:bg-brand-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? 'Joining…' : 'Join the newsletter'}
+          </button>
+        </form>
 
-            <button
-              type="submit"
-              disabled={isDisabled}
-              className="sm:col-start-3 inline-flex justify-center items-center gap-1 rounded bg-brand-accent/80 px-3 py-1.5 text-xs font-medium text-brand-primary transition hover:bg-brand-accent disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isSubmitting ? 'saving…' : 'join the list'}
-            </button>
-          </form>
+        <div aria-live="polite" aria-atomic="true" id={statusId} className="sr-only">
+          {status !== 'idle' ? message : 'No newsletter status to announce.'}
+        </div>
 
-          {status !== 'idle' ? (
-            <div
-              role="status"
-              className={`rounded-md border px-3 py-2.5 text-xs font-semibold ${
-                status === 'success'
-                  ? 'border-emerald-400/60 bg-emerald-400/10 text-emerald-200'
-                  : 'border-rose-400/60 bg-rose-400/10 text-rose-200'
-              }`}
-            >
-              {message}
-            </div>
-          ) : null}
-        </>
-      )}
+        {status !== 'idle' ? (
+          <div
+            role={statusRole}
+            className={clsx(
+              'rounded-radius-md border px-4 py-3 text-sm font-medium',
+              status === 'success'
+                ? 'border-status-success-text/40 bg-status-success-bg text-status-success-text'
+                : 'border-status-error-text/40 bg-status-error-bg text-status-error-text',
+            )}
+          >
+            {message}
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }
