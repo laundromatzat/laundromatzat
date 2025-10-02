@@ -1,0 +1,43 @@
+# This workflow is now a Continuous Integration (CI) check.
+# It verifies that the application builds successfully after every push to the main branch.
+# The original deployment steps for GitHub Pages have been removed because this project
+# now requires a Node.js server, which GitHub Pages cannot run.
+#
+# To deploy this application, you must choose a hosting provider that supports Node.js
+# (e.g., Vercel, Render, Fly.io) and add provider-specific deployment steps here.
+# See the updated README.md for more details on deployment.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+        env:
+          # This key is a placeholder and not used by the frontend build anymore,
+          # but we keep it here to prevent the build from failing if any residual
+          # code expects it. The real key is used by the backend server.
+          VITE_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - name: Verify build output
+        run: ls -R dist

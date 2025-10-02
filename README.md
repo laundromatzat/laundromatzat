@@ -40,18 +40,18 @@ cd laundromatzat
 npm install
 ```
 
-Once dependencies are installed, start both the secure mailing-list API and the Vite dev server:
+Once dependencies are installed, start both the backend API and the Vite dev server in separate terminal tabs:
 
 ```bash
-# Terminal 1 – secure mailing list API
+# Terminal 1 – Backend API (Mailing List & AI Assistant)
 npm run server
 
-# Terminal 2 – frontend
+# Terminal 2 – Frontend
 npm run dev
 ```
 
 The site will be available at http://localhost:5173 and the API at http://localhost:3001. Vite proxies `/api/*` to the backend
-during development, so the signup form works without additional configuration. Any changes inside `components`, `pages`, or
+during development, so all features work without additional configuration. Any changes inside `components`, `pages`, or
 `services` will refresh automatically.
 
 ### Working with TypeScript types
@@ -61,42 +61,36 @@ relevant type first to keep IntelliSense and editor hints accurate.
 
 ## Project scripts
 
-| Command           | Description                                                    |
-| ----------------- | -------------------------------------------------------------- |
-| `npm run dev`     | Start the Vite development server with hot module reloading.   |
-| `npm run server`  | Boot the secure Express mailing-list API on http://localhost:3001. |
-| `npm run build`   | Create an optimized production build in `dist/`.               |
-| `npm run preview` | Serve the production build locally for QA.                     |
+| Command           | Description                                                                    |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `npm run dev`     | Start the Vite development server with hot module reloading.                   |
+| `npm run server`  | Boot the backend Express API (AI + mail) on http://localhost:3001. |
+| `npm run build`   | Create an optimized production build in `dist/`.                               |
+| `npm run preview` | Serve the production build locally for QA.                                     |
 
 ## Environment configuration
 
-### Gemini assistant
-
-The Gemini assistant requires an API key exposed to the frontend at build time.
-
-1. Create `.env.local` (ignored by git).
-2. Add your key:
-
-   ```bash
-   VITE_GEMINI_API_KEY=your_api_key_here
-   ```
-
-3. Restart the dev server whenever the key changes.
-
-### Mailing list API
-
-Create a `.env` file in the project root (also ignored by git) for backend-only secrets:
+Create a `.env.local` file in the project root (ignored by git) for all secrets, both for the backend and for any future frontend-specific keys.
 
 ```bash
+# Required: API key for the Gemini assistant (used by the backend server)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Required: A long, random string for securing mailing list admin endpoints
 MAILING_LIST_ADMIN_KEY=replace-with-a-long-random-string
+
+# Required: The "From" address for mailing list emails
 MAILING_LIST_FROM_EMAIL=studio@laundromatzat.com
-# Optional: use an SMTP connection string (e.g. SMTP URL) to deliver real emails.
+
+# Optional: Use an SMTP connection string to deliver real emails.
+# If omitted, emails are written as JSON files to the /data/outbox directory.
 MAILING_LIST_SMTP_URL=smtp://user:pass@mail.yourprovider.com:587
-# Optional: comma-separated origins that can call the API in production.
+
+# Optional: Comma-separated origins that can call the API in production.
 CORS_ORIGINS=https://laundromatzat.com
 ```
 
-Additional advanced settings:
+Additional advanced settings (can also be placed in `.env.local`):
 
 - `MAILING_LIST_STORAGE_PATH` – override where subscriber data is stored (defaults to `data/subscribers.json`).
 - `MAILING_LIST_OUTBOX_PATH` – change the folder where JSON email receipts are archived (defaults to `data/outbox`).
@@ -107,11 +101,19 @@ regularly.
 
 ## Deployment
 
-The `main` branch is continuously deployed to GitHub Pages.
+This project requires a hosting provider that can run a Node.js server (e.g., Vercel, Render, Fly.io, etc.). It can no longer be deployed to a static-only host like GitHub Pages.
 
-1. **Custom domain:** Managed through **Settings → Pages** and the `CNAME` file in `public/` (if present).
-2. **Workflow:** `.github/workflows/deploy-frontend.yml` builds and publishes the site after each push.
-3. **DNS:** Ensure your registrar points the domain to GitHub Pages to avoid downtime.
+A typical deployment process on such a platform would involve:
+
+1.  **Setting Environment Variables:** Add the contents of your `.env.local` file (especially `GEMINI_API_KEY` and other secrets) to your hosting provider's secrets management system.
+2.  **Build Command:** Set the build command to `npm run build`.
+3.  **Start Command:** Set the start command to `npm run server`.
+
+The provider will build the static frontend and then start the Express server to handle API requests.
+
+### CI/CD Workflow
+
+The `.github/workflows/ci.yml` file contains a basic workflow to ensure the application builds successfully on every push to the `main` branch. You can extend this file with provider-specific steps to automate deployments.
 
 ## Project structure
 

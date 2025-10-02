@@ -1,7 +1,4 @@
-
 import { Project, ProjectType } from '../types';
-import { GoogleGenAI, Chat } from '@google/genai';
-import { AI_SYSTEM_PROMPT } from '../constants';
 import { PROJECTS } from '../constants';
 
 // --- Search helpers: normalization, synonyms, and geo aliasing ---
@@ -219,63 +216,37 @@ export function searchProjects(query: string, opts: SearchOptions = {}): Project
   });
 }
 
-// For Node.js environment variables:
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+export async function sendMessage(message: string): Promise<string> {
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message }),
+    });
 
-let ai: GoogleGenAI | null = null;
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({})) as { error?: string };
+      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+    }
 
-if (API_KEY) {
-  ai = new GoogleGenAI({ apiKey: API_KEY });
-} else {
-  console.warn("VITE_GEMINI_API_KEY environment variable not set. AI features will be disabled.");
+    const data = await response.json() as { message: string };
+    return data.message;
+
+  } catch (error) {
+    console.error("Failed to send message:", error);
+    throw new Error("Could not connect to the assistant. Please try again later.");
+  }
 }
 
-export function createChatSession(): Chat | null {
-  if (!ai) {
-    return null;
-  }
+// The generateContent and createChatSession functions are no longer needed here.
+// The logic is now handled by the backend.
+// The `sendMessage` function is the new interface to the AI assistant.
 
-  // Build a lightweight list of project metadata to ground Gemini’s responses
-  const projectSummaries = PROJECTS.map(
-    ({ id, type, title, description, date, location, tags }) => ({
-      id,
-      type,
-      title,
-      description,
-      date,
-      location,
-      tags,
-    })
-  );
+export const generateContent = sendMessage;
 
-  const FUNCTION_INSTRUCTIONS = `
-Available function:
-  • searchProjects(query: string, opts?: { type?: 'Video'|'Photo'|'Cinemagraph', dateFrom?: string, dateTo?: string, includeTags?: string[], excludeTags?: string[] }) → returns matching project objects.
-
-When a user asks to find or filter projects, respond **only** with JSON in this exact shape:
-
-{ "name": "searchProjects", "arguments": { "query": "<their search phrase>", "opts": { /* optional filters */ } } }
-
-Rules:
-- Use type when they specify media (e.g., "videos", "photos", "cinemagraphs").
-- Use dateFrom/dateTo for ranges like "in 2024" (dateFrom: "01/2024", dateTo: "12/2024") or "since 2019" (dateFrom: "2019").
-- Use includeTags for explicit names in the corpus (e.g., ["Michael"], ["Bernal Heights Park"]).
-- Use excludeTags if they say things like "not Michael".
-- Keep other text in query; geo/alias expansion is handled locally.
-
-Examples:
-{ "name": "searchProjects", "arguments": { "query": "hawaii", "opts": { "type": "Video" } } }
-{ "name": "searchProjects", "arguments": { "query": "bernal sunset", "opts": { "type": "Cinemagraph" } } }
-{ "name": "searchProjects", "arguments": { "query": "alaska", "opts": { "dateFrom": "06/2023", "dateTo": "07/2023" } } }
-{ "name": "searchProjects", "arguments": { "query": "beach", "opts": { "includeTags": ["Michael"] } } }
-
-Do not add any other keys, prose, or code‑fences.`;
-
-  const chat: Chat = ai!.chats.create({
-    model: 'gemini-1.5-flash-latest',
-    config: {
-      systemInstruction: `${AI_SYSTEM_PROMPT}\n${FUNCTION_INSTRUCTIONS}`,
-    },
-  });
-  return chat;
+// We no longer create a chat session on the client.
+export function createChatSession() {
+  return null;
 }

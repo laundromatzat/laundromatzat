@@ -7,6 +7,9 @@ import { createMailingListRouter } from './routes/mailingListRoutes';
 import { MailingListService } from './services/mailingListService';
 import { config } from './utils/config';
 
+import { createGeminiRouter } from './routes/geminiRoutes';
+import { geminiService } from './services/geminiService';
+
 const app = express();
 
 app.use(helmet());
@@ -44,6 +47,7 @@ const mailingListService = new MailingListService({
 
 app.use('/api/subscribe', subscribeLimiter);
 app.use('/api', createMailingListRouter(mailingListService));
+app.use('/api', createGeminiRouter(geminiService));
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });

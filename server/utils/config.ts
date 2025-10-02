@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173'];
 
@@ -19,6 +19,7 @@ function parseOrigins(value: string | undefined): string[] {
 export const config = {
   port: Number.parseInt(process.env.PORT ?? '3001', 10),
   adminApiKey: process.env.MAILING_LIST_ADMIN_KEY ?? 'dev-admin-key-change-me',
+  geminiApiKey: process.env.GEMINI_API_KEY ?? '',
   allowedOrigins: parseOrigins(process.env.CORS_ORIGINS),
   storagePath: process.env.MAILING_LIST_STORAGE_PATH ?? path.resolve(process.cwd(), 'data', 'subscribers.json'),
   outboxPath: process.env.MAILING_LIST_OUTBOX_PATH ?? path.resolve(process.cwd(), 'data', 'outbox'),
