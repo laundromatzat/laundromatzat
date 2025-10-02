@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Mailing list data (runtime only)
+data/*
+!data/.gitkeep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
