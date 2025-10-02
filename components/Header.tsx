@@ -65,6 +65,10 @@ function Header(): React.ReactNode {
     setIsMenuOpen(false);
   };
 
+  const handleLinkClick = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
 <<<<<<< Updated upstream
     <header className="sticky top-0 z-nav border-b border-brand-surface-highlight/60 bg-brand-primary/90 backdrop-blur-md">
@@ -218,6 +222,9 @@ function Header(): React.ReactNode {
             <NavItem to="/tools" onClick={handleLinkClick}>tools</NavItem>
             <NavItem to="/links" onClick={handleLinkClick}>☻</NavItem>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
