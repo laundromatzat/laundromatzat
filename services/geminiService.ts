@@ -216,6 +216,24 @@ export function searchProjects(query: string, opts: SearchOptions = {}): Project
   });
 }
 
+async function handleResponse(response: Response): Promise<string> {
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({})) as { error?: string };
+    throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+  }
+
+  const data = await response.json() as { message?: string; content?: string };
+  if ('message' in data && typeof data.message === 'string') {
+    return data.message;
+  }
+
+  if ('content' in data && typeof data.content === 'string') {
+    return data.content;
+  }
+
+  throw new Error('Unexpected response shape from Gemini service.');
+}
+
 export async function sendMessage(message: string): Promise<string> {
   try {
     const response = await fetch('/api/chat', {
@@ -226,27 +244,32 @@ export async function sendMessage(message: string): Promise<string> {
       body: JSON.stringify({ message }),
     });
 
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({})) as { error?: string };
-      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
-    }
-
-    const data = await response.json() as { message: string };
-    return data.message;
+    return await handleResponse(response);
 
   } catch (error) {
     console.error("Failed to send message:", error);
-    throw new Error("Could not connect to the assistant. Please try again later.");
+    throw error instanceof Error ? error : new Error("Could not connect to the assistant. Please try again later.");
   }
 }
 
-// The generateContent and createChatSession functions are no longer needed here.
-// The logic is now handled by the backend.
-// The `sendMessage` function is the new interface to the AI assistant.
+export async function generateContent(prompt: string): Promise<string> {
+  try {
+    const response = await fetch('/api/generate-content', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt }),
+    });
 
-export const generateContent = sendMessage;
+    return await handleResponse(response);
 
-// We no longer create a chat session on the client.
+  } catch (error) {
+    console.error('Failed to generate content:', error);
+    throw error instanceof Error ? error : new Error('Could not reach the content generation service. Please try again later.');
+  }
+}
+
 export function createChatSession() {
   return null;
 }

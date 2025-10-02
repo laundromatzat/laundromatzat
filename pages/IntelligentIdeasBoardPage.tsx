@@ -26,14 +26,22 @@ const IntelligentIdeasBoardPage = () => {
     setIsProcessing(true);
     
     if (inputMode === 'instruction') {
-        if (!organizedData) {
-            alert("Please add some content first before giving organizational instructions.");
-            setIsProcessing(false);
-            return;
-        }
-      await reorganizeWithInstruction(inputText, organizedData, allInputs);
-      setInputText('');
-      setIsProcessing(false);
+      if (!organizedData) {
+        alert("Please add some content first before giving organizational instructions.");
+        setIsProcessing(false);
+        return;
+      }
+
+      try {
+        const reorganized = await reorganizeWithInstruction(inputText, organizedData, allInputs);
+        setOrganizedData(reorganized);
+        setInputText('');
+      } catch (error) {
+        console.error('Error applying instruction:', error);
+        alert("Sorry, there was an error applying your instruction. Please try again.");
+      } finally {
+        setIsProcessing(false);
+      }
       return;
     }
 

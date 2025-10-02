@@ -97,6 +97,12 @@ Make the SVGs detailed, technical, and professional looking with:
 
   const responseText = await generateContent(prompt);
   const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-  const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
-  return visuals;
+
+  try {
+    const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
+    return visuals;
+  } catch (error) {
+    console.error('Failed to parse project visuals response:', error, responseText);
+    throw new Error('The fabric designer returned an invalid visualization response. Please try again.');
+  }
 }

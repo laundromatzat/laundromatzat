@@ -52,17 +52,27 @@ export class GeminiService {
   }
 
   async generateContent(prompt: string): Promise<string> {
-    const model = this.ai.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    try {
+      const model = this.ai.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error('Gemini generateContent failure:', error);
+      throw error instanceof Error ? error : new Error('Failed to generate content with Gemini.');
+    }
   }
 
   async sendMessage(message: string): Promise<string> {
-    const chat = this.getChatSession();
-    const result = await chat.sendMessage(message);
-    const response = await result.response;
-    return response.text();
+    try {
+      const chat = this.getChatSession();
+      const result = await chat.sendMessage(message);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error('Gemini chat failure:', error);
+      throw error instanceof Error ? error : new Error('Failed to send chat message to Gemini.');
+    }
   }
 }
 

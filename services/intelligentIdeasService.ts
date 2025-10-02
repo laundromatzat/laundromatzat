@@ -74,7 +74,13 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
 
   const responseText = await generateContent(prompt);
   const cleanJson = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-  return JSON.parse(cleanJson);
+
+  try {
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.error('Failed to parse organization response:', error, responseText);
+    throw new Error('The ideas assistant returned an invalid response. Please try again.');
+  }
 };
 
 export const reorganizeWithInstruction = async (instruction: string, organizedData: OrganizedData, allInputs: string[]): Promise<OrganizedData> => {
@@ -101,5 +107,12 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
 
     const responseText = await generateContent(prompt);
     const cleanJson = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    return JSON.parse(cleanJson);
+
+    try {
+        return JSON.parse(cleanJson);
+    } catch (error) {
+        console.error('Failed to parse reorganize response:', error, responseText);
+        throw new Error('The ideas assistant returned an invalid response. Please try again.');
+    }
 };
+
