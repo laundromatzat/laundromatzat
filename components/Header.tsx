@@ -83,13 +83,13 @@ function Header(): React.ReactNode {
           <button
             ref={menuButtonRef}
             type="button"
-            className="inline-flex items-center justify-center rounded-radius-md border border-brand-surface-highlight/60 bg-brand-secondary px-3 py-2 text-brand-text md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-radius-md border border-brand-surface-highlight/60 bg-brand-secondary text-brand-text shadow-layer-1 transition hover:bg-brand-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary md:hidden"
             aria-controls="mobile-navigation"
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen(prev => !prev)}
           >
             <span className="sr-only">Toggle navigation</span>
-            {isMenuOpen ? <CloseIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+            {isMenuOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
           </button>
         </div>
       </nav>
@@ -121,10 +121,10 @@ function Header(): React.ReactNode {
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen(false)}
-                  className="rounded-radius-md p-2 text-brand-text-secondary transition hover:text-brand-text"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-radius-md border border-brand-surface-highlight/60 text-brand-text-secondary transition hover:text-brand-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-secondary"
                 >
                   <span className="sr-only">Close menu</span>
-                  <CloseIcon className="h-6 w-6" />
+                  <CloseIcon className="h-5 w-5" />
                 </button>
               </div>
               <ul className="space-y-2" role="list">

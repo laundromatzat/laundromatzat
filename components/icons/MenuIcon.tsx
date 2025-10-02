@@ -1,13 +1,17 @@
 import React from 'react';
+import clsx from 'clsx';
 
-function MenuIcon(): React.ReactNode {
+type MenuIconProps = React.SVGProps<SVGSVGElement>;
+
+const MenuIcon: React.FC<MenuIconProps> = ({ className, ...props }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      className="h-6 w-6"
-      fill="none"
       viewBox="0 0 24 24"
+      fill="none"
       stroke="currentColor"
+      className={clsx('h-6 w-6', className)}
+      {...props}
     >
       <path
         strokeLinecap="round"
@@ -17,6 +21,6 @@ function MenuIcon(): React.ReactNode {
       />
     </svg>
   );
-}
+};
 
 export default MenuIcon;
