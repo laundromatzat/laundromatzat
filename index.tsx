@@ -16,7 +16,15 @@ import IntelligentIdeasBoardPage from './pages/IntelligentIdeasBoardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './styles/base.css';
 
-const baseUrl = import.meta.env.BASE_URL ?? '/';
+function normalizeBaseUrl(rawBaseUrl: string | undefined): string {
+  if (!rawBaseUrl || rawBaseUrl === '/') {
+    return '/';
+  }
+
+  return rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
+}
+
+const baseUrl = normalizeBaseUrl(import.meta.env.BASE_URL);
 
 const router = createBrowserRouter(
   [
