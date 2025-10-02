@@ -23,5 +23,23 @@ export function createGeminiRouter(service: GeminiService): Router {
     }
   });
 
+  router.post('/generate-content', async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      if (typeof prompt !== 'string') {
+        return res.status(400).json({ error: 'Prompt must be a string.' });
+      }
+
+      const responseText = await service.generateContent(prompt);
+      res.json({ content: responseText });
+
+    } catch (error) {
+      console.error('Gemini generateContent error:', error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'An unexpected error occurred.',
+      });
+    }
+  });
+
   return router;
 }
