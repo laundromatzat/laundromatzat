@@ -3,17 +3,15 @@ const STORE_NAME = 'processed-images';
 const DB_VERSION = 1;
 
 const getIndexedDBFactory = (): IDBFactory | undefined => {
-  if (typeof globalThis === 'undefined') {
-    return undefined;
-  }
+  if (typeof globalThis === 'undefined') return undefined;
 
-  const globalRef = globalThis as typeof globalThis & {
+  const g = globalThis as typeof globalThis & {
     mozIndexedDB?: IDBFactory;
     webkitIndexedDB?: IDBFactory;
     msIndexedDB?: IDBFactory;
   };
 
-  return globalRef.indexedDB ?? globalRef.mozIndexedDB ?? globalRef.webkitIndexedDB ?? globalRef.msIndexedDB;
+  return g.indexedDB ?? g.mozIndexedDB ?? g.webkitIndexedDB ?? g.msIndexedDB;
 };
 
 const indexedDBFactory = getIndexedDBFactory();
@@ -29,27 +27,20 @@ export type StoredBackgroundRemovalJob = {
 export const isBackgroundRemovalStorageSupported = (): boolean => Boolean(indexedDBFactory);
 
 const openDatabase = async (): Promise<IDBDatabase> => {
-  if (!indexedDBFactory) {
-    throw new Error('IndexedDB is not available in this environment.');
-  }
+  if (!indexedDBFactory) throw new Error('IndexedDB is not available in this environment.');
 
   return await new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDBFactory.open(DB_NAME, DB_VERSION);
 
     request.onupgradeneeded = () => {
-      const { result } = request;
-      if (!result.objectStoreNames.contains(STORE_NAME)) {
-        result.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
     };
 
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onerror = () => {
-      reject(request.error ?? new Error('Failed to open background removal storage.'));
-    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error ?? new Error('Failed to open background removal storage.'));
   });
 };
 
@@ -57,100 +48,72 @@ const runTransaction = async <T>(
   mode: IDBTransactionMode,
   action: (store: IDBObjectStore) => IDBRequest<T> | void,
 ): Promise<T> => {
-  const database = await openDatabase();
+  const db = await openDatabase();
 
   return await new Promise<T>((resolve, reject) => {
-    const transaction = database.transaction(STORE_NAME, mode);
-    const store = transaction.objectStore(STORE_NAME);
+    const tx = db.transaction(STORE_NAME, mode);
+    const store = tx.objectStore(STORE_NAME);
 
     let hasResult = false;
-    let resultValue: T | undefined;
+    let value: T | undefined;
     let settled = false;
 
-    const finishSuccess = () => {
+    const done = () => {
       if (!settled) {
         settled = true;
-        database.close();
-        resolve((hasResult ? resultValue : undefined) as T);
+        db.close();
+        resolve((hasResult ? value : undefined) as T);
       }
     };
 
-    const finishError = (error: unknown) => {
+    const fail = (err: unknown) => {
       if (!settled) {
         settled = true;
-        database.close();
-        reject(error);
+        db.close();
+        reject(err);
       }
     };
 
-    let request: IDBRequest<T> | void;
+    let req: IDBRequest<T> | void;
     try {
-      request = action(store);
-    } catch (error) {
-      finishError(error);
+      req = action(store);
+    } catch (e) {
+      fail(e);
       return;
     }
 
-    if (request) {
-      request.onsuccess = () => {
+    if (req) {
+      req.onsuccess = () => {
         hasResult = true;
-        resultValue = request.result;
+        value = req.result;
       };
-      request.onerror = () => {
-        finishError(request?.error ?? new Error('Background removal storage request failed.'));
-      };
+      req.onerror = () => fail(req.error ?? new Error('Background removal storage request failed.'));
     }
 
-    transaction.oncomplete = () => {
-      finishSuccess();
-    };
-
-    transaction.onabort = () => {
-      finishError(transaction.error ?? new Error('Background removal storage transaction aborted.'));
-    };
-
-    transaction.onerror = () => {
-      finishError(transaction.error ?? new Error('Background removal storage transaction failed.'));
-    };
+    tx.oncomplete = done;
+    tx.onabort = () => fail(tx.error ?? new Error('Background removal storage transaction aborted.'));
+    tx.onerror = () => fail(tx.error ?? new Error('Background removal storage transaction failed.'));
   });
 };
 
-export const persistBackgroundRemovalJob = async (
-  record: StoredBackgroundRemovalJob,
-): Promise<boolean> => {
-  if (!indexedDBFactory) {
-    return false;
-  }
-
+export const persistBackgroundRemovalJob = async (record: StoredBackgroundRemovalJob): Promise<boolean> => {
+  if (!indexedDBFactory) return false;
   await runTransaction('readwrite', store => store.put(record));
   return true;
 };
 
 export const loadBackgroundRemovalJobs = async (): Promise<StoredBackgroundRemovalJob[]> => {
-  if (!indexedDBFactory) {
-    return [];
-  }
-
+  if (!indexedDBFactory) return [];
   const records = await runTransaction<StoredBackgroundRemovalJob[]>('readonly', store => store.getAll());
-  if (!Array.isArray(records)) {
-    return [];
-  }
-
-  return records;
+  return Array.isArray(records) ? records : [];
 };
 
 export const deleteBackgroundRemovalJob = async (jobId: string): Promise<void> => {
-  if (!indexedDBFactory) {
-    return;
-  }
-
+  if (!indexedDBFactory) return;
   await runTransaction('readwrite', store => store.delete(jobId));
 };
 
 export const clearBackgroundRemovalJobs = async (): Promise<void> => {
-  if (!indexedDBFactory) {
-    return;
-  }
-
+  if (!indexedDBFactory) return;
   await runTransaction('readwrite', store => store.clear());
 };

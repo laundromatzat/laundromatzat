@@ -19,10 +19,7 @@ const downloadFilename = 'laundromatzat-background-removed.png';
 
 const buildDownloadFilename = (fileName: string): string => {
   const baseName = fileName.replace(/\.[^/.]+$/, '').trim();
-  if (!baseName) {
-    return downloadFilename;
-  }
-  return `${baseName}-background-removed.png`;
+  return baseName ? `${baseName}-background-removed.png` : downloadFilename;
 };
 
 type BackgroundRemovalJob = {
@@ -51,33 +48,22 @@ function BackgroundRemovalPage(): React.ReactNode {
   }, []);
 
   const cleanupAllUrls = useCallback(() => {
-    urlRegistry.current.forEach(storedUrl => {
-      URL.revokeObjectURL(storedUrl);
-    });
+    urlRegistry.current.forEach(storedUrl => URL.revokeObjectURL(storedUrl));
     urlRegistry.current.clear();
   }, []);
 
-  useEffect(() => {
-    return () => {
-      cleanupAllUrls();
-    };
-  }, [cleanupAllUrls]);
+  useEffect(() => () => cleanupAllUrls(), [cleanupAllUrls]);
 
   const processFile = useCallback(
-    async (jobId: string, file: File, createdAt: number) => {
+    async (targetJob: BackgroundRemovalJob, file: File) => {
       try {
         const blob = await removeBackground(file, {
           progress: (key, current, total) => {
             const percent = total > 0 ? Math.round((current / total) * 100) : 0;
             const progressLabel = `${key.replace(/_/g, ' ')} ${percent}%`;
-            setJobs(previousJobs =>
-              previousJobs.map(job =>
-                job.id === jobId
-                  ? {
-                      ...job,
-                      progressMessage: progressLabel,
-                    }
-                  : job,
+            setJobs(prev =>
+              prev.map(job =>
+                job.id === targetJob.id ? { ...job, progressMessage: progressLabel } : job,
               ),
             );
           },
@@ -86,9 +72,23 @@ function BackgroundRemovalPage(): React.ReactNode {
         const resultUrl = URL.createObjectURL(blob);
         registerUrl(resultUrl);
 
-        setJobs(previousJobs =>
-          previousJobs.map(job =>
-            job.id === jobId
+        // Persist both source and result
+        try {
+          const sourceBlob = file.slice(0, file.size, file.type);
+          await persistBackgroundRemovalJob({
+            id: targetJob.id,
+            fileName: targetJob.fileName,
+            createdAt: targetJob.createdAt,
+            sourceBlob,
+            resultBlob: blob,
+          });
+        } catch (storageError) {
+          console.warn('Failed to persist background removal result', storageError);
+        }
+
+        setJobs(prev =>
+          prev.map(job =>
+            job.id === targetJob.id
               ? {
                   ...job,
                   resultPreview: resultUrl,
@@ -102,25 +102,11 @@ function BackgroundRemovalPage(): React.ReactNode {
               : job,
           ),
         );
-
-        const sourceBlob = file.slice(0, file.size, file.type);
-
-        try {
-          await persistBackgroundRemovalJob({
-            id: jobId,
-            fileName: file.name,
-            createdAt,
-            sourceBlob,
-            resultBlob: blob,
-          });
-        } catch (storageError) {
-          console.warn('Failed to persist background removal result', storageError);
-        }
       } catch (error) {
         console.error('Background removal failed', error);
-        setJobs(previousJobs =>
-          previousJobs.map(job =>
-            job.id === jobId
+        setJobs(prev =>
+          prev.map(job =>
+            job.id === targetJob.id
               ? {
                   ...job,
                   processingState: 'error',
@@ -139,16 +125,14 @@ function BackgroundRemovalPage(): React.ReactNode {
   );
 
   const handleFiles = useCallback(
-    (files: FileList | File[]) => {
+    async (files: FileList | File[]) => {
       const fileArray = Array.from(files ?? []);
-      if (fileArray.length === 0) {
-        return;
-      }
+      if (fileArray.length === 0) return;
 
+      const now = Date.now();
       const jobsToAdd = fileArray.map(file => {
         const sourcePreview = URL.createObjectURL(file);
         registerUrl(sourcePreview);
-
         return {
           id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2, 10)}`,
           fileName: file.name,
@@ -157,15 +141,15 @@ function BackgroundRemovalPage(): React.ReactNode {
           processingState: 'loading' as ProcessingState,
           statusMessage: { label: 'Preparing your photo…', tone: 'default' as const },
           progressMessage: null,
-          createdAt: Date.now(),
+          createdAt: now,
         } satisfies BackgroundRemovalJob;
       });
 
-      setJobs(previousJobs => [...previousJobs, ...jobsToAdd]);
+      setJobs(prev => [...prev, ...jobsToAdd]);
 
       jobsToAdd.forEach((job, index) => {
         const file = fileArray[index];
-        void processFile(job.id, file, job.createdAt);
+        void processFile(job, file);
       });
     },
     [processFile, registerUrl],
@@ -174,9 +158,7 @@ function BackgroundRemovalPage(): React.ReactNode {
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const { files } = event.target;
-      if (files && files.length > 0) {
-        handleFiles(files);
-      }
+      if (files && files.length > 0) void handleFiles(files);
       event.target.value = '';
     },
     [handleFiles],
@@ -186,15 +168,9 @@ function BackgroundRemovalPage(): React.ReactNode {
     const onDrop = (event: React.DragEvent<HTMLLabelElement>) => {
       event.preventDefault();
       const { files } = event.dataTransfer;
-      if (files && files.length > 0) {
-        handleFiles(files);
-      }
+      if (files && files.length > 0) void handleFiles(files);
     };
-
-    const onDragOver = (event: React.DragEvent<HTMLLabelElement>) => {
-      event.preventDefault();
-    };
-
+    const onDragOver = (event: React.DragEvent<HTMLLabelElement>) => event.preventDefault();
     return { onDrop, onDragOver };
   }, [handleFiles]);
 
@@ -211,56 +187,39 @@ function BackgroundRemovalPage(): React.ReactNode {
 
     void (async () => {
       try {
-        const storedJobs = await loadBackgroundRemovalJobs();
-        if (!isMounted || storedJobs.length === 0) {
-          return;
-        }
+        const stored = await loadBackgroundRemovalJobs();
+        if (!isMounted || stored.length === 0) return;
 
-        const restoredJobs = storedJobs
-          .map(storedJob => {
-            const sourcePreview = URL.createObjectURL(storedJob.sourceBlob);
+        const restored = stored
+          .map(s => {
+            const sourcePreview = URL.createObjectURL(s.sourceBlob);
             registerUrl(sourcePreview);
 
-            const resultPreview = storedJob.resultBlob ? URL.createObjectURL(storedJob.resultBlob) : null;
-            if (resultPreview) {
-              registerUrl(resultPreview);
-            }
+            const resultPreview = s.resultBlob ? URL.createObjectURL(s.resultBlob) : null;
+            if (resultPreview) registerUrl(resultPreview);
 
             return {
-              id: storedJob.id,
-              fileName: storedJob.fileName,
+              id: s.id,
+              fileName: s.fileName,
               sourcePreview,
               resultPreview,
               processingState: resultPreview ? ('success' as ProcessingState) : ('idle' as ProcessingState),
               statusMessage: resultPreview
-                ? ({
-                    label: 'Background removed! Download the PNG below.',
-                    tone: 'success' as const,
-                  } satisfies StatusMessage)
-                : ({
-                    label: 'Preparing your photo…',
-                    tone: 'default' as const,
-                  } satisfies StatusMessage),
+                ? ({ label: 'Background removed! Download the PNG below.', tone: 'success' } as const)
+                : ({ label: 'Preparing your photo…', tone: 'default' } as const),
               progressMessage: null,
-              createdAt: storedJob.createdAt,
+              createdAt: s.createdAt,
             } satisfies BackgroundRemovalJob;
           })
           .sort((a, b) => a.createdAt - b.createdAt);
 
-        setJobs(previousJobs => {
-          const existingIds = new Set(previousJobs.map(job => job.id));
-          const mergedJobs = [...previousJobs];
-
-          restoredJobs.forEach(restoredJob => {
-            if (!existingIds.has(restoredJob.id)) {
-              mergedJobs.push(restoredJob);
-            }
-          });
-
-          return mergedJobs.sort((a, b) => a.createdAt - b.createdAt);
+        setJobs(prev => {
+          const existing = new Set(prev.map(j => j.id));
+          const merged = [...prev, ...restored.filter(r => !existing.has(r.id))];
+          return merged.sort((a, b) => a.createdAt - b.createdAt);
         });
-      } catch (error) {
-        console.error('Failed to restore stored background removal jobs', error);
+      } catch (e) {
+        console.error('Failed to restore stored background removal jobs', e);
       }
     })();
 
@@ -360,20 +319,14 @@ function BackgroundRemovalPage(): React.ReactNode {
                 <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
                   <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${statusToneClasses[job.statusMessage.tone]}`}>
                     {job.statusMessage.label}
-                    {job.progressMessage && (
-                      <span className="mt-1 block text-xs opacity-80">{job.progressMessage}</span>
-                    )}
+                    {job.progressMessage && <span className="mt-1 block text-xs opacity-80">{job.progressMessage}</span>}
                   </div>
                   <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
                     {job.processingState === 'loading' && (
                       <span className="text-sm text-brand-text-secondary">processing… this can take a moment the first time.</span>
                     )}
                     {job.processingState === 'success' && job.resultPreview && (
-                      <img
-                        src={job.resultPreview}
-                        alt={`Background removed result for ${job.fileName}`}
-                        className="max-h-full max-w-full object-contain"
-                      />
+                      <img src={job.resultPreview} alt={`Background removed result for ${job.fileName}`} className="max-h-full max-w-full object-contain" />
                     )}
                     {job.processingState === 'error' && (
                       <span className="text-sm text-rose-200">we couldn&apos;t process that image. try another one?</span>

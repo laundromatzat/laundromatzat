@@ -1,5 +1,6 @@
 {
     "git.autoStash": true,
     "IDX.aI.enableInlineCompletion": true,
-    "IDX.aI.enableCodebaseIndexing": true
+    "IDX.aI.enableCodebaseIndexing": true,
+    "geminicodeassist.agentYoloMode": true
 }
