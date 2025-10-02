@@ -61,7 +61,11 @@ function MailingListSignup(): React.ReactNode {
           </p>
         </div>
 
-        <form className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end" onSubmit={handleSubmit} noValidate>
+        <form
+          className="grid gap-4 sm:grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(13rem,auto)] md:items-end md:gap-6"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           <div className="space-y-1">
             <label htmlFor={emailId} className="text-sm font-medium text-brand-text">
               Email address
@@ -74,7 +78,7 @@ function MailingListSignup(): React.ReactNode {
               required
               value={email}
               onChange={event => setEmail(event.target.value)}
-              className="w-full rounded-radius-md border border-brand-surface-highlight/60 bg-brand-primary/60 px-3 py-2 text-brand-text placeholder:text-brand-text-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+              className="w-full rounded-radius-md border border-brand-surface-highlight/60 bg-brand-primary/60 px-3 py-3 text-brand-text placeholder:text-brand-text-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
             />
             <p className="text-xs text-brand-text-secondary">We&apos;ll never share your email address.</p>
           </div>
@@ -90,14 +94,14 @@ function MailingListSignup(): React.ReactNode {
               value={name}
               maxLength={120}
               onChange={event => setName(event.target.value)}
-              className="w-full rounded-radius-md border border-brand-surface-highlight/60 bg-brand-primary/60 px-3 py-2 text-brand-text placeholder:text-brand-text-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+              className="w-full rounded-radius-md border border-brand-surface-highlight/60 bg-brand-primary/60 px-3 py-3 text-brand-text placeholder:text-brand-text-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
             />
           </div>
 
           <button
             type="submit"
             disabled={disabled}
-            className="inline-flex items-center justify-center rounded-radius-md bg-brand-accent px-space-4 py-3 text-sm font-semibold text-brand-on-accent transition hover:bg-brand-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-12 w-full items-center justify-center rounded-radius-md bg-brand-accent px-space-4 text-sm font-semibold text-brand-on-accent transition hover:bg-brand-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-secondary disabled:cursor-not-allowed disabled:opacity-60 md:w-auto md:justify-self-end md:px-6"
           >
             {isSubmitting ? 'Joining…' : 'Join the newsletter'}
           </button>
