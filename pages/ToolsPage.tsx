@@ -46,6 +46,34 @@ function ToolsPage(): React.ReactNode {
             <span className="text-sm font-medium text-brand-accent">Try the color palette tool</span>
           </div>
         </Link>
+
+        <Link
+          to="/tools/nylon-fabric-designer"
+          className="block rounded-radius-lg border border-brand-surface-highlight/60 bg-brand-secondary/40 p-6 shadow-layer-1 transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+        >
+          <div className="flex flex-col gap-3 text-brand-text">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">New</span>
+            <h2 className="text-2xl font-semibold">Nylon Fabric Project Designer</h2>
+            <p className="text-brand-text-secondary">
+              Describe your project and get professional sewing guidance with cutting templates and visual previews.
+            </p>
+            <span className="text-sm font-medium text-brand-accent">Try the fabric designer tool</span>
+          </div>
+        </Link>
+
+        <Link
+            to="/tools/intelligent-ideas-board"
+            className="block rounded-radius-lg border border-brand-surface-highlight/60 bg-brand-secondary/40 p-6 shadow-layer-1 transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+        >
+            <div className="flex flex-col gap-3 text-brand-text">
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">New</span>
+                <h2 className="text-2xl font-semibold">Intelligent Ideas Board</h2>
+                <p className="text-brand-text-secondary">
+                    Drop your thoughts, ideas, and tasks, and let the assistant organize them for you.
+                </p>
+                <span className="text-sm font-medium text-brand-accent">Try the ideas board tool</span>
+            </div>
+        </Link>
       </section>
     </div>
   );

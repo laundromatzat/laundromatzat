@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Chat } from '@google/genai';
+import { ChatSession } from '@google/generative-ai';
 import { ChatMessage, Project } from '../types';
 import { createChatSession, searchProjects } from '../services/geminiService'; // Import the function and searchProjects
 import { ChatIcon } from './icons/ChatIcon';
@@ -17,7 +17,7 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatRef = useRef<Chat | null>(null); // Initialize chatRef to null
+  const chatRef = useRef<ChatSession | null>(null); // Initialize chatRef to null
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

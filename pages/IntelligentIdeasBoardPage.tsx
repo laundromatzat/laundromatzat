@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
-import { Lightbulb, ListTodo, BookmarkCheck, Sparkles, Trash2, RefreshCw, Check, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 
-const IdeasBoard = () => {
+import React, { useState } from 'react';
+import { organizeData, reorganizeWithInstruction, OrganizedData } from '../services/intelligentIdeasService';
+import { LightbulbIcon } from '../components/icons/LightbulbIcon';
+import { ListTodoIcon } from '../components/icons/ListTodoIcon';
+import { BookmarkCheckIcon } from '../components/icons/BookmarkCheckIcon';
+import { SparklesIcon } from '../components/icons/SparklesIcon';
+import { Trash2Icon } from '../components/icons/Trash2Icon';
+import { RefreshCwIcon } from '../components/icons/RefreshCwIcon';
+import { CheckIcon } from '../components/icons/CheckIcon';
+import { ChevronDownIcon } from '../components/icons/ChevronDownIcon';
+import { ChevronUpIcon } from '../components/icons/ChevronUpIcon';
+import { SettingsIcon } from '../components/icons/SettingsIcon';
+
+const IntelligentIdeasBoardPage = () => {
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [organizedData, setOrganizedData] = useState(null);
-  const [allInputs, setAllInputs] = useState([]);
+  const [organizedData, setOrganizedData] = useState<OrganizedData | null>(null);
+  const [allInputs, setAllInputs] = useState<string[]>([]);
   const [inputMode, setInputMode] = useState('content');
-  const [expandedCategories, setExpandedCategories] = useState({});
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   const processInput = async () => {
     if (!inputText.trim()) return;
@@ -15,7 +26,12 @@ const IdeasBoard = () => {
     setIsProcessing(true);
     
     if (inputMode === 'instruction') {
-      await reorganizeWithInstruction(inputText);
+        if (!organizedData) {
+            alert("Please add some content first before giving organizational instructions.");
+            setIsProcessing(false);
+            return;
+        }
+      await reorganizeWithInstruction(inputText, organizedData, allInputs);
       setInputText('');
       setIsProcessing(false);
       return;
@@ -36,129 +52,7 @@ const IdeasBoard = () => {
     }
   };
 
-  const organizeData = async (inputs) => {
-    const prompt = `You are an intelligent personal assistant that organizes stream-of-consciousness thoughts, ideas, and to-dos.
-
-I will provide you with a list of user inputs (thoughts, ideas, tasks, facts). Your job is to:
-
-1. Analyze ALL inputs together to understand context and relationships
-2. Identify distinct topics and create/update categories as needed
-3. Group related items together (e.g., if a new input adds details to an existing to-do, merge them)
-4. Extract actionable to-dos with realistic due dates when urgency is implied
-5. Organize ideas by theme
-6. Keep track of facts/information to remember
-7. Dynamically create, merge, or split categories based on what makes sense
-
-All inputs:
-${inputs.map((input, i) => `[${i + 1}] ${input}`).join('\n\n')}
-
-Respond with a JSON object with this structure:
-{
-  "categories": [
-    {
-      "id": "unique-id-string",
-      "name": "Category Name",
-      "type": "ideas|todos|facts",
-      "items": [
-        {
-          "id": "unique-item-id",
-          "content": "The organized/merged content",
-          "dueDate": "YYYY-MM-DD or null",
-          "priority": "high|medium|low or null",
-          "relatedInputs": [1, 3, 5],
-          "completed": false
-        }
-      ]
-    }
-  ],
-  "summary": "A brief overview of what's been captured and organized"
-}
-
-Guidelines:
-- Generate unique IDs for each category and item (use descriptive strings like "work-tasks", "project-alpha-idea-1")
-- Be intelligent about merging related items
-- Infer due dates from context ("by Friday", "this week", "urgent", etc.)
-- Today's date is ${new Date().toISOString().split('T')[0]}
-- Create subcategories when items naturally cluster
-- Use clear, concise category names
-- If something doesn't fit existing categories, create a new one
-- Remove empty categories
-- Set completed to false for all items initially
-
-CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after the JSON object. Do not use markdown code blocks.`;
-
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4000,
-        messages: [
-          { role: "user", content: prompt }
-        ]
-      })
-    });
-
-    const data = await response.json();
-    let responseText = data.content[0].text;
-    responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    
-    return JSON.parse(responseText);
-  };
-
-  const reorganizeWithInstruction = async (instruction) => {
-    if (!organizedData || allInputs.length === 0) {
-      alert("Please add some content first before giving organizational instructions.");
-      return;
-    }
-
-    try {
-      const prompt = `You are an intelligent personal assistant. The user has given you an instruction on how to reorganize their existing data.
-
-Current organization:
-${JSON.stringify(organizedData, null, 2)}
-
-Original inputs:
-${allInputs.map((input, i) => `[${i + 1}] ${input}`).join('\n\n')}
-
-User's organizational instruction:
-"${instruction}"
-
-Please reorganize the data according to the user's instruction. Maintain all existing item IDs and completion statuses. Only change the structure, categories, groupings, or presentation as requested.
-
-Respond with a JSON object with the same structure as the current organization, but reorganized according to the instruction.
-
-CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after the JSON object. Do not use markdown code blocks.`;
-
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4000,
-          messages: [
-            { role: "user", content: prompt }
-          ]
-        })
-      });
-
-      const data = await response.json();
-      let responseText = data.content[0].text;
-      responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      
-      const reorganized = JSON.parse(responseText);
-      setOrganizedData(reorganized);
-    } catch (error) {
-      console.error("Error reorganizing:", error);
-      alert("Sorry, there was an error reorganizing. Please try again.");
-    }
-  };
-
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && e.ctrlKey) {
       processInput();
     }
@@ -188,57 +82,63 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
     }
   };
 
-  const toggleItemCompletion = (categoryId, itemId) => {
-    setOrganizedData(prev => ({
-      ...prev,
-      categories: prev.categories.map(cat => {
-        if (cat.id === categoryId) {
-          return {
-            ...cat,
-            items: cat.items.map(item => 
-              item.id === itemId ? { ...item, completed: !item.completed } : item
-            )
-          };
+  const toggleItemCompletion = (categoryId: string, itemId: string) => {
+    setOrganizedData(prev => {
+        if (!prev) return null;
+        return {
+            ...prev,
+            categories: prev.categories.map(cat => {
+                if (cat.id === categoryId) {
+                    return {
+                        ...cat,
+                        items: cat.items.map(item => 
+                            item.id === itemId ? { ...item, completed: !item.completed } : item
+                        )
+                    };
+                }
+                return cat;
+            })
         }
-        return cat;
-      })
-    }));
+    });
   };
 
-  const deleteItem = (categoryId, itemId) => {
+  const deleteItem = (categoryId: string, itemId: string) => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
     
-    setOrganizedData(prev => ({
-      ...prev,
-      categories: prev.categories.map(cat => {
-        if (cat.id === categoryId) {
-          return {
-            ...cat,
-            items: cat.items.filter(item => item.id !== itemId)
-          };
+    setOrganizedData(prev => {
+        if (!prev) return null;
+        return {
+            ...prev,
+            categories: prev.categories.map(cat => {
+                if (cat.id === categoryId) {
+                    return {
+                        ...cat,
+                        items: cat.items.filter(item => item.id !== itemId)
+                    };
+                }
+                return cat;
+            }).filter(cat => cat.items.length > 0)
         }
-        return cat;
-      }).filter(cat => cat.items.length > 0)
-    }));
+    });
   };
 
-  const toggleCategoryExpanded = (categoryId) => {
+  const toggleCategoryExpanded = (categoryId: string) => {
     setExpandedCategories(prev => ({
       ...prev,
       [categoryId]: !prev[categoryId]
     }));
   };
 
-  const getTypeIcon = (type) => {
+  const getTypeIcon = (type: string) => {
     switch(type) {
-      case 'todos': return <ListTodo size={18} />;
-      case 'ideas': return <Lightbulb size={18} />;
-      case 'facts': return <BookmarkCheck size={18} />;
-      default: return <Sparkles size={18} />;
+      case 'todos': return <ListTodoIcon className="h-5 w-5" />;
+      case 'ideas': return <LightbulbIcon className="h-5 w-5" />;
+      case 'facts': return <BookmarkCheckIcon className="h-5 w-5" />;
+      default: return <SparklesIcon className="h-5 w-5" />;
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = (priority: string | null) => {
     switch(priority) {
       case 'high': return '#ef4444';
       case 'medium': return '#f59e0b';
@@ -247,7 +147,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return null;
     const date = new Date(dateString);
     const today = new Date();
@@ -260,8 +160,8 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const getActiveItems = (items) => items.filter(item => !item.completed);
-  const getCompletedItems = (items) => items.filter(item => item.completed);
+  const getActiveItems = (items: any[]) => items.filter(item => !item.completed);
+  const getCompletedItems = (items: any[]) => items.filter(item => item.completed);
 
   return (
     <div style={{ 
@@ -274,7 +174,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         <header style={{ marginBottom: '40px', textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <Sparkles size={32} color="white" />
+            <SparklesIcon className="h-8 w-8 text-white" />
             <h1 style={{ 
               fontSize: '36px', 
               fontWeight: '700', 
@@ -316,7 +216,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
                 gap: '6px'
               }}
             >
-              <Sparkles size={14} />
+              <SparklesIcon className="h-4 w-4" />
               Add Content
             </button>
             <button
@@ -336,7 +236,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
                 gap: '6px'
               }}
             >
-              <Settings size={14} />
+              <SettingsIcon className="h-4 w-4" />
               Give Instruction
             </button>
           </div>
@@ -393,7 +293,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
                       transition: 'all 0.2s'
                     }}
                   >
-                    <RefreshCw size={16} />
+                    <RefreshCwIcon className="h-4 w-4" />
                     Reorganize
                   </button>
                   <button
@@ -413,7 +313,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
                       transition: 'all 0.2s'
                     }}
                   >
-                    <Trash2 size={16} />
+                    <Trash2Icon className="h-4 w-4" />
                     Clear All
                   </button>
                 </>
@@ -614,7 +514,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
                                 marginTop: '2px'
                               }}
                             >
-                              <Trash2 size={14} />
+                              <Trash2Icon className="h-4 w-4" />
                             </button>
                           </div>
                         </div>
@@ -642,7 +542,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
                             transition: 'all 0.2s'
                           }}
                         >
-                          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          {isExpanded ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
                           {completedItems.length} Completed
                         </button>
 
@@ -685,7 +585,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
                                       marginTop: '2px'
                                     }}
                                   >
-                                    <Check size={14} color="white" strokeWidth={3} />
+                                    <CheckIcon className="h-4 w-4 text-white" strokeWidth={3} />
                                   </button>
                                   
                                   <div style={{ flex: 1 }}>
@@ -717,7 +617,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
                                       marginTop: '2px'
                                     }}
                                   >
-                                    <Trash2 size={14} />
+                                    <Trash2Icon className="h-4 w-4" />
                                   </button>
                                 </div>
                               </div>
@@ -741,7 +641,7 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
             textAlign: 'center',
             boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
           }}>
-            <Sparkles size={48} color="#667eea" style={{ marginBottom: '16px' }} />
+            <SparklesIcon className="h-12 w-12 text-indigo-500 mx-auto mb-4" />
             <h3 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', marginBottom: '12px' }}>
               Your organized board will appear here
             </h3>
@@ -755,4 +655,4 @@ CRITICAL: Respond ONLY with valid JSON. Do not include any text before or after 
   );
 };
 
-export default IdeasBoard;
+export default IntelligentIdeasBoardPage;

@@ -11,6 +11,8 @@ import ToolsPage from './pages/ToolsPage';
 import LinksPage from './pages/LinksPage';
 import BackgroundRemovalPage from './pages/BackgroundRemovalPage';
 import ColorPalettePage from './pages/ColorPalettePage';
+import NylonFabricDesignerPage from './pages/NylonFabricDesignerPage';
+import IntelligentIdeasBoardPage from './pages/IntelligentIdeasBoardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './styles/base.css';
 
@@ -29,6 +31,8 @@ const router = createBrowserRouter(
         { path: 'tools', element: <ToolsPage /> },
         { path: 'tools/background-removal', element: <BackgroundRemovalPage /> },
         { path: 'tools/color-palette', element: <ColorPalettePage /> },
+        { path: 'tools/nylon-fabric-designer', element: <NylonFabricDesignerPage /> },
+        { path: 'tools/intelligent-ideas-board', element: <IntelligentIdeasBoardPage /> },
         { path: 'links', element: <LinksPage /> },
       ],
     },
