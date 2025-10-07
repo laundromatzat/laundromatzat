@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ChatSession } from '@google/generative-ai';
 import { ChatMessage, Project } from '../types';
-import { createChatSession, searchProjects } from '../services/geminiService'; // Import the function and searchProjects
+import { sendStreamingMessage, searchProjects } from '../services/geminiService';
 import { ChatIcon } from './icons/ChatIcon';
 import { CloseIcon } from './icons/CloseIcon';
 import { SendIcon } from './icons/SendIcon';
@@ -17,22 +16,13 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatRef = useRef<ChatSession | null>(null); // Initialize chatRef to null
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      const chatSession = createChatSession();
-      chatRef.current = chatSession; // Assign the result of createChatSession
-      if (chatSession) { // Check if the session was created successfully
-        setMessages([
-          { id: 'initial', sender: 'ai', text: 'Hello! How can I help you explore this creative portfolio?' }
-        ]);
-      } else {
-        //Handle the case where the chat session failed to initialize
-        setMessages([{id: 'error', sender: 'ai', text: 'Sorry, I am unable to connect right now.'}])
-        console.warn("Chat session could not be initialized.  Check your API key.");
-      }
+      setMessages([
+        { id: 'initial', sender: 'ai', text: 'Hello! How can I help you explore this creative portfolio?' }
+      ]);
     }
   }, [isOpen]);
 
@@ -41,7 +31,7 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
   }, [messages]);
 
   const handleSendMessage = useCallback(async () => {
-    if (!userInput.trim() || isLoading || !chatRef.current) return; // Ensure chatRef.current is not null
+    if (!userInput.trim() || isLoading) return;
 
     const userMessage: ChatMessage = { id: Date.now().toString(), sender: 'user', text: userInput };
     setMessages(prev => [...prev, userMessage]);
@@ -52,84 +42,82 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
     setMessages(prev => [...prev, { id: aiMessageId, sender: 'ai', text: '' }]);
 
     try {
-      if (chatRef.current) {
-        const stream = await chatRef.current.sendMessageStream({ message: userInput });
-        let fullText = '';
-        for await (const chunk of stream) {
-          fullText += chunk.text;
-          setMessages(prev => prev.map(msg =>
-            msg.id === aiMessageId ? { ...msg, text: fullText } : msg
-          ));
-        }
-
-        // 1) Try direct JSON (function‑call style)
-        try {
-          const sanitizedText = fullText.trim().replace(/^```json\n?/, '').replace(/```$/, '');
-          const obj = JSON.parse(sanitizedText);
-          if (obj?.name === 'searchProjects' && obj.arguments?.query !== undefined) {
-            const q = obj.arguments.query as string;
-            const opts = (obj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
-            const results = searchProjects(q, opts);
-            onSearch(results);
-            setMessages(prev => prev.map(msg =>
-              msg.id === aiMessageId
-                ? { ...msg, text: `Found ${results.length} project${results.length===1?'':'s'} for “${q}”${opts?.type?` (type: ${opts.type})`:''}.` }
-                : msg
-            ));
-            return;
-          }
-        } catch {
-          /* not a bare JSON object; fall through */
-        }
-
-        // 2) Fallback: tolerate ``` + (optional) json on next line
-        let parsedObj: any | null = null;
-        const fenceMatch = fullText.match(/```(?:json)?\s*\n([\s\S]*?)\n```/i);
-        if (fenceMatch && fenceMatch[1]) {
-          try {
-            parsedObj = JSON.parse(fenceMatch[1]);
-          } catch (e) {
-            console.error("Error parsing fenced JSON:", e);
-          }
-        }
-        // 3) Last‑ditch: extract any JSON block that contains a searchProjects call
-        if (!parsedObj) {
-          const looseMatch = fullText.match(/({[\s\S]*"name"\s*:\s*"searchProjects"[\s\S]*})/);
-          if (looseMatch && looseMatch[1]) {
-            try {
-              parsedObj = JSON.parse(looseMatch[1]);
-            } catch (e) {
-              console.error("Error parsing loose JSON block:", e);
-            }
-          }
-        }
-        if (parsedObj) {
-          if (parsedObj?.name === 'searchProjects' && parsedObj.arguments?.query !== undefined) {
-            const q = parsedObj.arguments.query as string;
-            const opts = (parsedObj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
-            const results = searchProjects(q, opts);
-            onSearch(results);
-            setMessages(prev => prev.map(msg =>
-              msg.id === aiMessageId
-                ? { ...msg, text: `Found ${results.length} project${results.length===1?'':'s'} for “${q}”${opts?.type?` (type: ${opts.type})`:''}.` }
-                : msg
-            ));
-            return;
-          }
-          if (parsedObj.projects) {
-            onSearch(parsedObj.projects);
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === aiMessageId
-                  ? { ...msg, text: "I've updated the grid with your search results." }
-                  : msg
-              )
-            );
-            return;
-          }
-        }
-        // Otherwise leave the AI text as‑is
+      const stream = sendStreamingMessage(userInput);
+      let fullText = '';
+      for await (const chunk of stream) {
+        fullText += chunk;
+        setMessages(prev => prev.map(msg =>
+          msg.id === aiMessageId ? { ...msg, text: fullText } : msg
+        ));
       }
+
+      // 1) Try direct JSON (function‑call style)
+      try {
+        const sanitizedText = fullText.trim().replace(/^```json\n?/, '').replace(/```$/, '');
+        const obj = JSON.parse(sanitizedText);
+        if (obj?.name === 'searchProjects' && obj.arguments?.query !== undefined) {
+          const q = obj.arguments.query as string;
+          const opts = (obj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
+          const results = searchProjects(q, opts);
+          onSearch(results);
+          setMessages(prev => prev.map(msg =>
+            msg.id === aiMessageId
+              ? { ...msg, text: `Found ${results.length} project${results.length===1?'':'s'} for “${q}”${opts?.type?` (type: ${opts.type})`:''}.` }
+              : msg
+          ));
+          return;
+        }
+      } catch {
+        /* not a bare JSON object; fall through */
+      }
+
+      // 2) Fallback: tolerate ``` + (optional) json on next line
+      let parsedObj: any | null = null;
+      const fenceMatch = fullText.match(/```(?:json)?\s*\n([\s\S]*?)\n```/i);
+      if (fenceMatch && fenceMatch[1]) {
+        try {
+          parsedObj = JSON.parse(fenceMatch[1]);
+        } catch (e) {
+          console.error("Error parsing fenced JSON:", e);
+        }
+      }
+      // 3) Last‑ditch: extract any JSON block that contains a searchProjects call
+      if (!parsedObj) {
+        const looseMatch = fullText.match(/({[\s\S]*"name"\s*:\s*"searchProjects"[\s\S]*})/);
+        if (looseMatch && looseMatch[1]) {
+          try {
+            parsedObj = JSON.parse(looseMatch[1]);
+          } catch (e) {
+            console.error("Error parsing loose JSON block:", e);
+          }
+        }
+      }
+      if (parsedObj) {
+        if (parsedObj?.name === 'searchProjects' && parsedObj.arguments?.query !== undefined) {
+          const q = parsedObj.arguments.query as string;
+          const opts = (parsedObj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
+          const results = searchProjects(q, opts);
+          onSearch(results);
+          setMessages(prev => prev.map(msg =>
+            msg.id === aiMessageId
+              ? { ...msg, text: `Found ${results.length} project${results.length===1?'':'s'} for “${q}”${opts?.type?` (type: ${opts.type})`:''}.` }
+              : msg
+          ));
+          return;
+        }
+        if (parsedObj.projects) {
+          onSearch(parsedObj.projects);
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === aiMessageId
+                ? { ...msg, text: "I've updated the grid with your search results." }
+                : msg
+            )
+          );
+          return;
+        }
+      }
+      // Otherwise leave the AI text as‑is
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => prev.map(msg =>

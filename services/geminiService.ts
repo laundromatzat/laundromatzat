@@ -216,40 +216,88 @@ export function searchProjects(query: string, opts: SearchOptions = {}): Project
   });
 }
 
-async function handleResponse(response: Response): Promise<string> {
+function extractMessageFromJson(data: unknown): string {
+  if (data && typeof data === 'object') {
+    const maybeRecord = data as Record<string, unknown>;
+    if (typeof maybeRecord.message === 'string') {
+      return maybeRecord.message;
+    }
+    if (typeof maybeRecord.content === 'string') {
+      return maybeRecord.content;
+    }
+  }
+  return JSON.stringify(data ?? {});
+}
+
+async function postChat(message: string): Promise<Response> {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message }),
+  });
+
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({})) as { error?: string };
-    throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+    let errorMessage = `HTTP error! Status: ${response.status}`;
+    try {
+      const errorBody = await response.json();
+      if (errorBody && typeof errorBody.error === 'string') {
+        errorMessage = errorBody.error;
+      }
+    } catch {
+      // ignore JSON parse errors for non-JSON responses
+    }
+    throw new Error(errorMessage);
   }
 
-  const data = await response.json() as { message?: string; content?: string };
-  if ('message' in data && typeof data.message === 'string') {
-    return data.message;
-  }
+  return response;
+}
 
-  if ('content' in data && typeof data.content === 'string') {
-    return data.content;
-  }
+export async function* sendStreamingMessage(message: string): AsyncGenerator<string> {
+  try {
+    const response = await postChat(message);
+    const contentType = response.headers.get('content-type') ?? '';
 
-  throw new Error('Unexpected response shape from Gemini service.');
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      yield extractMessageFromJson(data);
+      return;
+    }
+
+    if (response.body) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: !done });
+          if (chunk) {
+            yield chunk;
+          }
+        }
+      }
+      return;
+    }
+
+    const fallbackText = await response.text();
+    if (fallbackText) {
+      yield fallbackText;
+    }
+  } catch (error) {
+    console.error('Failed to stream message:', error);
+    throw error instanceof Error ? error : new Error('Could not connect to the assistant. Please try again later.');
+  }
 }
 
 export async function sendMessage(message: string): Promise<string> {
-  try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    });
-
-    return await handleResponse(response);
-
-  } catch (error) {
-    console.error("Failed to send message:", error);
-    throw error instanceof Error ? error : new Error("Could not connect to the assistant. Please try again later.");
+  let full = '';
+  for await (const chunk of sendStreamingMessage(message)) {
+    full += chunk;
   }
+  return full;
 }
 
 export async function generateContent(prompt: string): Promise<string> {
@@ -262,7 +310,20 @@ export async function generateContent(prompt: string): Promise<string> {
       body: JSON.stringify({ prompt }),
     });
 
-    return await handleResponse(response);
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({})) as { error?: string };
+      throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json() as { message?: string; content?: string };
+    if (typeof data.content === 'string') {
+      return data.content;
+    }
+    if (typeof data.message === 'string') {
+      return data.message;
+    }
+
+    throw new Error('Unexpected response shape from Gemini service.');
 
   } catch (error) {
     console.error('Failed to generate content:', error);
@@ -270,6 +331,3 @@ export async function generateContent(prompt: string): Promise<string> {
   }
 }
 
-export function createChatSession() {
-  return null;
-}
