@@ -9,6 +9,7 @@ const TOOL_LINKS = [
     title: 'Remove a background',
     description: "Launch the in-browser background removal tool to generate a transparent PNG that's ready to download in seconds.",
     cta: 'Try the background removal tool',
+    badge: 'Core tool',
   },
   {
     to: '/tools/color-palette',
@@ -16,20 +17,25 @@ const TOOL_LINKS = [
     title: 'Extract a color palette',
     description: 'Upload an image and instantly generate a five-color palette with copy-ready values.',
     cta: 'Try the color palette tool',
+    badge: 'Core tool',
   },
   {
     to: '/tools/nylon-fabric-designer',
-    ariaLabel: 'Nylon Fabric Project Designer',
-    title: 'Nylon Fabric Project Designer',
-    description: 'Describe your project and get professional sewing guidance with cutting templates and visual previews.',
-    cta: 'Try the fabric designer tool',
+    ariaLabel: 'Nylon Fabric Designer Service',
+    title: 'Nylon Fabric Designer Service',
+    description:
+      'Generate custom sewing plans, cutting templates, and visual previews for nylon projects like stuff sacks, pouches, and aprons.',
+    cta: 'Open the nylon designer',
+    badge: 'New service',
   },
   {
     to: '/tools/intelligent-ideas-board',
-    ariaLabel: 'Intelligent Ideas Board',
-    title: 'Intelligent Ideas Board',
-    description: "Drop your thoughts, ideas, and tasks, and let the assistant organize them for you.",
-    cta: 'Try the ideas board tool',
+    ariaLabel: 'Intelligent Ideas Service',
+    title: 'Intelligent Ideas Service',
+    description:
+      'Brain-dump thoughts, todos, and notes—then let the assistant cluster, prioritize, and summarize everything for you.',
+    cta: 'Open the intelligent ideas board',
+    badge: 'New service',
   },
 ];
 
@@ -58,7 +64,11 @@ function ToolsPage(): React.ReactNode {
             className="block rounded-radius-lg border border-brand-surface-highlight/60 bg-brand-secondary/40 p-6 shadow-layer-1 transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
           >
             <div className="flex flex-col gap-3 text-brand-text">
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">New</span>
+              {tool.badge ? (
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">
+                  {tool.badge}
+                </span>
+              ) : null}
               <h2 className="text-2xl font-semibold">{tool.title}</h2>
               <p className="text-brand-text-secondary">{tool.description}</p>
               <span className="text-sm font-medium text-brand-accent">{tool.cta}</span>

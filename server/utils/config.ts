@@ -3,7 +3,7 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173'];
+const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173', 'https://laundromatzat.com', 'https://www.laundromatzat.com'];
 
 function parseOrigins(value: string | undefined): string[] {
   if (!value) {
