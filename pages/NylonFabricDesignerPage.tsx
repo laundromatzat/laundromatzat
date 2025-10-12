@@ -33,7 +33,7 @@ const NylonFabricDesignerPage: React.FC = () => {
 
     try {
       const guide = await generateSewingGuide(projectDescription);
-      setGuideContent(guide);
+      setSanitizedGuideContent(guide);
 
       try {
         const projectVisuals = await generateProjectImages(projectDescription);
@@ -43,14 +43,14 @@ const NylonFabricDesignerPage: React.FC = () => {
           err instanceof Error
             ? err.message
             : 'An unknown error occurred while generating visuals for your project.';
-        setError(`Unable to generate project visuals: ${message}`);
+        setError(message);
       }
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
           : 'An unknown error occurred while generating a sewing guide for your project.';
-      setError(`Unable to generate sewing guide: ${message}`);
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +130,7 @@ const NylonFabricDesignerPage: React.FC = () => {
                 New Project
               </button>
             </div>
+            {error && <p className="text-red-500 mb-4">{error}</p>}
             <div dangerouslySetInnerHTML={{ __html: sanitizedGuideContent }} />
 
             {visuals && (
