@@ -6,7 +6,7 @@ const NylonFabricDesignerPage: React.FC = () => {
   const [projectDescription, setProjectDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [guideContent, setGuideContent] = useState<string | null>(null);
+  const [sanitizedGuideContent, setSanitizedGuideContent] = useState<string | null>(null);
   const [visuals, setVisuals] = useState<{ stage: string; svg: string }[] | null>(null);
 
   const examples = {
@@ -28,7 +28,7 @@ const NylonFabricDesignerPage: React.FC = () => {
 
     setIsLoading(true);
     setError(null);
-    setGuideContent(null);
+    setSanitizedGuideContent(null);
     setVisuals(null);
 
     try {
@@ -58,7 +58,7 @@ const NylonFabricDesignerPage: React.FC = () => {
 
   const startNewProject = () => {
     setProjectDescription('');
-    setGuideContent(null);
+    setSanitizedGuideContent(null);
     setVisuals(null);
     setError(null);
   };
@@ -75,7 +75,7 @@ const NylonFabricDesignerPage: React.FC = () => {
       </header>
 
       <main className="p-8 max-w-7xl mx-auto">
-        {!guideContent && (
+        {!sanitizedGuideContent && (
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h2 className="text-2xl font-semibold text-purple-700 mb-4">Describe Your Project</h2>
             <p className="text-gray-600 mb-6">
@@ -111,7 +111,7 @@ const NylonFabricDesignerPage: React.FC = () => {
           </div>
         )}
 
-        {isLoading && !guideContent && (
+        {isLoading && !sanitizedGuideContent && (
           <div className="text-center p-12 bg-white rounded-lg shadow-lg">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mx-auto"></div>
             <p className="mt-4 text-xl text-purple-700">Analyzing your project...</p>
@@ -119,7 +119,7 @@ const NylonFabricDesignerPage: React.FC = () => {
           </div>
         )}
 
-        {guideContent && (
+        {sanitizedGuideContent && (
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="flex justify-between items-center border-b-2 border-gray-200 pb-4 mb-6">
               <h2 className="text-3xl font-bold text-purple-700">Your Custom Sewing Guide</h2>
@@ -130,7 +130,7 @@ const NylonFabricDesignerPage: React.FC = () => {
                 New Project
               </button>
             </div>
-            <div dangerouslySetInnerHTML={{ __html: guideContent }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizedGuideContent }} />
 
             {visuals && (
               <div className="mt-8">
