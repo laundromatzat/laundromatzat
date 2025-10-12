@@ -124,7 +124,7 @@ The `.github/workflows/ci.yml` file contains a basic workflow to ensure the appl
 ├── pages/             # Page-level routes powered by React Router
 ├── server/            # Secure Express mailing-list API
 ├── services/          # Gemini + mailing list client helpers
-├── constants.ts       # Portfolio data + chat system prompts
+├── constants.ts       # Production portfolio dataset + chat system prompts (placeholder dataset retired)
 ├── types.ts           # Shared TypeScript interfaces
 └── public/            # Static assets and favicon
 ```
