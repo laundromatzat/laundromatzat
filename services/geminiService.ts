@@ -1,5 +1,6 @@
 import { Project, ProjectType } from '../types';
 import { PROJECTS } from '../constants';
+import { parseYearMonth } from '../utils/projectDates';
 
 // --- Search helpers: normalization, synonyms, and geo aliasing ---
 function normalize(text: string): string {
@@ -140,22 +141,6 @@ export type SearchOptions = {
   includeTags?: string[];
   excludeTags?: string[];
 };
-
-function parseYearMonth(s?: string): number | null {
-  if (!s) return null;
-  const n = normalize(s).replace(/\b(about|around|since|after|before)\b/g, '').trim();
-  // Try YYYY-MM or YYYY/MM or YYYY
-  let m = n.match(/^(\d{4})[-\/]?(\d{2})?$/);
-  if (m) {
-    const y = Number(m[1]);
-    const mo = m[2] ? Number(m[2]) : 1;
-    return y * 100 + mo; // YYYYMM as comparable number
-  }
-  // Try MM/YYYY
-  m = n.match(/^(\d{2})[-\/]?(\d{4})$/);
-  if (m) return Number(m[2]) * 100 + Number(m[1]);
-  return null;
-}
 
 function projectYearMonth(p: Project): number | null {
   // Project dates are mostly MM/YYYY
