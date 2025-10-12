@@ -3,16 +3,19 @@ import { PROJECTS } from '../constants';
 import { ProjectType } from '../types';
 import ProjectGrid from '../components/ProjectGrid';
 import PageMetadata from '../components/PageMetadata';
+import { toComparableDate } from '../services/projectOrdering';
 
 function VideosPage(): React.ReactNode {
   const videoProjects = useMemo(
     () =>
       PROJECTS.filter(project => project.type === ProjectType.Video).sort((a, b) => {
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        const [aMonth, aYear] = a.date.split('/');
-        const [bMonth, bYear] = b.date.split('/');
-        return new Date(`${bYear}-${bMonth}-01`).getTime() - new Date(`${aYear}-${aMonth}-01`).getTime();
+        const aDate = toComparableDate(a);
+        const bDate = toComparableDate(b);
+
+        if (aDate === null) return 1;
+        if (bDate === null) return -1;
+
+        return bDate - aDate;
       }),
     [],
   );
