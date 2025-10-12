@@ -32,18 +32,25 @@ const NylonFabricDesignerPage: React.FC = () => {
     setVisuals(null);
 
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      if (!apiKey) {
-        throw new Error('API key not found');
-      }
-
-      const guide = await generateSewingGuide(projectDescription, apiKey);
+      const guide = await generateSewingGuide(projectDescription);
       setGuideContent(guide);
 
-      const projectVisuals = await generateProjectImages(projectDescription, apiKey);
-      setVisuals(projectVisuals);
+      try {
+        const projectVisuals = await generateProjectImages(projectDescription);
+        setVisuals(projectVisuals);
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'An unknown error occurred while generating visuals for your project.';
+        setError(`Unable to generate project visuals: ${message}`);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'An unknown error occurred while generating a sewing guide for your project.';
+      setError(`Unable to generate sewing guide: ${message}`);
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +147,7 @@ const NylonFabricDesignerPage: React.FC = () => {
                 </div>
               </div>
             )}
-             {isLoading && !visuals && (
+            {isLoading && !visuals && (
               <div className="text-center p-12 bg-white rounded-lg shadow-lg mt-8">
                 <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mx-auto"></div>
                 <p className="mt-4 text-xl text-purple-700">Generating visual diagrams...</p>
