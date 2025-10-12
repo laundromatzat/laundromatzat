@@ -10,9 +10,10 @@ import { SparklesIcon } from './icons/SparklesIcon';
 
 interface ChatAssistantProps {
   onSearch: (projects: Project[]) => void;
+  onReset?: () => void;
 }
 
-function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
+function ChatAssistant({ onSearch, onReset }: ChatAssistantProps): React.ReactNode {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
@@ -43,6 +44,15 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
   const handleSendMessage = useCallback(async () => {
     if (!userInput.trim() || isLoading || !chatRef.current) return; // Ensure chatRef.current is not null
 
+    const shouldReset = (payload: any): boolean => {
+      if (!payload || typeof payload !== 'object') return false;
+      const name = typeof payload.name === 'string' ? payload.name.toLowerCase() : '';
+      const action = typeof payload.action === 'string' ? payload.action.toLowerCase() : '';
+      if (name.includes('reset') || action.includes('reset')) return true;
+      if (payload.reset === true || payload.type === 'reset') return true;
+      return false;
+    };
+
     const userMessage: ChatMessage = { id: Date.now().toString(), sender: 'user', text: userInput };
     setMessages(prev => [...prev, userMessage]);
     setUserInput('');
@@ -54,6 +64,18 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
     try {
       if (chatRef.current) {
         const stream = await chatRef.current.sendMessageStream({ message: userInput });
+        const respondWithReset = () => {
+          if (onReset) {
+            onReset();
+          }
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === aiMessageId
+                ? { ...msg, text: 'Filters cleared—back to featured selections.' }
+                : msg,
+            ),
+          );
+        };
         let fullText = '';
         for await (const chunk of stream) {
           fullText += chunk.text;
@@ -66,6 +88,10 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
         try {
           const sanitizedText = fullText.trim().replace(/^```json\n?/, '').replace(/```$/, '');
           const obj = JSON.parse(sanitizedText);
+          if (shouldReset(obj)) {
+            respondWithReset();
+            return;
+          }
           if (obj?.name === 'searchProjects' && obj.arguments?.query !== undefined) {
             const q = obj.arguments.query as string;
             const opts = (obj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
@@ -104,6 +130,10 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
           }
         }
         if (parsedObj) {
+          if (shouldReset(parsedObj)) {
+            respondWithReset();
+            return;
+          }
           if (parsedObj?.name === 'searchProjects' && parsedObj.arguments?.query !== undefined) {
             const q = parsedObj.arguments.query as string;
             const opts = (parsedObj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
@@ -138,7 +168,7 @@ function ChatAssistant({ onSearch }: ChatAssistantProps): React.ReactNode {
     } finally {
       setIsLoading(false);
     }
-  }, [userInput, isLoading, onSearch]);
+  }, [userInput, isLoading, onSearch, onReset]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 

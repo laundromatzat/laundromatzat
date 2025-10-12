@@ -1,4 +1,4 @@
-url,description
-https://www.google.com,Google
-https://www.github.com,GitHub
-https://www.vercel.com,Vercel
+url,title,description,tags
+https://www.google.com,Google,Search anything in the world,"reference;tool"
+https://www.github.com,GitHub,Code hosting platform for developers,"code;community"
+https://www.vercel.com,Vercel,Deploy frontend projects instantly,"infrastructure;tool"

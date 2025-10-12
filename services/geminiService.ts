@@ -120,7 +120,7 @@ function projectHaystack(p: Project): string {
     p.description,
     p.date,
     p.location,
-    (p.tags || []).join(' ')
+    (p.tags ?? []).join(' ')
   ].join(' '));
 
   const aliases: string[] = [];
@@ -150,7 +150,7 @@ function projectYearMonth(p: Project): number | null {
 
 function tagsMatch(p: Project, includeTags?: string[], excludeTags?: string[]): boolean {
   const norm = (a: string[]) => a.map((t) => normalize(t));
-  const ptags = norm((p.tags || []) as string[]);
+  const ptags = norm(p.tags ?? []);
   if (includeTags && includeTags.length) {
     const inc = norm(includeTags);
     for (const t of inc) if (!ptags.includes(t)) return false;
