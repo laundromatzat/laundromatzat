@@ -6,14 +6,16 @@ export enum ProjectType {
 }
 
 export interface Project {
-  id: number;
+  id: string;
   type: ProjectType;
   title: string;
   description: string;
   imageUrl: string;
   projectUrl?: string;
-  tags: string[];
+  tags?: string[];
+  categories?: string[];
   date: string;
+  year: number;
   location?: string;
   gpsCoords?: string;
 }
@@ -26,5 +28,7 @@ export interface ChatMessage {
 
 export interface Link {
   url: string;
+  title: string;
   description: string;
+  tags: string[];
 }
