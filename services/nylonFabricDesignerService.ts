@@ -1,5 +1,67 @@
+import createDOMPurify, { type DOMPurifyI } from 'dompurify';
 import { z } from 'zod';
 import { generateContent } from './geminiService';
+
+type ContentFetcher = (prompt: string) => Promise<string>;
+
+type NylonFabricDesignerServiceOptions = {
+  contentFetcher?: ContentFetcher;
+};
+
+let domPurifyInstance: DOMPurifyI | null = null;
+
+function getDomPurify(): DOMPurifyI | null {
+  if (typeof window === 'undefined' || !window.document) {
+    return null;
+  }
+
+  if (!domPurifyInstance) {
+    domPurifyInstance = createDOMPurify(window);
+  }
+
+  return domPurifyInstance;
+}
+
+function stripExecutableContent(markup: string): string {
+  return markup
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+    .replace(/on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+}
+
+async function sanitizeGuideContent(html: string): Promise<string> {
+  if (!html) {
+    return '';
+  }
+
+  const domPurify = getDomPurify();
+  if (!domPurify) {
+    return stripExecutableContent(html);
+  }
+
+  return domPurify.sanitize(html, {
+    ALLOWED_TAGS: ['h3', 'h4', 'p', 'ul', 'ol', 'li', 'strong', 'em', 'div', 'span', 'br'],
+    ALLOWED_ATTR: ['class'],
+    FORBID_TAGS: ['script', 'style'],
+  });
+}
+
+async function sanitizeSvg(svgMarkup: string): Promise<string> {
+  if (!svgMarkup) {
+    return '';
+  }
+
+  const domPurify = getDomPurify();
+  if (!domPurify) {
+    return stripExecutableContent(svgMarkup);
+  }
+
+  return domPurify.sanitize(svgMarkup, {
+    FORBID_TAGS: ['script'],
+    FORBID_ATTR: ['onload', 'onerror', 'onclick', 'onmouseover', 'onfocus'],
+    USE_PROFILES: { svg: true, svgFilters: true },
+  });
+}
 
 const VisualRepresentationSchema = z.object({
   stage: z.string(),
@@ -8,7 +70,11 @@ const VisualRepresentationSchema = z.object({
 
 const VisualsResponseSchema = z.array(VisualRepresentationSchema);
 
-export async function generateSewingGuide(description: string): Promise<string> {
+export async function generateSewingGuide(
+  description: string,
+  _apiKey?: string,
+  options?: NylonFabricDesignerServiceOptions,
+): Promise<string> {
   const prompt = `You are an expert in hand-sewing nylon fabric and crafting. Analyze the following project description and create a comprehensive hand-sewing guide.
 
 CRITICAL REQUIREMENTS:
@@ -59,10 +125,16 @@ PROJECT DESCRIPTION:
 ${description}
 
 Generate the complete guide now:`;
-  return generateContent(prompt);
+  const fetchContent = options?.contentFetcher ?? generateContent;
+  const guide = await fetchContent(prompt);
+  return sanitizeGuideContent(guide);
 }
 
-export async function generateProjectImages(description: string) {
+export async function generateProjectImages(
+  description: string,
+  _apiKey?: string,
+  options?: NylonFabricDesignerServiceOptions,
+) {
   const prompt = `For this hand-sewn nylon fabric project: "${description}"
 
 Create 3 visual representations using SVG code. Generate complete, valid SVG markup for:
@@ -95,12 +167,19 @@ Make the SVGs detailed, technical, and professional looking with:
 - Arrows showing assembly direction
 - Realistic proportions`;
 
-  const responseText = await generateContent(prompt);
+  const fetchContent = options?.contentFetcher ?? generateContent;
+  const responseText = await fetchContent(prompt);
   const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
 
   try {
     const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
-    return visuals;
+    const sanitizedVisuals = await Promise.all(
+      visuals.map(async (visual) => ({
+        stage: visual.stage,
+        svg: await sanitizeSvg(visual.svg),
+      })),
+    );
+    return sanitizedVisuals;
   } catch (error) {
     console.error('Failed to parse project visuals response:', error, responseText);
     throw new Error('The fabric designer returned an invalid visualization response. Please try again.');

@@ -67,6 +67,16 @@ relevant type first to keep IntelliSense and editor hints accurate.
 | `npm run server`  | Boot the backend Express API (AI + mail) on http://localhost:3001. |
 | `npm run build`   | Create an optimized production build in `dist/`.                               |
 | `npm run preview` | Serve the production build locally for QA.                                     |
+| `npm test`        | Run the Nylon Fabric Designer sanitization integration test.                   |
+
+### Sanitizing AI generated markup
+
+`services/nylonFabricDesignerService.ts` sanitizes the Gemini responses before rendering them in the browser. We use
+DOMPurify with a tight HTML whitelist for the prose guide and an SVG profile for the blueprint output, stripping `<script>`
+tags and any event handler attributes. When the service runs outside the browser (e.g., in the integration test) a
+lightweight fallback removes scripts and inline handlers so that the same guarantees hold. If you expand the Gemini prompt to
+allow new markup, update the sanitizer configuration and the associated test so that legitimate elements stay intact while
+executable content remains blocked.
 
 ## Environment configuration
 
