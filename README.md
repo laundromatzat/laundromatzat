@@ -129,6 +129,30 @@ The `.github/workflows/ci.yml` file contains a basic workflow to ensure the appl
 └── public/            # Static assets and favicon
 ```
 
+### Links data schema
+
+The Links page sources its content from `public/data/links.json`. Each entry in the array must include the following fields:
+
+| Field         | Type           | Description                                                                 |
+| ------------- | -------------- | --------------------------------------------------------------------------- |
+| `url`         | `string`       | The absolute URL that the bookmark points to.                               |
+| `description` | `string`       | A human-friendly label rendered as the card title.                          |
+| `categories`  | `string[]`     | One or more topical tags shown as filterable pills (e.g., `"Design"`). |
+
+Example shape:
+
+```json
+[
+  {
+    "url": "https://www.vercel.com",
+    "description": "Vercel",
+    "categories": ["Hosting", "Deployment"]
+  }
+]
+```
+
+Add new categories freely—chips are generated dynamically and can be re-used across entries. Avoid leaving the array empty unless the resource truly cannot be categorized; the UI will display "Uncategorized" when no tags are provided.
+
 ## Maintenance checklist
 
 - [ ] Update `constants.ts` with fresh projects, tagging them by medium for smarter filtering.

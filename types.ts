@@ -27,4 +27,5 @@ export interface ChatMessage {
 export interface Link {
   url: string;
   description: string;
+  categories: string[];
 }

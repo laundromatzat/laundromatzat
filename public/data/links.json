@@ -1,0 +1,17 @@
+[
+  {
+    "url": "https://www.google.com",
+    "description": "Google",
+    "categories": ["Search", "Tools"]
+  },
+  {
+    "url": "https://www.github.com",
+    "description": "GitHub",
+    "categories": ["Development", "Collaboration"]
+  },
+  {
+    "url": "https://www.vercel.com",
+    "description": "Vercel",
+    "categories": ["Hosting", "Deployment"]
+  }
+]
