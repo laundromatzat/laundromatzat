@@ -237,6 +237,11 @@ export async function sendMessage(message: string): Promise<string> {
   }
 }
 
+export type ClientChatSession = {
+  sendMessage: (message: string) => Promise<string>;
+  sendMessageStream: (message: string) => AsyncIterable<{ text: string }>;
+};
+
 export async function generateContent(prompt: string): Promise<string> {
   try {
     const response = await fetch('/api/generate-content', {
@@ -255,6 +260,12 @@ export async function generateContent(prompt: string): Promise<string> {
   }
 }
 
-export function createChatSession() {
-  return null;
+export async function createChatSession(): Promise<ClientChatSession> {
+  return {
+    sendMessage: (message: string) => sendMessage(message),
+    async *sendMessageStream(message: string) {
+      const text = await sendMessage(message);
+      yield { text };
+    },
+  } satisfies ClientChatSession;
 }
