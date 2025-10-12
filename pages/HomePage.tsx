@@ -5,12 +5,13 @@ import ProjectGrid from '../components/ProjectGrid';
 import ChatAssistant from '../components/ChatAssistant';
 import MailingListSignup from '../components/MailingListSignup';
 import PageMetadata from '../components/PageMetadata';
+import { compareProjectsByDateDesc } from '../utils/projectDates';
 
 function HomePage(): React.ReactNode {
   const featuredProjects = useMemo(
     () =>
       PROJECTS.filter(project => project.title === 'Sea of Love' || project.title === 'Seasons of Love')
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+        .sort(compareProjectsByDateDesc),
     [],
   );
   const [displayedProjects, setDisplayedProjects] = useState<Project[]>(featuredProjects);

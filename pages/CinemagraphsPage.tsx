@@ -3,17 +3,12 @@ import { PROJECTS } from '../constants';
 import { ProjectType } from '../types';
 import ProjectGrid from '../components/ProjectGrid';
 import PageMetadata from '../components/PageMetadata';
+import { compareProjectsByDateDesc } from '../utils/projectDates';
 
 function CinemagraphsPage(): React.ReactNode {
   const cinemagraphProjects = useMemo(
     () =>
-      PROJECTS.filter(project => project.type === ProjectType.Cinemagraph).sort((a, b) => {
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        const [aMonth, aYear] = a.date.split('/');
-        const [bMonth, bYear] = b.date.split('/');
-        return new Date(`${bYear}-${bMonth}-01`).getTime() - new Date(`${aYear}-${aMonth}-01`).getTime();
-      }),
+      PROJECTS.filter(project => project.type === ProjectType.Cinemagraph).sort(compareProjectsByDateDesc),
     [],
   );
 
