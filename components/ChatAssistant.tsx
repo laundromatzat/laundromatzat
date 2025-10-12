@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ChatSession } from '@google/generative-ai';
 import { ChatMessage, Project } from '../types';
-import { createChatSession, searchProjects } from '../services/geminiService'; // Import the function and searchProjects
+import { ClientChatSession, createChatSession, searchProjects } from '../services/geminiService'; // Import the function and searchProjects
 import { ChatIcon } from './icons/ChatIcon';
 import { CloseIcon } from './icons/CloseIcon';
 import { SendIcon } from './icons/SendIcon';
@@ -18,23 +17,31 @@ function ChatAssistant({ onSearch, onReset }: ChatAssistantProps): React.ReactNo
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatRef = useRef<ChatSession | null>(null); // Initialize chatRef to null
+  const chatRef = useRef<ClientChatSession | null>(null); // Initialize chatRef to null
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      const chatSession = createChatSession();
-      chatRef.current = chatSession; // Assign the result of createChatSession
-      if (chatSession) { // Check if the session was created successfully
+    if (!isOpen) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const chatSession = await createChatSession();
+        if (cancelled) return;
+        chatRef.current = chatSession; // Assign the result of createChatSession
         setMessages([
           { id: 'initial', sender: 'ai', text: 'Hello! How can I help you explore this creative portfolio?' }
         ]);
-      } else {
-        //Handle the case where the chat session failed to initialize
-        setMessages([{id: 'error', sender: 'ai', text: 'Sorry, I am unable to connect right now.'}])
-        console.warn("Chat session could not be initialized.  Check your API key.");
+      } catch (error) {
+        if (cancelled) return;
+        setMessages([{ id: 'error', sender: 'ai', text: 'Sorry, I am unable to connect right now.' }]);
+        console.warn('Chat session could not be initialized.  Check your API key.', error);
       }
-    }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -63,7 +70,7 @@ function ChatAssistant({ onSearch, onReset }: ChatAssistantProps): React.ReactNo
 
     try {
       if (chatRef.current) {
-        const stream = await chatRef.current.sendMessageStream({ message: userInput });
+        const stream = chatRef.current.sendMessageStream(userInput);
         const respondWithReset = () => {
           if (onReset) {
             onReset();
