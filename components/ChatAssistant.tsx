@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChatMessage, Project } from '../types';
-import { ChatSessionLike, createChatSession, searchProjects } from '../services/geminiService'; // Import the function and searchProjects
+import { ChatSessionLike, createChatSession } from '../services/geminiClient';
+import { searchProjects } from '../utils/projectSearch';
+import type { SearchOptions } from '../utils/projectSearch';
 import { ChatIcon } from './icons/ChatIcon';
 import { CloseIcon } from './icons/CloseIcon';
 import { SendIcon } from './icons/SendIcon';
@@ -101,7 +103,7 @@ function ChatAssistant({ onSearch, onReset }: ChatAssistantProps): React.ReactNo
           }
           if (obj?.name === 'searchProjects' && obj.arguments?.query !== undefined) {
             const q = obj.arguments.query as string;
-            const opts = (obj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
+            const opts = (obj.arguments.opts ?? {}) as SearchOptions;
             const results = searchProjects(q, opts);
             onSearch(results);
             setMessages(prev => prev.map(msg =>
@@ -143,7 +145,7 @@ function ChatAssistant({ onSearch, onReset }: ChatAssistantProps): React.ReactNo
           }
           if (parsedObj?.name === 'searchProjects' && parsedObj.arguments?.query !== undefined) {
             const q = parsedObj.arguments.query as string;
-            const opts = (parsedObj.arguments.opts ?? {}) as import('../services/geminiService').SearchOptions;
+            const opts = (parsedObj.arguments.opts ?? {}) as SearchOptions;
             const results = searchProjects(q, opts);
             onSearch(results);
             setMessages(prev => prev.map(msg =>

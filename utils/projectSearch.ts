@@ -1,9 +1,12 @@
-import { Project, ProjectType } from '../types';
 import { PROJECTS } from '../constants';
-import { parseYearMonth } from '../utils/projectDates';
+import { Project, ProjectType } from '../types';
+import { parseYearMonth } from './projectDates';
 
-// --- Search helpers: normalization, synonyms, and geo aliasing ---
-function normalize(text: string): string {
+/**
+ * Normalise free-form text to make comparisons more reliable.
+ * Lowercases, strips diacritics, removes punctuation and collapses whitespace.
+ */
+export function normalize(text: string): string {
   return (text || '')
     .toLowerCase()
     .normalize('NFD')
@@ -14,7 +17,7 @@ function normalize(text: string): string {
 }
 
 // If the user types any of the keys, expand the query with these terms
-const QUERY_SYNONYMS: Record<string, string[]> = {
+const QUERY_GEO_SYNONYMS: Record<string, string[]> = {
   'hawaii': ['hi', 'maui', 'big island', 'hawaii island', 'hawaiʻi', 'kona', 'hilo'],
   'alaska': ['ak', 'denali', 'seward', 'glacier bay'],
   'california': ['ca', 'san francisco', 'sf', 'bernal', 'pacifica', 'sea ranch', 'bear valley', 'channel islands'],
@@ -31,7 +34,7 @@ const QUERY_SYNONYMS: Record<string, string[]> = {
   'iceland': ['reykjavik']
 };
 
-// Non‑geographic synonyms (content types, modalities, common phrasing)
+// Non-geographic synonyms (content types, modalities, common phrasing)
 const QUERY_NONGEO_SYNONYMS: Record<string, string[]> = {
   // Content types
   'video': ['videos', 'clip', 'film', 'movie'],
@@ -48,11 +51,11 @@ const QUERY_NONGEO_SYNONYMS: Record<string, string[]> = {
   'vanlife': ['van life', 'campervan'],
 };
 
-const STOPWORDS = new Set(['any','from','in','of','the','a','an','to','show','me','please']);
+const STOPWORDS = new Set(['any', 'from', 'in', 'of', 'the', 'a', 'an', 'to', 'show', 'me', 'please']);
 
 const GEO_VOCAB: Set<string> = (() => {
   const s = new Set<string>();
-  for (const [k, v] of Object.entries(QUERY_SYNONYMS)) {
+  for (const [k, v] of Object.entries(QUERY_GEO_SYNONYMS)) {
     s.add(normalize(k));
     v.forEach(t => s.add(normalize(t)));
   }
@@ -60,18 +63,18 @@ const GEO_VOCAB: Set<string> = (() => {
 })();
 
 const TYPE_VOCAB = new Set([
-  'video','videos','clip','clips','film','films','movie','movies',
-  'photo','photos','image','images','picture','pictures','pic','pics','still','stills',
-  'cinemagraph','cinemagraphs','gif','gifs','loop','loops','motion photo','live photo','living photo'
+  'video', 'videos', 'clip', 'clips', 'film', 'films', 'movie', 'movies',
+  'photo', 'photos', 'image', 'images', 'picture', 'pictures', 'pic', 'pics', 'still', 'stills',
+  'cinemagraph', 'cinemagraphs', 'gif', 'gifs', 'loop', 'loops', 'motion photo', 'live photo', 'living photo'
 ].map(normalize));
 
-function addSynonyms(terms: Set<string>, base: string, dict: Record<string,string[]>) {
+function addSynonyms(terms: Set<string>, base: string, dict: Record<string, string[]>) {
   for (const [key, extras] of Object.entries(dict)) {
     if (base.includes(key)) extras.forEach((t) => terms.add(normalize(t)));
   }
 }
 
-// Per‑project augmentations: if a project mentions any of these needles,
+// Per-project augmentations: if a project mentions any of these needles,
 // we also add their mapped aliases to the project index to make matching broader.
 const PROJECT_GEO_ALIASES: Array<{ needles: RegExp; aliases: string[] }> = [
   { needles: /\b(maui|big island|hawaii island|hawai\u02bbi)\b/i, aliases: ['hawaii', 'hi'] },
@@ -90,22 +93,22 @@ const PROJECT_GEO_ALIASES: Array<{ needles: RegExp; aliases: string[] }> = [
   { needles: /\b(iceland|reykjavik)\b/i, aliases: ['iceland'] }
 ];
 
-function expandQuery(query: string): string[] {
+export function expandQuery(query: string): string[] {
   const nq = normalize(query);
   const terms = new Set<string>([nq]);
-  for (const [key, extras] of Object.entries(QUERY_SYNONYMS)) {
+  for (const [key, extras] of Object.entries(QUERY_GEO_SYNONYMS)) {
     if (nq.includes(key)) {
       extras.forEach((t) => terms.add(normalize(t)));
     }
   }
-  // NEW: also expand non‑geo synonyms
+  // Also expand non-geo synonyms
   addSynonyms(terms, nq, QUERY_NONGEO_SYNONYMS);
 
   nq.split(' ').forEach((t) => t && terms.add(t));
   return Array.from(terms);
 }
 
-function projectTypeLabel(p: Project): 'Video'|'Photo'|'Cinemagraph'|null {
+function projectTypeLabel(p: Project): 'Video' | 'Photo' | 'Cinemagraph' | null {
   switch (p.type) {
     case ProjectType.Video: return 'Video';
     case ProjectType.Photo: return 'Photo';
@@ -132,8 +135,6 @@ function projectHaystack(p: Project): string {
   return `${base} ${normalize(aliases.join(' '))}`.trim();
 }
 
-// --- Structured search: helpers and types ---
-
 export type SearchOptions = {
   type?: 'Video' | 'Photo' | 'Cinemagraph';
   dateFrom?: string; // accepts YYYY, MM/YYYY, YYYY-MM, or YYYY-MM-DD
@@ -144,8 +145,7 @@ export type SearchOptions = {
 
 function projectYearMonth(p: Project): number | null {
   // Project dates are mostly MM/YYYY
-  const n = parseYearMonth(p.date);
-  return n;
+  return parseYearMonth(p.date);
 }
 
 function tagsMatch(p: Project, includeTags?: string[], excludeTags?: string[]): boolean {
@@ -201,73 +201,4 @@ export function searchProjects(query: string, opts: SearchOptions = {}): Project
   });
 }
 
-async function handleResponse(response: Response): Promise<string> {
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({})) as { error?: string };
-    throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
-  }
-
-  const data = await response.json() as { message?: string; content?: string };
-  if ('message' in data && typeof data.message === 'string') {
-    return data.message;
-  }
-
-  if ('content' in data && typeof data.content === 'string') {
-    return data.content;
-  }
-
-  throw new Error('Unexpected response shape from Gemini service.');
-}
-
-export async function sendMessage(message: string): Promise<string> {
-  try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    });
-
-    return await handleResponse(response);
-
-  } catch (error) {
-    console.error("Failed to send message:", error);
-    throw error instanceof Error ? error : new Error("Could not connect to the assistant. Please try again later.");
-  }
-}
-
-export interface ChatSessionLike {
-  sendMessage(message: string): Promise<string>;
-  sendMessageStream(message: string): AsyncIterable<{ text: string }>;
-}
-
-export type ClientChatSession = ChatSessionLike;
-
-export async function generateContent(prompt: string): Promise<string> {
-  try {
-    const response = await fetch('/api/generate-content', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prompt }),
-    });
-
-    return await handleResponse(response);
-
-  } catch (error) {
-    console.error('Failed to generate content:', error);
-    throw error instanceof Error ? error : new Error('Could not reach the content generation service. Please try again later.');
-  }
-}
-
-export async function createChatSession(): Promise<ChatSessionLike> {
-  return {
-    sendMessage: (message: string) => sendMessage(message),
-    async *sendMessageStream(message: string) {
-      const text = await sendMessage(message);
-      yield { text };
-    },
-  } satisfies ChatSessionLike;
-}
+export type { Project } from '../types';
