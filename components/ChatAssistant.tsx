@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChatMessage, Project } from '../types';
-import { ClientChatSession, createChatSession, searchProjects } from '../services/geminiService'; // Import the function and searchProjects
+import { ChatSessionLike, createChatSession, searchProjects } from '../services/geminiService'; // Import the function and searchProjects
 import { ChatIcon } from './icons/ChatIcon';
 import { CloseIcon } from './icons/CloseIcon';
 import { SendIcon } from './icons/SendIcon';
@@ -17,7 +17,7 @@ function ChatAssistant({ onSearch, onReset }: ChatAssistantProps): React.ReactNo
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const chatRef = useRef<ClientChatSession | null>(null); // Initialize chatRef to null
+  const chatRef = useRef<ChatSessionLike | null>(null); // Initialize chatRef to null
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

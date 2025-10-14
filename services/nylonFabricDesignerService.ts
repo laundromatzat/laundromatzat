@@ -1,4 +1,4 @@
-import createDOMPurify, { type DOMPurifyI } from 'dompurify';
+import createDOMPurify from 'dompurify';
 import { z } from 'zod';
 import { generateContent } from './geminiService';
 
@@ -8,9 +8,11 @@ type NylonFabricDesignerServiceOptions = {
   contentFetcher?: ContentFetcher;
 };
 
-let domPurifyInstance: DOMPurifyI | null = null;
+type DOMPurifyInstance = ReturnType<typeof createDOMPurify>;
 
-function getDomPurify(): DOMPurifyI | null {
+let domPurifyInstance: DOMPurifyInstance | null = null;
+
+function getDomPurify(): DOMPurifyInstance | null {
   if (typeof window === 'undefined' || !window.document) {
     return null;
   }

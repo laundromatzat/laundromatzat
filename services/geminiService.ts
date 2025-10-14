@@ -237,10 +237,12 @@ export async function sendMessage(message: string): Promise<string> {
   }
 }
 
-export type ClientChatSession = {
-  sendMessage: (message: string) => Promise<string>;
-  sendMessageStream: (message: string) => AsyncIterable<{ text: string }>;
-};
+export interface ChatSessionLike {
+  sendMessage(message: string): Promise<string>;
+  sendMessageStream(message: string): AsyncIterable<{ text: string }>;
+}
+
+export type ClientChatSession = ChatSessionLike;
 
 export async function generateContent(prompt: string): Promise<string> {
   try {
@@ -260,12 +262,12 @@ export async function generateContent(prompt: string): Promise<string> {
   }
 }
 
-export async function createChatSession(): Promise<ClientChatSession> {
+export async function createChatSession(): Promise<ChatSessionLike> {
   return {
     sendMessage: (message: string) => sendMessage(message),
     async *sendMessageStream(message: string) {
       const text = await sendMessage(message);
       yield { text };
     },
-  } satisfies ClientChatSession;
+  } satisfies ChatSessionLike;
 }
