@@ -128,7 +128,7 @@ function projectHaystack(p: Project): string {
 
   const aliases: string[] = [];
   for (const rule of PROJECT_GEO_ALIASES) {
-    if (rule.needles.test(p.location) || rule.needles.test(base)) {
+    if ((p.location && rule.needles.test(p.location)) || rule.needles.test(base)) {
       aliases.push(...rule.aliases);
     }
   }

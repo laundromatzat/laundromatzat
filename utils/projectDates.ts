@@ -1,6 +1,6 @@
 const DATE_STOPWORDS = /\b(about|around|since|after|before)\b/g;
 
-const NON_DATE_CHARACTERS = /[^0-9\/-]/g;
+const NON_DATE_CHARACTERS = /[^0-9/-]/g;
 
 function normalizeDateInput(input: string): string {
   return input
@@ -11,7 +11,7 @@ function normalizeDateInput(input: string): string {
     .replace(NON_DATE_CHARACTERS, '')
     .replace(/--+/g, '-')
     .replace(/\/+/g, '/')
-    .replace(/^[-\/]+|[-\/]+$/g, '')
+    .replace(/^[-/]+|[-/]+$/g, '')
     .trim();
 }
 
@@ -21,7 +21,7 @@ export function parseYearMonth(value?: string | null): number | null {
   const normalized = normalizeDateInput(value);
   if (!normalized) return null;
 
-  let match = normalized.match(/^(\d{4})[-\/]?(\d{2})?$/);
+  let match = normalized.match(/^(\d{4})[-/]?(\d{2})?$/);
   if (match) {
     const year = Number(match[1]);
     const month = match[2] ? Number(match[2]) : 1;
@@ -31,7 +31,7 @@ export function parseYearMonth(value?: string | null): number | null {
     return null;
   }
 
-  match = normalized.match(/^(\d{2})[-\/]?(\d{4})$/);
+  match = normalized.match(/^(\d{2})[-/]?(\d{4})$/);
   if (match) {
     const month = Number(match[1]);
     const year = Number(match[2]);

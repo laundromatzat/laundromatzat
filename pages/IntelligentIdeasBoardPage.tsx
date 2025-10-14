@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { organizeData, reorganizeWithInstruction, OrganizedData } from '../services/intelligentIdeasService';
+import { organizeData, reorganizeWithInstruction, type Item, type OrganizedData } from '../services/intelligentIdeasService';
 import { LightbulbIcon } from '../components/icons/LightbulbIcon';
 import { ListTodoIcon } from '../components/icons/ListTodoIcon';
 import { BookmarkCheckIcon } from '../components/icons/BookmarkCheckIcon';
@@ -168,8 +168,8 @@ const IntelligentIdeasBoardPage = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const getActiveItems = (items: any[]) => items.filter(item => !item.completed);
-  const getCompletedItems = (items: any[]) => items.filter(item => item.completed);
+  const getActiveItems = (items: Item[]) => items.filter(item => !item.completed);
+  const getCompletedItems = (items: Item[]) => items.filter(item => item.completed);
 
   return (
     <div style={{ 
@@ -194,8 +194,8 @@ const IntelligentIdeasBoardPage = () => {
             </h1>
           </div>
           <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.9)', margin: '0', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
-            Drop your thoughts here—stream of consciousness, random ideas, tasks, anything. 
-            I'll organize it all intelligently.
+            Drop your thoughts here—stream of consciousness, random ideas, tasks, anything.
+            I’ll organize it all intelligently.
           </p>
         </header>
 
@@ -253,8 +253,8 @@ const IntelligentIdeasBoardPage = () => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={inputMode === 'content' 
-              ? "Just start typing... anything that's on your mind. Ideas, tasks, things to remember. I'll figure out how it all fits together."
+            placeholder={inputMode === 'content'
+              ? "Just start typing... anything that's on your mind. Ideas, tasks, things to remember. I’ll figure out how it all fits together."
               : "Give an instruction on how to reorganize your data. Examples: 'Split work items into separate categories by project', 'Group all urgent tasks together', 'Organize ideas by theme'"
             }
             style={{
@@ -654,7 +654,7 @@ const IntelligentIdeasBoardPage = () => {
               Your organized board will appear here
             </h3>
             <p style={{ fontSize: '16px', color: '#6b7280', maxWidth: '500px', margin: '0 auto' }}>
-              Start by typing any thought, idea, or task above. I'll automatically organize everything into categories, extract to-dos, and keep track of what's important.
+              Start by typing any thought, idea, or task above. I’ll automatically organize everything into categories, extract to-dos, and keep track of what’s important.
             </p>
           </div>
         )}

@@ -49,11 +49,12 @@ app.use('/api/subscribe', subscribeLimiter);
 app.use('/api', createMailingListRouter(mailingListService));
 app.use('/api', createGeminiRouter(geminiService));
 
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
 app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  void _next;
   // eslint-disable-next-line no-console
   console.error(error);
   res.status(500).json({ error: 'Internal server error' });

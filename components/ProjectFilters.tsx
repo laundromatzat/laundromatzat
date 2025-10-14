@@ -40,8 +40,6 @@ function getLabel(value: string): string {
   return TYPE_LABELS[value] ?? value.replace(/\b\w/g, letter => letter.toUpperCase());
 }
 
-const isDefined = (value: number | null | undefined): value is number => typeof value === 'number' && Number.isFinite(value);
-
 function ProjectFilters({ value, onChange, available, onReset }: ProjectFiltersProps): React.ReactNode {
   const initialValueRef = useRef<Filters>(normalizeFilters(value));
   const [localFilters, setLocalFilters] = useState<Filters>(normalizeFilters(value));
@@ -52,7 +50,7 @@ function ProjectFilters({ value, onChange, available, onReset }: ProjectFiltersP
     initialValueRef.current = normalized;
     skipNextOnChange.current = true;
     setLocalFilters(normalized);
-  }, [value.type, value.yearRange?.[0], value.yearRange?.[1], value.tags]);
+  }, [value]);
 
   useEffect(() => {
     if (skipNextOnChange.current) {

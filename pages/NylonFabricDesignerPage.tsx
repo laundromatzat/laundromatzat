@@ -80,7 +80,7 @@ const NylonFabricDesignerPage: React.FC = () => {
             <h2 className="text-2xl font-semibold text-brand-text mb-4">Describe Your Project</h2>
             <p className="text-brand-text-secondary mb-6">
               Tell us what you want to make with nylon fabric. Be as detailed as possible about the item, its purpose,
-              size, and any specific features you'd like.
+              size, and any specific features you’d like.
             </p>
             <textarea
               id="projectDescription"
