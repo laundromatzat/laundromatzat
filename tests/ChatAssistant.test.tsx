@@ -6,8 +6,11 @@ import { Project, ProjectType } from '../types';
 
 const createChatSessionMock = vi.hoisted(() => vi.fn());
 
-vi.mock('../services/geminiService', () => ({
+vi.mock('../services/geminiClient', () => ({
   createChatSession: createChatSessionMock,
+}));
+
+vi.mock('../utils/projectSearch', () => ({
   searchProjects: vi.fn(),
 }));
 

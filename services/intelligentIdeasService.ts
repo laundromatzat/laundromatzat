@@ -1,4 +1,4 @@
-import { generateContent } from './geminiService';
+import { generateContent } from './geminiClient';
 
 export interface OrganizedData {
   categories: Category[];

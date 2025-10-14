@@ -1,6 +1,6 @@
 import createDOMPurify from 'dompurify';
 import { z } from 'zod';
-import { generateContent } from './geminiService';
+import { generateContent } from './geminiClient';
 
 type ContentFetcher = (prompt: string) => Promise<string>;
 

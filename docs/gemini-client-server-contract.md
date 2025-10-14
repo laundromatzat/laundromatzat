@@ -22,7 +22,7 @@ UI.
 
 ## Client Abstraction
 
-`services/geminiService.ts` exports `createChatSession`, which returns a
+`services/geminiClient.ts` exports `createChatSession`, which returns a
 `ClientChatSession` object:
 
 ```ts
