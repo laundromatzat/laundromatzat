@@ -18,10 +18,6 @@ type JsonProject = {
 };
 
 const PROJECT_TYPE_MAP: Record<string, ProjectType> = {
-  [ProjectType.Video]: ProjectType.Video,
-  [ProjectType.Photo]: ProjectType.Photo,
-  [ProjectType.Cinemagraph]: ProjectType.Cinemagraph,
-  [ProjectType.Tool]: ProjectType.Tool,
   video: ProjectType.Video,
   videos: ProjectType.Video,
   photo: ProjectType.Photo,

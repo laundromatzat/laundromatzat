@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, ChatSession } from '@google/genai';
+import { GoogleGenAI, type Chat } from '@google/genai';
 import { config } from '../utils/config';
 import { AI_SYSTEM_PROMPT } from '../../constants';
 import { PROJECTS } from '../../constants';
@@ -29,23 +29,28 @@ Do not add any other keys, prose, or code‑fences.`;
 
 export class GeminiService {
   private readonly ai: GoogleGenAI;
-  private chatSession: ChatSession | null = null;
+  private chatSession: Chat | null = null;
 
   constructor(apiKey: string) {
     if (!apiKey) {
       throw new Error('Gemini API key is not configured.');
     }
-    this.ai = new GoogleGenAI(apiKey);
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
-  private getChatSession(): ChatSession {
+  private getChatSession(): Chat {
     if (this.chatSession) {
       return this.chatSession;
     }
 
-    this.chatSession = this.ai.startChat({
+    this.chatSession = this.ai.chats.create({
       model: 'gemini-1.5-pro-latest',
-      systemInstruction: `${AI_SYSTEM_PROMPT}\n${FUNCTION_INSTRUCTIONS}`,
+      config: {
+        systemInstruction: {
+          role: 'system',
+          parts: [{ text: `${AI_SYSTEM_PROMPT}\n${FUNCTION_INSTRUCTIONS}` }],
+        },
+      },
     });
 
     return this.chatSession;
@@ -53,10 +58,17 @@ export class GeminiService {
 
   async generateContent(prompt: string): Promise<string> {
     try {
-      const model = this.ai.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-1.5-pro-latest',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          systemInstruction: {
+            role: 'system',
+            parts: [{ text: AI_SYSTEM_PROMPT }],
+          },
+        },
+      });
+      return response.text ?? '';
     } catch (error) {
       console.error('Gemini generateContent failure:', error);
       throw error instanceof Error ? error : new Error('Failed to generate content with Gemini.');
@@ -66,9 +78,8 @@ export class GeminiService {
   async sendMessage(message: string): Promise<string> {
     try {
       const chat = this.getChatSession();
-      const result = await chat.sendMessage(message);
-      const response = await result.response;
-      return response.text();
+      const response = await chat.sendMessage({ message });
+      return response.text ?? '';
     } catch (error) {
       console.error('Gemini chat failure:', error);
       throw error instanceof Error ? error : new Error('Failed to send chat message to Gemini.');
