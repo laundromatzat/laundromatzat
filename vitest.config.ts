@@ -7,5 +7,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: [],
     exclude: [...configDefaults.exclude, 'tests/nylonFabricDesignerService.test.ts'],
+    environmentMatchGlobs: [
+      ['tests/server/**/*.test.ts', 'node'],
+    ],
   },
 });

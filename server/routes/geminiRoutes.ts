@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { GeminiService } from '../services/geminiService';
+import { GeminiService, MissingGeminiApiKeyError } from '../services/geminiService';
 
 export function createGeminiRouter(service: GeminiService): Router {
   const router = Router();
@@ -17,6 +17,9 @@ export function createGeminiRouter(service: GeminiService): Router {
 
     } catch (error) {
       console.error('Gemini chat error:', error);
+      if (error instanceof MissingGeminiApiKeyError) {
+        return res.status(503).json({ error: error.message });
+      }
       res.status(500).json({
         error: error instanceof Error ? error.message : 'An unexpected error occurred.',
       });
@@ -35,6 +38,9 @@ export function createGeminiRouter(service: GeminiService): Router {
 
     } catch (error) {
       console.error('Gemini generateContent error:', error);
+      if (error instanceof MissingGeminiApiKeyError) {
+        return res.status(503).json({ error: error.message });
+      }
       res.status(500).json({
         error: error instanceof Error ? error.message : 'An unexpected error occurred.',
       });
