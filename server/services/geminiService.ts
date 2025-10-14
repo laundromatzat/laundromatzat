@@ -27,15 +27,30 @@ Examples:
 
 Do not add any other keys, prose, or code‑fences.`;
 
+export class MissingGeminiApiKeyError extends Error {
+  constructor() {
+    super('Gemini API key is not configured. Please add GEMINI_API_KEY to your environment and restart the server.');
+    this.name = 'MissingGeminiApiKeyError';
+  }
+}
+
 export class GeminiService {
-  private readonly ai: GoogleGenAI;
+  private ai: GoogleGenAI | null = null;
   private chatSession: Chat | null = null;
 
-  constructor(apiKey: string) {
-    if (!apiKey) {
-      throw new Error('Gemini API key is not configured.');
+  constructor(private readonly apiKey: string | undefined) {}
+
+  private getClient(): GoogleGenAI {
+    if (this.ai) {
+      return this.ai;
     }
-    this.ai = new GoogleGenAI({ apiKey });
+
+    if (!this.apiKey) {
+      throw new MissingGeminiApiKeyError();
+    }
+
+    this.ai = new GoogleGenAI({ apiKey: this.apiKey });
+    return this.ai;
   }
 
   private getChatSession(): Chat {
@@ -43,7 +58,9 @@ export class GeminiService {
       return this.chatSession;
     }
 
-    this.chatSession = this.ai.chats.create({
+    const client = this.getClient();
+
+    this.chatSession = client.chats.create({
       model: 'gemini-1.5-pro-latest',
       config: {
         systemInstruction: {
@@ -58,7 +75,8 @@ export class GeminiService {
 
   async generateContent(prompt: string): Promise<string> {
     try {
-      const response = await this.ai.models.generateContent({
+      const client = this.getClient();
+      const response = await client.models.generateContent({
         model: 'gemini-1.5-pro-latest',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
