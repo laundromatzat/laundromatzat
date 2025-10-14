@@ -7,7 +7,7 @@ import MailingListSignup from '../components/MailingListSignup';
 import PageMetadata from '../components/PageMetadata';
 import ProjectFilters, { Filters } from '../components/ProjectFilters';
 import { compareProjectsByDateDesc } from '../utils/projectDates';
-import { analytics } from '../lib/analytics';
+import { trackFilterApplied, trackReset, trackChatQuery } from '../lib/analytics';
 
 const FEATURED_TITLES = new Set(['Sea of Love', 'Seasons of Love']);
 
@@ -100,7 +100,7 @@ function HomePage(): React.ReactNode {
     setFilters(defaults);
     setDisplayedProjects(featuredProjects);
     setViewState('featured');
-    analytics.track('onReset', { source });
+    trackReset(source);
   }, [featuredProjects]);
 
   const handleFilterChange = useCallback((next: Filters) => {
@@ -109,7 +109,7 @@ function HomePage(): React.ReactNode {
       const results = applyFilters(sortedProjects, next);
       setDisplayedProjects(results);
       setViewState('filters');
-      analytics.track('onFilterApplied', { filters: next, resultCount: results.length });
+      trackFilterApplied(next, results.length);
       return;
     }
 
@@ -132,7 +132,7 @@ function HomePage(): React.ReactNode {
       setViewState('assistant');
     }
 
-    analytics.track('onChatQuery', { resultCount: projects.length });
+    trackChatQuery(projects.length);
   }, [featuredProjects]);
 
   const isShowingFeatured = viewState === 'featured';
