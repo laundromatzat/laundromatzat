@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import type { ChatMessage, Project } from '../../types';
 import type { SearchOptions } from '../../utils/projectSearch';
 import { searchProjects } from '../../utils/projectSearch';
@@ -16,7 +16,7 @@ export interface UseChatAssistantResult {
   messages: ChatMessage[];
   userInput: string;
   isLoading: boolean;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
+  messagesEndRef: RefObject<HTMLDivElement | null>;
   toggleChat: () => void;
   handleInputChange: (value: string) => void;
   handleSendMessage: () => Promise<void>;
@@ -84,7 +84,7 @@ export function useChatAssistant({ onSearch, onReset }: UseChatAssistantParams):
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const chatRef = useRef<ChatSessionLike | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

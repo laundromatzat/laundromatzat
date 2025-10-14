@@ -29,16 +29,24 @@ function Header(): React.ReactNode {
     }
   }, [isMenuOpen]);
 
-  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = event => {
-    if (event.key === 'Escape') {
-      event.stopPropagation();
-      setIsMenuOpen(false);
-    }
-  };
-
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return undefined;
+    }
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isMenuOpen]);
 
   return (
     <header className="sticky top-0 z-nav border-b border-brand-surface-highlight/60 bg-brand-primary/90 backdrop-blur-md">
@@ -58,7 +66,7 @@ function Header(): React.ReactNode {
             laundromatzat
           </NavLink>
 
-          <ul className="hidden items-center gap-2 md:flex" role="list">
+          <ul className="hidden items-center gap-2 md:flex">
             {NAV_ITEMS.map(item => (
               <li key={item.to}>
                 <NavLink
@@ -104,7 +112,13 @@ function Header(): React.ReactNode {
           }}
         >
           <div className="md:hidden" role="presentation">
-            <div className="fixed inset-0 z-nav bg-black/60" aria-hidden="true" onClick={() => setIsMenuOpen(false)} />
+            <button
+              type="button"
+              className="fixed inset-0 z-nav bg-black/60"
+              tabIndex={-1}
+              aria-label="Dismiss menu overlay"
+              onClick={() => setIsMenuOpen(false)}
+            />
             <div
               role="dialog"
               aria-modal="true"
@@ -112,7 +126,6 @@ function Header(): React.ReactNode {
               className="fixed inset-y-0 right-0 z-modal flex w-full max-w-xs flex-col overflow-y-auto border-l border-brand-surface-highlight/60 bg-brand-secondary px-4 py-6 shadow-layer-1"
               id="mobile-navigation"
               tabIndex={-1}
-              onKeyDown={handleKeyDown}
             >
               <div className="mb-6 flex items-center justify-between">
                 <h2 id="mobile-navigation-title" className="text-lg font-semibold text-brand-text">
@@ -127,7 +140,7 @@ function Header(): React.ReactNode {
                   <CloseIcon className="h-5 w-5" />
                 </button>
               </div>
-              <ul className="space-y-2" role="list">
+              <ul className="space-y-2">
                 {NAV_ITEMS.map(item => (
                   <li key={item.to}>
                     <NavLink

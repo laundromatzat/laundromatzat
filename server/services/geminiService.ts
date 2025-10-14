@@ -2,7 +2,6 @@
 import { GoogleGenAI, type Chat } from '@google/genai';
 import { config } from '../utils/config';
 import { AI_SYSTEM_PROMPT } from '../../constants';
-import { PROJECTS } from '../../constants';
 
 const FUNCTION_INSTRUCTIONS = `
 Available function:

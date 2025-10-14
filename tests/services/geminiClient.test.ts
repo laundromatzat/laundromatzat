@@ -1,19 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import * as geminiClient from '../../services/geminiClient';
-
-declare global {
-  // eslint-disable-next-line no-var
-  var fetch: typeof fetch | undefined;
-}
 
 describe('geminiClient', () => {
   const originalFetch = global.fetch;
-  let fetchMock: vi.Mock;
+  let fetchMock: Mock;
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     fetchMock = vi.fn();
-    global.fetch = fetchMock as unknown as typeof fetch;
+    global.fetch = fetchMock as typeof global.fetch;
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
