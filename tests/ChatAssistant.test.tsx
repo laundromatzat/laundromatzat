@@ -5,13 +5,35 @@ import ChatAssistant from '../components/ChatAssistant';
 import { Project, ProjectType } from '../types';
 
 const createChatSessionMock = vi.hoisted(() => vi.fn());
+const analyticsMocks = vi.hoisted(() => ({
+  trackChatOpen: vi.fn(),
+  trackChatClose: vi.fn(),
+  trackChatReset: vi.fn(),
+  trackChatError: vi.fn(),
+  trackFilterApplied: vi.fn(),
+  trackReset: vi.fn(),
+  trackChatQuery: vi.fn(),
+}));
+
+const searchProjectsMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../services/geminiClient', () => ({
   createChatSession: createChatSessionMock,
 }));
 
 vi.mock('../utils/projectSearch', () => ({
-  searchProjects: vi.fn(),
+  searchProjects: searchProjectsMock,
+}));
+
+vi.mock('../lib/analytics', () => ({
+  analytics: { track: vi.fn() },
+  trackChatOpen: analyticsMocks.trackChatOpen,
+  trackChatClose: analyticsMocks.trackChatClose,
+  trackChatReset: analyticsMocks.trackChatReset,
+  trackChatError: analyticsMocks.trackChatError,
+  trackFilterApplied: analyticsMocks.trackFilterApplied,
+  trackReset: analyticsMocks.trackReset,
+  trackChatQuery: analyticsMocks.trackChatQuery,
 }));
 
 const mockProjects: Project[] = [
@@ -37,6 +59,8 @@ describe('ChatAssistant', () => {
 
   beforeEach(() => {
     createChatSessionMock.mockReset();
+    searchProjectsMock.mockReset();
+    Object.values(analyticsMocks).forEach(mock => mock.mockReset());
   });
 
   afterEach(() => {
