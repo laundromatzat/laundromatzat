@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PROJECTS } from '../constants';
 import { Project } from '../types';
 import ProjectGrid from '../components/ProjectGrid';
@@ -8,10 +8,111 @@ import PageMetadata from '../components/PageMetadata';
 import ProjectFilters, { Filters } from '../components/ProjectFilters';
 import { compareProjectsByDateDesc } from '../utils/projectDates';
 import { trackFilterApplied, trackReset, trackChatQuery } from '../lib/analytics';
+import { useSearchParams } from 'react-router-dom';
 
 const FEATURED_TITLES = new Set(['Sea of Love', 'Seasons of Love']);
 
 const createDefaultFilters = (): Filters => ({ type: [], yearRange: null, tags: [] });
+
+const sortUnique = (values: string[]): string[] => {
+  return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
+};
+
+const normalizeFilters = (filters: Filters): Filters => {
+  const normalized: Filters = {};
+
+  if (filters.type && filters.type.length > 0) {
+    normalized.type = sortUnique(filters.type);
+  }
+
+  if (filters.tags && filters.tags.length > 0) {
+    normalized.tags = sortUnique(filters.tags);
+  }
+
+  if (filters.yearRange && filters.yearRange.length === 2) {
+    const [from, to] = filters.yearRange;
+    if (typeof from === 'number' || typeof to === 'number') {
+      const start = typeof from === 'number' ? from : to;
+      const end = typeof to === 'number' ? to : from;
+      const sortedRange: [number, number] = [Math.min(start, end), Math.max(start, end)];
+      normalized.yearRange = sortedRange;
+    }
+  }
+
+  return normalized;
+};
+
+const parseFiltersFromSearchParams = (params: URLSearchParams): Filters => {
+  const types = params.getAll('type').map(value => value.trim()).filter(Boolean);
+  const tags = params.getAll('tag').map(value => value.trim()).filter(Boolean);
+
+  const parseYear = (value: string | null): number | null => {
+    if (!value) {
+      return null;
+    }
+    const parsed = Number.parseInt(value, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
+  const fromYear = parseYear(params.get('from'));
+  const toYear = parseYear(params.get('to'));
+
+  let yearRange: [number, number] | null = null;
+  if (fromYear !== null || toYear !== null) {
+    const start = fromYear ?? toYear ?? 0;
+    const end = toYear ?? fromYear ?? start;
+    yearRange = [Math.min(start, end), Math.max(start, end)];
+  }
+
+  const result: Filters = {};
+
+  if (types.length > 0) {
+    result.type = sortUnique(types);
+  }
+
+  if (tags.length > 0) {
+    result.tags = sortUnique(tags);
+  }
+
+  if (yearRange) {
+    result.yearRange = yearRange;
+  }
+
+  if (!result.type && !result.tags && !result.yearRange) {
+    return createDefaultFilters();
+  }
+
+  return result;
+};
+
+const filtersToSearchParams = (filters: Filters): URLSearchParams => {
+  const normalized = normalizeFilters(filters);
+  const params = new URLSearchParams();
+
+  normalized.type?.forEach(type => {
+    params.append('type', type);
+  });
+
+  normalized.tags?.forEach(tag => {
+    params.append('tag', tag);
+  });
+
+  if (normalized.yearRange) {
+    params.set('from', String(normalized.yearRange[0]));
+    params.set('to', String(normalized.yearRange[1]));
+  }
+
+  return params;
+};
+
+const createFiltersKey = (filters: Filters): string => {
+  const normalized = normalizeFilters(filters);
+  return JSON.stringify({
+    type: normalized.type ?? [],
+    yearRange: normalized.yearRange ?? null,
+    tags: normalized.tags ?? [],
+  });
+};
 
 type ViewState = 'featured' | 'filters' | 'assistant';
 
@@ -73,9 +174,12 @@ function HomePage(): React.ReactNode {
     [sortedProjects],
   );
 
-  const [filters, setFilters] = useState<Filters>(() => createDefaultFilters());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = useMemo(() => parseFiltersFromSearchParams(searchParams), [searchParams]);
+  const filtersKey = useMemo(() => createFiltersKey(filters), [filters]);
   const [displayedProjects, setDisplayedProjects] = useState<Project[]>(featuredProjects);
   const [viewState, setViewState] = useState<ViewState>('featured');
+  const previousFiltersKeyRef = useRef<string>('');
 
   const availableFilters = useMemo<AvailableFilters>(() => {
     const types = new Set<string>();
@@ -96,32 +200,19 @@ function HomePage(): React.ReactNode {
   }, [sortedProjects]);
 
   const resetFilters = useCallback((source: 'filters' | 'assistant') => {
-    const defaults = createDefaultFilters();
-    setFilters(defaults);
+    setSearchParams(new URLSearchParams());
     setDisplayedProjects(featuredProjects);
     setViewState('featured');
+    previousFiltersKeyRef.current = '';
     trackReset(source);
-  }, [featuredProjects]);
+  }, [featuredProjects, setSearchParams]);
 
   const handleFilterChange = useCallback((next: Filters) => {
-    setFilters(next);
-    if (hasActiveFilters(next)) {
-      const results = applyFilters(sortedProjects, next);
-      setDisplayedProjects(results);
-      setViewState('filters');
-      trackFilterApplied(next, results.length);
-      return;
-    }
-
-    if (viewState !== 'assistant') {
-      setDisplayedProjects(featuredProjects);
-      setViewState('featured');
-    }
-  }, [featuredProjects, sortedProjects, viewState]);
+    setSearchParams(filtersToSearchParams(next));
+  }, [setSearchParams]);
 
   const handleAiSearch = useCallback((projects: Project[]) => {
-    const defaults = createDefaultFilters();
-    setFilters(defaults);
+    setSearchParams(new URLSearchParams());
 
     if (projects.length === 0) {
       setDisplayedProjects(featuredProjects);
@@ -133,7 +224,30 @@ function HomePage(): React.ReactNode {
     }
 
     trackChatQuery(projects.length);
-  }, [featuredProjects]);
+  }, [featuredProjects, setSearchParams]);
+
+  useEffect(() => {
+    if (!hasActiveFilters(filters)) {
+      previousFiltersKeyRef.current = '';
+      if (viewState !== 'assistant') {
+        setDisplayedProjects(featuredProjects);
+        setViewState('featured');
+      }
+      return;
+    }
+
+    const results = applyFilters(sortedProjects, filters);
+    setDisplayedProjects(results);
+
+    if (viewState !== 'filters') {
+      setViewState('filters');
+    }
+
+    if (previousFiltersKeyRef.current !== filtersKey) {
+      previousFiltersKeyRef.current = filtersKey;
+      trackFilterApplied(filters, results.length);
+    }
+  }, [filters, filtersKey, featuredProjects, sortedProjects, viewState]);
 
   const isShowingFeatured = viewState === 'featured';
 
