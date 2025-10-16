@@ -68,6 +68,7 @@ relevant type first to keep IntelliSense and editor hints accurate.
 | `npm run build`   | Create an optimized production build in `dist/`.                               |
 | `npm run preview` | Serve the production build locally for QA.                                     |
 | `npm test`        | Run the Nylon Fabric Designer sanitization integration test.                   |
+| `npm run test:e2e`| Execute the Playwright smoke test for the admin mailing list dashboard (requires browsers). |
 
 ### Sanitizing AI generated markup
 
@@ -77,6 +78,17 @@ tags and any event handler attributes. When the service runs outside the browser
 lightweight fallback removes scripts and inline handlers so that the same guarantees hold. If you expand the Gemini prompt to
 allow new markup, update the sanitizer configuration and the associated test so that legitimate elements stay intact while
 executable content remains blocked.
+
+### End-to-end test setup
+
+The Playwright suite depends on the browser binaries being installed locally. After `npm install`, run:
+
+```bash
+npx playwright install
+```
+
+Once the browsers are available, `npm run test:e2e` will exercise the happy path of unlocking the admin mailing list dashboard,
+removing a subscriber, and sending a batch update.
 
 ## Environment configuration
 

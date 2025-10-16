@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "server": "tsx server/index.ts",
     "test": "vitest run && tsx tests/nylonFabricDesignerService.test.ts",
+    "test:e2e": "playwright test",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0"
   },
   "dependencies": {
@@ -54,6 +55,7 @@
     "tsx": "^4.20.5",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "@playwright/test": "^1.50.1"
   }
 }
