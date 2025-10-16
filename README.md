@@ -1,38 +1,47 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
 # Laundromatzat – AI-assisted creative portfolio
 
-This repository contains the source code for the Laundromatzat portfolio experience – a Vite + React application that blends
-video, photography, cinemagraphs, and small interactive tools. A lightweight Gemini-powered assistant adds conversational
-context to the work, making the site feel more like an interactive gallery than a static archive.
+Laundromatzat is a Vite + React experience showcasing film, photography, cinemagraphs, and experimental tools. A lightweight
+Express API powers the mailing list workflow and fronts a Gemini-powered guide who helps visitors explore the catalogue.
 
 > View the currently published build in AI Studio: https://ai.studio/apps/drive/1ae454ZN4_ouOKrPzrBExNr6kNpFP7YVT
 
 ## Table of contents
 
-1. [Tech stack](#tech-stack)
-2. [Local development](#local-development)
-3. [Project scripts](#project-scripts)
-4. [Environment configuration](#environment-configuration)
-5. [Deployment](#deployment)
-6. [Project structure](#project-structure)
-7. [Maintenance checklist](#maintenance-checklist)
-8. [Roadmap & next steps](#roadmap--next-steps)
+1. [Architecture at a glance](#architecture-at-a-glance)
+2. [Prerequisites](#prerequisites)
+3. [Initial setup](#initial-setup)
+4. [Local development workflow](#local-development-workflow)
+5. [Quality checks & tests](#quality-checks--tests)
+6. [Environment configuration](#environment-configuration)
+7. [Production setup](#production-setup)
+8. [Data management](#data-management)
+9. [Project structure](#project-structure)
+10. [Maintenance checklist](#maintenance-checklist)
+11. [Roadmap & next steps](#roadmap--next-steps)
 
-## Tech stack
+## Architecture at a glance
 
-- **Frontend framework:** React 19 with Vite 6 for lightning-fast HMR.
-- **Language:** TypeScript throughout the app, including strongly typed portfolio data.
-- **Styling:** Tailwind CSS utility classes (see component files for patterns).
-- **Secure backend API:** Express 5 + TypeScript powers the mailing-list service with rate limiting, validation, and admin tooling.
-- **AI assistant:** Google Gemini API powers the in-app conversational guide.
-- **Media handling:** Background removal and ONNX Runtime enable richer visual presentations.
+- **Frontend:** React 19 rendered with Vite 6 and Tailwind CSS. Shared types live in `types.ts` and components use utility-first
+  styling with composition-heavy layouts.
+- **Backend:** An Express 5 server handles the mailing list subscribe/update flows, enforces admin API-key protection, and proxies
+  Gemini requests. Nodemailer sends mail via SMTP or a JSON outbox for local dev.
+- **AI assistant:** The Gemini service is wrapped in `server/services/geminiService.ts` and exposed to the UI through
+  `services/geminiClient.ts`. Sanitizers strip scripts before rendering responses.
+- **Testing toolchain:** Vitest exercises UI logic, Playwright validates the admin dashboard workflow, and a TSX-powered
+  integration test keeps the Gemini sanitizers honest.
 
-## Local development
+## Prerequisites
 
-Before getting started, ensure you have [Node.js](https://nodejs.org) installed (18 LTS or newer is recommended).
+- [Node.js 18+](https://nodejs.org/) (20 LTS recommended).
+- npm 9+ (ships with current Node LTS releases).
+- Optional for end-to-end tests: Playwright browsers (`npx playwright install`).
+- Optional for production email delivery: access to an SMTP account that Nodemailer can reach.
+
+## Initial setup
 
 ```bash
 git clone https://github.com/<your-account>/laundromatzat.git
@@ -40,136 +49,206 @@ cd laundromatzat
 npm install
 ```
 
-Once dependencies are installed, start both the backend API and the Vite dev server in separate terminal tabs:
+Create a `.env.local` file in the repository root. The backend and Vite dev server both read from this file. Start with the
+following scaffold and replace the placeholder values:
 
 ```bash
-# Terminal 1 – Backend API (Mailing List & AI Assistant)
-npm run server
+# Required: API key for the Gemini assistant (used exclusively by the Express server)
+GEMINI_API_KEY=your_gemini_api_key_here
 
-# Terminal 2 – Frontend
-npm run dev
+# Required: Admin API key protecting subscriber management endpoints
+MAILING_LIST_ADMIN_KEY=replace-with-a-long-random-string
+
+# Required when sending emails via SMTP
+MAILING_LIST_FROM_EMAIL=studio@laundromatzat.com
+
+# Optional: SMTP connection string. Omit to capture messages as JSON files in data/outbox.
+MAILING_LIST_SMTP_URL=smtp://user:pass@mail.yourprovider.com:587
+
+# Optional frontend overrides
+VITE_API_BASE_URL=http://localhost:3001
+VITE_SITE_URL=https://laundromatzat.com
+
+# Optional: whitelist extra origins that can call the API in production
+CORS_ORIGINS=https://laundromatzat.com,https://studio.partner.com
 ```
 
-The site will be available at http://localhost:5173 and the API at http://localhost:3001. Vite proxies `/api/*` to the backend
-during development, so all features work without additional configuration. Any changes inside `components`, `pages`, or
-`services` will refresh automatically.
+## Local development workflow
 
-### Working with TypeScript types
+1. **Start the mailing-list/Gemini API**
 
-Portfolio items and chat assistant messaging rely on shared types defined in `types.ts`. When adding new content, extend the
-relevant type first to keep IntelliSense and editor hints accurate.
+   ```bash
+   npm run server
+   ```
 
-## Project scripts
+   The server loads environment variables from `.env.local`, listens on port `3001` (override with `PORT`), persists subscribers
+   to `data/subscribers.json`, and writes simulated email payloads to `data/outbox/` when no SMTP URL is configured. During
+   development the admin API key defaults to `dev-admin-key-change-me`; override it in `.env.local` to mirror production.
 
-| Command           | Description                                                                    |
-| ----------------- | ------------------------------------------------------------------------------ |
-| `npm run dev`     | Start the Vite development server with hot module reloading.                   |
-| `npm run server`  | Boot the backend Express API (AI + mail) on http://localhost:3001. |
-| `npm run build`   | Create an optimized production build in `dist/`.                               |
-| `npm run preview` | Serve the production build locally for QA.                                     |
-| `npm test`        | Run the Nylon Fabric Designer sanitization integration test.                   |
-| `npm run test:e2e`| Execute the Playwright smoke test for the admin mailing list dashboard (requires browsers). |
+2. **Run the Vite dev server**
 
-### Sanitizing AI generated markup
+   ```bash
+   npm run dev
+   ```
 
-`services/nylonFabricDesignerService.ts` sanitizes the Gemini responses before rendering them in the browser. We use
-DOMPurify with a tight HTML whitelist for the prose guide and an SVG profile for the blueprint output, stripping `<script>`
-tags and any event handler attributes. When the service runs outside the browser (e.g., in the integration test) a
-lightweight fallback removes scripts and inline handlers so that the same guarantees hold. If you expand the Gemini prompt to
-allow new markup, update the sanitizer configuration and the associated test so that legitimate elements stay intact while
-executable content remains blocked.
+   The frontend is served at http://localhost:5173 with hot module replacement. Requests to `/api/*` proxy to the Express server
+   and enforce the `x-api-key` header for protected routes. If you need to expose the dev server on your LAN, run
+   `npm run dev -- --host 0.0.0.0` and update `CORS_ORIGINS` accordingly.
 
-### End-to-end test setup
+3. **Populate and iterate on content**
 
-The Playwright suite depends on the browser binaries being installed locally. After `npm install`, run:
+   Edit `data/projects.json` (or import `portfolio-data.csv`) to refresh the catalogue. Changes are parsed via
+   `utils/projectData.ts` and immediately reflected in the UI.
+
+4. **Inspect saved emails and subscribers**
+
+   While running locally without SMTP credentials, review the generated JSON files in `data/outbox/` and the subscriber ledger in
+   `data/subscribers.json` to confirm API behaviour.
+
+## Quality checks & tests
+
+### Linting
+
+Run ESLint in CI mode to keep TypeScript, React hooks, and accessibility rules clean:
+
+```bash
+npm run lint
+```
+
+### Unit & component tests (Vitest)
+
+Vitest covers rendering logic, hooks, and shared utilities. The default test run matches CI:
+
+```bash
+npm test
+```
+
+This command runs the entire Vitest suite and then executes `tests/nylonFabricDesignerService.test.ts`, which hardens the Gemini
+sanitizers. For a faster feedback loop while building features, invoke `npx vitest --watch`.
+
+### End-to-end smoke test (Playwright)
+
+Install Playwright browsers once per machine:
 
 ```bash
 npx playwright install
 ```
 
-Once the browsers are available, `npm run test:e2e` will exercise the happy path of unlocking the admin mailing list dashboard,
-removing a subscriber, and sending a batch update.
+Then run the admin dashboard happy-path test:
+
+```bash
+npm run test:e2e
+```
+
+The Playwright configuration boots the Vite dev server automatically and intercepts API calls, so the Express API does not need
+to be running for the default smoke test. To run against the live backend, start `npm run server` in another terminal and remove
+or adapt the `page.route` stubs in `tests/e2e/adminMailingList.spec.ts` so requests reach the Express API.
+
+### Manual QA against the production bundle
+
+Before shipping, build and preview the production assets to catch asset-path issues:
+
+```bash
+npm run build
+npm run preview
+```
+
+The preview server serves the `dist/` folder on http://localhost:4173 and mirrors how the static files will behave behind a CDN.
 
 ## Environment configuration
 
-Create a `.env.local` file in the project root (ignored by git) for all secrets, both for the backend and for any future frontend-specific keys.
+| Variable | Required | Default | Purpose |
+| -------- | -------- | ------- | ------- |
+| `GEMINI_API_KEY` | Yes | `""` | Credential used by the Express server to call Gemini. Without it, `/api/chat` responds with 503. |
+| `MAILING_LIST_ADMIN_KEY` | Yes | `dev-admin-key-change-me` | Shared secret for admin endpoints (`/api/subscribers`, `/api/updates`). Override in every environment. |
+| `MAILING_LIST_FROM_EMAIL` | Yes (with SMTP) | `updates@example.com` | “From” address for Nodemailer when delivering real email. |
+| `MAILING_LIST_SMTP_URL` | No | `undefined` | SMTP connection string. When omitted, emails are written to `data/outbox/`. |
+| `MAILING_LIST_STORAGE_PATH` | No | `data/subscribers.json` | Location for the JSON subscriber ledger. Point at persistent storage in production. |
+| `MAILING_LIST_OUTBOX_PATH` | No | `data/outbox` | Directory used to archive sent messages. Ensure it is writable. |
+| `CORS_ORIGINS` | No | `http://localhost:5173, https://laundromatzat.com, https://www.laundromatzat.com` | Comma-separated origins allowed to call the API. |
+| `PORT` | No | `3001` | Port the Express server listens on. |
+| `VITE_API_BASE_URL` | No | runtime origin | Overrides the API origin used by the frontend. Useful when hosting the frontend separately from the API. |
+| `VITE_SITE_URL` | No | `https://laundromatzat.com` | Used to build canonical metadata tags. Set to your production domain. |
 
-```bash
-# Required: API key for the Gemini assistant (used by the backend server)
-GEMINI_API_KEY=your_gemini_api_key_here
+All variables live in `.env.local` for local work. In production mirror the same values using your platform's secrets manager
+(Render, Fly.io, Railway, etc.).
 
-# Required: A long, random string for securing mailing list admin endpoints
-MAILING_LIST_ADMIN_KEY=replace-with-a-long-random-string
+## Production setup
 
-# Required: The "From" address for mailing list emails
-MAILING_LIST_FROM_EMAIL=studio@laundromatzat.com
+1. **Build the frontend**
 
-# Optional: Use an SMTP connection string to deliver real emails.
-# If omitted, emails are written as JSON files to the /data/outbox directory.
-MAILING_LIST_SMTP_URL=smtp://user:pass@mail.yourprovider.com:587
+   ```bash
+   npm install
+   npm run build
+   ```
 
-# Optional: Comma-separated origins that can call the API in production.
-CORS_ORIGINS=https://laundromatzat.com
-```
+   Deploy the generated `dist/` directory to your static host (Vercel, Netlify, Cloudflare Pages, S3 + CloudFront). Ensure the
+   host is configured to serve `index.html` for all SPA routes.
 
-Additional advanced settings (can also be placed in `.env.local`):
+2. **Provision the API runtime**
 
-- `MAILING_LIST_STORAGE_PATH` – override where subscriber data is stored (defaults to `data/subscribers.json`).
-- `MAILING_LIST_OUTBOX_PATH` – change the folder where JSON email receipts are archived (defaults to `data/outbox`).
-- `PORT` – change the API port (defaults to `3001`).
+   - Choose a Node-capable host (Render, Fly.io, Railway, DigitalOcean, etc.).
+   - Copy the repository (or the `server/`, `data/`, `constants.ts`, and shared utility folders if deploying as a separate
+     service).
+   - Install production dependencies: `npm ci --omit=dev`.
+   - Set the environment variables listed above, including a long `MAILING_LIST_ADMIN_KEY`, a Gemini key, SMTP credentials (or
+     plan for JSON outbox inspection), and `CORS_ORIGINS` that include your frontend’s domain.
+   - Mount persistent storage for `MAILING_LIST_STORAGE_PATH` and `MAILING_LIST_OUTBOX_PATH` so subscriber data survives restarts.
+   - Start the server with `npm run server` (wrap it in a process manager such as PM2, systemd, or your platform’s native process
+     runner).
 
-The API enforces an admin API key for management endpoints (list, delete, send updates). Keep the key secret and rotate it
-regularly.
+3. **Point the frontend at the API**
 
-## Deployment
+   - If the frontend and API share the same origin, no extra configuration is required.
+   - If they are hosted separately, set `VITE_API_BASE_URL` to the API’s public URL during the frontend build and expose that
+     variable when running `npm run build`.
 
-This project requires a hosting provider that can run a Node.js server (e.g., Vercel, Render, Fly.io, etc.). It can no longer be deployed to a static-only host like GitHub Pages.
+4. **Smoke test the deployed stack**
 
-A typical deployment process on such a platform would involve:
+   - Hit `https://<frontend-domain>/admin/mailing-list`, unlock the dashboard with your admin key, and send a test update to
+     confirm SMTP wiring.
+   - Use the subscribe form on the public site to ensure the CORS configuration allows client calls to the API.
+   - Monitor the server logs for the “Mailing list server is running” banner and for any rate-limit errors once traffic arrives.
 
-1.  **Setting Environment Variables:** Add the contents of your `.env.local` file (especially `GEMINI_API_KEY` and other secrets) to your hosting provider's secrets management system.
-2.  **Build Command:** Set the build command to `npm run build`.
-3.  **Start Command:** Set the start command to `npm run server`.
+## Data management
 
-The provider will build the static frontend and then start the Express server to handle API requests.
+- **Portfolio catalogue:** `data/projects.json` (and the optional `portfolio-data.csv` import) power the public projects grid and
+  Gemini prompt context. The parsers in `utils/projectData.ts` normalise schema changes.
+- **Links page:** Curated resources live in `public/data/links.csv` and feed the `/links` route.
+- **Subscriber ledger:** The Express service persists subscribers to `data/subscribers.json` and stores outbound email metadata in
+  `data/outbox/`. Provide persistent storage in production and back up these files regularly.
 
-### CI/CD Workflow
-
-The `.github/workflows/ci.yml` file contains a basic workflow to ensure the application builds successfully on every push to the `main` branch. You can extend this file with provider-specific steps to automate deployments.
+Refer to [`docs/data-schema.md`](docs/data-schema.md) for the full project schema and CSV mapping details.
 
 ## Project structure
 
 ```
-├── App.tsx            # Route wiring and layout chrome
-├── components/        # Reusable UI pieces (cards, modals, chat interface)
-├── data/              # Subscriber database + email outbox snapshots (gitignored)
-├── pages/             # Page-level routes powered by React Router
-├── server/            # Secure Express mailing-list API
-├── services/          # Gemini + mailing list client helpers
-├── constants.ts       # Production portfolio dataset + chat system prompts (placeholder dataset retired)
-├── types.ts           # Shared TypeScript interfaces
-└── public/            # Static assets and favicon
+├── App.tsx                 # Route wiring and layout chrome
+├── components/             # Reusable UI pieces (cards, modals, chat interface)
+├── data/                   # Portfolio dataset + mailing list storage (gitignored entries at runtime)
+├── docs/                   # In-depth guides (data schema, Gemini contract)
+├── pages/                  # React Router routes
+├── public/                 # Static assets and CSV imports
+├── server/                 # Express API (mailing list + Gemini proxy)
+├── services/               # Frontend data clients, Gemini helpers, sanitizers
+├── tests/                  # Vitest suites, Playwright specs, integration tests
+├── types.ts                # Shared TypeScript interfaces
+├── utils/                  # Parsing and formatting helpers
+└── vite.config.ts          # Vite + dev server proxy configuration
 ```
 
 ## Maintenance checklist
 
-- [ ] Update `constants.ts` with fresh projects, tagging them by medium for smarter filtering.
+- [ ] Update `data/projects.json` with fresh work, tagging entries for smarter filtering.
 - [ ] Refresh hero imagery to reflect the latest creative direction.
 - [ ] Audit the Gemini system prompt for tone and brand alignment each release.
 - [ ] Review Lighthouse scores quarterly to maintain performance and accessibility targets.
 - [ ] Pin dependency versions before major launches to avoid unexpected regressions.
+- [ ] Confirm rate limiting and CORS settings still match the deployment topology after infrastructure changes.
 
 ## Roadmap & next steps
 
-1. **Immersive storytelling modes** – Introduce a “director’s commentary” overlay that syncs captions, behind-the-scenes audio,
-   and sketch overlays to each hero project. Pair with scroll-driven animation to create a guided tour feeling.
-2. **Generative remix lab** – Offer visitors the ability to remix a project’s palette, typography, or soundtrack with Gemini
-   suggestions. Export the variations as sharable mood boards or short clips.
-3. **Interactive residency calendar** – Build a timeline that maps residencies, exhibitions, and collaborations. Each milestone
-   can open a mini-case study with embedded VR/AR previews or downloadable press kits.
-4. **Audience co-creation wall** – Aggregate curated user submissions (images, prompts, or code snippets) and let the assistant
-   narrate the story behind the collaborations. Include moderation workflows and opt-in attribution.
-5. **Studio operations dashboard** – Add a private, authenticated route summarizing analytics, newsletter metrics, and a content
-   pipeline Kanban fed by Notion or Airtable. Use Gemini to suggest priority next actions during reviews.
-
-Have another idea? Open a GitHub issue with context, desired outcomes, and references to keep ideation collaborative.
+- Introduce richer analytics on assistant usage to inform prompt tuning.
+- Expand the admin dashboard with export/download features for subscribers.
+- Explore real-time Gemini streaming responses to tighten conversational feedback loops.
+- Package the mailing list service as a standalone module for reuse across other creative properties.
