@@ -190,7 +190,7 @@ All variables live in `.env.local` for local work. In production mirror the same
    - Choose a Node-capable host (Render, Fly.io, Railway, DigitalOcean, etc.).
    - Copy the repository (or the `server/`, `data/`, `constants.ts`, and shared utility folders if deploying as a separate
      service).
-   - Install production dependencies: `npm ci --omit=dev`.
+   - Install dependencies: `npm ci`. The Express server starts through the `tsx` runtime which lives in `devDependencies`, so leave dev packages installed (or provide your own transpiled startup command).
    - Set the environment variables listed above, including a long `MAILING_LIST_ADMIN_KEY`, a Gemini key, SMTP credentials (or
      plan for JSON outbox inspection), and `CORS_ORIGINS` that include your frontend’s domain.
    - Mount persistent storage for `MAILING_LIST_STORAGE_PATH` and `MAILING_LIST_OUTBOX_PATH` so subscriber data survives restarts.
