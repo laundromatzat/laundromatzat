@@ -22,6 +22,7 @@ function ChatAssistant({ onSearch, onReset }: ChatAssistantProps): React.ReactNo
     toggleChat,
     handleInputChange,
     handleSendMessage,
+    clearChat,
   } = useChatAssistant({ onSearch, onReset });
 
   const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : null;
@@ -37,12 +38,28 @@ function ChatAssistant({ onSearch, onReset }: ChatAssistantProps): React.ReactNo
       </button>
 
       {isOpen && (
-        <div className="fixed bottom-0 right-0 w-full h-full sm:w-full sm:max-w-sm sm:h-[70vh] sm:max-h-[600px] bg-brand-secondary rounded-lg shadow-2xl flex flex-col z-50 animate-slide-in-up">
-          <header className="flex items-center justify-between p-4 border-b border-brand-primary">
+        <div
+          data-testid="chat-assistant-panel"
+          className="fixed bottom-0 right-0 w-full h-full sm:w-full sm:max-w-sm sm:h-[70vh] sm:max-h-[600px] bg-brand-secondary rounded-lg shadow-2xl flex flex-col z-50 animate-slide-in-up"
+        >
+          <header className="flex items-center justify-between p-4 border-b border-brand-primary gap-2">
             <h3 className="text-lg font-bold text-brand-text">AI Assistant</h3>
-            <button onClick={toggleChat} className="text-brand-text-secondary hover:text-brand-text">
-              <CloseIcon className="w-6 h-6" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={clearChat}
+                className="px-3 py-1 text-sm rounded-md border border-brand-primary text-brand-text hover:bg-brand-primary/50"
+                disabled={isLoading}
+              >
+                Clear chat
+              </button>
+              <button
+                onClick={toggleChat}
+                className="text-brand-text-secondary hover:text-brand-text"
+                aria-label="Close chat assistant"
+              >
+                <CloseIcon className="w-6 h-6" />
+              </button>
+            </div>
           </header>
 
           <div className="flex-1 p-4 overflow-y-auto space-y-4">

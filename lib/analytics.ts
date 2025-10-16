@@ -43,4 +43,8 @@ export const trackChatError = (context: string, error?: unknown): void => {
   analytics.track('onChatError', { context, message });
 };
 
+export const trackChatClear = (): void => {
+  analytics.track('onChatClear');
+};
+
 export default analytics;
