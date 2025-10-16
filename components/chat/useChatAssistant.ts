@@ -4,7 +4,13 @@ import type { SearchOptions } from '../../utils/projectSearch';
 import { searchProjects } from '../../utils/projectSearch';
 import { isChatResetPayload } from '../../utils/chatReset';
 import { createChatSession, type ChatSessionLike } from '../../services/geminiClient';
-import { trackChatClose, trackChatError, trackChatOpen, trackChatReset } from '../../lib/analytics';
+import {
+  trackChatClear,
+  trackChatClose,
+  trackChatError,
+  trackChatOpen,
+  trackChatReset,
+} from '../../lib/analytics';
 
 export interface UseChatAssistantParams {
   onSearch: (projects: Project[]) => void;
@@ -20,6 +26,7 @@ export interface UseChatAssistantResult {
   toggleChat: () => void;
   handleInputChange: (value: string) => void;
   handleSendMessage: () => Promise<void>;
+  clearChat: () => void;
 }
 
 const INITIAL_AI_MESSAGE: ChatMessage = {
@@ -36,6 +43,30 @@ const ERROR_MESSAGE: ChatMessage = {
 
 const AI_RESET_RESPONSE = 'Filters cleared—back to featured selections.';
 const AI_PROJECTS_RESPONSE = "I've updated the grid with your search results.";
+
+const STORAGE_KEY = 'chat-assistant/messages';
+
+const loadPersistedMessages = (): ChatMessage[] => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(stored);
+    if (Array.isArray(parsed)) {
+      return parsed as ChatMessage[];
+    }
+  } catch (error) {
+    console.warn('Failed to parse stored chat messages.', error);
+  }
+
+  return [];
+};
 
 const sanitizeJsonFence = (fullText: string): string => {
   return fullText.trim().replace(/^```json\n?/, '').replace(/```$/, '');
@@ -80,11 +111,24 @@ const extractAssistantPayload = (fullText: string): unknown | null => {
 
 export function useChatAssistant({ onSearch, onReset }: UseChatAssistantParams): UseChatAssistantResult {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => loadPersistedMessages());
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const chatRef = useRef<ChatSessionLike | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesRef = useRef(messages);
+  const persistMessages = useCallback((nextMessages: ChatMessage[]): void => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (nextMessages.length > 0) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextMessages));
+    } else {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+  }, []);
+  const [sessionNonce, setSessionNonce] = useState(0);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -92,6 +136,8 @@ export function useChatAssistant({ onSearch, onReset }: UseChatAssistantParams):
 
   useEffect(() => {
     if (!isOpen) {
+      chatRef.current = null;
+      persistMessages(messagesRef.current);
       return;
     }
 
@@ -104,12 +150,12 @@ export function useChatAssistant({ onSearch, onReset }: UseChatAssistantParams):
           return;
         }
         chatRef.current = chatSession;
-        setMessages([INITIAL_AI_MESSAGE]);
+        setMessages(prev => (prev.length > 0 ? prev : [INITIAL_AI_MESSAGE]));
       } catch (error) {
         if (cancelled) {
           return;
         }
-        setMessages([ERROR_MESSAGE]);
+        setMessages(prev => (prev.length > 0 ? prev : [ERROR_MESSAGE]));
         trackChatError('createSession', error);
         console.warn('Chat session could not be initialized. Check your API key.', error);
       }
@@ -118,7 +164,12 @@ export function useChatAssistant({ onSearch, onReset }: UseChatAssistantParams):
     return () => {
       cancelled = true;
     };
-  }, [isOpen]);
+  }, [isOpen, persistMessages, sessionNonce]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+    persistMessages(messages);
+  }, [messages, persistMessages]);
 
   const toggleChat = useCallback(() => {
     setIsOpen(prev => {
@@ -216,6 +267,16 @@ export function useChatAssistant({ onSearch, onReset }: UseChatAssistantParams):
     }
   }, [userInput, isLoading, onSearch, onReset]);
 
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    setUserInput('');
+    setIsLoading(false);
+    chatRef.current = null;
+    setSessionNonce(prev => prev + 1);
+    persistMessages([]);
+    trackChatClear();
+  }, [persistMessages]);
+
   return {
     isOpen,
     messages,
@@ -225,6 +286,7 @@ export function useChatAssistant({ onSearch, onReset }: UseChatAssistantParams):
     toggleChat,
     handleInputChange,
     handleSendMessage,
+    clearChat,
   };
 }
 
