@@ -252,3 +252,28 @@ Refer to [`docs/data-schema.md`](docs/data-schema.md) for the full project schem
 - Expand the admin dashboard with export/download features for subscribers.
 - Explore real-time Gemini streaming responses to tighten conversational feedback loops.
 - Package the mailing list service as a standalone module for reuse across other creative properties.
+
+## Project Assessment & Directions
+
+### Health snapshot
+
+- **Experience polish:** The React + Vite frontend is production-ready with a modular component system and typed data pipeline that keeps layouts and content in sync.[^architecture]
+- **Data readiness:** Portfolio content is easy to refresh via `data/projects.json` (or the CSV importer) and downstream utilities normalise the schema for consistent rendering.[^data]
+- **Operations:** The Express mailing list service, admin API key guardrails, and optional SMTP integration provide a dependable delivery channel during launches.[^operations]
+- **Quality gates:** Established linting, Vitest coverage, and Playwright smoke tests keep regressions in check across UI and server flows.[^quality]
+
+### Strategic directions
+
+1. **Operational hardening:** Add structured runbooks for environment configuration and subscriber data backups so production rotations stay smooth.[^ops-next]
+2. **Content operations:** Document a repeatable workflow for ingesting new portfolio entries, including media hosting conventions and accessibility checks.[^content-next]
+3. **Assistant evolution:** Prototype conversational guardrails that let the Gemini guide adapt tone and suggested tours while respecting the existing sanitisation layers.[^assistant-next]
+4. **Analytics & insights:** Layer in privacy-respecting analytics to measure assistant usage and newsletter conversion so roadmap bets are data-informed.[^analytics-next]
+
+[^architecture]: See "Architecture at a glance" for the React, Vite, and Express breakdown that powers the experience.
+[^data]: Refer to "Data management" and `utils/projectData.ts` for schema normalisation and import details.
+[^operations]: The "Production setup" section covers SMTP integration, API key management, and deployment guidance.
+[^quality]: "Quality checks & tests" outlines linting, Vitest, and Playwright coverage that underpin CI.
+[^ops-next]: Extend the deployment guardrails captured in "Production setup" with explicit recovery procedures.
+[^content-next]: Follow the catalogue guidance in "Data management" and `docs/data-schema.md` when adding or updating work.
+[^assistant-next]: Build on the Gemini integration summarised in "Architecture at a glance" and `services/geminiClient.ts`.
+[^analytics-next]: Use the analytics ideas introduced under "Roadmap & next steps" as a starting point for instrumentation planning.
