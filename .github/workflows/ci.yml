@@ -41,5 +41,10 @@ jobs:
           # but we keep it here to prevent the build from failing if any residual
           # code expects it. The real key is used by the backend server.
           VITE_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      - name: Verify build output
-        run: ls -R dist
+      - name: Upload production build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+          if-no-files-found: error
+

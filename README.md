@@ -175,6 +175,10 @@ All variables live in `.env.local` for local work. In production mirror the same
 
 ## Production setup
 
+> Looking for a step-by-step release checklist? See [`docs/deployment-runbook.md`](docs/deployment-runbook.md) for provider-specific
+> instructions and DNS guidance. For the most hands-off experience, follow the Netlify (frontend) and Render (API)
+> pairing highlighted in the runbook—those hosts require virtually no server maintenance once configured.
+
 1. **Build the frontend**
 
    ```bash
@@ -183,7 +187,8 @@ All variables live in `.env.local` for local work. In production mirror the same
    ```
 
    Deploy the generated `dist/` directory to your static host (Vercel, Netlify, Cloudflare Pages, S3 + CloudFront). Ensure the
-   host is configured to serve `index.html` for all SPA routes.
+   host is configured to serve `index.html` for all SPA routes. Every CI run now publishes the bundle as the `frontend-dist`
+   artifact so you can download the exact files that were built on `main` if a manual upload is required.
 
 2. **Provision the API runtime**
 
