@@ -15,6 +15,15 @@ ship both the Vite frontend and the Express server to your own hosting platforms
 The frontend and API can live on separate hosts. Make sure `VITE_API_BASE_URL` in the frontend build points
 to the API’s public URL and that the API’s `CORS_ORIGINS` include the frontend’s domain.
 
+### Prefer a fully managed path? Start with Netlify + Render
+
+If you want the least operational friction, pair **Netlify** for the static frontend with **Render** for the
+Node.js API. Both services plug directly into GitHub, rebuild automatically on each push, and provide SSL,
+CDN distribution, and managed HTTPS certificates out of the box. Render’s persistent disks keep
+`data/subscribers.json` and the `data/outbox/` directory intact without any manual volume management, while
+Netlify’s global edge network ensures the `/tools` page loads quickly everywhere. Follow the provider-specific
+steps below—those are the exact settings we recommend when you want a hands-off deployment.
+
 ## 1. Prepare the repository
 
 1. Pull the latest `main` branch locally and confirm the CI pipeline passes: `npm install && npm run build`.

@@ -176,7 +176,8 @@ All variables live in `.env.local` for local work. In production mirror the same
 ## Production setup
 
 > Looking for a step-by-step release checklist? See [`docs/deployment-runbook.md`](docs/deployment-runbook.md) for provider-specific
-> instructions and DNS guidance.
+> instructions and DNS guidance. For the most hands-off experience, follow the Netlify (frontend) and Render (API)
+> pairing highlighted in the runbook—those hosts require virtually no server maintenance once configured.
 
 1. **Build the frontend**
 
