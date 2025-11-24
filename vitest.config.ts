@@ -8,11 +8,7 @@ export default defineConfig({
     setupFiles: [],
     exclude: [
       ...configDefaults.exclude,
-      'tests/nylonFabricDesignerService.test.ts',
       'tests/e2e/**',
-    ],
-    environmentMatchGlobs: [
-      ['tests/server/**/*.test.ts', 'node'],
     ],
   },
 });

@@ -1,36 +1,36 @@
-async function handleResponse(response: Response): Promise<string> {
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({})) as { error?: string };
-    throw new Error(errorBody.error || `HTTP error! Status: ${response.status}`);
+import { GoogleGenAI, type Chat } from '@google/genai';
+import { AI_SYSTEM_PROMPT } from '../constants';
+
+const FUNCTION_INSTRUCTIONS = `
+Available function:
+  • searchProjects(query: string, opts?: { type?: 'Video'|'Photo'|'Cinemagraph', dateFrom?: string, dateTo?: string, includeTags?: string[], excludeTags?: string[] }) → returns matching project objects.
+
+When a user asks to find or filter projects, respond **only** with JSON in this exact shape:
+
+{ "name": "searchProjects", "arguments": { "query": "<their search phrase>", "opts": { /* optional filters */ } } }
+
+Rules:
+- Use type when they specify media (e.g., "videos", "photos", "cinemagraphs").
+- Use dateFrom/dateTo for ranges like "in 2024" (dateFrom: "01/2024", dateTo: "12/2024") or "since 2019" (dateFrom: "2019").
+- Use includeTags for explicit names in the corpus (e.g., ["Michael"], ["Bernal Heights Park"])
+- Use excludeTags if they say things like "not Michael".
+- Keep other text in query; geo/alias expansion is handled locally.
+
+Examples:
+{ "name": "searchProjects", "arguments": { "query": "hawaii", "opts": { "type": "Video" } } }
+{ "name": "searchProjects", "arguments": { "query": "bernal sunset", "opts": { "type": "Cinemagraph" } } }
+{ "name": "searchProjects", "arguments": { "query": "alaska", "opts": { "dateFrom": "06/2023", "dateTo": "07/2023" } } }
+{ "name": "searchProjects", "arguments": { "query": "beach", "opts": { "includeTags": ["Michael"] } } }
+
+Do not add any other keys, prose, or code‑fences.`;
+
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+function getClient(): GoogleGenAI {
+  if (!API_KEY) {
+    throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.');
   }
-
-  const data = await response.json() as { message?: string; content?: string };
-  if ('message' in data && typeof data.message === 'string') {
-    return data.message;
-  }
-
-  if ('content' in data && typeof data.content === 'string') {
-    return data.content;
-  }
-
-  throw new Error('Unexpected response shape from Gemini service.');
-}
-
-export async function sendMessage(message: string): Promise<string> {
-  try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    });
-
-    return await handleResponse(response);
-  } catch (error) {
-    console.error('Failed to send message:', error);
-    throw error instanceof Error ? error : new Error('Could not connect to the assistant. Please try again later.');
-  }
+  return new GoogleGenAI({ apiKey: API_KEY });
 }
 
 export interface ChatSessionLike {
@@ -42,29 +42,78 @@ export type ClientChatSession = ChatSessionLike;
 
 export async function generateContent(prompt: string): Promise<string> {
   try {
-    const response = await fetch('/api/generate-content', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const client = getClient();
+    const response = await client.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: {
+          role: 'system',
+          parts: [{ text: AI_SYSTEM_PROMPT }],
+        },
       },
-      body: JSON.stringify({ prompt }),
     });
-
-    return await handleResponse(response);
+    return response.text() ?? '';
   } catch (error) {
-    console.error('Failed to generate content:', error);
-    throw error instanceof Error ? error : new Error('Could not reach the content generation service. Please try again later.');
+    console.error('Gemini generateContent failure:', error);
+    throw error instanceof Error ? error : new Error('Failed to generate content with Gemini.');
+  }
+}
+
+export async function sendMessage(message: string): Promise<string> {
+  try {
+    const session = await createChatSession();
+    return await session.sendMessage(message);
+  } catch (error) {
+    console.error('Failed to send message:', error);
+    throw error instanceof Error ? error : new Error('Could not connect to the assistant. Please try again later.');
+  }
+}
+
+class ClientChatSessionImpl implements ChatSessionLike {
+  private chat: Chat;
+
+  constructor(chat: Chat) {
+    this.chat = chat;
+  }
+
+  async sendMessage(message: string): Promise<string> {
+    try {
+      const response = await this.chat.sendMessage({ parts: [{ text: message }] });
+      return response.text ?? '';
+    } catch (error) {
+      console.error('Gemini chat failure:', error);
+      throw error instanceof Error ? error : new Error('Failed to send chat message to Gemini.');
+    }
+  }
+
+  async *sendMessageStream(message: string): AsyncIterable<{ text: string }> {
+    try {
+      const result = await this.chat.sendMessageStream({ parts: [{ text: message }] });
+      for await (const chunk of result.stream) {
+        const text = chunk.text();
+        if (text) {
+          yield { text };
+        }
+      }
+    } catch (error) {
+      console.error('Gemini chat stream failure:', error);
+      throw error instanceof Error ? error : new Error('Failed to stream chat message from Gemini.');
+    }
   }
 }
 
 export async function createChatSession(): Promise<ChatSessionLike> {
-  return {
-    sendMessage: (message: string) => sendMessage(message),
-    async *sendMessageStream(message: string) {
-      const text = await sendMessage(message);
-      yield { text };
+  const client = getClient();
+  const chat = client.chats.create({
+    model: 'gemini-2.5-flash',
+    config: {
+      systemInstruction: {
+        role: 'system',
+        parts: [{ text: `${AI_SYSTEM_PROMPT}\n${FUNCTION_INSTRUCTIONS}` }],
+      },
     },
-  } satisfies ChatSessionLike;
-}
+  });
 
-export { handleResponse };
+  return new ClientChatSessionImpl(chat);
+}

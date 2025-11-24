@@ -7,9 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "tsx server/index.ts",
-    "test": "vitest run && tsx tests/nylonFabricDesignerService.test.ts",
-    "test:e2e": "playwright test",
+    "test": "vitest run",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0"
   },
   "dependencies": {
@@ -18,14 +16,8 @@
     "@google/genai": "^1.21.0",
     "@imgly/background-removal": "^1.7.0",
     "clsx": "^2.1.1",
-    "cors": "^2.8.5",
     "dompurify": "^3.2.7",
-    "dotenv": "^16.4.7",
-    "express": "^5.1.0",
-    "express-rate-limit": "^7.5.0",
     "focus-trap-react": "^11.0.4",
-    "helmet": "^8.1.0",
-    "nodemailer": "^7.0.7",
     "onnxruntime-web": "^1.21.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -36,10 +28,7 @@
     "@testing-library/react": "^16.1.0",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
     "@types/node": "^22.14.0",
-    "@types/nodemailer": "^6.4.17",
     "@vitejs/plugin-react": "^5.0.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.57.1",
@@ -55,7 +44,6 @@
     "tsx": "^4.20.5",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
-    "vitest": "^3.2.4",
-    "@playwright/test": "^1.50.1"
+    "vitest": "^3.2.4"
   }
 }
