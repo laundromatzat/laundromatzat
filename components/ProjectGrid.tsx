@@ -76,7 +76,11 @@ function ProjectGrid({
           </div>
         )
       ) : (
-        <ul className={clsx(gridClassName)} aria-describedby={announcementId}>
+        <ul
+          className={clsx(gridClassName)}
+          aria-describedby={announcementId}
+          data-testid="project-grid"
+        >
           {projects.map((project, index) => (
             <li key={project.id} className="h-full">
               <ProjectCard project={project} onSelect={() => handleOpen(index)} />

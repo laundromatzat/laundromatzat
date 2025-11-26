@@ -31,9 +31,9 @@ function ProjectCard({ project, onSelect }: ProjectCardProps): React.ReactNode {
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
         className={clsx(
-          'flex h-full w-full flex-col overflow-hidden rounded-radius-lg bg-brand-secondary text-left shadow-layer-1 transition duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary',
-          'hover:-translate-y-1 hover:shadow-lg',
+          'flex h-full w-full flex-col overflow-hidden rounded-radius-md bg-brand-secondary text-left transition duration-300',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/80 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary',
+          'hover:bg-brand-surface-highlight',
         )}
       >
         <div className="relative w-full overflow-hidden bg-brand-primary/50">
@@ -46,13 +46,13 @@ function ProjectCard({ project, onSelect }: ProjectCardProps): React.ReactNode {
                 decoding="async"
                 width={1280}
                 height={960}
-                className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+                className="h-full w-full object-cover transition duration-300"
               />
             </picture>
           </div>
         </div>
-        <div className="flex flex-1 flex-col gap-3 px-6 py-5">
-          <h3 id={titleId} className="text-lg font-semibold text-brand-text">
+        <div className="flex flex-1 flex-col gap-2 p-4">
+          <h3 id={titleId} className="text-base font-semibold text-brand-text">
             {project.title}
           </h3>
           <p id={descriptionId} className="text-sm text-brand-text-secondary">

@@ -3,7 +3,6 @@ import { PROJECTS } from '../constants';
 import { Project } from '../types';
 import ProjectGrid from '../components/ProjectGrid';
 import ChatAssistant from '../components/ChatAssistant';
-import MailingListSignup from '../components/MailingListSignup';
 import PageMetadata from '../components/PageMetadata';
 import ProjectFilters, { Filters } from '../components/ProjectFilters';
 import { compareProjectsByDateDesc } from '../utils/projectDates';
@@ -260,13 +259,11 @@ function HomePage(): React.ReactNode {
       />
 
       <section className="space-y-4 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">Creative portfolio</p>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-brand-text">
-          laundromatzat.com
+        <h1 className="text-4xl font-bold tracking-tighter text-brand-text sm:text-5xl md:text-6xl">
+          laundromatzat
         </h1>
         <p className="mx-auto max-w-2xl text-base text-brand-text-secondary">
-          Films, photos, and experimental tools from Michael Laundromatzat. Browse featured pieces below or ask the AI assistant
-          to surface projects by theme, location, or collaborator.
+          A collection of films, photos, and experimental tools.
         </p>
       </section>
 
@@ -278,38 +275,14 @@ function HomePage(): React.ReactNode {
       />
 
       <section className="space-y-4" aria-label={isShowingFeatured ? 'Featured projects' : 'Search results'}>
-        <div className="flex items-baseline justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-semibold text-brand-text">
-              {isShowingFeatured ? 'Featured releases' : viewState === 'filters' ? 'Filtered results' : 'Search results'}
-            </h2>
-            <p className="text-sm text-brand-text-secondary">
-              {isShowingFeatured
-                ? 'Hand-picked highlights from the archive.'
-                : viewState === 'filters'
-                  ? 'Refined by the filters above. Adjust or reset to explore more.'
-                  : 'Updated based on your latest search in the assistant.'}
-            </p>
-          </div>
-          {!isShowingFeatured ? (
-            <button
-              type="button"
-              onClick={() => resetFilters('filters')}
-              className="hidden text-sm font-medium text-brand-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary md:inline-flex"
-            >
-              Reset to featured
-            </button>
-          ) : null}
-        </div>
-
         <ProjectGrid
           projects={displayedProjects}
           gridClassName="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
           emptyState={(
             <div className="rounded-radius-md border border-brand-surface-highlight/60 bg-brand-secondary/40 px-6 py-12 text-center">
-              <p className="text-lg font-semibold text-brand-text">No results just yet</p>
+              <p className="text-lg font-semibold text-brand-text">No results</p>
               <p className="mt-2 text-sm text-brand-text-secondary">
-                Try clearing filters or asking the assistant for another suggestion to keep exploring the portfolio.
+                Try clearing the filters or asking the assistant for another suggestion.
               </p>
               <button
                 type="button"
@@ -322,8 +295,6 @@ function HomePage(): React.ReactNode {
           )}
         />
       </section>
-
-      <MailingListSignup />
 
       <ChatAssistant onSearch={handleAiSearch} onReset={() => resetFilters('assistant')} />
     </div>

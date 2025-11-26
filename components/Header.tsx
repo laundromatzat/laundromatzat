@@ -63,7 +63,6 @@ function Header(): React.ReactNode {
               width={28}
               height={28}
             />
-            laundromatzat
           </NavLink>
 
           <ul className="hidden items-center gap-2 md:flex">
@@ -76,7 +75,7 @@ function Header(): React.ReactNode {
                       'rounded-radius-md px-3 py-2 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary',
                       isActive
                         ? 'bg-brand-accent text-brand-on-accent'
-                        : 'text-brand-text-secondary hover:bg-brand-secondary/70 hover:text-brand-text',
+                        : 'text-brand-text-secondary hover:bg-brand-surface-highlight hover:text-brand-text',
                     )
                   }
                   end={item.to === '/'}
@@ -91,7 +90,7 @@ function Header(): React.ReactNode {
           <button
             ref={menuButtonRef}
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-radius-md border border-brand-surface-highlight/60 bg-brand-secondary text-brand-text shadow-layer-1 transition hover:bg-brand-secondary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-radius-md border border-transparent text-brand-text transition hover:bg-brand-surface-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary md:hidden"
             aria-controls="mobile-navigation"
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen(prev => !prev)}

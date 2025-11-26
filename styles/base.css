@@ -6,18 +6,18 @@
 
 :root {
   color-scheme: dark;
-  --color-bg-canvas: #0d0d0d;
-  --color-bg-panel: #141414;
-  --color-border-subtle: rgba(255, 255, 255, 0.08);
-  --color-text-primary: #f5f5f5;
-  --color-text-secondary: #b3b3b3;
-  --color-accent-default: #00f5d4;
-  --color-accent-strong: #00c2a6;
-  --color-on-accent: #00110c;
-  --color-status-success-bg: #12361f;
-  --color-status-success-text: #2ed47a;
-  --color-status-error-bg: #3c1010;
-  --color-status-error-text: #ff6b6b;
+  --color-bg-canvas: #111111;
+  --color-bg-panel: #1c1c1c;
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #a0a0a0;
+  --color-accent-default: #ffffff;
+  --color-accent-strong: #e5e5e5;
+  --color-on-accent: #111111;
+  --color-status-success-bg: #1e3a2a;
+  --color-status-success-text: #6ee7b7;
+  --color-status-error-bg: #4c1d1d;
+  --color-status-error-text: #fca5a5;
 }
 
 @layer base {
@@ -45,7 +45,7 @@
   button:focus-visible,
   input:focus-visible,
   textarea:focus-visible {
-    outline: 2px solid rgba(0, 245, 212, 0.6);
+    outline: 2px solid var(--color-accent-strong);
     outline-offset: 2px;
   }
 
