@@ -15,6 +15,8 @@ import NylonFabricDesignerPage from './pages/NylonFabricDesignerPage';
 import IntelligentIdeasBoardPage from './pages/IntelligentIdeasBoardPage';
 import AdminMailingListPage from './pages/AdminMailingListPage';
 import NotFoundPage from './pages/NotFoundPage';
+import AIAppsPage from './pages/AIPage';
+import RecipeGeneratorPage from './pages/RecipeGeneratorPage';
 import './styles/base.css';
 
 function normalizeBaseUrl(rawBaseUrl: string | undefined): string {
@@ -42,6 +44,8 @@ const router = createBrowserRouter(
         { path: 'tools/color-palette', element: <ColorPalettePage /> },
         { path: 'tools/nylon-fabric-designer', element: <NylonFabricDesignerPage /> },
         { path: 'tools/intelligent-ideas-board', element: <IntelligentIdeasBoardPage /> },
+        { path: 'ai-apps', element: <AIAppsPage /> },
+        { path: 'ai-apps/recipe-generator', element: <RecipeGeneratorPage /> },
         { path: 'links', element: <LinksPage /> },
         { path: 'admin/mailing-list', element: <AdminMailingListPage /> },
       ],
