@@ -32,7 +32,6 @@ function normalizeFilters(filters: Filters): Filters {
   return {
     type: filters.type && filters.type.length > 0 ? sortUnique(filters.type) : undefined,
     yearRange: filters.yearRange ?? null,
-    tags: filters.tags && filters.tags.length > 0 ? sortUnique(filters.tags) : undefined,
   };
 }
 
@@ -64,7 +63,6 @@ function ProjectFilters({ value, onChange, available, onReset }: ProjectFiltersP
   }, [localFilters, onChange]);
 
   const availableTypes = useMemo(() => sortUnique(available.types), [available.types]);
-  const availableTags = useMemo(() => sortUnique(available.tags), [available.tags]);
   const availableYears = useMemo(() => {
     const years = [...available.years];
     years.sort((a, b) => a - b);
@@ -80,11 +78,7 @@ function ProjectFilters({ value, onChange, available, onReset }: ProjectFiltersP
 
   const hasActiveFilters = useMemo(() => {
     const normalized = normalizeFilters(localFilters);
-    return Boolean(
-      (normalized.type && normalized.type.length > 0) ||
-      normalized.yearRange ||
-      (normalized.tags && normalized.tags.length > 0),
-    );
+    return Boolean((normalized.type && normalized.type.length > 0) || normalized.yearRange);
   }, [localFilters]);
 
   const handleToggleType = (type: string) => {
@@ -96,18 +90,6 @@ function ProjectFilters({ value, onChange, available, onReset }: ProjectFiltersP
         selected.add(type);
       }
       return { ...prev, type: Array.from(selected) };
-    });
-  };
-
-  const handleToggleTag = (tag: string) => {
-    setLocalFilters(prev => {
-      const selected = new Set(prev.tags ?? []);
-      if (selected.has(tag)) {
-        selected.delete(tag);
-      } else {
-        selected.add(tag);
-      }
-      return { ...prev, tags: Array.from(selected) };
     });
   };
 
@@ -214,32 +196,6 @@ function ProjectFilters({ value, onChange, available, onReset }: ProjectFiltersP
           </p>
         </fieldset>
 
-        <fieldset className="space-y-2 md:col-span-1">
-          <legend className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-text-secondary">Tags</legend>
-          <div className="flex flex-wrap gap-2">
-            {availableTags.map(tag => {
-              const isActive = localFilters.tags?.includes(tag);
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleToggleTag(tag)}
-                  className={clsx(
-                    'rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary',
-                    isActive
-                      ? 'border-brand-accent bg-brand-accent text-brand-on-accent'
-                      : 'border-brand-surface-highlight/60 bg-brand-primary/60 text-brand-text-secondary hover:border-brand-accent/60 hover:text-brand-text',
-                  )}
-                >
-                  #{tag}
-                </button>
-              );
-            })}
-            {availableTags.length === 0 ? (
-              <p className="text-sm text-brand-text-secondary">Tags will appear as projects are added.</p>
-            ) : null}
-          </div>
-        </fieldset>
       </div>
     </section>
   );

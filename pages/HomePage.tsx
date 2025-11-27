@@ -24,9 +24,6 @@ const normalizeFilters = (filters: Filters): Filters => {
     normalized.type = sortUnique(filters.type);
   }
 
-  if (filters.tags && filters.tags.length > 0) {
-    normalized.tags = sortUnique(filters.tags);
-  }
 
   if (filters.yearRange && filters.yearRange.length === 2) {
     const [from, to] = filters.yearRange;
@@ -43,7 +40,6 @@ const normalizeFilters = (filters: Filters): Filters => {
 
 const parseFiltersFromSearchParams = (params: URLSearchParams): Filters => {
   const types = params.getAll('type').map(value => value.trim()).filter(Boolean);
-  const tags = params.getAll('tag').map(value => value.trim()).filter(Boolean);
 
   const parseYear = (value: string | null): number | null => {
     if (!value) {
@@ -69,10 +65,6 @@ const parseFiltersFromSearchParams = (params: URLSearchParams): Filters => {
     result.type = sortUnique(types);
   }
 
-  if (tags.length > 0) {
-    result.tags = sortUnique(tags);
-  }
-
   if (yearRange) {
     result.yearRange = yearRange;
   }
@@ -92,9 +84,6 @@ const filtersToSearchParams = (filters: Filters): URLSearchParams => {
     params.append('type', type);
   });
 
-  normalized.tags?.forEach(tag => {
-    params.append('tag', tag);
-  });
 
   if (normalized.yearRange) {
     params.set('from', String(normalized.yearRange[0]));
@@ -109,7 +98,6 @@ const createFiltersKey = (filters: Filters): string => {
   return JSON.stringify({
     type: normalized.type ?? [],
     yearRange: normalized.yearRange ?? null,
-    tags: normalized.tags ?? [],
   });
 };
 
@@ -124,14 +112,12 @@ type AvailableFilters = {
 const hasActiveFilters = (filters: Filters): boolean => {
   return Boolean(
     (filters.type && filters.type.length > 0) ||
-    filters.yearRange ||
-    (filters.tags && filters.tags.length > 0),
+    filters.yearRange,
   );
 };
 
 const applyFilters = (projects: Project[], filters: Filters): Project[] => {
   const normalizedTypes = filters.type ?? [];
-  const normalizedTags = filters.tags ?? [];
   const [fromYear, toYear] = filters.yearRange ?? [undefined, undefined];
 
   return projects
@@ -145,14 +131,6 @@ const applyFilters = (projects: Project[], filters: Filters): Project[] => {
           return false;
         }
         if (typeof toYear === 'number' && project.year > toYear) {
-          return false;
-        }
-      }
-
-      if (normalizedTags.length > 0) {
-        const tags = project.tags ?? [];
-        const hasAllTags = normalizedTags.every(tag => tags.includes(tag));
-        if (!hasAllTags) {
           return false;
         }
       }
@@ -183,18 +161,16 @@ function HomePage(): React.ReactNode {
   const availableFilters = useMemo<AvailableFilters>(() => {
     const types = new Set<string>();
     const years = new Set<number>();
-    const tags = new Set<string>();
 
     sortedProjects.forEach(project => {
       types.add(project.type);
       years.add(project.year);
-      (project.tags ?? []).forEach(tag => tags.add(tag));
     });
 
     return {
       types: Array.from(types).sort((a, b) => a.localeCompare(b)),
       years: Array.from(years).sort((a, b) => a - b),
-      tags: Array.from(tags).sort((a, b) => a.localeCompare(b)),
+      tags: [],
     };
   }, [sortedProjects]);
 
