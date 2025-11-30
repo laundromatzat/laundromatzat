@@ -116,7 +116,7 @@ function ProjectFilters({ value, onChange, available, onReset }: ProjectFiltersP
   };
 
   return (
-    <section className="rounded-radius-md border border-brand-surface-highlight/60 bg-brand-secondary/40 p-4 shadow-sm">
+    <section className="p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-brand-text">Filter projects</h2>
         <button
@@ -134,7 +134,7 @@ function ProjectFilters({ value, onChange, available, onReset }: ProjectFiltersP
         </button>
       </div>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-3">
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
         <fieldset className="space-y-2">
           <legend className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-text-secondary">Type</legend>
           <div className="flex flex-wrap gap-2">

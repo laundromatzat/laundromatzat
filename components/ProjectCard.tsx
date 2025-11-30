@@ -24,7 +24,7 @@ function ProjectCard({ project, onSelect }: ProjectCardProps): React.ReactNode {
   };
 
   return (
-    <article className="group relative h-full">
+    <article className="group relative h-full animate-fade-in">
       <button
         type="button"
         onClick={handleClick}
