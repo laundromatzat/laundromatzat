@@ -370,11 +370,6 @@ function HomePage(): React.ReactNode {
         />
       </section>
 
-      <ChatAssistant
-        onSearch={handleAiSearch}
-        onReset={() => resetFilters("assistant")}
-      />
-
       {/* Footer / Contact */}
       <footer className="py-24 border-t border-white/5 bg-black/60 relative z-10">
         <div className="container mx-auto px-6">
