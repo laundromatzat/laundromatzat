@@ -242,22 +242,10 @@ function HomePage(): React.ReactNode {
     [setSearchParams]
   );
 
-  const handleAiSearch = useCallback(
-    (projects: Project[]) => {
-      setSearchParams(new URLSearchParams());
-
-      if (projects.length === 0) {
-        setDisplayedProjects(featuredProjects);
-        setViewState("featured");
-      } else {
-        const sortedResults = [...projects].sort(compareProjectsByDateDesc);
-        setDisplayedProjects(sortedResults);
-        setViewState("assistant");
-      }
-
-      trackChatQuery(projects.length);
+      setSearchParams(filtersToSearchParams(next));
     },
-    [featuredProjects, setSearchParams]
+    [setSearchParams]
+  );
   );
 
   useEffect(() => {
