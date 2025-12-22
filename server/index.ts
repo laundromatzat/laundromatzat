@@ -1,14 +1,14 @@
-import cors from 'cors';
-import express from 'express';
-import rateLimit from 'express-rate-limit';
-import helmet from 'helmet';
-import nodemailer from 'nodemailer';
-import { createMailingListRouter } from './routes/mailingListRoutes';
-import { MailingListService } from './services/mailingListService';
-import { config } from './utils/config';
+import cors from "cors";
+import express from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import nodemailer from "nodemailer";
+import { createMailingListRouter } from "./routes/mailingListRoutes";
+import { MailingListService } from "./services/mailingListService";
+import { config } from "./utils/config";
 
-import { createGeminiRouter } from './routes/geminiRoutes';
-import { geminiService } from './services/geminiService';
+import { createGeminiRouter } from "./routes/geminiRoutes";
+import { geminiService } from "./services/geminiService";
 
 const app = express();
 
@@ -21,16 +21,16 @@ app.use(
         return;
       }
 
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     },
-  }),
+  })
 );
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: "10kb" }));
 
 const subscribeLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 20,
-  standardHeaders: 'draft-7',
+  standardHeaders: "draft-7",
   legacyHeaders: false,
 });
 
@@ -45,20 +45,41 @@ const mailingListService = new MailingListService({
   fromEmail: config.fromEmail,
 });
 
-app.use('/api/subscribe', subscribeLimiter);
-app.use('/api', createMailingListRouter(mailingListService));
-app.use('/api', createGeminiRouter(geminiService));
+app.use("/api/subscribe", subscribeLimiter);
+app.use("/api", createMailingListRouter(mailingListService));
+app.use("/api", createGeminiRouter(geminiService));
+
+// Serve static frontend in production
+if (process.env.NODE_ENV === "production") {
+  // If running from /server, static files are in ../dist
+  const distPath = path.resolve(process.cwd(), "../dist");
+  app.use(express.static(distPath));
+
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) {
+      return next();
+    }
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+}
 
 app.use((_req, res) => {
-  res.status(404).json({ error: 'Not found' });
+  res.status(404).json({ error: "Not found" });
 });
 
-app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  void _next;
-  // eslint-disable-next-line no-console
-  console.error(error);
-  res.status(500).json({ error: 'Internal server error' });
-});
+app.use(
+  (
+    error: Error,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+  ) => {
+    void _next;
+    // eslint-disable-next-line no-console
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+);
 
 app.listen(config.port, () => {
   // eslint-disable-next-line no-console
