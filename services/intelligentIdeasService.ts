@@ -47,10 +47,13 @@ export const organizeData = async (
 };
 
 export const reorganizeWithInstruction = async (
-  _instruction: string,
+  instruction: string,
   organizedData: OrganizedData,
-  _allInputs: string[]
+  allInputs: string[]
 ): Promise<OrganizedData> => {
-  console.warn("AI reorganization is disabled.");
+  console.warn("AI reorganization is disabled.", {
+    instruction,
+    count: allInputs.length,
+  });
   return organizedData;
 };
