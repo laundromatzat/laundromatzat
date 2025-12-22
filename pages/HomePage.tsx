@@ -8,15 +8,10 @@ import React, {
 import { PROJECTS } from "../constants";
 import { Project } from "../types";
 import ProjectGrid from "../components/ProjectGrid";
-import ChatAssistant from "../components/ChatAssistant";
 import PageMetadata from "../components/PageMetadata";
 import ProjectFilters, { Filters } from "../components/ProjectFilters";
 import { compareProjectsByDateDesc } from "../utils/projectDates";
-import {
-  trackFilterApplied,
-  trackReset,
-  trackChatQuery,
-} from "../lib/analytics";
+import { trackFilterApplied, trackReset } from "../lib/analytics";
 import { useSearchParams } from "react-router-dom";
 
 const FEATURED_TITLES = new Set(["Sea of Love", "Seasons of Love"]);
