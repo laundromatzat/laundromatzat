@@ -242,12 +242,6 @@ function HomePage(): React.ReactNode {
     [setSearchParams]
   );
 
-      setSearchParams(filtersToSearchParams(next));
-    },
-    [setSearchParams]
-  );
-  );
-
   useEffect(() => {
     if (!hasActiveFilters(filters)) {
       previousFiltersKeyRef.current = "";
