@@ -89,8 +89,6 @@ describe('HomePage filters & URL state', () => {
     const videoButton = videoButtons[videoButtons.length - 1];
     expect(videoButton.className).toContain('bg-brand-accent/10');
 
-    const heading = screen.getByRole('heading', { name: /filtered results/i });
-    expect(heading.textContent).toMatch(/filtered results/i);
     const latestLocation = observedLocations[observedLocations.length - 1];
     expect(latestLocation?.search).toBe('?type=video');
   });

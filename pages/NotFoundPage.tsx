@@ -11,9 +11,9 @@ function NotFoundPage(): React.ReactNode {
         path="/404"
       />
       <section className="space-y-4">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">404</p>
-        <h1 className="text-3xl font-bold text-brand-text">Page not found</h1>
-        <p className="mx-auto max-w-xl text-brand-text-secondary">
+        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-aura-text-secondary">404</p>
+        <h1 className="text-3xl font-bold text-aura-text-primary">Page not found</h1>
+        <p className="mx-auto max-w-xl text-aura-text-secondary">
           The URL you tried doesn&apos;t exist. Check the address for typos or head back to the homepage to continue exploring the
           portfolio.
         </p>

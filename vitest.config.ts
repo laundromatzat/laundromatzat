@@ -9,4 +9,7 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, "tests/e2e/**"],
     environmentMatchGlobs: [["tests/server/**/*.test.ts", "node"]],
   },
+  build: {
+    sourcemap: false,
+  },
 });

@@ -30,6 +30,10 @@ const config: Config = {
         xl: '1440px',
       },
       colors: {
+        'aura-bg': '#F5F2EB',
+        'aura-text-primary': '#2C2A26',
+        'aura-text-secondary': '#4B4943',
+        'aura-accent': '#D6D1C7',
         'brand-primary': 'var(--color-bg-canvas)',
         'brand-secondary': 'var(--color-bg-panel)',
         'brand-surface': 'var(--color-bg-panel)',
@@ -79,7 +83,7 @@ const config: Config = {
         },
       },
       boxShadow: {
-        'layer-1': '0 8px 24px rgba(0,0,0,0.24)',
+        'layer-1': '0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.2)',
       },
       zIndex: {
         nav: '1200',

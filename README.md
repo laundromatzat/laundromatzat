@@ -1,168 +1,118 @@
-<div align="center">
-  <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Laundromatzat Digital Atelier (Monorepo)
 
-# Laundromatzat – Creative Portfolio
+Welcome to the **Laundromatzat** monorepo. This repository houses the main creative portfolio and a suite of specialized tools.
 
-Laundromatzat is a Vite + React experience showcasing film, photography, cinemagraphs, and experimental tools.
+## 🛠️ Quick Start
 
-## Table of contents
+This project is configured as a single workspace with shared dependencies where possible.
 
-1. [Architecture at a glance](#architecture-at-a-glance)
-2. [Prerequisites](#prerequisites)
-3. [Initial setup](#initial-setup)
-4. [Local development workflow](#local-development-workflow)
-5. [Quality checks & tests](#quality-checks--tests)
-6. [Environment configuration](#environment-configuration)
-7. [Production setup](#production-setup)
-8. [Data management](#data-management)
-9. [Project structure](#project-structure)
-10. [Maintenance checklist](#maintenance-checklist)
+### Prerequisites
 
-## Architecture at a glance
+- Node.js 18+
+- Google Gemini API Key (for Portfolio AI tools).
+- LM Studio (optional, for Paystub Analyzer local LLM).
 
-- **Frontend:** React 19 rendered with Vite 6 and Tailwind CSS. Shared types live in `types.ts` and components use utility-first
-  styling with composition-heavy layouts.
-- **Static Site:** The application is a fully static SPA (Single Page Application) deployable to any static host (GitHub Pages, Netlify, etc.).
-- **Testing toolchain:** Vitest exercises UI logic.
+### Setup
 
-## Prerequisites
+1.  **Install dependencies**
 
-- [Node.js 18+](https://nodejs.org/) (20 LTS recommended).
-- npm 9+ (ships with current Node LTS releases).
+    ```bash
+    npm install
+    ```
 
-## Initial setup
+2.  **Configure Environment**
+    Create `.env.local`:
 
-```bash
-git clone https://github.com/<your-account>/laundromatzat.git
-cd laundromatzat
-npm install
-```
+    ```env
+    VITE_GEMINI_API_KEY=your_key
+    ```
 
-Create a `.env.local` file in the repository root for local development overrides (optional):
+3.  **Run Development Server**
 
-```bash
-# Optional frontend overrides
-VITE_SITE_URL=https://laundromatzat.com
-```
+    ```bash
+    npm run dev
+    ```
 
-## Local development workflow
+    - Portfolio: `http://localhost:5173`
+    - Fabric Designer: `http://localhost:5173/fabric-designer`
+    - Paystub Analyzer: `http://localhost:5173/paystub-analyzer`
 
-1. **Run the Vite dev server**
+### Running the Paystub Backend
 
-   ```bash
-   npm run dev
-   ```
-
-   The frontend is served at http://localhost:5173 with hot module replacement.
-
-2. **Populate and iterate on content**
-
-   Edit `data/projects.json` (or import `portfolio-data.csv`) to refresh the catalogue. Changes are parsed via
-   `utils/projectData.ts` and immediately reflected in the UI.
-
-## Quality checks & tests
-
-### Linting
-
-Run ESLint in CI mode to keep TypeScript, React hooks, and accessibility rules clean:
+To use the Paystub Analyzer, you must also start the local backend:
 
 ```bash
-npm run lint
+cd server
+npm start
 ```
 
-### Unit & component tests (Vitest)
+## 🤖 AI Architecture
 
-Vitest covers rendering logic, hooks, and shared utilities. The default test run matches CI:
+This project uses a **"Grounding-to-Visuals"** pattern to ensure AI accuracy.
 
-```bash
-npm test
-```
+- **Research Phase**: Complex requests (like Fabric Design) first go through a research step to gather technical facts.
+- **Generation Phase**: The synthesized facts are used as context for the final creative generation.
 
-### Manual QA against the production bundle
+## 🚀 Deployment & Security
 
-Before shipping, build and preview the production assets to catch asset-path issues:
+To deploy this application to production (e.g., laundromatzat.com), follow these critical steps to ensure security and functionality.
 
-```bash
-npm run build
-npm run preview
-```
+### 1. Environment Variables
 
-The preview server serves the `dist/` folder on http://localhost:4173 and mirrors how the static files will behave behind a CDN.
+You must configure the following environment variables in your production environment (e.g., Render, HerokuConfig, or `.env` file on your server).
 
-## Environment configuration
+| Variable | Description | Security Note |
+|Base URL| `http://localhost:5173` | Set to your production URL (e.g., `https://laundromatzat.com`) |
+| `NODE_ENV` | Set to `production` | Enables optimization and strict security checks. |
+| `PORT` | Listening port (default: 4000) | Set by your hosting provider usually. |
+| `JWT_SECRET` | Secret key for signing session tokens. | **CRITICAL**: Generate a long, random string (e.g., `openssl rand -base64 32`). Do NOT use the default. |
+| `VITE_GEMINI_API_KEY` | Google Gemini API Key. | **RESTRICT THIS KEY**: In Google Cloud Console, restrict this key to `https://laundromatzat.com` (HTTP Referrer restriction). |
+| `LM_STUDIO_API_URL` | URL for local/hosted LLM. | Ensure this is accessible from the backend server if used. |
 
-| Variable        | Required | Default                     | Purpose                                                               |
-| --------------- | -------- | --------------------------- | --------------------------------------------------------------------- |
-| `VITE_SITE_URL` | No       | `https://laundromatzat.com` | Used to build canonical metadata tags. Set to your production domain. |
+### 2. Database & Storage Strategy
 
-## Production setup
+The application uses **SQLite** (`paystubs.db`) and local file storage (`server/uploads/`).
 
-1. **Build the frontend**
+- **Persistence**: If deploying to a containerized platform (Heroku, Render, AWS ECS), the filesystem is often _ephemeral_ (deleted on restart).
+- **Solution**:
+  - **VPS (DigitalOcean Droplet/EC2)**: SQLite is fine. Ensure the `server/` directory is backed up.
+  - **PaaS (Heroku/Render)**: You MUST mount a **Persistent Volume** (Disk) to `/app/server` (or specifically `server/paystubs.db` and `server/uploads`).
+  - **Alternative**: Migrate to PostgreSQL/MySQL and S3 for uploads if scaling is required.
 
-   ```bash
-   npm install
-   npm run build
-   ```
+### 3. Build & Run
 
-   Deploy the generated `dist/` directory to your static host (GitHub Pages, Vercel, Netlify, etc.). Ensure the
-   host is configured to serve `index.html` for all SPA routes.
+For a single-server deployment (serving both Frontend and Backend):
 
-2. **GitHub Pages Deployment**
+1.  **Build Frontend**:
 
-   This repository is configured to deploy automatically to GitHub Pages via GitHub Actions.
-   - Workflow file: `.github/workflows/deploy.yml`
-   - Trigger: Push to `main` branch.
+    ```bash
+    npm run build
+    ```
 
-## Data management
+    This creates the optimized static files in `dist/`.
 
-- **Portfolio catalogue:** `data/projects.json` (and the optional `portfolio-data.csv` import) power the public projects grid.
-- **Links page:** Curated resources live in `public/data/links.csv` and feed the `/links` route.
+2.  **Start Backend**:
 
-Refer to [`docs/data-schema.md`](docs/data-schema.md) for the full project schema and CSV mapping details.
+    ```bash
+    cd server
+    npm install
+    # Ensure dependencies like helmet and rate-limit are installed
+    npm install helmet express-rate-limit
 
-## Project structure
+    # Start the server (Process Manager recommended, e.g., PM2)
+    npm start
+    ```
 
-```
-├── App.tsx                 # Route wiring and layout chrome
-├── components/             # Reusable UI pieces (cards, modals)
-├── data/                   # Portfolio dataset
-├── docs/                   # In-depth guides (data schema)
-├── pages/                  # React Router routes
-├── public/                 # Static assets and CSV imports
-├── services/               # Frontend data clients
-├── tests/                  # Vitest suites, Playwright specs
-├── types.ts                # Shared TypeScript interfaces
-├── utils/                  # Parsing and formatting helpers
-└── vite.config.ts          # Vite configuration
-```
+    _Note: The server is configured to serve the `dist/` frontend files automatically when `NODE_ENV=production`._
 
-## Maintenance checklist
+### 4. Security Checklist
 
-- [ ] Update `data/projects.json` with fresh work, tagging entries for smarter filtering.
-- [ ] Refresh hero imagery to reflect the latest creative direction.
-- [ ] Review Lighthouse scores quarterly to maintain performance and accessibility targets.
-- [ ] Pin dependency versions before major launches to avoid unexpected regressions.
+- [ ] **HTTPS**: Ensure your domain has an SSL certificate (e.g., via Let's Encrypt or your PaaS provider).
+- [ ] **API Restrictions**: checking your Google Cloud Console to ensure `VITE_GEMINI_API_KEY` can only be called from `https://laundromatzat.com`.
+- [ ] **CORS**: The backend is configured to allow `https://laundromatzat.com`. If you change your domain, update `allowedOrigins` in `server/server.js`.
+- [ ] **Secrets**: Never commit `.env` files to GitHub. They are ignored by default, but double-check.
 
-## Project Assessment & Directions
+### 5. Troubleshooting
 
-### Health snapshot
-
-- **Experience polish:** The React + Vite frontend is production-ready with a modular component system and typed data pipeline that keeps layouts and content in sync.[^architecture]
-- **Data readiness:** Portfolio content is easy to refresh via `data/projects.json` (or the CSV importer) and downstream utilities normalise the schema for consistent rendering.[^data]
-- **Quality gates:** Established linting and Vitest coverage keep regressions in check across UI.[^quality]
-
-### Strategic directions
-
-1. **Content operations:** Document a repeatable workflow for ingesting new portfolio entries, including media hosting conventions and accessibility checks.[^content-next]
-2. **Analytics & insights:** Layer in privacy-respecting analytics to measure usage so roadmap bets are data-informed.[^analytics-next]
-
-[^architecture]: See "Architecture at a glance" for the React breakdown.
-
-[^data]: Refer to "Data management" and `utils/projectData.ts` for schema normalisation and import details.
-
-[^quality]: "Quality checks & tests" outlines linting and Vitest coverage that underpin CI.
-
-[^content-next]: Follow the catalogue guidance in "Data management" and `docs/data-schema.md` when adding or updating work.
-
-[^analytics-next]: Use the analytics ideas introduced under "Roadmap & next steps" as a starting point for instrumentation planning.
+- **PDF Processing**: If `pdfjs-dist` errors occur in production, ensure the host environment supports the necessary Node.js bindings or libraries.
+- **Blank Screen**: Check browser console. If API calls fail (401/403), check CORS settings and `JWT_SECRET` consistency.

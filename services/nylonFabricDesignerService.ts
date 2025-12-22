@@ -1,13 +1,13 @@
 import createDOMPurify from "dompurify";
 import { z } from "zod";
-
-// geminiClient has been removed, so we stub out the content generation
-// import { generateContent } from './geminiClient';
+import { generateContent } from "./geminiClient";
 
 type ContentFetcher = (prompt: string) => Promise<string>;
 
 type NylonFabricDesignerServiceOptions = {
   contentFetcher?: ContentFetcher;
+  onResearchStart?: () => void;
+  onResearchComplete?: (findings: string) => void;
 };
 
 type DOMPurifyInstance = ReturnType<typeof createDOMPurify>;
@@ -86,33 +86,85 @@ const VisualRepresentationSchema = z.object({
 
 const VisualsResponseSchema = z.array(VisualRepresentationSchema);
 
+import { performResearch } from "./researchService";
+
 export async function generateSewingGuide(
   description: string,
   _apiKey?: string,
   options?: NylonFabricDesignerServiceOptions
 ): Promise<string> {
-  if (options?.contentFetcher) {
-    // In tests we don't check the exact prompt usually, but if we do, we might need the full text.
-    // However, the test just injects a response. The prompt passed to fetcher matters if the fetcher checks it.
-    // The previous code had a long prompt. Let's restore the logic but maybe keep the prompt short if tests don't expect the long one?
-    // The original code had the full prompt. I'll put a simplified prompt since the real AI is disabled anyway.
+  const fetchContent = options?.contentFetcher ?? generateContent;
 
-    // Pass description as prompt for simplicity in stub mode.
-    const guide = await options.contentFetcher(description);
-    return sanitizeGuideContent(guide);
-  }
+  // 1. Perform Grounding/Research Step
+  let researchContext = "";
+  if (options?.onResearchStart) options.onResearchStart();
 
-  console.warn("AI generation is disabled. Returning placeholder guide.");
+  // Create a specific research query based on the user's project
+  const researchTopic = `Technical requirements, materials, and stitch techniques for: ${description}`;
+  researchContext = await performResearch(
+    researchTopic,
+    "Technical Sewing & Softgoods Manufacturing"
+  );
 
-  const placeholderGuide = `
-    <h3>AI Assistant Disabled</h3>
-    <p>The AI Fabric Designer features have been temporarily disabled. Please check back later.</p>
-    <div class="tip-box">
-      <strong>Note:</strong> We are currently updating our backend services.
-    </div>
-  `;
+  if (options?.onResearchComplete) options.onResearchComplete(researchContext);
 
-  return sanitizeGuideContent(placeholderGuide);
+  // 2. Main Generation Step with Grounding
+  const prompt = `You are an expert in hand-sewing nylon fabric and crafting. Analyze the following project description and create a comprehensive hand-sewing guide.
+
+RESEARCH CONTEXT (Verified Facts):
+${researchContext}
+
+CRITICAL REQUIREMENTS:
+- ALL instructions must be for HAND SEWING ONLY - NO sewing machines
+- Use handheld needle and thread exclusively
+- Can recommend Speedy Stitcher sewing awl tool for heavy-duty seams
+- Reference techniques from MYOG (Make Your Own Gear) hand-sewing guides
+- Focus on hand-sewing stitches: running stitch, backstitch, whipstitch, saddle stitch, etc.
+
+Research and reference techniques from:
+- MYOG (Make Your Own Gear) hand-sewing guides
+- Bushcraft and camping gear repair techniques
+- Leather working hand-sewing methods (applicable to heavy nylon)
+- Traditional sailmaking hand-sewing techniques
+- DIY ultralight backpacking hand-sewing guides
+
+Format your response with clear HTML structure using these tags:
+- <h3> for major sections
+- <h4> for subsections
+- <p> for paragraphs
+- <ul> and <ol> for lists
+- <strong> for emphasis
+- <div class="tip-box"> for tips and notes
+
+Include these sections:
+1. Project Overview & Analysis
+2. Materials Needed (specific nylon types, waxed thread, bonded nylon thread, notions)
+3. Tools Required (needles, Speedy Stitcher if needed, awl, scissors, pins, clips)
+4. Fabric Cutting Guide (with measurements and diagram descriptions)
+5. Step-by-Step Hand-Sewing Assembly Instructions
+   - Where to place folds
+   - Where to hand-stitch (backstitch, running stitch, whipstitch, saddle stitch, etc.)
+   - When to use Speedy Stitcher for heavy-duty seams
+   - Hem instructions (hand-rolled, whipstitch, etc.)
+   - How to connect pieces by hand
+6. Hand-Sewing Finishing Techniques
+7. Pro Tips & Common Mistakes to Avoid
+
+Use professional hand-sewing terminology and explain techniques like:
+- Hand-stitch types and when to use them (backstitch for strength, running stitch for basting, whipstitch for edges)
+- Proper seam allowances for hand-sewn nylon
+- How to lock stitches at beginning and end
+- Edge finishing methods by hand
+- Tips for working with slippery nylon fabric when hand-sewing
+- When to use Speedy Stitcher awl for thick seams or heavy-duty work
+
+PROJECT DESCRIPTION:
+${description}
+
+Generate the complete guide now:`;
+
+  const guide = await fetchContent(prompt);
+  return sanitizeGuideContent(guide);
 }
 
 export async function generateProjectImages(
@@ -120,37 +172,62 @@ export async function generateProjectImages(
   _apiKey?: string,
   options?: NylonFabricDesignerServiceOptions
 ) {
-  if (options?.contentFetcher) {
-    // Test mode
-    const responseText = await options.contentFetcher(description);
-    const cleanJson = responseText
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+  const prompt = `For this hand-sewn nylon fabric project: "${description}"
 
-    try {
-      const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
-      const sanitizedVisuals = await Promise.all(
-        visuals.map(async (visual) => ({
-          stage: visual.stage,
-          svg: await sanitizeSvg(visual.svg),
-        }))
-      );
-      return sanitizedVisuals;
-    } catch (error) {
-      console.error(
-        "Failed to parse project visuals response:",
-        error,
-        responseText
-      );
-      throw new Error(
-        "The fabric designer returned an invalid visualization response. Please try again."
-      );
-    }
+Create 3 visual representations using SVG code. Generate complete, valid SVG markup for:
+
+1. CUTTING PATTERN DIAGRAM - Show the pattern pieces laid out with measurements, fold lines, and cutting instructions
+2. ASSEMBLY DIAGRAM - Show how pieces connect with stitch lines, seam allowances, and assembly order
+3. FINISHED PRODUCT RENDERING - Show an isometric or 3D-style view of the completed item
+
+Return ONLY a JSON array (no markdown, no backticks) with this structure:
+[
+  {
+    "stage": "Cutting Pattern",
+    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
+  },
+  {
+    "stage": "Assembly Diagram",
+    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
+  },
+  {
+    "stage": "Finished Product",
+    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
   }
+]
 
-  console.warn("AI generation is disabled. Returning placeholder images.");
+Make the SVGs detailed, technical, and professional looking with:
+- Clear labels and measurements
+- Different colors for different pattern pieces
+- Dotted lines for fold lines
+- Dashed lines for stitch lines
+- Arrows showing assembly direction
+- Realistic proportions`;
 
-  // Return empty array or placeholder visuals
-  return [];
+  const fetchContent = options?.contentFetcher ?? generateContent;
+  const responseText = await fetchContent(prompt);
+  const cleanJson = responseText
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+  try {
+    const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
+    const sanitizedVisuals = await Promise.all(
+      visuals.map(async (visual) => ({
+        stage: visual.stage,
+        svg: await sanitizeSvg(visual.svg),
+      }))
+    );
+    return sanitizedVisuals;
+  } catch (error) {
+    console.error(
+      "Failed to parse project visuals response:",
+      error,
+      responseText
+    );
+    throw new Error(
+      "The fabric designer returned an invalid visualization response. Please try again."
+    );
+  }
 }

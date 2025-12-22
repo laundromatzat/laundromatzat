@@ -10,6 +10,11 @@ export default defineConfig({
     },
   },
   server: {
-    // No proxy needed for static site deployment
+    proxy: {
+      "/api": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+      },
+    },
   },
 });
