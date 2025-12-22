@@ -111,10 +111,14 @@ const LinkModal = ({
           className="space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-zinc-400">
+            <label
+              htmlFor="link-title"
+              className="block text-sm font-medium text-zinc-400"
+            >
               Title
             </label>
             <input
+              id="link-title"
               required
               className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
               value={formData.title}
@@ -124,10 +128,14 @@ const LinkModal = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400">
+            <label
+              htmlFor="link-url"
+              className="block text-sm font-medium text-zinc-400"
+            >
               URL
             </label>
             <input
+              id="link-url"
               required
               type="url"
               className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
@@ -138,10 +146,14 @@ const LinkModal = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400">
+            <label
+              htmlFor="link-desc"
+              className="block text-sm font-medium text-zinc-400"
+            >
               Description
             </label>
             <textarea
+              id="link-desc"
               className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
               rows={3}
               value={formData.description}
@@ -151,10 +163,14 @@ const LinkModal = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400">
+            <label
+              htmlFor="link-tags"
+              className="block text-sm font-medium text-zinc-400"
+            >
               Tags (comma separated)
             </label>
             <input
+              id="link-tags"
               className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
               value={formData.tags}
               onChange={(e) =>
@@ -163,10 +179,14 @@ const LinkModal = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-400">
+            <label
+              htmlFor="link-image"
+              className="block text-sm font-medium text-zinc-400"
+            >
               Image URL (optional)
             </label>
             <input
+              id="link-image"
               type="url"
               className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
               value={formData.image_url}
@@ -208,7 +228,7 @@ function LinksPage(): React.ReactNode {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
 
-  const fetchLinks = async () => {
+  const fetchLinks = React.useCallback(async () => {
     if (!token) return;
     setStatus("loading");
     try {
@@ -223,11 +243,11 @@ function LinksPage(): React.ReactNode {
       console.error(err);
       setStatus("error");
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchLinks();
-  }, [token]);
+  }, [fetchLinks]);
 
   const handleCreate = async (data: Omit<LinkItem, "id">) => {
     try {
@@ -354,10 +374,14 @@ function LinksPage(): React.ReactNode {
       {/* Filters */}
       <div className="p-4 rounded-xl border border-brand-surface-highlight/60 bg-brand-secondary/40 space-y-4">
         <div>
-          <label className="text-xs font-semibold uppercase tracking-widest text-aura-text-secondary mb-1 block">
+          <label
+            htmlFor="search-links"
+            className="text-xs font-semibold uppercase tracking-widest text-aura-text-secondary mb-1 block"
+          >
             Search
           </label>
           <input
+            id="search-links"
             type="search"
             placeholder="Search bookmarks..."
             className="w-full px-4 py-2 rounded-lg border border-brand-surface-highlight/60 bg-brand-primary/70 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -369,9 +393,9 @@ function LinksPage(): React.ReactNode {
         </div>
         {availableTags.length > 0 && (
           <div>
-            <label className="text-xs font-semibold uppercase tracking-widest text-aura-text-secondary mb-2 block">
+            <span className="text-xs font-semibold uppercase tracking-widest text-aura-text-secondary mb-2 block">
               Tags
-            </label>
+            </span>
             <div className="flex flex-wrap gap-2">
               {availableTags.map((tag) => (
                 <button

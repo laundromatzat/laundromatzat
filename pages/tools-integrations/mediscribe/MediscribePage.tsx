@@ -45,12 +45,14 @@ function MediscribePage() {
           // Map DB columns (original_text/rewritten_text) to frontend types (shorthand/fullNote)
           setState((prev) => ({
             ...prev,
-            examples: data.examples.map((e: any) => ({
-              id: e.id,
-              shorthand: e.original, // mapped from API response 'original' -> DB 'original_text'
-              fullNote: e.rewritten, // mapped from API response 'rewritten' -> DB 'rewritten_text'
-              timestamp: Date.now(), // or store/retrieve timestamp if added to API
-            })),
+            examples: data.examples.map(
+              (e: { id: number; original: string; rewritten: string }) => ({
+                id: e.id,
+                shorthand: e.original, // mapped from API response 'original' -> DB 'original_text'
+                fullNote: e.rewritten, // mapped from API response 'rewritten' -> DB 'rewritten_text'
+                timestamp: Date.now(), // or store/retrieve timestamp if added to API
+              })
+            ),
           }));
         }
       })

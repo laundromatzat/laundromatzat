@@ -1,10 +1,9 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 
-import {useCallback, useState} from 'react';
+import { useCallback, useState } from "react";
 
 // Interface for the injected window.aistudio object
 interface AIStudio {
@@ -16,8 +15,8 @@ export const useApiKey = () => {
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
 
   const validateApiKey = useCallback(async (): Promise<boolean> => {
-    const aistudio = (window as any).aistudio as AIStudio | undefined;
-    
+    const aistudio = (window as unknown as { aistudio: AIStudio }).aistudio;
+
     // If the environment supports key selection
     if (aistudio) {
       try {
@@ -29,7 +28,7 @@ export const useApiKey = () => {
         }
       } catch (error) {
         // Fallback if check fails
-        console.warn('API Key check failed', error);
+        console.warn("API Key check failed", error);
         setShowApiKeyDialog(true);
         return false;
       }
@@ -39,7 +38,7 @@ export const useApiKey = () => {
 
   const handleApiKeyDialogContinue = useCallback(async () => {
     setShowApiKeyDialog(false);
-    const aistudio = (window as any).aistudio as AIStudio | undefined;
+    const aistudio = (window as unknown as { aistudio: AIStudio }).aistudio;
     if (aistudio) {
       await aistudio.openSelectKey();
     }

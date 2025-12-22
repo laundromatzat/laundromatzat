@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { GenerationRequest, ModelProvider, TrainingExample } from "../types";
 
 // Initialize Gemini Client
@@ -54,7 +54,10 @@ export const generateClinicalNote = async (
         ? "gemini-3-pro-preview"
         : "gemini-2.5-flash-lite-latest";
 
-      const config: any = {
+      const config: {
+        systemInstruction: string;
+        thinkingConfig?: { thinkingBudget: number };
+      } = {
         systemInstruction: SYSTEM_INSTRUCTION,
       };
 
@@ -176,7 +179,7 @@ export const checkLocalHealth = async (
     // Validate URL syntax first
     try {
       new URL(url);
-    } catch (e) {
+    } catch {
       return {
         ok: false,
         message: "Invalid URL format",

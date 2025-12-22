@@ -4,7 +4,6 @@ import {
   generateClinicalNote,
   analyzeStyleDiff,
   parseClinicalNote,
-  NoteSection,
 } from "../services/llmService";
 import { TrainingExample, UserSettings } from "../types";
 import { Button } from "./Button";
@@ -18,7 +17,6 @@ import {
   Loader2,
   RefreshCw,
   AlertTriangle,
-  Eye,
   Edit3,
   LayoutTemplate,
 } from "lucide-react";
@@ -182,12 +180,16 @@ export const NoteGenerator: React.FC<NoteGeneratorProps> = ({
       {/* Input Section */}
       <div className="flex-1 flex flex-col min-h-[500px]">
         <div className="mb-4 flex justify-between items-center">
-          <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+          <label
+            htmlFor="shorthand-input"
+            className="text-sm font-bold text-slate-700 uppercase tracking-wider"
+          >
             Clinical Shorthand / Dictation
           </label>
           <span className="text-xs text-slate-400">{input.length} chars</span>
         </div>
         <textarea
+          id="shorthand-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           className="flex-1 w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm leading-relaxed shadow-sm"
@@ -235,7 +237,7 @@ export const NoteGenerator: React.FC<NoteGeneratorProps> = ({
                         </li>
                         <li>
                           Check if CORS is configured (e.g.,
-                          OLLAMA_ORIGINS="*").
+                          OLLAMA_ORIGINS=&quot;*&quot;).
                         </li>
                         <li>
                           Verify the model name in settings matches exactly.
@@ -245,8 +247,8 @@ export const NoteGenerator: React.FC<NoteGeneratorProps> = ({
                       <>
                         <li>Check your internet connection.</li>
                         <li>
-                          If 'Thinking Mode' is on, try disabling it for faster
-                          processing.
+                          If &apos;Thinking Mode&apos; is on, try disabling it
+                          for faster processing.
                         </li>
                         <li>The API might be experiencing high traffic.</li>
                       </>
@@ -262,9 +264,9 @@ export const NoteGenerator: React.FC<NoteGeneratorProps> = ({
       {/* Output Section */}
       <div className="flex-1 flex flex-col min-h-[500px]">
         <div className="mb-4 flex justify-between items-center">
-          <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+          <span className="text-sm font-bold text-slate-700 uppercase tracking-wider">
             Generated Clinical Note
-          </label>
+          </span>
           <div className="flex gap-2 bg-slate-100 p-1 rounded-lg">
             {/* View Toggle */}
             <button

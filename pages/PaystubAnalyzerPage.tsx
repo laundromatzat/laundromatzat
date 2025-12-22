@@ -190,8 +190,15 @@ const PaystubAnalyzerPage: React.FC = () => {
         // Normalize data structure if backend returns different keys
         const normalizedData = {
           ...data,
-          paidHours: data.paidHours || (data as any).hoursPaid || [],
-          bankedHours: data.bankedHours || (data as any).bankedHours || [],
+          paidHours:
+            data.paidHours ||
+            (data as unknown as { hoursPaid: ReportedHourEntry[] }).hoursPaid ||
+            [],
+          bankedHours:
+            data.bankedHours ||
+            (data as unknown as { bankedHours: ReportedHourEntry[] })
+              .bankedHours ||
+            [],
         };
         handleAnalysisComplete(normalizedData);
       } catch (e) {

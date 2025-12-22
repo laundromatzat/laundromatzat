@@ -2,7 +2,13 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { AnalysisResult, AnalyzedDocument, SavedDocument } from "../types";
 import {
   FolderIcon,
@@ -342,10 +348,18 @@ const FileTreeNode: React.FC<FileTreeNodeProps> = ({
           style={{ paddingLeft: `${level * indentSize}rem` }}
         >
           <div
-            className="flex items-center flex-grow cursor-pointer"
+            role="button"
+            tabIndex={0}
+            className="flex items-center flex-grow cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-gem-blue rounded"
             onClick={(e) => {
               e.stopPropagation();
               if (!isRenaming) setIsOpen(!isOpen);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                if (!isRenaming) setIsOpen(!isOpen);
+              }
             }}
           >
             <span className="mr-1 text-gem-offwhite/50 w-4 h-4 flex items-center justify-center">
@@ -521,8 +535,6 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
   result,
   existingDocuments = [],
   uploadedFiles,
-  onStartChat,
-  onReset,
   onSave,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -629,6 +641,16 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
     };
   }, [previewUrl]);
 
+  const closePreview = useCallback(() => {
+    setPreviewDoc(null);
+    setPreviewFile(null);
+    setPreviewText(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  }, [previewUrl]);
+
   // Accessiblity for Preview Modal
   useEffect(() => {
     if (previewDoc) {
@@ -664,7 +686,7 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
         lastActiveElement.current?.focus();
       };
     }
-  }, [previewDoc]);
+  }, [previewDoc, closePreview]);
 
   const handleExportJson = () => {
     const dataStr =
@@ -1046,16 +1068,6 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
     }
   };
 
-  const closePreview = () => {
-    setPreviewDoc(null);
-    setPreviewFile(null);
-    setPreviewText(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
-  };
-
   if (!result) return null;
 
   return (
@@ -1221,7 +1233,7 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                     </thead>
                     <tbody className="divide-y divide-gem-mist/30">
                       {filteredDocs.length > 0 ? (
-                        filteredDocs.map((doc, _idx) => {
+                        filteredDocs.map((doc) => {
                           // Find the actual index in the master list for editing state
                           const masterIndex = editableDocs.indexOf(doc);
                           const isEditing = editingIndex === masterIndex;
@@ -1238,10 +1250,14 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                               </td>
                               <td className="px-4 py-4 align-top w-1/3">
                                 <div className="mb-2">
-                                  <label className="block text-xs font-bold text-gem-offwhite/60 mb-1">
+                                  <label
+                                    htmlFor={`filename-${masterIndex}`}
+                                    className="block text-xs font-bold text-gem-offwhite/60 mb-1"
+                                  >
                                     Filename
                                   </label>
                                   <input
+                                    id={`filename-${masterIndex}`}
                                     type="text"
                                     value={editForm.filename}
                                     onChange={(e) =>
@@ -1254,10 +1270,14 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                                   />
                                 </div>
                                 <div className="mb-2">
-                                  <label className="block text-xs font-bold text-gem-offwhite/60 mb-1">
+                                  <label
+                                    htmlFor={`version-${masterIndex}`}
+                                    className="block text-xs font-bold text-gem-offwhite/60 mb-1"
+                                  >
                                     Version
                                   </label>
                                   <input
+                                    id={`version-${masterIndex}`}
                                     type="text"
                                     value={editForm.detected_version || ""}
                                     onChange={(e) =>
@@ -1271,7 +1291,10 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-bold text-gem-offwhite/60 mb-1">
+                                  <label
+                                    htmlFor={`keywords-${masterIndex}`}
+                                    className="block text-xs font-bold text-gem-offwhite/60 mb-1"
+                                  >
                                     Keywords
                                   </label>
                                   <div className="flex flex-wrap gap-1 mb-2">
@@ -1292,6 +1315,7 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                                   </div>
                                   <div className="flex gap-1">
                                     <input
+                                      id={`keywords-${masterIndex}`}
                                       type="text"
                                       value={newTag}
                                       onChange={(e) =>
@@ -1316,10 +1340,14 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                               </td>
                               <td className="px-4 py-4 align-top">
                                 <div className="mb-2">
-                                  <label className="block text-xs font-bold text-gem-offwhite/60 mb-1">
+                                  <label
+                                    htmlFor={`folder-path-${masterIndex}`}
+                                    className="block text-xs font-bold text-gem-offwhite/60 mb-1"
+                                  >
                                     Folder Path
                                   </label>
                                   <input
+                                    id={`folder-path-${masterIndex}`}
                                     type="text"
                                     value={editForm.suggested_path}
                                     onChange={(e) =>
@@ -1395,9 +1423,16 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                               <td className="px-4 py-3 align-top max-w-[200px]">
                                 <div className="flex items-center">
                                   <div
-                                    className="font-medium text-gem-blue truncate mr-2 cursor-pointer"
+                                    role="button"
+                                    tabIndex={0}
+                                    className="font-medium text-gem-blue truncate mr-2 cursor-pointer focus:outline-none focus:underline"
                                     title={doc.filename}
                                     onClick={() => handlePreview(doc)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        handlePreview(doc);
+                                      }
+                                    }}
                                   >
                                     {doc.filename}
                                   </div>
@@ -1609,10 +1644,20 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
 
       {/* Folder Management Modal */}
       {folderModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm focus:outline-none"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Escape")
+              setFolderModal({ ...folderModal, isOpen: false });
+          }}
+          onClick={() => setFolderModal({ ...folderModal, isOpen: false })}
+        >
           <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden cursor-default"
             onClick={(e) => e.stopPropagation()}
+            role="presentation"
           >
             <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
               <h3 className="font-bold text-gray-800">
@@ -1633,7 +1678,10 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
             </div>
             <form onSubmit={handleFolderSubmit} className="p-4">
               <div className="mb-4">
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                <label
+                  htmlFor="folder-modal-input"
+                  className="block text-xs font-bold text-gray-500 uppercase mb-2"
+                >
                   {folderModal.type === "move"
                     ? "Destination Folder"
                     : "Folder Name"}
@@ -1680,8 +1728,8 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
 
                 {folderModal.type === "move" && (
                   <p className="text-xs text-gray-400 mt-1">
-                    Select the new parent folder for "
-                    {folderModal.targetNode?.name}".
+                    Select the new parent folder for &quot;
+                    {folderModal.targetNode?.name}&quot;.
                   </p>
                 )}
               </div>
@@ -1713,10 +1761,21 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
 
       {/* History Modal */}
       {historyModal.isOpen && historyModal.doc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm focus:outline-none"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Escape")
+              setHistoryModal({ isOpen: false, doc: null });
+          }}
+          onClick={() => setHistoryModal({ isOpen: false, doc: null })}
+        >
           <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden cursor-default"
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
             onClick={(e) => e.stopPropagation()}
+            role="presentation"
           >
             <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
               <h3 className="font-bold text-gray-800 flex items-center">
@@ -1785,10 +1844,21 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
 
       {/* Bulk Edit Modal */}
       {bulkEditModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm focus:outline-none"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Escape")
+              setBulkEditModal({ ...bulkEditModal, isOpen: false });
+          }}
+          onClick={() => setBulkEditModal({ ...bulkEditModal, isOpen: false })}
+        >
           <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden cursor-default"
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
             onClick={(e) => e.stopPropagation()}
+            role="presentation"
           >
             <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
               <h3 className="font-bold text-gray-800 flex items-center">
@@ -1811,10 +1881,14 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                <label
+                  htmlFor="bulk-path"
+                  className="block text-xs font-bold text-gray-500 uppercase mb-2"
+                >
                   Set Folder Path (Overwrite)
                 </label>
                 <input
+                  id="bulk-path"
                   type="text"
                   value={bulkEditModal.path}
                   onChange={(e) =>
@@ -1826,10 +1900,14 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                <label
+                  htmlFor="bulk-keywords"
+                  className="block text-xs font-bold text-gray-500 uppercase mb-2"
+                >
                   Add Keywords (Comma separated)
                 </label>
                 <input
+                  id="bulk-keywords"
                   type="text"
                   value={bulkEditModal.addKeywords}
                   onChange={(e) =>
@@ -1843,10 +1921,14 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                <label
+                  htmlFor="bulk-version"
+                  className="block text-xs font-bold text-gray-500 uppercase mb-2"
+                >
                   Set Version (Overwrite)
                 </label>
                 <input
+                  id="bulk-version"
                   type="text"
                   value={bulkEditModal.version}
                   onChange={(e) =>
@@ -1887,10 +1969,20 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
 
       {/* Confirmation Modal */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm focus:outline-none"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Escape")
+              setConfirmModal({ ...confirmModal, isOpen: false });
+          }}
+          onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        >
           <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden cursor-default"
             onClick={(e) => e.stopPropagation()}
+            role="presentation"
           >
             <div className="p-4 border-b border-gray-100 bg-gray-50">
               <h3 className="font-bold text-gray-800">{confirmModal.title}</h3>
@@ -1924,12 +2016,19 @@ const OrganizationResultView: React.FC<OrganizationResultViewProps> = ({
       {/* Preview Modal */}
       {previewDoc && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm focus:outline-none"
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
           onClick={closePreview}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") closePreview();
+          }}
         >
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
           <div
             ref={modalRef}
-            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden outline-none"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden outline-none cursor-default"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

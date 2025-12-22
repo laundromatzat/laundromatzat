@@ -54,7 +54,7 @@ export const fetchPaychecks = async (): Promise<PaycheckData[]> => {
 
 export const updatePaycheckReportedHours = async (
   id: number | string,
-  userReportedHours: any
+  userReportedHours: { [key: string]: unknown[] }
 ): Promise<void> => {
   const response = await fetch(`${API_URL}/paychecks/${id}`, {
     method: "PUT",
