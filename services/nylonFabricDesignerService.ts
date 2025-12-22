@@ -1,11 +1,13 @@
-import createDOMPurify from 'dompurify';
-import { z } from 'zod';
-import { generateContent } from './geminiClient';
+import createDOMPurify from "dompurify";
+import { z } from "zod";
+import { generateContent } from "./geminiClient";
 
 type ContentFetcher = (prompt: string) => Promise<string>;
 
 type NylonFabricDesignerServiceOptions = {
   contentFetcher?: ContentFetcher;
+  onResearchStart?: () => void;
+  onResearchComplete?: (findings: string) => void;
 };
 
 type DOMPurifyInstance = ReturnType<typeof createDOMPurify>;
@@ -13,7 +15,7 @@ type DOMPurifyInstance = ReturnType<typeof createDOMPurify>;
 let domPurifyInstance: DOMPurifyInstance | null = null;
 
 function getDomPurify(): DOMPurifyInstance | null {
-  if (typeof window === 'undefined' || !window.document) {
+  if (typeof window === "undefined" || !window.document) {
     return null;
   }
 
@@ -26,14 +28,14 @@ function getDomPurify(): DOMPurifyInstance | null {
 
 function stripExecutableContent(markup: string): string {
   return markup
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
-    .replace(/on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
+    .replace(/on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "");
 }
 
 async function sanitizeGuideContent(html: string): Promise<string> {
   if (!html) {
-    return '';
+    return "";
   }
 
   const domPurify = getDomPurify();
@@ -42,15 +44,27 @@ async function sanitizeGuideContent(html: string): Promise<string> {
   }
 
   return domPurify.sanitize(html, {
-    ALLOWED_TAGS: ['h3', 'h4', 'p', 'ul', 'ol', 'li', 'strong', 'em', 'div', 'span', 'br'],
-    ALLOWED_ATTR: ['class'],
-    FORBID_TAGS: ['script', 'style'],
+    ALLOWED_TAGS: [
+      "h3",
+      "h4",
+      "p",
+      "ul",
+      "ol",
+      "li",
+      "strong",
+      "em",
+      "div",
+      "span",
+      "br",
+    ],
+    ALLOWED_ATTR: ["class"],
+    FORBID_TAGS: ["script", "style"],
   });
 }
 
 async function sanitizeSvg(svgMarkup: string): Promise<string> {
   if (!svgMarkup) {
-    return '';
+    return "";
   }
 
   const domPurify = getDomPurify();
@@ -59,8 +73,8 @@ async function sanitizeSvg(svgMarkup: string): Promise<string> {
   }
 
   return domPurify.sanitize(svgMarkup, {
-    FORBID_TAGS: ['script'],
-    FORBID_ATTR: ['onload', 'onerror', 'onclick', 'onmouseover', 'onfocus'],
+    FORBID_TAGS: ["script"],
+    FORBID_ATTR: ["onload", "onerror", "onclick", "onmouseover", "onfocus"],
     USE_PROFILES: { svg: true, svgFilters: true },
   });
 }
@@ -72,12 +86,33 @@ const VisualRepresentationSchema = z.object({
 
 const VisualsResponseSchema = z.array(VisualRepresentationSchema);
 
+import { performResearch } from "./researchService";
+
 export async function generateSewingGuide(
   description: string,
   _apiKey?: string,
-  options?: NylonFabricDesignerServiceOptions,
+  options?: NylonFabricDesignerServiceOptions
 ): Promise<string> {
+  const fetchContent = options?.contentFetcher ?? generateContent;
+
+  // 1. Perform Grounding/Research Step
+  let researchContext = "";
+  if (options?.onResearchStart) options.onResearchStart();
+
+  // Create a specific research query based on the user's project
+  const researchTopic = `Technical requirements, materials, and stitch techniques for: ${description}`;
+  researchContext = await performResearch(
+    researchTopic,
+    "Technical Sewing & Softgoods Manufacturing"
+  );
+
+  if (options?.onResearchComplete) options.onResearchComplete(researchContext);
+
+  // 2. Main Generation Step with Grounding
   const prompt = `You are an expert in hand-sewing nylon fabric and crafting. Analyze the following project description and create a comprehensive hand-sewing guide.
+
+RESEARCH CONTEXT (Verified Facts):
+${researchContext}
 
 CRITICAL REQUIREMENTS:
 - ALL instructions must be for HAND SEWING ONLY - NO sewing machines
@@ -127,7 +162,7 @@ PROJECT DESCRIPTION:
 ${description}
 
 Generate the complete guide now:`;
-  const fetchContent = options?.contentFetcher ?? generateContent;
+
   const guide = await fetchContent(prompt);
   return sanitizeGuideContent(guide);
 }
@@ -135,7 +170,7 @@ Generate the complete guide now:`;
 export async function generateProjectImages(
   description: string,
   _apiKey?: string,
-  options?: NylonFabricDesignerServiceOptions,
+  options?: NylonFabricDesignerServiceOptions
 ) {
   const prompt = `For this hand-sewn nylon fabric project: "${description}"
 
@@ -171,7 +206,10 @@ Make the SVGs detailed, technical, and professional looking with:
 
   const fetchContent = options?.contentFetcher ?? generateContent;
   const responseText = await fetchContent(prompt);
-  const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+  const cleanJson = responseText
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
 
   try {
     const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
@@ -179,11 +217,17 @@ Make the SVGs detailed, technical, and professional looking with:
       visuals.map(async (visual) => ({
         stage: visual.stage,
         svg: await sanitizeSvg(visual.svg),
-      })),
+      }))
     );
     return sanitizedVisuals;
   } catch (error) {
-    console.error('Failed to parse project visuals response:', error, responseText);
-    throw new Error('The fabric designer returned an invalid visualization response. Please try again.');
+    console.error(
+      "Failed to parse project visuals response:",
+      error,
+      responseText
+    );
+    throw new Error(
+      "The fabric designer returned an invalid visualization response. Please try again."
+    );
   }
 }

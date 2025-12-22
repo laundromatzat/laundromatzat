@@ -1,8 +1,8 @@
 export enum ProjectType {
-  Photo = 'photo',
-  Video = 'video',
-  Tool = 'tool',
-  Cinemagraph = 'cinemagraph',
+  Photo = "photo",
+  Video = "video",
+  Tool = "tool",
+  Cinemagraph = "cinemagraph",
 }
 
 export interface Project {
@@ -22,7 +22,7 @@ export interface Project {
 
 export interface ChatMessage {
   id: string;
-  sender: 'user' | 'ai';
+  sender: "user" | "ai";
   text: string;
 }
 
@@ -31,4 +31,10 @@ export interface Link {
   title: string;
   description: string;
   tags: string[];
+}
+
+export interface User {
+  id: number;
+  username: string;
+  profile_picture?: string;
 }

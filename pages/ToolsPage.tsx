@@ -1,77 +1,115 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import PageMetadata from '../components/PageMetadata';
+import React from "react";
+import { Link } from "react-router-dom";
+import PageMetadata from "../components/PageMetadata";
 
 const TOOL_LINKS = [
   {
-    to: '/tools/background-removal',
-    ariaLabel: 'Remove a background',
-    title: 'Remove a background',
-    description: "Launch the in-browser background removal tool to generate a transparent PNG that's ready to download in seconds.",
-    cta: 'Try the background removal tool',
-    badge: 'Core tool',
+    to: "/tools/background-removal",
+    title: "Background Remover",
+    description: "Instant, in-browser background removal for your photos.",
+    imageUrl: "/assets/tools/bg-remover.png",
+    badge: "Core tool",
   },
   {
-    to: '/tools/color-palette',
-    ariaLabel: 'Extract a color palette',
-    title: 'Extract a color palette',
-    description: 'Upload an image and instantly generate a five-color palette with copy-ready values.',
-    cta: 'Try the color palette tool',
-    badge: 'Core tool',
+    to: "/tools/color-palette",
+    title: "Color Palette",
+    description: "Extract a five-color palette from any image instantly.",
+    imageUrl: "/assets/tools/color-palette.png",
+    badge: "Core tool",
   },
   {
-    to: '/tools/nylon-fabric-designer',
-    ariaLabel: 'Nylon Fabric Designer Service',
-    title: 'Nylon Fabric Designer Service',
+    to: "/tools/nylon-fabric-designer",
+    title: "Nylon Fabric Designer",
+    description: "Design and visualize nylon fabric projects with AI.",
+    imageUrl: "/assets/tools/fabric-designer.png",
+    badge: "New service",
+  },
+  {
+    to: "/tools/intelligent-ideas-board",
+    title: "Intelligent Ideas",
+    description: "Brain-dump thoughts and let AI organize them for you.",
+    imageUrl: "/assets/tools/intelligent-ideas.png",
+    badge: "New service",
+  },
+  {
+    to: "/pin-pals",
+    title: "Pin Pals",
+    description: "A collaborative map for pinning your favorite spots.",
+    imageUrl: "/assets/tools/pin-pals.png",
+    badge: "New tool",
+  },
+  {
+    to: "/tools/paystub-analyzer",
+    title: "Paystub Analyzer Pro",
+    description: "Intelligent payroll tracking and analysis.",
+    imageUrl: "/assets/tools/paystub-analyzer.png",
+    badge: "Pro tool",
+  },
+  {
+    to: "/tools/mediscribe",
+    title: "MediScribe AI",
     description:
-      'Generate custom sewing plans, cutting templates, and visual previews for nylon projects like stuff sacks, pouches, and aprons.',
-    cta: 'Open the nylon designer',
-    badge: 'New service',
+      "AI-powered medical documentation with adaptive style learning.",
+    imageUrl: "/assets/tools/mediscribe.png", // I need to generate this or use a placeholder
+    badge: "Integrated",
   },
   {
-    to: '/tools/intelligent-ideas-board',
-    ariaLabel: 'Intelligent Ideas Service',
-    title: 'Intelligent Ideas Service',
-    description:
-      'Brain-dump thoughts, todos, and notes—then let the assistant cluster, prioritize, and summarize everything for you.',
-    cta: 'Open the intelligent ideas board',
-    badge: 'New service',
+    to: "/tools/public-health",
+    title: "Public Health Organizer",
+    description: "Securely organize and query public health documents.",
+    imageUrl: "/assets/tools/public-health.png",
+    badge: "Integrated",
+  },
+  {
+    to: "/tools/neuroaesthetic",
+    title: "Neuroaesthetic Lens",
+    description: "Reimagine environments using neuroaesthetic principles.",
+    imageUrl: "/assets/tools/neuroaesthetic.png",
+    badge: "Integrated",
   },
 ];
 
 function ToolsPage(): React.ReactNode {
   return (
-    <div className="space-y-space-5">
+    <div className="space-y-space-5 pt-24">
       <PageMetadata
         title="Tools"
         description="Interactive experiments for background removal, color palettes, and other creative workflows."
         path="/tools"
         type="article"
       />
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold text-brand-text">Tools</h1>
-        <p className="text-brand-text-secondary">
-          Try in-browser experiments that streamline post-production and inspire new ideas.
-        </p>
-      </header>
 
-      <section className="space-y-space-4" aria-label="Featured tools">
-        {TOOL_LINKS.map(tool => (
+      <section
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        aria-label="Featured tools"
+      >
+        {TOOL_LINKS.map((tool) => (
           <Link
             key={tool.to}
             to={tool.to}
-            aria-label={tool.ariaLabel}
-            className="block rounded-radius-lg border border-brand-surface-highlight/60 bg-brand-secondary/40 p-6 shadow-layer-1 transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+            className="group relative overflow-hidden rounded-2xl bg-zinc-100 aspect-[4/3]"
           >
-            <div className="flex flex-col gap-3 text-brand-text">
-              {tool.badge ? (
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-text-secondary">
+            <img
+              src={tool.imageUrl}
+              alt={tool.title}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+            />
+
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
+
+            <div className="absolute inset-0 p-8 flex flex-col justify-end">
+              {tool.badge && (
+                <span className="text-xs font-semibold uppercase tracking-widest text-white/80 mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                   {tool.badge}
                 </span>
-              ) : null}
-              <h2 className="text-2xl font-semibold">{tool.title}</h2>
-              <p className="text-brand-text-secondary">{tool.description}</p>
-              <span className="text-sm font-medium text-brand-accent">{tool.cta}</span>
+              )}
+              <h3 className="text-2xl font-serif text-white mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                {tool.title}
+              </h3>
+              <p className="text-white/90 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 line-clamp-2">
+                {tool.description}
+              </p>
             </div>
           </Link>
         ))}

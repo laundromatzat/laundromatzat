@@ -1,20 +1,18 @@
-# Laundromatzat – Simplified Portfolio
+# Laundromatzat Digital Atelier (Monorepo)
 
-A simplified, static version of the Laundromatzat creative portfolio. This repository contains the frontend code configured to run as a static site, making it easy to deploy and manage without backend servers.
+Welcome to the **Laundromatzat** monorepo. This repository houses the main creative portfolio and a suite of specialized tools.
 
-## Features
+## 🛠️ Quick Start
 
-- **Static Architecture**: Built with React and Vite. No backend server required.
-- **AI Assistant**: Integrated directly into the client using Google's Gemini Flash model.
-- **Easy Content Management**: Add new projects by editing a single JSON file.
-- **Responsive Design**: Tailored for all devices.
+This project is configured as a single workspace with shared dependencies where possible.
 
-## Prerequisites
+### Prerequisites
 
-- Node.js 18 or newer.
-- A Google Gemini API Key (for the AI assistant).
+- Node.js 18+
+- Google Gemini API Key (for Portfolio AI tools).
+- LM Studio (optional, for Paystub Analyzer local LLM).
 
-## Setup
+### Setup
 
 1.  **Install dependencies**
 
@@ -23,62 +21,98 @@ A simplified, static version of the Laundromatzat creative portfolio. This repos
     ```
 
 2.  **Configure Environment**
-
-    Create a `.env.local` file in the root directory:
+    Create `.env.local`:
 
     ```env
-    VITE_GEMINI_API_KEY=your_gemini_api_key_here
+    VITE_GEMINI_API_KEY=your_key
     ```
 
-3.  **Run Locally**
+3.  **Run Development Server**
 
     ```bash
     npm run dev
     ```
 
-    Visit `http://localhost:5173`.
+    - Portfolio: `http://localhost:5173`
+    - Fabric Designer: `http://localhost:5173/fabric-designer`
+    - Paystub Analyzer: `http://localhost:5173/paystub-analyzer`
 
-## Adding Content
+### Running the Paystub Backend
 
-The portfolio content is stored in `data/projects.json`. To add a new project:
+To use the Paystub Analyzer, you must also start the local backend:
 
-1.  Open `data/projects.json`.
-2.  Add a new object to the array following the existing structure:
-    ```json
-    {
-      "id": 100,
-      "type": "photo",
-      "title": "My New Project",
-      "description": "Description here.",
-      "imageUrl": "https://example.com/image.jpg",
-      "projectUrl": "https://example.com/full-image.jpg",
-      "date": "01/2025",
-      "location": "San Francisco",
-      "gpsCoords": "37.7749, -122.4194",
-      "tags": ["tag1", "tag2"],
-      "categories": ["photography"]
-    }
-    ```
-3.  Save the file. The site will update automatically in development.
+```bash
+cd server
+npm start
+```
 
-## Deployment
+## 🤖 AI Architecture
 
-To deploy to a static hosting provider (like Netlify, Vercel, or GitHub Pages):
+This project uses a **"Grounding-to-Visuals"** pattern to ensure AI accuracy.
 
-1.  **Build the project**
+- **Research Phase**: Complex requests (like Fabric Design) first go through a research step to gather technical facts.
+- **Generation Phase**: The synthesized facts are used as context for the final creative generation.
+
+## 🚀 Deployment & Security
+
+To deploy this application to production (e.g., laundromatzat.com), follow these critical steps to ensure security and functionality.
+
+### 1. Environment Variables
+
+You must configure the following environment variables in your production environment (e.g., Render, HerokuConfig, or `.env` file on your server).
+
+| Variable | Description | Security Note |
+|Base URL| `http://localhost:5173` | Set to your production URL (e.g., `https://laundromatzat.com`) |
+| `NODE_ENV` | Set to `production` | Enables optimization and strict security checks. |
+| `PORT` | Listening port (default: 4000) | Set by your hosting provider usually. |
+| `JWT_SECRET` | Secret key for signing session tokens. | **CRITICAL**: Generate a long, random string (e.g., `openssl rand -base64 32`). Do NOT use the default. |
+| `VITE_GEMINI_API_KEY` | Google Gemini API Key. | **RESTRICT THIS KEY**: In Google Cloud Console, restrict this key to `https://laundromatzat.com` (HTTP Referrer restriction). |
+| `LM_STUDIO_API_URL` | URL for local/hosted LLM. | Ensure this is accessible from the backend server if used. |
+
+### 2. Database & Storage Strategy
+
+The application uses **SQLite** (`paystubs.db`) and local file storage (`server/uploads/`).
+
+- **Persistence**: If deploying to a containerized platform (Heroku, Render, AWS ECS), the filesystem is often _ephemeral_ (deleted on restart).
+- **Solution**:
+  - **VPS (DigitalOcean Droplet/EC2)**: SQLite is fine. Ensure the `server/` directory is backed up.
+  - **PaaS (Heroku/Render)**: You MUST mount a **Persistent Volume** (Disk) to `/app/server` (or specifically `server/paystubs.db` and `server/uploads`).
+  - **Alternative**: Migrate to PostgreSQL/MySQL and S3 for uploads if scaling is required.
+
+### 3. Build & Run
+
+For a single-server deployment (serving both Frontend and Backend):
+
+1.  **Build Frontend**:
 
     ```bash
     npm run build
     ```
 
-    This creates a `dist/` directory containing the optimized static files.
+    This creates the optimized static files in `dist/`.
 
-2.  **Upload**
+2.  **Start Backend**:
 
-    -   **Netlify/Vercel**: Connect your GitHub repository. Set the `VITE_GEMINI_API_KEY` in the deployment settings (Environment Variables). The build command is `npm run build` and the publish directory is `dist`.
-    -   **Manual**: Drag and drop the `dist/` folder to your hosting provider's manual upload interface.
+    ```bash
+    cd server
+    npm install
+    # Ensure dependencies like helmet and rate-limit are installed
+    npm install helmet express-rate-limit
 
-## Notes
+    # Start the server (Process Manager recommended, e.g., PM2)
+    npm start
+    ```
 
--   **Mailing List**: The mailing list functionality has been disabled in this simplified version to avoid backend complexity.
--   **AI Tools**: The AI tools (Idea Board, Fabric Designer) run entirely in the browser using your API key.
+    _Note: The server is configured to serve the `dist/` frontend files automatically when `NODE_ENV=production`._
+
+### 4. Security Checklist
+
+- [ ] **HTTPS**: Ensure your domain has an SSL certificate (e.g., via Let's Encrypt or your PaaS provider).
+- [ ] **API Restrictions**: checking your Google Cloud Console to ensure `VITE_GEMINI_API_KEY` can only be called from `https://laundromatzat.com`.
+- [ ] **CORS**: The backend is configured to allow `https://laundromatzat.com`. If you change your domain, update `allowedOrigins` in `server/server.js`.
+- [ ] **Secrets**: Never commit `.env` files to GitHub. They are ignored by default, but double-check.
+
+### 5. Troubleshooting
+
+- **PDF Processing**: If `pdfjs-dist` errors occur in production, ensure the host environment supports the necessary Node.js bindings or libraries.
+- **Blank Screen**: Check browser console. If API calls fail (401/403), check CORS settings and `JWT_SECRET` consistency.

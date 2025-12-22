@@ -1,8 +1,16 @@
-import rawProjects from './data/projects.json';
-import { Project, Link } from './types';
-import { parseProjectsFromJson } from './utils/projectData';
+import rawProjects from "./data/projects.json";
+import { Project, Link } from "./types";
+import { parseProjectsFromJson } from "./utils/projectData";
 
-export const PROJECTS: Project[] = parseProjectsFromJson(rawProjects as unknown);
+let parsedProjects: Project[] = [];
+try {
+  parsedProjects = parseProjectsFromJson(rawProjects as unknown);
+} catch (error) {
+  console.error("Failed to parse projects:", error);
+  parsedProjects = [];
+}
+
+export const PROJECTS: Project[] = parsedProjects;
 
 export const LINKS: Link[] = [];
 

@@ -237,14 +237,14 @@ function BackgroundRemovalPage(): React.ReactNode {
         type="article"
       />
       <section className="space-y-4">
-        <div className="flex items-center gap-4 text-brand-text-secondary">
+        <div className="flex items-center gap-4 text-aura-text-secondary">
           <Link to="/tools" className="text-brand-accent hover:underline">
             ← back to tools
           </Link>
           <span className="text-sm">remove backgrounds right in the browser.</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-brand-text">background remover</h1>
-        <p className="text-lg text-brand-text-secondary max-w-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-aura-text-primary">background remover</h1>
+        <p className="text-lg text-aura-text-secondary max-w-2xl">
           Upload one or many photos and our in-browser model will isolate the main subject. You&apos;ll get transparent PNGs you can drop into decks, composites, or anything else that needs a clean cutout.
         </p>
       </section>
@@ -253,7 +253,7 @@ function BackgroundRemovalPage(): React.ReactNode {
         <div className="space-y-6">
           <label
             htmlFor="background-remover-input"
-            className="flex h-60 cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-brand-secondary/60 bg-brand-secondary/20 p-6 text-center text-brand-text-secondary transition-colors hover:border-brand-accent hover:text-brand-text"
+            className="flex h-60 cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-brand-secondary/60 bg-brand-secondary/20 p-6 text-center text-aura-text-secondary transition-colors hover:border-brand-accent hover:text-aura-text-primary"
             {...dropHandlers}
           >
             <input
@@ -266,9 +266,9 @@ function BackgroundRemovalPage(): React.ReactNode {
             />
             <div className="flex flex-col items-center gap-2">
               <span className="text-sm uppercase tracking-wide">drop or click</span>
-              <span className="text-2xl font-semibold text-brand-text">your photos</span>
+              <span className="text-2xl font-semibold text-aura-text-primary">your photos</span>
             </div>
-            <p className="max-w-xs text-sm text-brand-text-secondary">
+            <p className="max-w-xs text-sm text-aura-text-secondary">
               PNG and JPEG work best. Add as many as you like — everything stays in the browser.
             </p>
           </label>
@@ -277,7 +277,7 @@ function BackgroundRemovalPage(): React.ReactNode {
             <button
               type="button"
               onClick={clearAll}
-              className="inline-flex items-center justify-center rounded-md border border-brand-secondary/60 bg-brand-secondary/10 px-4 py-2 text-sm font-medium text-brand-text-secondary transition-colors hover:border-brand-accent hover:bg-brand-secondary/20 hover:text-brand-text"
+              className="inline-flex items-center justify-center rounded-md border border-brand-secondary/60 bg-brand-secondary/10 px-4 py-2 text-sm font-medium text-aura-text-secondary transition-colors hover:border-brand-accent hover:bg-brand-secondary/20 hover:text-aura-text-primary"
             >
               clear all photos
             </button>
@@ -288,16 +288,16 @@ function BackgroundRemovalPage(): React.ReactNode {
           {jobs.length === 0 ? (
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-text-secondary">original</h2>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-aura-text-secondary">original</h2>
                 <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
-                  <span className="text-sm text-brand-text-secondary">no photos yet — add some to get started.</span>
+                  <span className="text-sm text-aura-text-secondary">no photos yet — add some to get started.</span>
                 </div>
               </div>
 
               <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand-text-secondary">background removed</h2>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-aura-text-secondary">background removed</h2>
                 <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
-                  <span className="text-sm text-brand-text-secondary">your processed previews will appear here.</span>
+                  <span className="text-sm text-aura-text-secondary">your processed previews will appear here.</span>
                 </div>
               </div>
             </div>
@@ -306,8 +306,8 @@ function BackgroundRemovalPage(): React.ReactNode {
               <div key={job.id} className="grid gap-6 lg:grid-cols-2">
                 <div className="overflow-hidden rounded-xl border border-brand-secondary/60 bg-brand-secondary/20 p-4">
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-text-secondary">original</h2>
-                    <span className="truncate text-xs font-medium text-brand-text-secondary/80" title={job.fileName}>
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-aura-text-secondary">original</h2>
+                    <span className="truncate text-xs font-medium text-aura-text-secondary/80" title={job.fileName}>
                       {job.fileName}
                     </span>
                   </div>
@@ -323,7 +323,7 @@ function BackgroundRemovalPage(): React.ReactNode {
                   </div>
                   <div className="flex h-72 items-center justify-center rounded-lg bg-brand-primary/40">
                     {job.processingState === 'loading' && (
-                      <span className="text-sm text-brand-text-secondary">processing… this can take a moment the first time.</span>
+                      <span className="text-sm text-aura-text-secondary">processing… this can take a moment the first time.</span>
                     )}
                     {job.processingState === 'success' && job.resultPreview && (
                       <img src={job.resultPreview} alt={`Background removed result for ${job.fileName}`} className="max-h-full max-w-full object-contain" />

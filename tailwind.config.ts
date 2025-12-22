@@ -30,6 +30,10 @@ const config: Config = {
         xl: '1440px',
       },
       colors: {
+        'aura-bg': '#F5F2EB',
+        'aura-text-primary': '#2C2A26',
+        'aura-text-secondary': '#4B4943',
+        'aura-accent': '#D6D1C7',
         'brand-primary': 'var(--color-bg-canvas)',
         'brand-secondary': 'var(--color-bg-panel)',
         'brand-surface': 'var(--color-bg-panel)',

@@ -1,170 +1,192 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import FocusTrap from 'focus-trap-react';
-import clsx from 'clsx';
-import MenuIcon from './icons/MenuIcon';
-import { CloseIcon } from './icons/CloseIcon';
+import React, { useEffect, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import clsx from "clsx";
+import { useAuth } from "../context/AuthContext";
+import MenuIcon from "./icons/MenuIcon";
+import { CloseIcon } from "./icons/CloseIcon";
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Home' },
-  { to: '/images', label: 'Images' },
-  { to: '/videos', label: 'Videos' },
-  { to: '/cinemagraphs', label: 'Cinemagraphs' },
-  { to: '/tools', label: 'Tools' },
-  { to: '/links', label: 'Links' },
+  { to: "/", label: "Home" },
+  { to: "/images", label: "Images" },
+  { to: "/vids", label: "Videos" },
+  { to: "/cinemagraphs", label: "Cinemagraphs" },
+  { to: "/tools", label: "Tools" },
+  { to: "/links", label: "Links" },
 ];
 
 function Header(): React.ReactNode {
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const location = useLocation();
 
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location]);
 
-  useEffect(() => {
-    if (!isMenuOpen) {
-      menuButtonRef.current?.focus();
-    }
-  }, [isMenuOpen]);
-
-  const handleLinkClick = () => {
-    setIsMenuOpen(false);
-  };
-
-  useEffect(() => {
-    if (!isMenuOpen) {
-      return undefined;
-    }
-
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsMenuOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [isMenuOpen]);
+  // Always use dark text as the header is now above the content on all pages
+  const textColorClass = "text-aura-text-primary";
 
   return (
-    <header className="sticky top-0 z-nav border-b border-brand-surface-highlight/60 bg-brand-primary/90 backdrop-blur-md">
-      <nav aria-label="Primary" className="container px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-4">
+    <>
+      <header
+        className={clsx(
+          "fixed top-0 left-0 right-0 z-nav transition-all duration-700 ease-in-out bg-aura-bg/90 backdrop-blur-md py-4 shadow-sm"
+        )}
+      >
+        <nav
+          aria-label="Primary"
+          className="max-w-[1800px] mx-auto px-8 flex items-center justify-between"
+        >
+          {/* Logo */}
           <NavLink
             to="/"
-            className="flex items-center gap-3 text-lg font-semibold text-brand-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+            className={clsx(
+              "text-3xl font-serif font-medium tracking-tight z-50 relative transition-colors duration-500",
+              textColorClass
+            )}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <img
-              src={`${import.meta.env.BASE_URL}laundromatzat-icon.png`}
-              alt="Laundromatzat logo"
-              className="h-7 w-7"
-              width={28}
-              height={28}
-            />
+            laundromatzat.com
           </NavLink>
 
-          <ul className="hidden items-center gap-2 md:flex">
-            {NAV_ITEMS.map(item => (
-              <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  className={({ isActive }) =>
-                    clsx(
-                      'rounded-radius-md px-3 py-2 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary',
-                      isActive
-                        ? 'bg-brand-accent text-brand-on-accent'
-                        : 'text-brand-text-secondary hover:bg-brand-surface-highlight hover:text-brand-text',
-                    )
-                  }
-                  end={item.to === '/'}
-                  onClick={handleLinkClick}
-                >
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-
-          <button
-            ref={menuButtonRef}
-            type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-radius-md border border-transparent text-brand-text transition hover:bg-brand-surface-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary md:hidden"
-            aria-controls="mobile-navigation"
-            aria-expanded={isMenuOpen}
-            onClick={() => setIsMenuOpen(prev => !prev)}
+          {/* Center Links - Desktop */}
+          <div
+            className={clsx(
+              "hidden md:flex items-center gap-2 text-sm font-medium tracking-wide transition-colors duration-500",
+              textColorClass
+            )}
           >
-            <span className="sr-only">Toggle navigation</span>
-            {isMenuOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-          </button>
-        </div>
-      </nav>
+            {NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  clsx(
+                    "px-4 py-2 rounded-full transition-all duration-300",
+                    isActive
+                      ? "bg-aura-text-primary text-aura-bg hover:opacity-90 font-semibold"
+                      : "hover:bg-aura-text-primary/10 hover:text-aura-text-primary"
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
 
-      {isMenuOpen ? (
-        <FocusTrap
-          focusTrapOptions={{
-            clickOutsideDeactivates: true,
-            escapeDeactivates: true,
-            fallbackFocus: '#mobile-navigation',
-            onDeactivate: () => setIsMenuOpen(false),
-          }}
-        >
-          <div className="md:hidden" role="presentation">
-            <button
-              type="button"
-              className="fixed inset-0 z-nav bg-black/60"
-              tabIndex={-1}
-              aria-label="Dismiss menu overlay"
-              onClick={() => setIsMenuOpen(false)}
-            />
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="mobile-navigation-title"
-              className="fixed inset-y-0 right-0 z-modal flex w-full max-w-xs flex-col overflow-y-auto border-l border-brand-surface-highlight/60 bg-brand-secondary px-4 py-6 shadow-layer-1"
-              id="mobile-navigation"
-              tabIndex={-1}
-            >
-              <div className="mb-6 flex items-center justify-between">
-                <h2 id="mobile-navigation-title" className="text-lg font-semibold text-brand-text">
-                  Navigation
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-radius-md border border-brand-surface-highlight/60 text-brand-text-secondary transition hover:text-brand-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-secondary"
+          {/* Right Actions - Mobile Toggle & User Profile */}
+          <div
+            className={clsx(
+              "flex items-center gap-6 z-50 relative transition-colors duration-500",
+              textColorClass
+            )}
+          >
+            {user ? (
+              <div className="flex items-center gap-4">
+                <NavLink
+                  to="/profile"
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
-                  <span className="sr-only">Close menu</span>
-                  <CloseIcon className="h-5 w-5" />
+                  {user.profile_picture ? (
+                    <img
+                      src={`http://localhost:4000${user.profile_picture}`}
+                      alt={user.username}
+                      className="w-8 h-8 rounded-full object-cover border border-white/20"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-aura-accent/20 flex items-center justify-center border border-white/10">
+                      <span className="text-xs font-bold text-aura-accent">
+                        {user.username[0].toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <span className="hidden sm:block text-sm font-medium">
+                    {user.username}
+                  </span>
+                </NavLink>
+                <button
+                  onClick={logout}
+                  className="text-xs hover:text-aura-accent transition-colors hidden md:block"
+                >
+                  Log Out
                 </button>
               </div>
-              <ul className="space-y-2">
-                {NAV_ITEMS.map(item => (
-                  <li key={item.to}>
-                    <NavLink
-                      to={item.to}
-                      end={item.to === '/'}
-                      className={({ isActive }) =>
-                        clsx(
-                          'block rounded-radius-md px-3 py-2 text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-secondary',
-                          isActive
-                            ? 'bg-brand-accent text-brand-on-accent'
-                            : 'text-brand-text-secondary hover:bg-brand-primary/40 hover:text-brand-text',
-                        )
-                      }
-                      onClick={handleLinkClick}
-                    >
-                      {item.label}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            ) : (
+              <NavLink
+                to="/login"
+                className="hidden md:block text-sm font-medium hover:text-aura-accent transition-colors"
+              >
+                Login
+              </NavLink>
+            )}
+
+            <button
+              type="button"
+              className="block md:hidden focus:outline-none transition-colors duration-500"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle navigation"
+            >
+              {isMenuOpen ? (
+                <CloseIcon className="w-6 h-6" />
+              ) : (
+                <MenuIcon className="w-6 h-6" />
+              )}
+            </button>
           </div>
-        </FocusTrap>
-      ) : null}
-    </header>
+        </nav>
+      </header>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={clsx(
+          "fixed inset-0 bg-aura-bg z-[1100] flex flex-col justify-center items-center transition-all duration-500 ease-in-out",
+          isMenuOpen
+            ? "opacity-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 -translate-y-10 pointer-events-none"
+        )}
+      >
+        <div className="flex flex-col items-center space-y-8 text-xl font-serif font-medium text-aura-text-primary">
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className="hover:opacity-60 transition-opacity"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+          {user ? (
+            <>
+              <NavLink
+                to="/profile"
+                className="hover:opacity-60 transition-opacity"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                My Profile
+              </NavLink>
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMenuOpen(false);
+                }}
+                className="hover:opacity-60 transition-opacity text-red-400"
+              >
+                Log Out
+              </button>
+            </>
+          ) : (
+            <NavLink
+              to="/login"
+              className="hover:opacity-60 transition-opacity"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Login
+            </NavLink>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 

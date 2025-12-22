@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+server/.env
 test-results
 
 # Mailing list data (runtime only)
@@ -27,3 +30,7 @@ data/*
 *.njsproj
 *.sln
 *.sw?
+
+# Paystub Analyzer Data
+server/paystubs.db
+server/uploads/

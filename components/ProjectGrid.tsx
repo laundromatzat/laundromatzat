@@ -1,71 +1,113 @@
-import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
-import clsx from 'clsx';
-import { Project } from '../types';
-import ProjectCard from './ProjectCard';
-import PortfolioModal from './PortfolioModal';
+import React, { useCallback, useEffect, useId, useMemo, useState } from "react";
+import clsx from "clsx";
+import { Project } from "../types";
+import { getProjectSlug } from "../utils/slugs";
+import ProjectCard from "./ProjectCard";
+import PortfolioModal from "./PortfolioModal";
 
 interface ProjectGridProps {
   projects: Project[];
   gridClassName?: string;
   emptyState?: React.ReactNode;
+  activeSlug?: string;
+  onSlugChange?: (slug: string | null) => void;
 }
 
 function ProjectGrid({
   projects,
-  gridClassName = 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
+  gridClassName = "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3",
   emptyState,
+  activeSlug,
+  onSlugChange,
 }: ProjectGridProps): React.ReactNode {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // Internal state for uncontrolled usage
+  const [internalActiveIndex, setInternalActiveIndex] = useState<number | null>(
+    null
+  );
+
+  const isControlled =
+    typeof activeSlug !== "undefined" && typeof onSlugChange === "function";
+
+  // Derived active index based on mode
+  const activeIndex = useMemo(() => {
+    if (isControlled) {
+      if (!activeSlug) return null;
+      const index = projects.findIndex((p) => getProjectSlug(p) === activeSlug);
+      return index !== -1 ? index : null;
+    }
+    return internalActiveIndex;
+  }, [isControlled, activeSlug, projects, internalActiveIndex]);
+
   const announcementId = useId();
   const announcement = useMemo(() => {
     if (projects.length === 0) {
-      return 'No projects to show right now.';
+      return "No projects to show right now.";
     }
 
     if (projects.length === 1) {
-      return 'Showing one project.';
+      return "Showing one project.";
     }
 
     return `Showing ${projects.length} projects.`;
   }, [projects.length]);
 
   useEffect(() => {
-    setActiveIndex(null);
-  }, [projects]);
+    if (!isControlled) {
+      setInternalActiveIndex(null);
+    }
+  }, [projects, isControlled]);
 
-  const handleOpen = useCallback((index: number) => {
-    setActiveIndex(index);
-  }, []);
+  const handleOpen = useCallback(
+    (index: number) => {
+      if (isControlled) {
+        onSlugChange(getProjectSlug(projects[index]));
+      } else {
+        setInternalActiveIndex(index);
+      }
+    },
+    [isControlled, onSlugChange, projects]
+  );
 
   const handleClose = useCallback(() => {
-    setActiveIndex(null);
-  }, []);
+    if (isControlled) {
+      onSlugChange(null);
+    } else {
+      setInternalActiveIndex(null);
+    }
+  }, [isControlled, onSlugChange]);
 
   const handlePrev = useCallback(() => {
-    setActiveIndex(prev => {
-      if (prev === null || projects.length === 0) {
-        return prev;
-      }
+    if (activeIndex === null || projects.length === 0) return;
 
-      const previousIndex = (prev - 1 + projects.length) % projects.length;
-      return previousIndex;
-    });
-  }, [projects.length]);
+    const previousIndex = (activeIndex - 1 + projects.length) % projects.length;
+
+    if (isControlled) {
+      onSlugChange(getProjectSlug(projects[previousIndex]));
+    } else {
+      setInternalActiveIndex(previousIndex);
+    }
+  }, [activeIndex, projects, isControlled, onSlugChange]);
 
   const handleNext = useCallback(() => {
-    setActiveIndex(prev => {
-      if (prev === null || projects.length === 0) {
-        return prev;
-      }
+    if (activeIndex === null || projects.length === 0) return;
 
-      const nextIndex = (prev + 1) % projects.length;
-      return nextIndex;
-    });
-  }, [projects.length]);
+    const nextIndex = (activeIndex + 1) % projects.length;
+
+    if (isControlled) {
+      onSlugChange(getProjectSlug(projects[nextIndex]));
+    } else {
+      setInternalActiveIndex(nextIndex);
+    }
+  }, [activeIndex, projects, isControlled, onSlugChange]);
 
   return (
     <>
-      <div aria-live="polite" aria-atomic="true" id={announcementId} className="sr-only">
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        id={announcementId}
+        className="sr-only"
+      >
         {announcement}
       </div>
 
@@ -83,7 +125,10 @@ function ProjectGrid({
         >
           {projects.map((project, index) => (
             <li key={project.id} className="h-full">
-              <ProjectCard project={project} onSelect={() => handleOpen(index)} />
+              <ProjectCard
+                project={project}
+                onSelect={() => handleOpen(index)}
+              />
             </li>
           ))}
         </ul>

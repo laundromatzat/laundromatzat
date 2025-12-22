@@ -11,4 +11,7 @@ export default defineConfig({
       'tests/e2e/**',
     ],
   },
+  build: {
+    sourcemap: false,
+  },
 });

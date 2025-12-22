@@ -253,14 +253,14 @@ const ColorPalettePage: React.FC = () => {
         type="article"
       />
       <section className="space-y-4">
-        <div className="flex items-center gap-4 text-brand-text-secondary">
+        <div className="flex items-center gap-4 text-aura-text-secondary">
           <Link to="/tools" className="text-brand-accent hover:underline">
             ← back to tools
           </Link>
           <span className="text-sm">extract a color palette from an image.</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-brand-text">color palette extractor</h1>
-        <p className="text-lg text-brand-text-secondary max-w-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-aura-text-primary">color palette extractor</h1>
+        <p className="text-lg text-aura-text-secondary max-w-2xl">
           Upload an image and instantly generate a five-color palette with copy-ready values.
         </p>
       </section>
@@ -269,8 +269,8 @@ const ColorPalettePage: React.FC = () => {
       <div className="flex flex-col gap-6 lg:flex-row">
         <div className="lg:w-1/2">
           <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-semibold text-brand-text">extract a color palette</h2>
-            <p className="text-brand-text-secondary">
+            <h2 className="text-2xl font-semibold text-aura-text-primary">extract a color palette</h2>
+            <p className="text-aura-text-secondary">
               Upload an image and instantly generate a five-color palette with copy-ready values.
             </p>
           </div>
@@ -295,7 +295,7 @@ const ColorPalettePage: React.FC = () => {
               <p className="text-sm text-red-500">{error}</p>
             )}
 
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-brand-text-secondary">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-aura-text-secondary">
               <span>{isProcessing ? 'processing image…' : imagePreview ? 'palette ready' : 'waiting for image'}</span>
               {isProcessing && (
                 <span className="h-2 w-2 animate-pulse rounded-full bg-brand-accent" aria-hidden />
@@ -314,7 +314,7 @@ const ColorPalettePage: React.FC = () => {
                   className="max-h-72 w-full object-contain"
                 />
               ) : (
-                <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-brand-text-secondary">
+                <div className="flex h-48 w-full flex-col items-center justify-center gap-2 text-aura-text-secondary">
                   <span className="text-4xl" role="img" aria-label="framed picture">
                     🖼️
                   </span>
@@ -325,7 +325,7 @@ const ColorPalettePage: React.FC = () => {
           </div>
 
           <div className="flex-1 space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-text-secondary">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-aura-text-secondary">
               extracted colors
             </h3>
             <div className="space-y-3">
@@ -347,8 +347,8 @@ const ColorPalettePage: React.FC = () => {
                         aria-hidden
                       />
                       <div className="flex flex-col text-sm">
-                        <span className="font-semibold text-brand-text">{hex}</span>
-                        <span className="text-brand-text-secondary">{rgbLabel}</span>
+                        <span className="font-semibold text-aura-text-primary">{hex}</span>
+                        <span className="text-aura-text-secondary">{rgbLabel}</span>
                       </div>
                     </div>
                     {!isPlaceholder && (
@@ -356,14 +356,14 @@ const ColorPalettePage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => copyToClipboard(hex)}
-                          className="rounded-lg border border-brand-secondary/40 px-3 py-1 text-xs font-medium text-brand-text transition hover:border-brand-accent hover:text-brand-accent"
+                          className="rounded-lg border border-brand-secondary/40 px-3 py-1 text-xs font-medium text-aura-text-primary transition hover:border-brand-accent hover:text-brand-accent"
                         >
                           copy hex
                         </button>
                         <button
                           type="button"
                           onClick={() => copyToClipboard(rgbLabel)}
-                          className="rounded-lg border border-brand-secondary/40 px-3 py-1 text-xs font-medium text-brand-text transition hover:border-brand-accent hover:text-brand-accent"
+                          className="rounded-lg border border-brand-secondary/40 px-3 py-1 text-xs font-medium text-aura-text-primary transition hover:border-brand-accent hover:text-brand-accent"
                         >
                           copy rgb
                         </button>
@@ -374,7 +374,7 @@ const ColorPalettePage: React.FC = () => {
               })}
             </div>
             {copiedValue && (
-              <p className="text-xs text-brand-text-secondary">Copied {copiedValue} to your clipboard.</p>
+              <p className="text-xs text-aura-text-secondary">Copied {copiedValue} to your clipboard.</p>
             )}
           </div>
         </div>

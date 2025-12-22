@@ -1,6 +1,19 @@
 {
-    "git.autoStash": true,
-    "IDX.aI.enableInlineCompletion": true,
-    "IDX.aI.enableCodebaseIndexing": true,
-    "geminicodeassist.agentYoloMode": true
+  "git.autoStash": true,
+  "IDX.aI.enableInlineCompletion": true,
+  "IDX.aI.enableCodebaseIndexing": true,
+  "geminicodeassist.agentYoloMode": true,
+  "window.autoDetectColorScheme": false,
+  "workbench.colorTheme": "Default Dark Modern",
+  "explorer.decorations.colors": true,
+  "terminal.integrated.tabs.defaultColor": "terminal.ansiGreen",
+  "workbench.colorCustomizations": {
+    "[Default Dark Modern]": {
+      "titleBar.activeBackground": "#0088ff",
+      "titleBar.activeForeground": "#fcffec",
+      "titleBar.inactiveForeground": "#fcffec",
+      "titleBar.inactiveBackground": "#0088ff5f"
+    }
+  },
+  "cSpell.words": ["cinemagraphs", "mediscribe", "neuroaesthetic", "pogodin"]
 }
