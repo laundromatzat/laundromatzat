@@ -148,20 +148,20 @@ app.post("/api/auth/register", async (req, res) => {
   }
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const stmt = db.prepare(
-      "INSERT INTO users (username, password) VALUES (?, ?)"
+    const result = await db.query(
+      "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id",
+      [username, hashedPassword]
     );
-    const info = stmt.run(username, hashedPassword);
-    const token = jwt.sign({ id: info.lastInsertRowid, username }, JWT_SECRET, {
+    const newUserId = result.rows[0].id;
+    const token = jwt.sign({ id: newUserId, username }, JWT_SECRET, {
       expiresIn: "24h",
     });
-    res
-      .status(201)
-      .json({ token, user: { id: info.lastInsertRowid, username } });
+    res.status(201).json({ token, user: { id: newUserId, username } });
   } catch (err) {
-    if (err.message.includes("UNIQUE constraint failed")) {
+    if (err.message.includes("unique constraint") || err.code === "23505") {
       return res.status(400).json({ error: "Username already exists" });
     }
+    console.error("Registration error:", err);
     res.status(500).json({ error: "Registration failed" });
   }
 });
@@ -170,8 +170,10 @@ app.post("/api/auth/register", async (req, res) => {
 app.post("/api/auth/login", async (req, res) => {
   const { username, password } = req.body;
   try {
-    const stmt = db.prepare("SELECT * FROM users WHERE username = ?");
-    const user = stmt.get(username);
+    const result = await db.query("SELECT * FROM users WHERE username = $1", [
+      username,
+    ]);
+    const user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -184,12 +186,13 @@ app.post("/api/auth/login", async (req, res) => {
     );
     res.json({ token, user: { id: user.id, username: user.username } });
   } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ error: "Login failed" });
   }
 });
 
 // Get Current User endpoint
-app.get("/api/auth/me", (req, res) => {
+app.get("/api/auth/me", async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: "No token provided" });
 
@@ -197,10 +200,11 @@ app.get("/api/auth/me", (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     // Fetch latest user data from DB to get profile picture
-    const stmt = db.prepare(
-      "SELECT id, username, profile_picture FROM users WHERE id = ?"
+    const result = await db.query(
+      "SELECT id, username, profile_picture FROM users WHERE id = $1",
+      [decoded.id]
     );
-    const user = stmt.get(decoded.id);
+    const user = result.rows[0];
     if (!user) return res.status(401).json({ error: "User not found" });
 
     res.json({ user });
@@ -217,24 +221,29 @@ app.put("/api/auth/me", requireAuth, async (req, res) => {
   try {
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const stmt = db.prepare(
-        "UPDATE users SET username = ?, password = ? WHERE id = ?"
+      await db.query(
+        "UPDATE users SET username = $1, password = $2 WHERE id = $3",
+        [username, hashedPassword, userId]
       );
-      stmt.run(username, hashedPassword, userId);
     } else {
-      const stmt = db.prepare("UPDATE users SET username = ? WHERE id = ?");
-      stmt.run(username, userId);
+      await db.query("UPDATE users SET username = $1 WHERE id = $2", [
+        username,
+        userId,
+      ]);
     }
 
     // Fetch updated user
-    const user = db
-      .prepare("SELECT id, username, profile_picture FROM users WHERE id = ?")
-      .get(userId);
+    const result = await db.query(
+      "SELECT id, username, profile_picture FROM users WHERE id = $1",
+      [userId]
+    );
+    const user = result.rows[0];
     res.json({ user, message: "Profile updated successfully" });
   } catch (err) {
-    if (err.message.includes("UNIQUE constraint failed")) {
+    if (err.message.includes("unique constraint") || err.code === "23505") {
       return res.status(400).json({ error: "Username already exists" });
     }
+    console.error("Update profile error:", err);
     res.status(500).json({ error: "Update failed" });
   }
 });
@@ -244,7 +253,7 @@ app.post(
   "/api/auth/upload-avatar",
   requireAuth,
   uploadAvatar.single("avatar"),
-  (req, res) => {
+  async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
@@ -253,10 +262,10 @@ app.post(
     const fileUrl = `/uploads/avatars/${req.file.filename}`;
 
     try {
-      const stmt = db.prepare(
-        "UPDATE users SET profile_picture = ? WHERE id = ?"
-      );
-      stmt.run(fileUrl, req.user.id);
+      await db.query("UPDATE users SET profile_picture = $1 WHERE id = $2", [
+        fileUrl,
+        req.user.id,
+      ]);
 
       res.json({
         profile_picture: fileUrl,
@@ -272,13 +281,16 @@ app.post(
 // --- Links API Endpoints ---
 
 // GET all links for the user
-app.get("/api/links", requireAuth, (req, res) => {
+// --- Links API Endpoints ---
+
+// GET all links for the user
+app.get("/api/links", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM links WHERE user_id = ? ORDER BY created_at DESC"
+    const result = await db.query(
+      "SELECT * FROM links WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id]
     );
-    const rows = stmt.all(req.user.id);
-    const links = rows.map((row) => ({
+    const links = result.rows.map((row) => ({
       ...row,
       tags: JSON.parse(row.tags || "[]"),
     }));
@@ -290,26 +302,26 @@ app.get("/api/links", requireAuth, (req, res) => {
 });
 
 // POST a new link
-app.post("/api/links", requireAuth, (req, res) => {
+app.post("/api/links", requireAuth, async (req, res) => {
   const { title, url, description, tags, image_url } = req.body;
   if (!title || !url) {
     return res.status(400).json({ error: "Title and URL are required" });
   }
 
   try {
-    const stmt = db.prepare(
-      "INSERT INTO links (user_id, title, url, description, tags, image_url) VALUES (?, ?, ?, ?, ?, ?)"
-    );
-    const info = stmt.run(
-      req.user.id,
-      title,
-      url,
-      description || "",
-      JSON.stringify(tags || []),
-      image_url || ""
+    const result = await db.query(
+      "INSERT INTO links (user_id, title, url, description, tags, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+      [
+        req.user.id,
+        title,
+        url,
+        description || "",
+        JSON.stringify(tags || []),
+        image_url || "",
+      ]
     );
     res.status(201).json({
-      id: info.lastInsertRowid,
+      id: result.rows[0].id,
       user_id: req.user.id,
       title,
       url,
@@ -324,25 +336,25 @@ app.post("/api/links", requireAuth, (req, res) => {
 });
 
 // PUT (update) a link
-app.put("/api/links/:id", requireAuth, (req, res) => {
+app.put("/api/links/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
   const { title, url, description, tags, image_url } = req.body;
 
   try {
-    const stmt = db.prepare(
-      "UPDATE links SET title = ?, url = ?, description = ?, tags = ?, image_url = ? WHERE id = ? AND user_id = ?"
-    );
-    const result = stmt.run(
-      title,
-      url,
-      description || "",
-      JSON.stringify(tags || []),
-      image_url || "",
-      id,
-      req.user.id
+    const result = await db.query(
+      "UPDATE links SET title = $1, url = $2, description = $3, tags = $4, image_url = $5 WHERE id = $6 AND user_id = $7",
+      [
+        title,
+        url,
+        description || "",
+        JSON.stringify(tags || []),
+        image_url || "",
+        id,
+        req.user.id,
+      ]
     );
 
-    if (result.changes === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: "Link not found or unauthorized" });
     }
 
@@ -354,14 +366,16 @@ app.put("/api/links/:id", requireAuth, (req, res) => {
 });
 
 // DELETE a link
-app.delete("/api/links/:id", requireAuth, (req, res) => {
+app.delete("/api/links/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const stmt = db.prepare("DELETE FROM links WHERE id = ? AND user_id = ?");
-    const result = stmt.run(id, req.user.id);
+    const result = await db.query(
+      "DELETE FROM links WHERE id = $1 AND user_id = $2",
+      [id, req.user.id]
+    );
 
-    if (result.changes === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: "Link not found or unauthorized" });
     }
 
@@ -375,18 +389,18 @@ app.delete("/api/links/:id", requireAuth, (req, res) => {
 // --- API Endpoints ---
 
 // GET all paychecks for the user
-app.get("/paychecks", requireAuth, (req, res) => {
+// GET all paychecks for the user
+app.get("/paychecks", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM paychecks WHERE user_id = ? ORDER BY payPeriodStart DESC"
+    const result = await db.query(
+      "SELECT * FROM paychecks WHERE user_id = $1 ORDER BY payPeriodStart DESC",
+      [req.user.id]
     );
-    const rows = stmt.all(req.user.id);
-    // Parse the JSON strings back into objects
-    const paychecks = rows.map((row) => ({
+    const paychecks = result.rows.map((row) => ({
       ...row,
-      paidHours: JSON.parse(row.paidHours || "[]"),
-      bankedHours: JSON.parse(row.bankedHours || "[]"),
-      userReportedHours: JSON.parse(row.userReportedHours || "{}"),
+      paidHours: JSON.parse(row.paidhours || "[]"), // Postgres lowecases column names in result objects usually
+      bankedHours: JSON.parse(row.bankedhours || "[]"),
+      userReportedHours: JSON.parse(row.userreportedhours || "{}"),
     }));
     res.json(paychecks);
   } catch (err) {
@@ -396,10 +410,9 @@ app.get("/paychecks", requireAuth, (req, res) => {
 });
 
 // DELETE all paychecks for the user
-app.delete("/paychecks", requireAuth, (req, res) => {
+app.delete("/paychecks", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare("DELETE FROM paychecks WHERE user_id =?");
-    stmt.run(req.user.id);
+    await db.query("DELETE FROM paychecks WHERE user_id = $1", [req.user.id]);
     console.log(`Database cleared for user ${req.user.id} via API.`);
     res.json({ message: "All data cleared successfully" });
   } catch (err) {
@@ -409,17 +422,17 @@ app.delete("/paychecks", requireAuth, (req, res) => {
 });
 
 // UPDATE user reported hours
-app.put("/paychecks/:id", requireAuth, (req, res) => {
+app.put("/paychecks/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
   const { userReportedHours } = req.body;
 
   try {
-    const stmt = db.prepare(
-      "UPDATE paychecks SET userReportedHours = ? WHERE id = ? AND user_id = ?"
+    const result = await db.query(
+      "UPDATE paychecks SET userReportedHours = $1 WHERE id = $2 AND user_id = $3",
+      [JSON.stringify(userReportedHours), id, req.user.id]
     );
-    const result = stmt.run(JSON.stringify(userReportedHours), id, req.user.id);
 
-    if (result.changes === 0) {
+    if (result.rowCount === 0) {
       return res
         .status(404)
         .json({ error: "Paycheck not found or unauthorized" });
@@ -503,22 +516,21 @@ app.post(
         console.log("Deterministic parsing successful! Skipping LLM.");
 
         // Save to database directly
-        const stmt = db.prepare(`
-          INSERT INTO paychecks (user_id, payPeriodStart, payPeriodEnd, paidHours, bankedHours, userReportedHours)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `);
-
-        const info = stmt.run(
-          req.user.id,
-          deterministicData.payPeriodStart,
-          deterministicData.payPeriodEnd,
-          JSON.stringify(deterministicData.paidHours),
-          JSON.stringify(deterministicData.bankedHours),
-          JSON.stringify({})
+        const result = await db.query(
+          `INSERT INTO paychecks (user_id, payPeriodStart, payPeriodEnd, paidHours, bankedHours, userReportedHours)
+          VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+          [
+            req.user.id,
+            deterministicData.payPeriodStart,
+            deterministicData.payPeriodEnd,
+            JSON.stringify(deterministicData.paidHours),
+            JSON.stringify(deterministicData.bankedHours),
+            JSON.stringify({}),
+          ]
         );
 
         const responseData = {
-          id: info.lastInsertRowid,
+          id: result.rows[0].id,
           payPeriodStart: deterministicData.payPeriodStart,
           payPeriodEnd: deterministicData.payPeriodEnd,
           paidHours: deterministicData.paidHours,
@@ -885,11 +897,7 @@ EXTRACTED TEXT END
       );
 
       // 4. Save to database
-      const stmt = db.prepare(`
-      INSERT INTO paychecks (user_id, payPeriodStart, payPeriodEnd, paidHours, bankedHours, userReportedHours)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
-
+      // 4. Save to database
       // Ensure we have valid dates before inserting
       if (!payPeriodStart || !payPeriodEnd) {
         throw new Error(
@@ -897,19 +905,23 @@ EXTRACTED TEXT END
         );
       }
 
-      const info = stmt.run(
-        req.user.id,
-        payPeriodStart,
-        payPeriodEnd,
-        JSON.stringify(paidHours),
-        JSON.stringify(bankedHours),
-        JSON.stringify({}) // Default empty user hours
+      const result = await db.query(
+        `INSERT INTO paychecks (user_id, payPeriodStart, payPeriodEnd, paidHours, bankedHours, userReportedHours)
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        [
+          req.user.id,
+          payPeriodStart,
+          payPeriodEnd,
+          JSON.stringify(paidHours),
+          JSON.stringify(bankedHours),
+          JSON.stringify({}), // Default empty user hours
+        ]
       );
 
       // 5. Return the new data to the frontend
       // IMPORTANT: Return the CLEANED data (paidHours, bankedHours) which has numbers, not the raw LLM strings
       const responseData = {
-        id: info.lastInsertRowid,
+        id: result.rows[0].id,
         payPeriodStart,
         payPeriodEnd,
         paidHours, // <--- Correct key, cleaned data (numbers)
@@ -935,14 +947,14 @@ EXTRACTED TEXT END
 );
 // --- Mediscribe API Endpoints ---
 
-app.get("/api/mediscribe/examples", requireAuth, (req, res) => {
+app.get("/api/mediscribe/examples", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM mediscribe_examples WHERE user_id = ? ORDER BY created_at DESC"
+    const result = await db.query(
+      "SELECT * FROM mediscribe_examples WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id]
     );
-    const rows = stmt.all(req.user.id);
     res.json({
-      examples: rows.map((r) => ({
+      examples: result.rows.map((r) => ({
         id: r.id.toString(),
         original: r.original_text,
         rewritten: r.rewritten_text,
@@ -954,31 +966,26 @@ app.get("/api/mediscribe/examples", requireAuth, (req, res) => {
   }
 });
 
-app.post("/api/mediscribe/examples", requireAuth, (req, res) => {
+app.post("/api/mediscribe/examples", requireAuth, async (req, res) => {
   const { original, rewritten, tags } = req.body;
   try {
-    const stmt = db.prepare(
-      "INSERT INTO mediscribe_examples (user_id, original_text, rewritten_text, style_tags) VALUES (?, ?, ?, ?)"
+    const result = await db.query(
+      "INSERT INTO mediscribe_examples (user_id, original_text, rewritten_text, style_tags) VALUES ($1, $2, $3, $4) RETURNING id",
+      [req.user.id, original, rewritten, JSON.stringify(tags || [])]
     );
-    const info = stmt.run(
-      req.user.id,
-      original,
-      rewritten,
-      JSON.stringify(tags || [])
-    );
-    res.json({ id: info.lastInsertRowid, message: "Example saved" });
+    res.json({ id: result.rows[0].id, message: "Example saved" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.delete("/api/mediscribe/examples/:id", requireAuth, (req, res) => {
+app.delete("/api/mediscribe/examples/:id", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare(
-      "DELETE FROM mediscribe_examples WHERE id = ? AND user_id = ?"
+    const result = await db.query(
+      "DELETE FROM mediscribe_examples WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id]
     );
-    const info = stmt.run(req.params.id, req.user.id);
-    if (info.changes === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: "Example not found" });
     }
     res.json({ message: "Example deleted" });
@@ -989,14 +996,14 @@ app.delete("/api/mediscribe/examples/:id", requireAuth, (req, res) => {
 
 // --- Public Health API Endpoints ---
 
-app.get("/api/public-health/docs", requireAuth, (req, res) => {
+app.get("/api/public-health/docs", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM public_health_docs WHERE user_id = ? ORDER BY uploaded_at DESC"
+    const result = await db.query(
+      "SELECT * FROM public_health_docs WHERE user_id = $1 ORDER BY uploaded_at DESC",
+      [req.user.id]
     );
-    const rows = stmt.all(req.user.id);
     res.json({
-      docs: rows.map((r) => ({
+      docs: result.rows.map((r) => ({
         id: r.id.toString(),
         filename: r.filename,
         rag_store_name: r.rag_store_name,
@@ -1012,7 +1019,7 @@ app.get("/api/public-health/docs", requireAuth, (req, res) => {
   }
 });
 
-app.post("/api/public-health/docs", requireAuth, (req, res) => {
+app.post("/api/public-health/docs", requireAuth, async (req, res) => {
   const {
     filename,
     rag_store_name,
@@ -1022,19 +1029,19 @@ app.post("/api/public-health/docs", requireAuth, (req, res) => {
     version,
   } = req.body;
   try {
-    const stmt = db.prepare(
-      "INSERT INTO public_health_docs (user_id, filename, rag_store_name, analysis_result_json, tags, category, version) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    const result = await db.query(
+      "INSERT INTO public_health_docs (user_id, filename, rag_store_name, analysis_result_json, tags, category, version) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+      [
+        req.user.id,
+        filename,
+        rag_store_name,
+        JSON.stringify(analysis_result_json),
+        JSON.stringify(tags || []),
+        category || null,
+        version || null,
+      ]
     );
-    const info = stmt.run(
-      req.user.id,
-      filename,
-      rag_store_name,
-      JSON.stringify(analysis_result_json),
-      JSON.stringify(tags || []),
-      category || null,
-      version || null
-    );
-    res.json({ id: info.lastInsertRowid, message: "Document saved" });
+    res.json({ id: result.rows[0].id, message: "Document saved" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1042,12 +1049,13 @@ app.post("/api/public-health/docs", requireAuth, (req, res) => {
 
 // --- Neuroaesthetic API Endpoints ---
 
-app.get("/api/neuroaesthetic/preferences", requireAuth, (req, res) => {
+app.get("/api/neuroaesthetic/preferences", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare(
-      "SELECT sensitivities, colorPreferences, designGoals FROM neuroaesthetic_preferences WHERE user_id = ?"
+    const result = await db.query(
+      "SELECT sensitivities, colorPreferences, designGoals FROM neuroaesthetic_preferences WHERE user_id = $1",
+      [req.user.id]
     );
-    const row = stmt.get(req.user.id);
+    const row = result.rows[0];
     if (!row) {
       // Return defaults if not found
       res.json({
@@ -1063,27 +1071,31 @@ app.get("/api/neuroaesthetic/preferences", requireAuth, (req, res) => {
   }
 });
 
-app.put("/api/neuroaesthetic/preferences", requireAuth, (req, res) => {
+app.put("/api/neuroaesthetic/preferences", requireAuth, async (req, res) => {
   const { sensitivities, colorPreferences, designGoals } = req.body;
   try {
-    const stmt = db.prepare(
-      "INSERT OR REPLACE INTO neuroaesthetic_preferences (user_id, sensitivities, colorPreferences, designGoals, updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)"
+    // Upsert for Postgres
+    await db.query(
+      `INSERT INTO neuroaesthetic_preferences (user_id, sensitivities, colorPreferences, designGoals, updated_at) 
+       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+       ON CONFLICT (user_id) 
+       DO UPDATE SET sensitivities = $2, colorPreferences = $3, designGoals = $4, updated_at = CURRENT_TIMESTAMP`,
+      [req.user.id, sensitivities, colorPreferences, designGoals]
     );
-    stmt.run(req.user.id, sensitivities, colorPreferences, designGoals);
     res.json({ message: "Preferences saved" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get("/api/neuroaesthetic/history", requireAuth, (req, res) => {
+app.get("/api/neuroaesthetic/history", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM neuroaesthetic_history WHERE user_id = ? ORDER BY created_at DESC"
+    const result = await db.query(
+      "SELECT * FROM neuroaesthetic_history WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id]
     );
-    const rows = stmt.all(req.user.id);
     res.json({
-      history: rows.map((r) => ({
+      history: result.rows.map((r) => ({
         id: r.id,
         originalImage: r.original_image_url,
         generatedImage: r.generated_image_url,
@@ -1096,21 +1108,21 @@ app.get("/api/neuroaesthetic/history", requireAuth, (req, res) => {
   }
 });
 
-app.post("/api/neuroaesthetic/history", requireAuth, (req, res) => {
+app.post("/api/neuroaesthetic/history", requireAuth, async (req, res) => {
   const { originalImage, generatedImage, analysis, preferencesSnapshot } =
     req.body;
   try {
-    const stmt = db.prepare(
-      "INSERT INTO neuroaesthetic_history (user_id, original_image_url, generated_image_url, analysis_json, preferences_snapshot_json) VALUES (?, ?, ?, ?, ?)"
+    const result = await db.query(
+      "INSERT INTO neuroaesthetic_history (user_id, original_image_url, generated_image_url, analysis_json, preferences_snapshot_json) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+      [
+        req.user.id,
+        originalImage,
+        generatedImage,
+        JSON.stringify(analysis),
+        JSON.stringify(preferencesSnapshot),
+      ]
     );
-    const info = stmt.run(
-      req.user.id,
-      originalImage,
-      generatedImage,
-      JSON.stringify(analysis),
-      JSON.stringify(preferencesSnapshot)
-    );
-    res.json({ id: info.lastInsertRowid, message: "History saved" });
+    res.json({ id: result.rows[0].id, message: "History saved" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1118,14 +1130,14 @@ app.post("/api/neuroaesthetic/history", requireAuth, (req, res) => {
 
 // --- Pin Pals API Endpoints ---
 
-app.get("/api/pin-pals/gallery", requireAuth, (req, res) => {
+app.get("/api/pin-pals/gallery", requireAuth, async (req, res) => {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM pin_pals_gallery WHERE user_id = ? ORDER BY created_at DESC"
+    const result = await db.query(
+      "SELECT * FROM pin_pals_gallery WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id]
     );
-    const rows = stmt.all(req.user.id);
     res.json({
-      pins: rows.map((r) => ({
+      pins: result.rows.map((r) => ({
         id: r.id,
         imageUrl: r.image_url,
         petType: r.pet_type,
@@ -1138,14 +1150,14 @@ app.get("/api/pin-pals/gallery", requireAuth, (req, res) => {
   }
 });
 
-app.post("/api/pin-pals/gallery", requireAuth, (req, res) => {
+app.post("/api/pin-pals/gallery", requireAuth, async (req, res) => {
   const { imageUrl, petType, petCount } = req.body;
   try {
-    const stmt = db.prepare(
-      "INSERT INTO pin_pals_gallery (user_id, image_url, pet_type, pet_count) VALUES (?, ?, ?, ?)"
+    const result = await db.query(
+      "INSERT INTO pin_pals_gallery (user_id, image_url, pet_type, pet_count) VALUES ($1, $2, $3, $4) RETURNING id",
+      [req.user.id, imageUrl, petType, petCount]
     );
-    const info = stmt.run(req.user.id, imageUrl, petType, petCount);
-    res.json({ id: info.lastInsertRowid, message: "Pin saved to gallery" });
+    res.json({ id: result.rows[0].id, message: "Pin saved to gallery" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
