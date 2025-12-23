@@ -75,8 +75,15 @@ const PinPalsPage: React.FC = () => {
     isDetecting: false,
   });
 
+  interface GalleryItem {
+    id: number;
+    imageUrl: string;
+    petType: string;
+    petCount: number;
+  }
+
   const [view, setView] = useState<"create" | "gallery">("create");
-  const [gallery, setGallery] = useState<any[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
 
   // Load gallery when switching view
   React.useEffect(() => {

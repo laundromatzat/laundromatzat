@@ -1,19 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import {
-  User,
-  Lock,
-  Upload,
-  FileText,
-  Activity,
-  DollarSign,
-} from "lucide-react";
+import { User, Upload, FileText, Activity, DollarSign } from "lucide-react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 
+interface DashboardItem {
+  id: number;
+  tags: string[];
+  // Add other properties as needed
+  [key: string]: unknown;
+}
+
 interface DashboardData {
-  paychecks: any[];
-  mediscribe: any[];
-  publicHealth: any[];
+  paychecks: unknown[];
+  mediscribe: DashboardItem[];
+  publicHealth: unknown[];
 }
 
 export default function ProfilePage() {
@@ -92,7 +92,7 @@ export default function ProfilePage() {
       } else {
         setMessage(data.error || "Update failed");
       }
-    } catch (err) {
+    } catch {
       setMessage("Update failed");
     }
   };
@@ -145,6 +145,13 @@ export default function ProfilePage() {
             <div
               className="relative inline-block mb-4 group cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  fileInputRef.current?.click();
+                }
+              }}
             >
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-aura-accent/20 mx-auto">
                 {avatarUrl ? (
@@ -185,10 +192,14 @@ export default function ProfilePage() {
             </h3>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-300">
+                <label
+                  htmlFor="username-input"
+                  className="block text-sm font-medium mb-1 text-gray-300"
+                >
                   Username
                 </label>
                 <input
+                  id="username-input"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -196,10 +207,14 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-300">
+                <label
+                  htmlFor="password-input"
+                  className="block text-sm font-medium mb-1 text-gray-300"
+                >
                   New Password (leave blank to keep current)
                 </label>
                 <input
+                  id="password-input"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -277,12 +292,14 @@ export default function ProfilePage() {
               </div>
             ) : activeTab === "mediscribe" ? (
               <div className="space-y-4">
-                {data.mediscribe.map((item: any) => (
+                {data.mediscribe.map((item: DashboardItem) => (
                   <div
                     key={item.id}
                     className="bg-white/5 p-4 rounded-lg border border-white/10"
                   >
-                    <p className="text-white line-clamp-2">{item.rewritten}</p>
+                    <p className="text-white line-clamp-2">
+                      {item.rewritten as string}
+                    </p>
                     <div className="mt-2 flex gap-2">
                       {item.tags.map((tag: string) => (
                         <span

@@ -118,6 +118,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div
                     key={doc.id}
                     onClick={() => onDocumentClick(doc)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ")
+                        onDocumentClick(doc);
+                    }}
                     className="group flex flex-col sm:flex-row sm:items-center justify-between p-3 hover:bg-gem-mist/10 rounded-lg cursor-pointer transition-colors border-b border-gem-mist/10 last:border-0"
                   >
                     <div className="flex items-start mb-2 sm:mb-0">

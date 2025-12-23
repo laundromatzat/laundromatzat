@@ -7,7 +7,6 @@ import { useState, useEffect, useCallback } from "react";
 import WelcomeScreen from "./components/WelcomeScreen";
 import OrganizationResultView from "./components/OrganizationResultView";
 import ProgressBar from "./components/ProgressBar";
-import Dashboard from "./components/Dashboard"; // [NEW]
 import {
   AppStatus,
   ChatMessage,
@@ -16,7 +15,6 @@ import {
   SavedDocument,
 } from "./types";
 import * as geminiService from "./services/geminiService";
-import Spinner from "./components/Spinner";
 import ChatInterface from "./components/ChatInterface";
 import PageMetadata from "../../../components/PageMetadata";
 
@@ -117,7 +115,7 @@ const PublicHealthPage: React.FC = () => {
   useEffect(() => {
     try {
       geminiService.initialize(); // Ensure API is ready
-    } catch (e) {
+    } catch {
       console.warn("API Key not ready yet, checking saved config...");
     }
     fetchSavedDocs();
@@ -126,7 +124,7 @@ const PublicHealthPage: React.FC = () => {
 
   // We DO NOT delete the store on unload anymore because it is persistent.
 
-  const handleError = (message: string, err: any) => {
+  const handleError = (message: string, err: unknown) => {
     console.error(message, err);
     setError(
       `${message}${err ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`

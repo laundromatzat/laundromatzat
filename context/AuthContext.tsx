@@ -20,8 +20,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for stored token on mount
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
+      // Mock Auth Support
+      if (storedToken === "mock-jwt-token") {
+        setUser({ id: 999, username: "Demo User" });
+        setToken(storedToken);
+        setLoading(false);
+        return;
+      }
+
       // Validate token with backend
-      fetch("http://localhost:4000/api/auth/me", {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
+      fetch(`${apiUrl}/api/auth/me`, {
         headers: { Authorization: `Bearer ${storedToken}` },
       })
         .then((res) => {
@@ -33,6 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setToken(storedToken);
         })
         .catch(() => {
+          // If backend is down but we have a token, we could optionally allow it,
+          // but for security we usually log out.
+          // For this specific 'mock' requirement, we rely on the specific mock token.
           localStorage.removeItem("token");
         })
         .finally(() => setLoading(false));

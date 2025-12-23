@@ -1,6 +1,6 @@
 import { PaycheckData } from "../types/paystubTypes";
 
-const API_URL = "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 let authToken: string | null = null;
 
@@ -54,7 +54,7 @@ export const fetchPaychecks = async (): Promise<PaycheckData[]> => {
 
 export const updatePaycheckReportedHours = async (
   id: number | string,
-  userReportedHours: any
+  userReportedHours: { [key: string]: unknown[] }
 ): Promise<void> => {
   const response = await fetch(`${API_URL}/paychecks/${id}`, {
     method: "PUT",

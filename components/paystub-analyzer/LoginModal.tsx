@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -7,8 +7,8 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onLogin }) => {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -16,15 +16,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       const success = await onLogin(password);
       if (!success) {
-        setError('Invalid password');
+        setError("Invalid password");
       }
-    } catch (err) {
-      setError('Login failed');
+    } catch {
+      setError("Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +37,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onLogin }) => {
         animate={{ scale: 1, opacity: 1 }}
         className="bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-slate-800 p-8"
       >
-        <h2 className="text-2xl font-bold text-white mb-2 text-center">Admin Access Required</h2>
+        <h2 className="text-2xl font-bold text-white mb-2 text-center">
+          Admin Access Required
+        </h2>
         <p className="text-slate-400 text-center mb-6">
           Please enter the admin password to view and manage paystub data.
         </p>
@@ -50,7 +52,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onLogin }) => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
               className="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-              autoFocus
             />
           </div>
 
@@ -68,7 +69,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onLogin }) => {
             {isLoading ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              'Unlock Access'
+              "Unlock Access"
             )}
           </button>
         </form>

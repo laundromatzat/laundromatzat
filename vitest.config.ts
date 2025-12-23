@@ -1,15 +1,13 @@
-import { defineConfig, configDefaults, type Plugin } from 'vitest/config';
-import react from '@vitejs/plugin-react';
+import { defineConfig, configDefaults, type Plugin } from "vitest/config";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react() as unknown as Plugin],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     setupFiles: [],
-    exclude: [
-      ...configDefaults.exclude,
-      'tests/e2e/**',
-    ],
+    exclude: [...configDefaults.exclude, "tests/e2e/**"],
+    environmentMatchGlobs: [["tests/server/**/*.test.ts", "node"]],
   },
   build: {
     sourcemap: false,
