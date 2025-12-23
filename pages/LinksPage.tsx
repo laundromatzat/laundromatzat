@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PageMetadata from "../components/PageMetadata";
 import { useAuth } from "../context/AuthContext";
+import { getApiUrl } from "../utils/api";
 
 interface LinkItem {
   id: number;
@@ -232,7 +233,7 @@ function LinksPage(): React.ReactNode {
     if (!token) return;
     setStatus("loading");
     try {
-      const res = await fetch("http://localhost:4000/api/links", {
+      const res = await fetch(getApiUrl("/api/links"), {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to fetch links");
@@ -251,7 +252,7 @@ function LinksPage(): React.ReactNode {
 
   const handleCreate = async (data: Omit<LinkItem, "id">) => {
     try {
-      const res = await fetch("http://localhost:4000/api/links", {
+      const res = await fetch(getApiUrl("/api/links"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -271,17 +272,14 @@ function LinksPage(): React.ReactNode {
   const handleUpdate = async (data: Omit<LinkItem, "id">) => {
     if (!editingLink) return;
     try {
-      const res = await fetch(
-        `http://localhost:4000/api/links/${editingLink.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const res = await fetch(getApiUrl(`/api/links/${editingLink.id}`), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
       if (res.ok) {
         fetchLinks();
         setIsModalOpen(false);
@@ -295,7 +293,7 @@ function LinksPage(): React.ReactNode {
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this link?")) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/links/${id}`, {
+      const res = await fetch(getApiUrl(`/api/links/${id}`), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

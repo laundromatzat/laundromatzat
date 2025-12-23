@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { User } from "../types";
+import { getApiUrl } from "../utils/api";
 
 interface AuthContextType {
   user: User | null;
@@ -29,8 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Validate token with backend
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
-      fetch(`${apiUrl}/api/auth/me`, {
+      fetch(getApiUrl("/api/auth/me"), {
         headers: { Authorization: `Bearer ${storedToken}` },
       })
         .then((res) => {

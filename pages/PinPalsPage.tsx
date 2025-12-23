@@ -16,7 +16,7 @@ const MODEL_NAME = "gemini-3-pro-image-preview";
 const DETECTION_MODEL = "gemini-2.5-flash";
 
 // --- API Helpers ---
-const API_BASE = "http://localhost:4000/api/pin-pals";
+import { getApiUrl } from "../utils/api";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -32,7 +32,7 @@ const savePinToGallery = async (pin: {
   petCount: number;
 }) => {
   try {
-    const res = await fetch(`${API_BASE}/gallery`, {
+    const res = await fetch(getApiUrl("/api/pin-pals/gallery"), {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(pin),
@@ -47,7 +47,7 @@ const savePinToGallery = async (pin: {
 
 const fetchCheckGallery = async () => {
   try {
-    const res = await fetch(`${API_BASE}/gallery`, {
+    const res = await fetch(getApiUrl("/api/pin-pals/gallery"), {
       method: "GET",
       headers: getAuthHeaders(),
     });

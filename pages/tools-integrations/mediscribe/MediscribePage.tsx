@@ -5,6 +5,7 @@ import {
   Settings as SettingsIcon,
   Stethoscope,
 } from "lucide-react";
+import { getApiUrl } from "../../../utils/api";
 import {
   UserSettings,
   AppState,
@@ -31,7 +32,7 @@ function MediscribePage() {
   // Load examples from API on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch("/api/mediscribe/examples", {
+    fetch(getApiUrl("/api/mediscribe/examples"), {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -78,7 +79,7 @@ function MediscribePage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("/api/mediscribe/examples", {
+      const res = await fetch(getApiUrl("/api/mediscribe/examples"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,7 +116,7 @@ function MediscribePage() {
 
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/mediscribe/examples/${id}`, {
+      await fetch(getApiUrl(`/api/mediscribe/examples/${id}`), {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

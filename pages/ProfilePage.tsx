@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { User, Upload, FileText, Activity, DollarSign } from "lucide-react";
 import { Helmet } from "@dr.pogodin/react-helmet";
+import { getApiUrl, API_BASE_URL } from "../utils/api";
 
 interface DashboardItem {
   id: number;
@@ -48,9 +49,9 @@ export default function ProfilePage() {
 
     try {
       const [paychecksRes, mediscribeRes, publicHealthRes] = await Promise.all([
-        fetch("http://localhost:4000/paychecks", { headers }),
-        fetch("http://localhost:4000/api/mediscribe/examples", { headers }),
-        fetch("http://localhost:4000/api/public-health/docs", { headers }),
+        fetch(getApiUrl("/paychecks"), { headers }),
+        fetch(getApiUrl("/api/mediscribe/examples"), { headers }),
+        fetch(getApiUrl("/api/public-health/docs"), { headers }),
       ]);
 
       const paychecks = await paychecksRes.json();
@@ -75,7 +76,7 @@ export default function ProfilePage() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://localhost:4000/api/auth/me", {
+      const res = await fetch(getApiUrl("/api/auth/me"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +106,7 @@ export default function ProfilePage() {
 
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:4000/api/auth/upload-avatar", {
+      const res = await fetch(getApiUrl("/api/auth/upload-avatar"), {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -130,7 +131,8 @@ export default function ProfilePage() {
 
   const getFullAvatarUrl = (path: string | null | undefined) => {
     if (!path) return null;
-    return `http://localhost:4000${path}`;
+    if (path.startsWith("http")) return path;
+    return `${API_BASE_URL}${path}`;
   };
 
   return (

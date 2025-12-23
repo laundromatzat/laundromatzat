@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
+import { getApiUrl } from "../../../utils/api";
 import WelcomeScreen from "./components/WelcomeScreen";
 import OrganizationResultView from "./components/OrganizationResultView";
 import ProgressBar from "./components/ProgressBar";
@@ -93,7 +94,7 @@ const PublicHealthPage: React.FC = () => {
   // Load Saved Docs & Initialize Store
   const fetchSavedDocs = useCallback(async () => {
     try {
-      const res = await fetch("/api/public-health/docs", {
+      const res = await fetch(getApiUrl("/api/public-health/docs"), {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
         },
@@ -203,7 +204,7 @@ const PublicHealthPage: React.FC = () => {
     try {
       await Promise.all(
         docs.map(async (doc) => {
-          const res = await fetch("/api/public-health/docs", {
+          const res = await fetch(getApiUrl("/api/public-health/docs"), {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

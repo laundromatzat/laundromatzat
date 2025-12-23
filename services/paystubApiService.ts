@@ -1,6 +1,5 @@
 import { PaycheckData } from "../types/paystubTypes";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+import { getApiUrl } from "../utils/api";
 
 let authToken: string | null = null;
 
@@ -20,7 +19,7 @@ export const analyzePaycheckPdf = async (file: File): Promise<PaycheckData> => {
   const formData = new FormData();
   formData.append("paystub", file);
 
-  const response = await fetch(`${API_URL}/analyze`, {
+  const response = await fetch(getApiUrl("/analyze"), {
     method: "POST",
     headers: getHeaders(),
     body: formData,
@@ -39,7 +38,7 @@ export const analyzePaycheckPdf = async (file: File): Promise<PaycheckData> => {
 };
 
 export const fetchPaychecks = async (): Promise<PaycheckData[]> => {
-  const response = await fetch(`${API_URL}/paychecks`, {
+  const response = await fetch(getApiUrl("/paychecks"), {
     headers: getHeaders(),
   });
 
@@ -56,7 +55,7 @@ export const updatePaycheckReportedHours = async (
   id: number | string,
   userReportedHours: { [key: string]: unknown[] }
 ): Promise<void> => {
-  const response = await fetch(`${API_URL}/paychecks/${id}`, {
+  const response = await fetch(getApiUrl(`/paychecks/${id}`), {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -77,7 +76,7 @@ export const updatePaycheckReportedHours = async (
 };
 
 export const clearAllData = async (): Promise<void> => {
-  const response = await fetch(`${API_URL}/paychecks`, {
+  const response = await fetch(getApiUrl("/paychecks"), {
     method: "DELETE",
     headers: getHeaders(),
   });
