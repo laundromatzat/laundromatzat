@@ -29,7 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Validate token with backend
-      fetch("http://localhost:4000/api/auth/me", {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
+      fetch(`${apiUrl}/api/auth/me`, {
         headers: { Authorization: `Bearer ${storedToken}` },
       })
         .then((res) => {
