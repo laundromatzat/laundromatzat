@@ -6,8 +6,13 @@ import ProjectGrid from "../components/ProjectGrid";
 import PageMetadata from "../components/PageMetadata";
 import { compareProjectsByDateDesc } from "../utils/projectDates";
 
-function VideosPage(): React.ReactNode {
-  const { slug } = useParams<{ slug: string }>();
+interface VideosPageProps {
+  forcedSlug?: string;
+}
+
+function VideosPage({ forcedSlug }: VideosPageProps): React.ReactNode {
+  const { slug: paramsSlug } = useParams<{ slug: string }>();
+  const slug = forcedSlug || paramsSlug;
   const navigate = useNavigate();
 
   const videoProjects = useMemo(

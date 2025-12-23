@@ -15,5 +15,6 @@
       "titleBar.inactiveBackground": "#0088ff5f"
     }
   },
-  "cSpell.words": ["cinemagraphs", "mediscribe", "neuroaesthetic", "pogodin"]
+  "cSpell.words": ["cinemagraphs", "mediscribe", "neuroaesthetic", "pogodin"],
+  "github-actions.workflows.pinned.workflows": [".github/workflows/ci.yml"]
 }
