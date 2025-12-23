@@ -1,6 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import App from "./App";
 import "./index.css";
@@ -60,7 +64,7 @@ const router = createBrowserRouter([
       },
       {
         path: "videos",
-        element: <VideosPage forcedSlug="seasons-of-love" />,
+        element: <Navigate to="/vids/seasons-of-love" replace />,
       },
       {
         path: "images",
