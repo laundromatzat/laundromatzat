@@ -61,11 +61,10 @@ app.use(
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) === -1) {
-        // If specific origin not found, checked if it's a preview deployment or similar if needed.
-        // For now, strict:
+        // Warn but allow (for now) to unblock user if the origin list is slightly off
+        console.warn(`Untrusted Origin: ${origin}`);
+        return callback(null, true); 
         // return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
-        // Relaxed for dev:
-        return callback(null, true);
       }
       return callback(null, true);
     },
@@ -1251,20 +1250,13 @@ app.post("/api/pin-pals/gallery", requireAuth, async (req, res) => {
   }
 });
 
-// Serve static frontend in production
-if (process.env.NODE_ENV === "production") {
-  const distPath = path.join(__dirname, "../dist");
-  app.use(express.static(distPath));
-
-  app.get(/.*/, (req, res) => {
-    if (req.path.startsWith("/api")) {
-      return res.status(404).json({ error: "API route not found" });
-    }
-    res.sendFile(path.join(distPath, "index.html"));
-  });
-}
+// --- Fallback Route (API Only) ---
+app.use((req, res) => {
+  res.status(404).json({ error: "Endpoint not found" });
+});
 
 // Start server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+```
