@@ -32,11 +32,7 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run build
-        env:
-          # Frontend builds without API key now (unless client-side gemini is added later).
-          # The key is only needed if we switch to client-side logic.
-          # For now, we leave it empty or use secrets if we add client-side chat back.
-          VITE_API_BASE_URL: https://laundromatzat-api.onrender.com # Placeholder if they use Render later
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_SITE_URL: https://laundromatzat.com
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
