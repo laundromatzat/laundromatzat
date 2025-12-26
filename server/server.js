@@ -63,7 +63,7 @@ app.use(
       if (allowedOrigins.indexOf(origin) === -1) {
         // Warn but allow (for now) to unblock user if the origin list is slightly off
         console.warn(`Untrusted Origin: ${origin}`);
-        return callback(null, true); 
+        return callback(null, true);
         // return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
       }
       return callback(null, true);
@@ -173,12 +173,10 @@ app.post("/api/auth/register", async (req, res) => {
     // However, our login endpoint BLOCKS login if not approved.
     // So for consistency, maybe we should just say "Registration successful, pending approval".
     // But to keep it simple, we'll return the user but with is_approved=false.
-    res
-      .status(201)
-      .json({
-        token,
-        user: { id: newUserId, username, role: "user", is_approved: false },
-      });
+    res.status(201).json({
+      token,
+      user: { id: newUserId, username, role: "user", is_approved: false },
+    });
   } catch (err) {
     if (err.message.includes("unique constraint") || err.code === "23505") {
       return res.status(400).json({ error: "Username already exists" });
@@ -1259,4 +1257,3 @@ app.use((req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-```
