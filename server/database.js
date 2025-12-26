@@ -15,6 +15,8 @@ const initializeDatabase = async () => {
           username TEXT UNIQUE NOT NULL,
           password TEXT NOT NULL,
           profile_picture TEXT,
+          role VARCHAR(50) DEFAULT 'user',
+          is_approved BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -88,6 +90,37 @@ const initializeDatabase = async () => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // --- Auto-Migration for existing tables ---
+    // Add role column if strictly missing
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='role') THEN
+          ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'user';
+        END IF;
+      END
+      $$;
+    `);
+
+    // Add is_approved column if strictly missing
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='is_approved') THEN
+          ALTER TABLE users ADD COLUMN is_approved BOOLEAN DEFAULT FALSE;
+        END IF;
+      END
+      $$;
+    `);
+
+    // Ensure at least one admin exists if desired (e.g., id 1)
+    // We can run this safely every time or just once.
+    // Let's just update the first user to be admin/approved if they exist, to prevent lockout.
+    await pool.query(`
+        UPDATE users SET role = 'admin', is_approved = TRUE WHERE id = (SELECT min(id) FROM users) AND (role IS NULL OR role = 'user');
+    `);
+
     console.log("Database initialized successfully.");
   } catch (err) {
     console.error("Error initializing database:", err);

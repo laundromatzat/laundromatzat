@@ -34,6 +34,10 @@ function App(): React.ReactNode {
         className="container px-4 sm:px-6 lg:px-8 pt-16 pb-space-6 lg:pb-space-8"
       >
         <Outlet />
+        {/* Admin Route is rendered via Outlet or main router configuration usually, 
+            but here App.tsx seems to only have Outlet. 
+            Wait, App.tsx is the Layout. The routes are likely in index.tsx or main.tsx. 
+            Let me check index.tsx. */}
       </main>
       <ScrollRestoration />
     </div>

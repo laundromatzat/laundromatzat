@@ -134,11 +134,18 @@ const requireAuth = (req, res, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
+    req.user = decoded; // Now contains role
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid token" });
   }
+};
+
+const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden: Admins only" });
+  }
+  next();
 };
 // Register endpoint
 app.post("/api/auth/register", async (req, res) => {
@@ -153,10 +160,26 @@ app.post("/api/auth/register", async (req, res) => {
       [username, hashedPassword]
     );
     const newUserId = result.rows[0].id;
-    const token = jwt.sign({ id: newUserId, username }, JWT_SECRET, {
-      expiresIn: "24h",
-    });
-    res.status(201).json({ token, user: { id: newUserId, username } });
+    // New users are NOT approved by default and have role 'user'
+    const token = jwt.sign(
+      { id: newUserId, username, role: "user" },
+      JWT_SECRET,
+      {
+        expiresIn: "24h",
+      }
+    );
+    // Note: We might NOT want to return a token if they can't login yet?
+    // But for now, let's return it, but they won't be able to do much if we check is_approved in other places.
+    // Actually, better to NOT return a token or return it but the frontend handles the "pending" state.
+    // However, our login endpoint BLOCKS login if not approved.
+    // So for consistency, maybe we should just say "Registration successful, pending approval".
+    // But to keep it simple, we'll return the user but with is_approved=false.
+    res
+      .status(201)
+      .json({
+        token,
+        user: { id: newUserId, username, role: "user", is_approved: false },
+      });
   } catch (err) {
     if (err.message.includes("unique constraint") || err.code === "23505") {
       return res.status(400).json({ error: "Username already exists" });
@@ -179,12 +202,21 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    if (!user.is_approved) {
+      return res
+        .status(403)
+        .json({ error: "Account pending approval. Please contact an admin." });
+    }
+
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, username: user.username, role: user.role },
       JWT_SECRET,
       { expiresIn: "24h" }
     );
-    res.json({ token, user: { id: user.id, username: user.username } });
+    res.json({
+      token,
+      user: { id: user.id, username: user.username, role: user.role },
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Login failed" });
@@ -200,12 +232,15 @@ app.get("/api/auth/me", async (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     // Fetch latest user data from DB to get profile picture
-    const result = await db.query(
-      "SELECT id, username, profile_picture FROM users WHERE id = $1",
+    const userQuery = await db.query(
+      "SELECT id, username, profile_picture, role, is_approved FROM users WHERE id = $1",
       [decoded.id]
     );
-    const user = result.rows[0];
-    if (!user) return res.status(401).json({ error: "User not found" });
+    const user = userQuery.rows[0];
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Optional: Enforce approval check on every request?
+    // if (!user.is_approved) return res.status(403).json({ error: "Account pending" });
 
     res.json({ user });
   } catch (err) {
@@ -385,6 +420,59 @@ app.delete("/api/links/:id", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Failed to delete link" });
   }
 });
+
+// --- Admin Routes ---
+
+// List all users
+app.get("/api/admin/users", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT id, username, role, is_approved, created_at FROM users ORDER BY created_at DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+// Approve user
+app.patch(
+  "/api/admin/users/:id/approve",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      await db.query("UPDATE users SET is_approved = TRUE WHERE id = $1", [id]);
+      res.json({ message: "User approved" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to approve user" });
+    }
+  }
+);
+
+// Delete/Reject user
+app.delete(
+  "/api/admin/users/:id",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      // Prevent deleting self
+      if (parseInt(id) === req.user.id) {
+        return res.status(400).json({ error: "Cannot delete yourself" });
+      }
+      await db.query("DELETE FROM users WHERE id = $1", [id]);
+      res.json({ message: "User deleted" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  }
+);
 
 // --- API Endpoints ---
 

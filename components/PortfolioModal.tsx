@@ -112,12 +112,12 @@ function PortfolioModal({
       />
       <div className="relative z-10 w-full max-w-5xl px-4">
         <div className="bg-brand-secondary rounded-xl shadow-2xl overflow-hidden">
-          <div className="flex items-start justify-between px-6 py-4 border-b border-brand-accent/20">
+          <div className="flex items-start justify-between px-6 py-4 border-b border-brand-accent/20 bg-zinc-800">
             <div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-brand-text">
+              <h2 className="text-xl sm:text-2xl font-semibold text-white">
                 {project.title}
               </h2>
-              <p className="text-sm text-brand-text-secondary mt-1">
+              <p className="text-sm text-zinc-400 mt-1">
                 {[project.date, project.location].filter(Boolean).join(" · ")}
               </p>
             </div>
@@ -129,7 +129,7 @@ function PortfolioModal({
                   "p-2 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60",
                   isCopied
                     ? "bg-green-100/10 text-green-600 hover:bg-green-100/20"
-                    : "text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface-highlight/50"
+                    : "text-zinc-400 hover:text-white hover:bg-white/10"
                 )}
                 title="Copy link to project"
                 aria-label="Copy link to project"
@@ -143,7 +143,7 @@ function PortfolioModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-brand-text-secondary hover:text-brand-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 rounded-full p-1"
+                className="text-zinc-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 rounded-full p-1 hover:bg-white/10 transition-colors"
                 aria-label="Close"
               >
                 <CloseIcon className="h-6 w-6" />

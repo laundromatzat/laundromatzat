@@ -33,19 +33,11 @@ export default function LoginPage() {
       login(data.token, data.user);
       navigate(from, { replace: true });
     } catch (err) {
-      // Fallback to Mock Auth if server is unreachable (for GitHub Pages demo)
-      console.warn("Backend unavailable, using mock auth");
-      const mockToken = "mock-jwt-token";
-      const mockUser = {
-        id: 999,
-        username: username || "Demo User",
-      };
-      login(mockToken, mockUser);
-      navigate(from, { replace: true });
-
+      console.error("Login error:", err);
       if (err instanceof Error) {
-        // Only set error if we didn't fallback (but here we always fallback for the demo)
-        // setError(err.message);
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
       }
     }
   };
@@ -56,7 +48,7 @@ export default function LoginPage() {
         <h2 className="text-3xl font-bold mb-6 text-center">Welcome Back</h2>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg mb-4 text-sm">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-lg mb-4 text-sm font-medium text-center">
             {error}
           </div>
         )}

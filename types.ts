@@ -37,4 +37,6 @@ export interface User {
   id: number;
   username: string;
   profile_picture?: string;
+  role?: "user" | "admin";
+  is_approved?: boolean;
 }

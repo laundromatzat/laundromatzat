@@ -108,7 +108,18 @@ function Header(): React.ReactNode {
                   <span className="hidden sm:block text-sm font-medium">
                     {user.username}
                   </span>
+                  <span className="hidden sm:block text-sm font-medium">
+                    {user.username}
+                  </span>
                 </NavLink>
+                {user.role === "admin" && (
+                  <NavLink
+                    to="/admin"
+                    className="text-xs font-bold text-amber-400 border border-amber-400/30 px-2 py-1 rounded hover:bg-amber-400/10 transition-colors hidden md:block"
+                  >
+                    Admin
+                  </NavLink>
+                )}
                 <button
                   onClick={logout}
                   className="text-xs hover:text-aura-accent transition-colors hidden md:block"
@@ -170,6 +181,15 @@ function Header(): React.ReactNode {
               >
                 My Profile
               </NavLink>
+              {user.role === "admin" && (
+                <NavLink
+                  to="/admin"
+                  className="hover:opacity-60 transition-opacity text-amber-400"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Admin
+                </NavLink>
+              )}
               <button
                 onClick={() => {
                   logout();

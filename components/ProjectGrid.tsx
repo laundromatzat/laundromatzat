@@ -25,8 +25,7 @@ function ProjectGrid({
     null
   );
 
-  const isControlled =
-    typeof activeSlug !== "undefined" && typeof onSlugChange === "function";
+  const isControlled = typeof onSlugChange === "function";
 
   // Derived active index based on mode
   const activeIndex = useMemo(() => {

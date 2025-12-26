@@ -36,7 +36,9 @@ import IntelligentIdeasBoardPage from "./pages/IntelligentIdeasBoardPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
+import ProfilePage from "./pages/ProfilePage";
 import AdminMailingListPage from "./pages/AdminMailingListPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const router = createBrowserRouter([
   {
@@ -177,6 +179,14 @@ const router = createBrowserRouter([
       {
         path: "profile",
         element: <ProfilePage />,
+      },
+      {
+        path: "admin",
+        element: (
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "admin/mailing-list",
