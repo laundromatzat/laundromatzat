@@ -513,10 +513,14 @@ app.post("/api/admin/hard-reset-users", async (req, res) => {
   }
 
   try {
-    // 1. Delete ALL users
+    // 1. Delete Dependent Data (Manual Cascade)
+    await db.query("DELETE FROM paychecks");
+    await db.query("DELETE FROM links");
+
+    // 2. Delete ALL users
     await db.query("DELETE FROM users");
 
-    // 2. Create the new Super Admin
+    // 3. Create the new Super Admin
     const hashedPassword = await bcrypt.hash(admin_password, 10);
     await db.query(
       "INSERT INTO users (username, password, role, is_approved) VALUES ($1, $2, $3, $4)",
