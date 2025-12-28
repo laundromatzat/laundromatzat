@@ -160,21 +160,9 @@ app.post("/api/auth/register", async (req, res) => {
     );
     const newUserId = result.rows[0].id;
     // New users are NOT approved by default and have role 'user'
-    const token = jwt.sign(
-      { id: newUserId, username, role: "user" },
-      JWT_SECRET,
-      {
-        expiresIn: "24h",
-      }
-    );
-    // Note: We might NOT want to return a token if they can't login yet?
-    // But for now, let's return it, but they won't be able to do much if we check is_approved in other places.
-    // Actually, better to NOT return a token or return it but the frontend handles the "pending" state.
-    // However, our login endpoint BLOCKS login if not approved.
-    // So for consistency, maybe we should just say "Registration successful, pending approval".
-    // But to keep it simple, we'll return the user but with is_approved=false.
+    // Do NOT return a token. Force them to wait for approval.
     res.status(201).json({
-      token,
+      message: "Registration successful. Please wait for admin approval.",
       user: { id: newUserId, username, role: "user", is_approved: false },
     });
   } catch (err) {
