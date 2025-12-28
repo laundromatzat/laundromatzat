@@ -116,3 +116,37 @@ For a single-server deployment (serving both Frontend and Backend):
 
 - **PDF Processing**: If `pdfjs-dist` errors occur in production, ensure the host environment supports the necessary Node.js bindings or libraries.
 - **Blank Screen**: Check browser console. If API calls fail (401/403), check CORS settings and `JWT_SECRET` consistency.
+
+### 6. Admin Features & Maintenance
+
+#### 🛑 User Approval Workflow
+
+New users cannot log in immediately.
+
+1. User registers -> Sees "Pending Approval" message.
+2. Admin logs in -> Dashboard -> Clicks "Approve".
+3. User can now log in.
+
+#### 📧 Email Notifications
+
+Admin receives an email when a new user registers.
+**Requirement:** Set these env vars on Render:
+
+- `SMTP_HOST` (e.g., smtp.gmail.com)
+- `SMTP_PORT` (e.g., 587)
+- `SMTP_USER` (Your email)
+- `SMTP_PASS` (App Password)
+- `ADMIN_EMAIL` (Where to send notifications)
+
+#### 🛡️ Database Backup
+
+To create a JSON dump of all critical tables:
+
+```bash
+npm run backup
+# Output: server/backups/backup-{timestamp}.json
+```
+
+#### 🚨 Emergency Shortcuts (Disabled)
+
+The endpoints `hard-reset-users` and `reset-password-emergency` are **commented out** in `server.js` for security. Uncomment them only if you lose Admin access again.
