@@ -471,6 +471,37 @@ app.delete(
   }
 );
 
+// IMPORTANT: Emergency Password Reset
+// Usage: POST /api/admin/reset-password-emergency { "secret_key": "YOUR_SECRET", "username": "stephen", "new_password": "..." }
+app.post("/api/admin/reset-password-emergency", async (req, res) => {
+  const { secret_key, username, new_password } = req.body;
+  const EMERGENCY_SECRET =
+    process.env.EMERGENCY_SECRET || "temp_emergency_reset_2025";
+
+  if (secret_key !== EMERGENCY_SECRET) {
+    return res.status(403).json({ error: "Invalid secret key" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+    // Force role=admin and is_approved=true as well
+    await db.query(
+      `
+      UPDATE users 
+      SET password = $1, role = 'admin', is_approved = TRUE 
+      WHERE username = $2
+      RETURNING id, username, role
+    `,
+      [hashedPassword, username]
+    );
+
+    res.json({ message: "Admin access restored successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to reset password" });
+  }
+});
+
 // --- API Endpoints ---
 
 // GET all paychecks for the user
