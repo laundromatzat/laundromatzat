@@ -502,6 +502,34 @@ app.post("/api/admin/reset-password-emergency", async (req, res) => {
   }
 });
 
+// IMPORTANT: Hard Reset Users (Clear all and create one admin)
+app.post("/api/admin/hard-reset-users", async (req, res) => {
+  const { secret_key, admin_password } = req.body;
+  const EMERGENCY_SECRET =
+    process.env.EMERGENCY_SECRET || "temp_emergency_reset_2025";
+
+  if (secret_key !== EMERGENCY_SECRET) {
+    return res.status(403).json({ error: "Invalid secret key" });
+  }
+
+  try {
+    // 1. Delete ALL users
+    await db.query("DELETE FROM users");
+
+    // 2. Create the new Super Admin
+    const hashedPassword = await bcrypt.hash(admin_password, 10);
+    await db.query(
+      "INSERT INTO users (username, password, role, is_approved) VALUES ($1, $2, $3, $4)",
+      ["laundromatzat-admin", hashedPassword, "admin", true]
+    );
+
+    res.json({ message: "All users wiped. Created 'laundromatzat-admin'." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to reset users: " + err.message });
+  }
+});
+
 // --- API Endpoints ---
 
 // GET all paychecks for the user
