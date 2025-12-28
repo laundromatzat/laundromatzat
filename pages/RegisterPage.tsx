@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+// import { useAuth } from "../context/AuthContext"; // Unused
 import { Lock, User } from "lucide-react";
 
 export default function RegisterPage() {
@@ -8,7 +8,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  // const { login } = useAuth(); // Unused now that we redirect
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
