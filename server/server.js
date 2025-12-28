@@ -165,6 +165,12 @@ app.post("/api/auth/register", async (req, res) => {
       message: "Registration successful. Please wait for admin approval.",
       user: { id: newUserId, username, role: "user", is_approved: false },
     });
+
+    // Send Admin Notification (Async - fire and forget)
+    const { sendAdminNotification } = require("./utils/email");
+    sendAdminNotification({ id: newUserId, username }).catch((err) =>
+      console.error("Email trigger failed:", err)
+    );
   } catch (err) {
     if (err.message.includes("unique constraint") || err.code === "23505") {
       return res.status(400).json({ error: "Username already exists" });
