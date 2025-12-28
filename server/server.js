@@ -459,8 +459,9 @@ app.delete(
   }
 );
 
-// IMPORTANT: Emergency Password Reset
+// IMPORTANT: Emergency Password Reset (DISABLED FOR SECURITY)
 // Usage: POST /api/admin/reset-password-emergency { "secret_key": "YOUR_SECRET", "username": "stephen", "new_password": "..." }
+/*
 app.post("/api/admin/reset-password-emergency", async (req, res) => {
   const { secret_key, username, new_password } = req.body;
   const EMERGENCY_SECRET =
@@ -489,8 +490,10 @@ app.post("/api/admin/reset-password-emergency", async (req, res) => {
     res.status(500).json({ error: "Failed to reset password" });
   }
 });
+*/
 
-// IMPORTANT: Hard Reset Users (Clear all and create one admin)
+// IMPORTANT: Hard Reset Users (Clear all and create one admin) (DISABLED FOR SECURITY)
+/*
 app.post("/api/admin/hard-reset-users", async (req, res) => {
   const { secret_key, admin_password } = req.body;
   const EMERGENCY_SECRET =
@@ -521,6 +524,7 @@ app.post("/api/admin/hard-reset-users", async (req, res) => {
     res.status(500).json({ error: "Failed to reset users: " + err.message });
   }
 });
+*/
 
 // --- API Endpoints ---
 
