@@ -1,5 +1,11 @@
+// If VITE_API_URL is set (via secrets), use it.
+// Otherwise, if we are in production mode, default to the Render URL.
+// Finally, fallback to localhost for dev.
 export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:4000";
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? "https://laundromatzat-backend.onrender.com"
+    : "http://localhost:4000");
 
 /**
  * Helper to construct full API URLs.
