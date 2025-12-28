@@ -32,6 +32,7 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run build
+        env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_SITE_URL: https://laundromatzat.com
       - name: Upload artifact
