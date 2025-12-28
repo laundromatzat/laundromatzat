@@ -34,8 +34,14 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      login(data.token, data.user);
-      navigate("/");
+      // NO auto-login anymore.
+      // Show success feedback and redirect to Login.
+      // login(data.token, data.user); // <--- REMOVED
+
+      alert(
+        "Registration successful! Your account is pending admin approval. Please log in once approved."
+      );
+      navigate("/login");
     } catch (err) {
       console.error("Registration error:", err);
       if (err instanceof Error) {
