@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "jest",
-    "test": "jest"
+    "test": "jest",
+    "backup": "node scripts/backup_db.js"
   },
   "keywords": [],
   "author": "",
