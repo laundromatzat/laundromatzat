@@ -31,18 +31,18 @@ function Header(): React.ReactNode {
     <>
       <header
         className={clsx(
-          "fixed top-0 left-0 right-0 z-nav transition-all duration-700 ease-in-out bg-aura-bg/90 backdrop-blur-md py-4 shadow-sm"
+          "fixed top-0 left-0 right-0 z-[2001] transition-all duration-700 ease-in-out bg-aura-bg/90 backdrop-blur-md py-4 shadow-sm"
         )}
       >
         <nav
           aria-label="Primary"
-          className="max-w-[1800px] mx-auto px-8 flex items-center justify-between"
+          className="max-w-[1800px] mx-auto px-4 sm:px-8 flex items-center justify-between"
         >
           {/* Logo */}
           <NavLink
             to="/"
             className={clsx(
-              "text-3xl font-serif font-medium tracking-tight z-50 relative transition-colors duration-500",
+              "text-2xl sm:text-3xl font-serif font-medium tracking-tight z-50 relative transition-colors duration-500",
               textColorClass
             )}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -152,7 +152,7 @@ function Header(): React.ReactNode {
       {/* Mobile Menu Overlay */}
       <div
         className={clsx(
-          "fixed inset-0 bg-aura-bg z-[1100] flex flex-col justify-center items-center transition-all duration-500 ease-in-out",
+          "fixed inset-0 bg-[#F5F2EB] z-[2000] flex flex-col justify-center items-center transition-all duration-500 ease-in-out",
           isMenuOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 -translate-y-10 pointer-events-none"

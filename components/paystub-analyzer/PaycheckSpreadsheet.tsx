@@ -113,8 +113,8 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
       <h2 className="text-xl font-semibold mb-4 text-aura-text-primary">
         Paystub History
       </h2>
-      <div className="overflow-x-auto custom-scrollbar">
-        <table className="min-w-full divide-y divide-aura-text-primary/10 border-separate border-spacing-0">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full text-sm text-left border-collapse divide-y divide-aura-text-primary/10 border-separate border-spacing-0">
           <thead className="bg-aura-text-primary/5">
             <tr>
               <th
