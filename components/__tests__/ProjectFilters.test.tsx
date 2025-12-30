@@ -1,4 +1,4 @@
-import React from "react";
+// React import removed as it is unused
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, screen, cleanup } from "@testing-library/react";
 import ProjectFilters, {
