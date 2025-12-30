@@ -12,15 +12,7 @@ import { ViewGridIcon } from "../components/paystub-analyzer/icons/ViewGridIcon"
 import { ViewListIcon } from "../components/paystub-analyzer/icons/ViewListIcon";
 import { TrashIcon } from "../components/paystub-analyzer/icons/TrashIcon";
 import { ClockIcon } from "../components/paystub-analyzer/icons/ClockIcon";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../components/ui/dialog"; // Assuming or create a simple modal
-import { ReportedHoursInput } from "../components/paystub-analyzer/ReportedHoursInput";
-import { Button } from "../components/ui/button"; // Assuming standard UI components or use simple buttons
+// Unused imports removed
 
 import { useAuth } from "../context/AuthContext";
 import { useLoading } from "../context/LoadingContext";
@@ -97,12 +89,11 @@ const PaystubAnalyzerPage: React.FC = () => {
 
   // Edit State
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedPaystubForEdit, setSelectedPaystubForEdit] =
-    useState<PaycheckData | null>(null);
+  // const [selectedPaystubForEdit, setSelectedPaystubForEdit] = useState<PaycheckData | null>(null); // Removed unused, using editFormData
   const [editFormData, setEditFormData] = useState<PaycheckData | null>(null);
 
   const openEditModal = (paystub: PaycheckData) => {
-    setSelectedPaystubForEdit(paystub);
+    // setSelectedPaystubForEdit(paystub); // Unused
     setEditFormData({ ...paystub });
     setEditModalOpen(true);
   };
@@ -120,7 +111,8 @@ const PaystubAnalyzerPage: React.FC = () => {
     );
 
     setEditModalOpen(false);
-    setSelectedPaystubForEdit(null);
+    setEditModalOpen(false);
+    // setSelectedPaystubForEdit(null); // Unused
   };
 
   const { token } = useAuth();
@@ -608,10 +600,14 @@ const PaystubAnalyzerPage: React.FC = () => {
             <div className="p-6 overflow-auto">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-pay-period-start"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Pay Period Start
                   </label>
                   <input
+                    id="edit-pay-period-start"
                     type="date"
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-aura-accent focus:ring-aura-accent"
                     value={editFormData.payPeriodStart}
@@ -624,10 +620,14 @@ const PaystubAnalyzerPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-pay-period-end"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Pay Period End
                   </label>
                   <input
+                    id="edit-pay-period-end"
                     type="date"
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-aura-accent focus:ring-aura-accent"
                     value={editFormData.payPeriodEnd}
