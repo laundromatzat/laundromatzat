@@ -373,12 +373,12 @@ const PublicHealthPage: React.FC = () => {
         );
       case AppStatus.Error:
         return (
-          <div className="flex flex-col items-center justify-center h-full bg-red-900/20 text-red-300">
+          <div className="flex flex-col items-center justify-center h-full bg-red-50 text-red-600">
             <h1 className="text-3xl font-bold mb-4">Error</h1>
             <p>{error}</p>
             <button
               onClick={() => setStatus(AppStatus.Welcome)}
-              className="mt-4 px-4 py-2 bg-slate-200 rounded"
+              className="mt-4 px-4 py-2 bg-white border border-red-200 rounded shadow-sm hover:bg-red-50 transition-colors"
             >
               Back
             </button>
@@ -390,7 +390,7 @@ const PublicHealthPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-theme(spacing.20))] bg-slate-900 text-white font-sans rounded-xl overflow-hidden shadow-2xl">
+    <div className="h-[calc(100vh-theme(spacing.20))] bg-aura-bg text-aura-text-primary font-sans rounded-xl overflow-hidden shadow-2xl border border-aura-text-primary/10">
       <PageMetadata
         title="Public Health Organizer"
         description="Unified Knowledge Base for Public Health"

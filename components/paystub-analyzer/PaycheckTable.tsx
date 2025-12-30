@@ -16,6 +16,8 @@ import { BankIcon } from "./icons/BankIcon";
 import { CalendarIcon } from "./icons/CalendarIcon";
 import { ChevronDownIcon } from "./icons/ChevronDownIcon";
 import { ClockIcon } from "./icons/ClockIcon";
+import { FileTextIcon } from "./icons/FileTextIcon";
+import { PencilIcon } from "./icons/PencilIcon";
 
 interface PaycheckTableProps {
   paycheckData: PaycheckData[];
@@ -24,10 +26,18 @@ interface PaycheckTableProps {
     week: "week1" | "week2",
     hours: ReportedHourEntry[]
   ) => void;
+  onEdit: (data: PaycheckData) => void;
 }
 
 const formatDate = (dateStr: string) => {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+  if (!dateStr) return "Invalid";
+  // If we have YYYY-MM-DD, append time to force local midnight
+  const parseStr = /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
+    ? dateStr + "T00:00:00"
+    : dateStr;
+  const date = new Date(parseStr);
+  if (isNaN(date.getTime())) return dateStr; // Fallback to raw string
+  return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -44,20 +54,22 @@ const SectionHeader: React.FC<{
   subtitle?: string;
   iconClassName?: string;
 }> = ({ icon, title, subtitle, iconClassName }) => (
-  <div className="flex items-center gap-2 mb-4">
+  <div className="flex items-center gap-1.5 mb-1">
     <div
       className={clsx(
         "p-1.5 rounded-lg",
-        iconClassName || "bg-zinc-800 text-zinc-400"
+        iconClassName || "bg-aura-text-primary/5 text-aura-text-secondary"
       )}
     >
       {icon}
     </div>
     <div>
-      <h4 className="font-semibold text-zinc-200 text-base leading-tight">
+      <h4 className="font-semibold text-aura-text-primary text-base leading-tight">
         {title}
       </h4>
-      {subtitle && <p className="text-sm text-zinc-400">{subtitle}</p>}
+      {subtitle && (
+        <p className="text-sm text-aura-text-secondary">{subtitle}</p>
+      )}
     </div>
   </div>
 );
@@ -67,18 +79,18 @@ const PaidHoursList: React.FC<{ data: HourEntry[] }> = ({ data }) => (
     {data.map((entry, idx) => (
       <div
         key={idx}
-        className="flex justify-between items-center py-2 px-3 rounded-lg bg-zinc-900/30 border border-zinc-800/50"
+        className="flex justify-between items-center py-0.5 px-1.5 rounded-md bg-white/50 border border-aura-text-primary/10"
       >
-        <span className="text-base text-zinc-300 font-medium">
+        <span className="text-sm text-aura-text-secondary font-medium">
           {entry.category}
         </span>
-        <span className="font-mono font-semibold text-zinc-200 text-base">
+        <span className="font-mono font-semibold text-aura-text-primary text-sm">
           {(entry.hours || 0).toFixed(2)}
         </span>
       </div>
     ))}
     {data.length === 0 && (
-      <div className="text-zinc-500 text-sm italic py-2 col-span-full">
+      <div className="text-aura-text-secondary text-sm italic py-2 col-span-full">
         No paid hours recorded
       </div>
     )}
@@ -159,7 +171,7 @@ const BankedHoursList: React.FC<{
   });
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-1">
       {displayData.map((entry, idx) => {
         const change = bankChanges[entry.category] || 0;
         const flag = verificationFlags?.[entry.category];
@@ -168,12 +180,12 @@ const BankedHoursList: React.FC<{
           <div
             key={idx}
             className={clsx(
-              "flex-1 min-w-[140px] flex flex-col justify-between py-2 px-3 rounded-lg border transition-colors",
+              "flex-1 min-w-[120px] flex flex-col justify-between p-1.5 rounded-md border transition-colors",
               flag?.type === "warning"
                 ? "bg-red-500/10 border-red-500/30"
                 : flag?.type === "caution"
                   ? "bg-amber-500/10 border-amber-500/30"
-                  : "bg-zinc-900/30 border-zinc-800/50"
+                  : "bg-white/50 border-aura-text-primary/10"
             )}
           >
             <div className="flex justify-between items-center gap-3">
@@ -188,7 +200,7 @@ const BankedHoursList: React.FC<{
                   />
                 )}
                 <span
-                  className="text-sm text-zinc-400 font-medium truncate cursor-help decoration-dotted underline decoration-zinc-600 underline-offset-2"
+                  className="text-sm text-aura-text-secondary font-medium truncate cursor-help decoration-dotted underline decoration-aura-text-secondary/50 underline-offset-2"
                   title={
                     flag
                       ? `${entry.category}\n⚠️ ${flag.message}`
@@ -198,17 +210,17 @@ const BankedHoursList: React.FC<{
                   {getAbbreviation(entry.category)}
                 </span>
               </div>
-              <span className="font-mono font-semibold text-zinc-200">
+              <span className="font-mono font-semibold text-aura-text-primary">
                 {(entry.hours || 0).toFixed(2)}
               </span>
             </div>
             {change !== 0 && (
-              <div className="flex justify-end items-center gap-1 text-[10px] border-t border-zinc-800/50 pt-1 mt-1">
-                <span className="text-zinc-600">Proj:</span>
+              <div className="flex justify-end items-center gap-1 text-[10px] border-t border-aura-text-primary/10 pt-1 mt-1">
+                <span className="text-aura-text-secondary">Proj:</span>
                 <span
                   className={clsx(
                     "font-mono font-medium",
-                    change > 0 ? "text-emerald-400" : "text-amber-400"
+                    change > 0 ? "text-emerald-600" : "text-amber-600"
                   )}
                 >
                   {change > 0 ? "+" : ""}
@@ -267,7 +279,7 @@ const DiscrepancyBar: React.FC<{
   return (
     <div
       className={clsx(
-        "mt-6 p-4 rounded-xl border flex items-center justify-between transition-colors",
+        "mt-2 p-2 rounded-lg border flex items-center justify-between transition-colors",
         isBalanced
           ? "bg-emerald-500/10 border-emerald-500/20"
           : "bg-amber-500/10 border-amber-500/20"
@@ -283,7 +295,7 @@ const DiscrepancyBar: React.FC<{
         <span
           className={clsx(
             "font-medium text-sm",
-            isBalanced ? "text-emerald-200" : "text-amber-200"
+            isBalanced ? "text-emerald-700" : "text-amber-700"
           )}
         >
           {isBalanced ? "Hours Balanced" : "Discrepancy Detected"}
@@ -292,22 +304,22 @@ const DiscrepancyBar: React.FC<{
 
       <div className="flex items-center gap-6 text-sm">
         <div className="flex flex-col items-end">
-          <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">
+          <span className="text-xs text-aura-text-secondary uppercase tracking-wider font-semibold">
             Paid
           </span>
-          <span className="font-mono text-zinc-300">
+          <span className="font-mono text-aura-text-primary">
             {totalPaid.toFixed(2)}
           </span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">
+          <span className="text-xs text-aura-text-secondary uppercase tracking-wider font-semibold">
             Reported
           </span>
-          <span className="font-mono text-zinc-300">
+          <span className="font-mono text-aura-text-primary">
             {totalReported.toFixed(2)}
           </span>
         </div>
-        <div className="w-px h-8 bg-white/10 mx-2" />
+        <div className="w-px h-8 bg-aura-text-primary/10 mx-2" />
         <div className="flex flex-col items-end">
           <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">
             Diff
@@ -315,7 +327,7 @@ const DiscrepancyBar: React.FC<{
           <span
             className={clsx(
               "font-mono font-bold",
-              isBalanced ? "text-emerald-400" : "text-amber-400"
+              isBalanced ? "text-emerald-600" : "text-amber-600"
             )}
           >
             {diff > 0 ? "+" : ""}
@@ -342,6 +354,7 @@ type GroupedPaychecks = {
 export const PaycheckTable: React.FC<PaycheckTableProps> = ({
   paycheckData,
   onHoursChange,
+  onEdit,
 }) => {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {}
@@ -492,12 +505,12 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
           <div key={yearKey} className="space-y-4">
             <button
               onClick={() => toggleGroup(yearKey)}
-              className="flex items-center gap-3 text-zinc-400 hover:text-zinc-200 transition-colors group"
+              className="flex items-center gap-3 text-aura-text-secondary hover:text-aura-text-primary transition-colors group"
             >
-              <h3 className="text-2xl font-bold tracking-tight text-white">
+              <h3 className="text-2xl font-bold tracking-tight text-aura-text-primary">
                 {year}
               </h3>
-              <div className="h-px flex-1 bg-zinc-800 group-hover:bg-zinc-700 transition-colors" />
+              <div className="h-px flex-1 bg-aura-text-primary/10 group-hover:bg-aura-text-primary/20 transition-colors" />
               <ChevronDownIcon
                 className={clsx(
                   "w-5 h-5 transition-transform duration-200",
@@ -523,11 +536,11 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                         <div key={monthKey} className="space-y-4">
                           <button
                             onClick={() => toggleGroup(monthKey)}
-                            className="flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors w-full group"
+                            className="flex items-center gap-2 text-aura-text-secondary hover:text-aura-text-primary transition-colors w-full group"
                           >
                             <div
                               className={clsx(
-                                "w-1.5 h-1.5 rounded-full bg-indigo-500 transition-opacity",
+                                "w-1.5 h-1.5 rounded-full bg-aura-accent transition-opacity",
                                 isMonthExpanded ? "opacity-100" : "opacity-50"
                               )}
                             />
@@ -548,7 +561,7 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                               >
-                                <div className="grid grid-cols-1 gap-6">
+                                <div className="grid grid-cols-1 gap-2">
                                   {groupedData[year][month].map(
                                     ({
                                       data,
@@ -557,23 +570,23 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                     }) => (
                                       <div
                                         key={`${data.payPeriodStart}-${originalIndex}`}
-                                        className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl shadow-black/20"
+                                        className="bg-white border border-aura-text-primary/10 rounded-2xl overflow-hidden shadow-xl shadow-black/5"
                                       >
                                         {/* Card Header */}
-                                        <div className="px-6 py-4 border-b border-zinc-800 bg-zinc-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div className="px-3 py-1.5 border-b border-aura-text-primary/5 bg-aura-bg/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                           <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
+                                            <div className="p-2 bg-aura-accent/10 rounded-lg text-aura-accent">
                                               <CalendarIcon className="w-5 h-5" />
                                             </div>
                                             <div>
-                                              <p className="text-sm text-zinc-400 font-medium uppercase tracking-wider">
+                                              <p className="text-sm text-aura-text-secondary font-medium uppercase tracking-wider">
                                                 Pay Period
                                               </p>
-                                              <p className="text-zinc-100 font-semibold text-lg">
+                                              <p className="text-aura-text-primary font-semibold text-lg">
                                                 {formatDate(
                                                   data.payPeriodStart
                                                 )}{" "}
-                                                <span className="text-zinc-500 mx-1">
+                                                <span className="text-aura-text-secondary mx-1">
                                                   —
                                                 </span>{" "}
                                                 {formatDate(data.payPeriodEnd)}
@@ -581,25 +594,43 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                             </div>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium border border-emerald-500/20">
+                                            {data.pdfUrl && (
+                                              <a
+                                                href={data.pdfUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-1.5 text-aura-text-secondary hover:text-aura-accent hover:bg-aura-accent/10 rounded-lg transition-colors border border-transparent hover:border-aura-accent/20"
+                                                title="View Original PDF"
+                                              >
+                                                <FileTextIcon className="w-5 h-5" />
+                                              </a>
+                                            )}
+                                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-sm font-medium border border-emerald-500/20">
                                               Analyzed
                                             </span>
                                           </div>
                                         </div>
 
                                         {/* Card Body - Two Column Layout */}
-                                        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:divide-x lg:divide-zinc-800">
+                                        <div className="p-3 grid grid-cols-1 lg:grid-cols-2 gap-3 lg:divide-x lg:divide-aura-text-primary/10">
                                           {/* Left Column: Source Data */}
-                                          <div className="space-y-6">
-                                            <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl p-4">
+                                          <div className="space-y-6 relative group">
+                                            <div className="bg-aura-accent/5 border border-aura-accent/10 rounded-lg p-2 relative">
                                               <SectionHeader
                                                 icon={
                                                   <ClockIcon className="w-4 h-4" />
                                                 }
                                                 title="Paid Hours"
                                                 subtitle="Extracted from paystub"
-                                                iconClassName="bg-indigo-500/10 text-indigo-400"
+                                                iconClassName="bg-aura-accent/10 text-aura-accent"
                                               />
+                                              <button
+                                                onClick={() => onEdit(data)}
+                                                className="absolute top-2 right-2 p-1.5 text-aura-text-secondary hover:text-aura-accent hover:bg-white rounded-md transition-all shadow-sm opacity-0 group-hover:opacity-100"
+                                                title="Edit Extracted Hours"
+                                              >
+                                                <PencilIcon className="w-4 h-4" />
+                                              </button>
                                               <PaidHoursList
                                                 data={[...data.paidHours].sort(
                                                   (a, b) =>
@@ -616,9 +647,9 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
 
                                           {/* Right Column: User Input */}
                                           <div className="lg:pl-8 space-y-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-500/5 border border-zinc-500/10 rounded-xl p-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-aura-text-primary/5 border border-aura-text-primary/10 rounded-lg p-2">
                                               <div>
-                                                <h5 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">
+                                                <h5 className="text-xs font-semibold text-aura-text-secondary uppercase tracking-wider mb-3">
                                                   Week 1
                                                 </h5>
                                                 <ReportedHoursInput
@@ -636,7 +667,7 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                                 />
                                               </div>
                                               <div>
-                                                <h5 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">
+                                                <h5 className="text-xs font-semibold text-aura-text-secondary uppercase tracking-wider mb-3">
                                                   Week 2
                                                 </h5>
                                                 <ReportedHoursInput
@@ -658,15 +689,15 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                         </div>
 
                                         {/* Footer: Discrepancy Bar */}
-                                        <div className="px-6 pb-6 space-y-6">
-                                          <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
+                                        <div className="px-3 pb-3 space-y-2">
+                                          <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-2">
                                             <SectionHeader
                                               icon={
                                                 <BankIcon className="w-4 h-4" />
                                               }
                                               title="Banked Hours"
                                               subtitle="Available balance"
-                                              iconClassName="bg-emerald-500/10 text-emerald-400"
+                                              iconClassName="bg-emerald-500/10 text-emerald-600"
                                             />
                                             <BankedHoursList
                                               data={data.bankedHours}

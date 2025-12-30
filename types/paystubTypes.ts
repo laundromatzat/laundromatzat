@@ -18,4 +18,5 @@ export interface PaycheckData {
     week1?: ReportedHourEntry[];
     week2?: ReportedHourEntry[];
   };
+  pdfUrl?: string;
 }

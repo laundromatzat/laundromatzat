@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { User, Upload, FileText, Activity, DollarSign } from "lucide-react";
 import { Helmet } from "@dr.pogodin/react-helmet";
@@ -34,6 +35,9 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState(user?.profile_picture || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const location = useLocation();
+  const [showWelcome, setShowWelcome] = useState(false);
+
   useEffect(() => {
     if (user) {
       setUsername(user.username);
@@ -41,6 +45,14 @@ export default function ProfilePage() {
       fetchDashboardData();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (location.state?.welcome) {
+      setShowWelcome(true);
+      const timer = setTimeout(() => setShowWelcome(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -114,15 +126,13 @@ export default function ProfilePage() {
       const data = await res.json();
       if (res.ok) {
         setAvatarUrl(data.profile_picture);
-        // Update context is tricky without a full refresh or re-fetch me,
-        // but we can locally update. Ideally we re-fetch 'me'.
-        // For now, let's trigger a page refresh or context update if possible.
-        // Re-fetch user to sync context
-        // Actually, simpler to just update local state and let user see it.
-        // But header needs it. So let's re-login with updated user if we can.
-        // We don't have the full user object here easily without fetching 'me' again.
-        // Let's reload page for simplicity or fetch 'me'.
-        window.location.reload();
+        if (user && token) {
+          const updatedUser = {
+            ...user,
+            profile_picture: data.profile_picture,
+          };
+          login(token, updatedUser);
+        }
       }
     } catch (err) {
       console.error("Upload failed", err);
@@ -132,7 +142,9 @@ export default function ProfilePage() {
   const getFullAvatarUrl = (path: string | null | undefined) => {
     if (!path) return null;
     if (path.startsWith("http")) return path;
-    return `${API_BASE_URL}${path}`;
+    // Add timestamp to force reload if it is the same filename but updated content
+    const baseUrl = `${API_BASE_URL}${path}`;
+    return `${baseUrl}?t=${new Date().getTime()}`;
   };
 
   return (
@@ -140,6 +152,19 @@ export default function ProfilePage() {
       <Helmet>
         <title>Profile & Dashboard | Laudromatzat</title>
       </Helmet>
+
+      {/* Welcome Toast */}
+      {showWelcome && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+          <div className="bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 text-emerald-100 px-6 py-3 rounded-full shadow-2xl flex items-center gap-3">
+            <span className="bg-emerald-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">
+              New
+            </span>
+            <span className="font-medium">Welcome back, {user?.username}!</span>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto px-6 py-12 pt-32">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* User Info & Avatar */}

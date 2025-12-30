@@ -286,10 +286,10 @@ const PinPalsPage: React.FC = () => {
       <div className="max-w-3xl w-full mx-auto">
         <header className="mb-10 text-center md:text-left flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white mb-1">
+            <h1 className="text-3xl font-bold tracking-tight text-aura-text-primary mb-1">
               Pin Pals
             </h1>
-            <p className="text-zinc-500 font-medium">
+            <p className="text-aura-text-secondary font-medium">
               Generate harm reduction art featuring your pets
             </p>
           </div>
@@ -298,8 +298,8 @@ const PinPalsPage: React.FC = () => {
               onClick={() => setView("create")}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 view === "create"
-                  ? "bg-white text-zinc-900"
-                  : "bg-zinc-800 text-zinc-400 hover:text-white"
+                  ? "bg-aura-accent text-white shadow-md shadow-aura-accent/20"
+                  : "bg-white text-aura-text-secondary hover:text-aura-text-primary border border-aura-text-primary/10 hover:bg-aura-text-primary/5"
               }`}
             >
               Create
@@ -308,8 +308,8 @@ const PinPalsPage: React.FC = () => {
               onClick={() => setView("gallery")}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 view === "gallery"
-                  ? "bg-white text-zinc-900"
-                  : "bg-zinc-800 text-zinc-400 hover:text-white"
+                  ? "bg-aura-accent text-white shadow-md shadow-aura-accent/20"
+                  : "bg-white text-aura-text-secondary hover:text-aura-text-primary border border-aura-text-primary/10 hover:bg-aura-text-primary/5"
               }`}
             >
               My Pins
@@ -322,7 +322,7 @@ const PinPalsPage: React.FC = () => {
             {gallery.map((pin) => (
               <div
                 key={pin.id}
-                className="bg-zinc-800 rounded-xl overflow-hidden aspect-square relative group"
+                className="bg-white rounded-xl overflow-hidden aspect-square relative group border border-aura-text-primary/10 shadow-sm"
               >
                 <img
                   src={pin.imageUrl}
@@ -335,7 +335,7 @@ const PinPalsPage: React.FC = () => {
               </div>
             ))}
             {gallery.length === 0 && (
-              <div className="col-span-full text-center text-zinc-500 py-10">
+              <div className="col-span-full text-center text-aura-text-secondary py-10">
                 No saved pins found.
               </div>
             )}
@@ -372,7 +372,7 @@ const PinPalsPage: React.FC = () => {
         )}
       </div>
 
-      <footer className="mt-12 text-center text-zinc-600 text-xs">
+      <footer className="mt-12 text-center text-aura-text-secondary text-xs">
         <p>Powered by Gemini 3 Pro Image Preview</p>
       </footer>
     </div>

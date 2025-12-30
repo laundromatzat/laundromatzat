@@ -11,6 +11,8 @@ import {
   ReportedHourEntry,
 } from "../../types/paystubTypes";
 import { ChevronDownIcon } from "./icons/ChevronDownIcon";
+import { FileTextIcon } from "./icons/FileTextIcon";
+import { PencilIcon } from "./icons/PencilIcon";
 
 interface PaycheckSpreadsheetProps {
   paycheckData: PaycheckData[];
@@ -19,10 +21,17 @@ interface PaycheckSpreadsheetProps {
     week: "week1" | "week2",
     hours: ReportedHourEntry[]
   ) => void;
+  onEdit: (data: PaycheckData) => void;
 }
 
 const formatDate = (dateStr: string) => {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+  if (!dateStr) return "Invalid";
+  const parseStr = /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
+    ? dateStr + "T00:00:00"
+    : dateStr;
+  const date = new Date(parseStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString("en-US", {
     month: "2-digit",
     day: "2-digit",
     year: "numeric",
@@ -53,6 +62,7 @@ const isCategoryExcluded = (category: string): boolean => {
 
 export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
   paycheckData,
+  onEdit,
 }) => {
   const [collapsedSections, setCollapsedSections] = useState<
     Record<string, boolean>
@@ -99,17 +109,22 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
   ].sort();
 
   return (
-    <div className="bg-slate-900/50 p-4 sm:p-6 rounded-xl shadow-lg border border-slate-800 backdrop-blur-sm">
-      <h2 className="text-xl font-semibold mb-4 text-white">Paystub History</h2>
+    <div className="bg-white/50 p-4 sm:p-6 rounded-xl shadow-lg border border-aura-text-primary/10 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold mb-4 text-aura-text-primary">
+        Paystub History
+      </h2>
       <div className="overflow-x-auto custom-scrollbar">
-        <table className="min-w-full divide-y divide-slate-800 border-separate border-spacing-0">
-          <thead className="bg-slate-800/50">
+        <table className="min-w-full divide-y divide-aura-text-primary/10 border-separate border-spacing-0">
+          <thead className="bg-aura-text-primary/5">
             <tr>
               <th
                 scope="col"
-                className="sticky left-0 z-10 bg-slate-900/95 px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider border-b border-slate-700"
+                className="sticky left-0 z-10 bg-white/95 px-1 py-0.5 text-left text-[10px] font-medium text-aura-text-secondary uppercase tracking-wider border-b border-aura-text-primary/10"
               >
                 Pay Period
+              </th>
+              <th className="sticky left-[100px] z-10 bg-white/95 px-1 py-0.5 text-center text-[10px] uppercase border-b border-aura-text-primary/10 w-[60px]">
+                PDF
               </th>
 
               {/* Paid Hours Section Header */}
@@ -118,11 +133,11 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                 colSpan={
                   collapsedSections["paid"] ? 1 : paidCategories.length + 1
                 }
-                className="px-4 py-2 text-center text-xs font-bold text-indigo-400 uppercase tracking-wider border-b border-l border-slate-700 bg-slate-800/30"
+                className="px-1 py-0.5 text-center text-[10px] font-bold text-aura-accent uppercase tracking-wider border-b border-l border-aura-text-primary/10 bg-aura-accent/10"
               >
                 <button
                   onClick={() => toggleSection("paid")}
-                  className="flex items-center justify-center gap-1 w-full hover:text-indigo-300"
+                  className="flex items-center justify-center gap-1 w-full hover:text-aura-accent/80"
                 >
                   Paid Hours
                   <ChevronDownIcon
@@ -141,7 +156,7 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                   colSpan={
                     collapsedSections["other"] ? 1 : otherCategories.length
                   }
-                  className="px-4 py-2 text-center text-xs font-bold text-amber-400 uppercase tracking-wider border-b border-l border-slate-700 bg-slate-800/30"
+                  className="px-1 py-0.5 text-center text-[10px] font-bold text-amber-600 uppercase tracking-wider border-b border-l border-aura-text-primary/10 bg-amber-500/10"
                 >
                   <button
                     onClick={() => toggleSection("other")}
@@ -164,7 +179,7 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                 colSpan={
                   collapsedSections["banked"] ? 1 : bankedCategories.length
                 }
-                className="px-4 py-2 text-center text-xs font-bold text-emerald-400 uppercase tracking-wider border-b border-l border-slate-700 bg-slate-800/30"
+                className="px-1 py-0.5 text-center text-[10px] font-bold text-emerald-600 uppercase tracking-wider border-b border-l border-aura-text-primary/10 bg-emerald-500/10"
               >
                 <button
                   onClick={() => toggleSection("banked")}
@@ -184,13 +199,13 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
               <th
                 scope="col"
                 colSpan={4}
-                className="px-4 py-2 text-center text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-l border-slate-700 bg-slate-800/30"
+                className="px-1 py-0.5 text-center text-[10px] font-bold text-aura-text-primary uppercase tracking-wider border-b border-l border-aura-text-primary/10 bg-aura-text-primary/5"
               >
                 Reported & Discrepancy
               </th>
             </tr>
             <tr>
-              <th className="sticky left-0 z-10 bg-slate-900/95 border-b border-slate-700"></th>
+              <th className="sticky left-0 z-10 bg-white/95 border-b border-aura-text-primary/10"></th>
 
               {/* Paid Columns */}
               {!collapsedSections["paid"] &&
@@ -198,14 +213,14 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                   <th
                     key={cat}
                     scope="col"
-                    className="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-l border-slate-800 min-w-[100px]"
+                    className="px-1 py-0.5 text-right text-[10px] font-medium text-aura-text-secondary uppercase tracking-wider border-b border-l border-aura-text-primary/10 min-w-[80px]"
                   >
                     {cat}
                   </th>
                 ))}
               <th
                 scope="col"
-                className="px-4 py-2 text-right text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-l border-slate-700 bg-slate-800/20 min-w-[100px]"
+                className="px-1 py-0.5 text-right text-[10px] font-bold text-aura-text-primary uppercase tracking-wider border-b border-l border-aura-text-primary/10 bg-aura-text-primary/5 min-w-[80px]"
               >
                 Total Paid
               </th>
@@ -216,13 +231,13 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                   <th
                     key={cat}
                     scope="col"
-                    className="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-l border-slate-800 min-w-[100px]"
+                    className="px-1 py-0.5 text-right text-[10px] font-medium text-aura-text-secondary uppercase tracking-wider border-b border-l border-aura-text-primary/10 min-w-[80px]"
                   >
                     {cat}
                   </th>
                 ))}
               {collapsedSections["other"] && otherCategories.length > 0 && (
-                <th className="border-b border-l border-slate-800"></th>
+                <th className="border-b border-l border-aura-text-primary/10"></th>
               )}
 
               {/* Banked Columns */}
@@ -231,43 +246,43 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                   <th
                     key={cat}
                     scope="col"
-                    className="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-l border-slate-800 min-w-[100px]"
+                    className="px-1 py-0.5 text-right text-[10px] font-medium text-aura-text-secondary uppercase tracking-wider border-b border-l border-aura-text-primary/10 min-w-[80px]"
                   >
                     {cat}
                   </th>
                 ))}
               {collapsedSections["banked"] && (
-                <th className="border-b border-l border-slate-800"></th>
+                <th className="border-b border-l border-aura-text-primary/10"></th>
               )}
 
               {/* Reported Columns */}
               <th
                 scope="col"
-                className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-l border-slate-700 min-w-[120px]"
+                className="px-1 py-0.5 text-left text-[10px] font-medium text-aura-text-secondary uppercase tracking-wider border-b border-l border-aura-text-primary/10 min-w-[100px]"
               >
                 Week 1
               </th>
               <th
                 scope="col"
-                className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-800 min-w-[120px]"
+                className="px-1 py-0.5 text-left text-[10px] font-medium text-aura-text-secondary uppercase tracking-wider border-b border-aura-text-primary/10 min-w-[100px]"
               >
                 Week 2
               </th>
               <th
                 scope="col"
-                className="px-4 py-2 text-right text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-l border-slate-700 bg-slate-800/20 min-w-[100px]"
+                className="px-1 py-0.5 text-right text-[10px] font-bold text-aura-text-primary uppercase tracking-wider border-b border-l border-aura-text-primary/10 bg-aura-text-primary/5 min-w-[80px]"
               >
                 Total Rep
               </th>
               <th
                 scope="col"
-                className="px-4 py-2 text-right text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-l border-slate-700 bg-slate-800/20 min-w-[100px]"
+                className="px-1 py-0.5 text-right text-[10px] font-bold text-aura-text-primary uppercase tracking-wider border-b border-l border-aura-text-primary/10 bg-aura-text-primary/5 min-w-[80px]"
               >
                 Diff
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-aura-text-primary/10">
             {paycheckData.map((data, index) => {
               // Calculate Total Paid (excluding Other/Reimb)
               const totalPaidHours = data.paidHours
@@ -292,11 +307,35 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
               return (
                 <tr
                   key={`${data.payPeriodStart}-${index}`}
-                  className="hover:bg-slate-800/30 transition-colors group"
+                  className="hover:bg-aura-text-primary/5 transition-colors group"
                 >
-                  <td className="sticky left-0 z-10 bg-slate-900 group-hover:bg-slate-900/95 px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-200 border-r border-slate-800">
+                  <td className="sticky left-0 z-10 bg-white group-hover:bg-gray-50 px-1 py-0.5 whitespace-nowrap text-xs font-medium text-aura-text-primary border-r border-aura-text-primary/10">
                     {formatDate(data.payPeriodStart)} -{" "}
                     {formatDate(data.payPeriodEnd)}
+                  </td>
+                  <td className="sticky left-[100px] z-10 bg-white group-hover:bg-gray-50 px-1 py-0.5 whitespace-nowrap text-center border-r border-aura-text-primary/10">
+                    <div className="flex items-center justify-center gap-1">
+                      {data.pdfUrl ? (
+                        <a
+                          href={data.pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-aura-text-secondary hover:text-aura-accent"
+                          title="View PDF"
+                        >
+                          <FileTextIcon className="w-4 h-4" />
+                        </a>
+                      ) : (
+                        <span className="text-gray-300">-</span>
+                      )}
+                      <button
+                        onClick={() => onEdit(data)}
+                        className="text-aura-text-secondary hover:text-aura-accent ml-1"
+                        title="Edit Hours"
+                      >
+                        <PencilIcon className="w-3 h-3" />
+                      </button>
+                    </div>
                   </td>
 
                   {/* Paid Cells */}
@@ -304,12 +343,12 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                     paidCategories.map((cat) => (
                       <td
                         key={cat}
-                        className="px-4 py-4 whitespace-nowrap text-sm text-slate-400 text-right font-mono border-l border-slate-800/50"
+                        className="px-1 py-0.5 whitespace-nowrap text-xs text-aura-text-secondary text-right font-mono border-l border-aura-text-primary/10"
                       >
                         {getHoursForCategory(data.paidHours, cat).toFixed(2)}
                       </td>
                     ))}
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-slate-200 text-right border-l border-slate-700 bg-slate-800/10 font-mono">
+                  <td className="px-1 py-0.5 whitespace-nowrap text-xs font-bold text-aura-text-primary text-right border-l border-aura-text-primary/10 bg-aura-text-primary/5 font-mono">
                     {totalPaidHours.toFixed(2)}
                   </td>
 
@@ -318,13 +357,13 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                     otherCategories.map((cat) => (
                       <td
                         key={cat}
-                        className="px-4 py-4 whitespace-nowrap text-sm text-amber-500/80 text-right font-mono border-l border-slate-800/50"
+                        className="px-1 py-0.5 whitespace-nowrap text-xs text-amber-600/80 text-right font-mono border-l border-aura-text-primary/10"
                       >
                         {getHoursForCategory(data.paidHours, cat).toFixed(2)}
                       </td>
                     ))}
                   {collapsedSections["other"] && otherCategories.length > 0 && (
-                    <td className="px-4 py-4 text-center text-xs text-slate-600 border-l border-slate-800/50">
+                    <td className="px-1 py-0.5 text-center text-xs text-aura-text-secondary border-l border-aura-text-primary/10">
                       ...
                     </td>
                   )}
@@ -334,31 +373,31 @@ export const PaycheckSpreadsheet: React.FC<PaycheckSpreadsheetProps> = ({
                     bankedCategories.map((cat) => (
                       <td
                         key={cat}
-                        className="px-4 py-4 whitespace-nowrap text-sm text-emerald-500/80 text-right border-l border-slate-800/50 font-mono"
+                        className="px-1 py-0.5 whitespace-nowrap text-xs text-emerald-600/80 text-right border-l border-aura-text-primary/10 font-mono"
                       >
                         {getHoursForCategory(data.bankedHours, cat).toFixed(2)}
                       </td>
                     ))}
                   {collapsedSections["banked"] && (
-                    <td className="px-4 py-4 text-center text-xs text-slate-600 border-l border-slate-800/50">
+                    <td className="px-1 py-0.5 text-center text-xs text-aura-text-secondary border-l border-aura-text-primary/10">
                       ...
                     </td>
                   )}
 
                   {/* Reported Cells */}
-                  <td className="px-4 py-4 whitespace-nowrap border-l border-slate-700 text-sm text-slate-400 font-mono">
+                  <td className="px-1 py-0.5 whitespace-nowrap border-l border-aura-text-primary/10 text-xs text-aura-text-secondary font-mono">
                     {formatReportedHours(data.userReportedHours?.week1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-400 font-mono">
+                  <td className="px-1 py-0.5 whitespace-nowrap text-xs text-aura-text-secondary font-mono">
                     {formatReportedHours(data.userReportedHours?.week2)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-slate-200 text-right border-l border-slate-700 bg-slate-800/10 font-mono">
+                  <td className="px-1 py-0.5 whitespace-nowrap text-xs font-bold text-aura-text-primary text-right border-l border-aura-text-primary/10 bg-aura-text-primary/5 font-mono">
                     {totalUserHours.toFixed(2)}
                   </td>
                   <td
                     className={clsx(
-                      "px-4 py-4 whitespace-nowrap text-sm font-bold text-right border-l border-slate-700 bg-slate-800/10 font-mono",
-                      discrepancy !== 0 ? "text-red-400" : "text-emerald-400"
+                      "px-1 py-0.5 whitespace-nowrap text-xs font-bold text-right border-l border-aura-text-primary/10 bg-aura-text-primary/5 font-mono",
+                      discrepancy !== 0 ? "text-red-500" : "text-emerald-500"
                     )}
                   >
                     {discrepancy.toFixed(2)}

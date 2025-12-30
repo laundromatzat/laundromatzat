@@ -12,6 +12,16 @@ import { ViewGridIcon } from "../components/paystub-analyzer/icons/ViewGridIcon"
 import { ViewListIcon } from "../components/paystub-analyzer/icons/ViewListIcon";
 import { TrashIcon } from "../components/paystub-analyzer/icons/TrashIcon";
 import { ClockIcon } from "../components/paystub-analyzer/icons/ClockIcon";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../components/ui/dialog"; // Assuming or create a simple modal
+import { ReportedHoursInput } from "../components/paystub-analyzer/ReportedHoursInput";
+import { Button } from "../components/ui/button"; // Assuming standard UI components or use simple buttons
+
 import { useAuth } from "../context/AuthContext";
 import { useLoading } from "../context/LoadingContext";
 import {
@@ -30,6 +40,27 @@ const UNMATCHED_DAILY_DETAILS_STORAGE_KEY = "paystub_unmatched_daily_details";
 export type DailyHoursMap = { [date: string]: ReportedHourEntry[] };
 // Type for week storage: { "2023-10-23": { "2023-10-23": [...], "2023-10-24": [...] } }
 export type WeeklyDailyDetails = { [weekStartDate: string]: DailyHoursMap };
+
+// Helper to ensure YYYY-MM-DD format
+const normalizeDate = (dateStr: string): string => {
+  if (!dateStr) return "";
+  // If already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+
+  // Handle MM/DD/YYYY
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
+    const [m, d, y] = dateStr.split("/");
+    return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  }
+
+  // Fallback: try parsing
+  const d = new Date(dateStr);
+  if (!isNaN(d.getTime())) {
+    return d.toISOString().split("T")[0];
+  }
+
+  return dateStr;
+};
 
 const PaystubAnalyzerPage: React.FC = () => {
   const [paycheckData, setPaycheckData] = useState<PaycheckData[]>([]);
@@ -63,6 +94,34 @@ const PaystubAnalyzerPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [isFutureHoursModalOpen, setIsFutureHoursModalOpen] = useState(false);
   const [isClearDataModalOpen, setIsClearDataModalOpen] = useState(false);
+
+  // Edit State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedPaystubForEdit, setSelectedPaystubForEdit] =
+    useState<PaycheckData | null>(null);
+  const [editFormData, setEditFormData] = useState<PaycheckData | null>(null);
+
+  const openEditModal = (paystub: PaycheckData) => {
+    setSelectedPaystubForEdit(paystub);
+    setEditFormData({ ...paystub });
+    setEditModalOpen(true);
+  };
+
+  const handleEditSave = () => {
+    if (!editFormData) return;
+
+    setPaycheckData((prev) =>
+      prev.map((p) =>
+        p.payPeriodStart === editFormData.payPeriodStart &&
+        p.payPeriodEnd === editFormData.payPeriodEnd
+          ? editFormData
+          : p
+      )
+    );
+
+    setEditModalOpen(false);
+    setSelectedPaystubForEdit(null);
+  };
 
   const { token } = useAuth();
 
@@ -190,6 +249,9 @@ const PaystubAnalyzerPage: React.FC = () => {
         // Normalize data structure if backend returns different keys
         const normalizedData = {
           ...data,
+          payPeriodStart: normalizeDate(data.payPeriodStart),
+          payPeriodEnd: normalizeDate(data.payPeriodEnd),
+          pdfUrl: URL.createObjectURL(file), // Store blob URL
           paidHours:
             data.paidHours ||
             (data as unknown as { hoursPaid: ReportedHourEntry[] }).hoursPaid ||
@@ -305,15 +367,15 @@ const PaystubAnalyzerPage: React.FC = () => {
 
   const ViewToggle = () => (
     <div className="flex justify-end mb-6">
-      <div className="inline-flex items-center bg-slate-900 p-1 rounded-lg border border-slate-800">
+      <div className="inline-flex items-center bg-white/50 p-1 rounded-lg border border-aura-text-primary/10">
         <button
           onClick={() => setViewMode("card")}
           aria-pressed={viewMode === "card"}
           className={clsx(
             "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2",
             viewMode === "card"
-              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
-              : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+              ? "bg-aura-accent text-white shadow-lg shadow-aura-accent/30"
+              : "text-aura-text-secondary hover:text-aura-text-primary hover:bg-aura-text-primary/5"
           )}
         >
           <ViewListIcon className="w-4 h-4" />
@@ -325,8 +387,8 @@ const PaystubAnalyzerPage: React.FC = () => {
           className={clsx(
             "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2",
             viewMode === "spreadsheet"
-              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
-              : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+              ? "bg-aura-accent text-white shadow-lg shadow-aura-accent/30"
+              : "text-aura-text-secondary hover:text-aura-text-primary hover:bg-aura-text-primary/5"
           )}
         >
           <ViewGridIcon className="w-4 h-4" />
@@ -337,8 +399,8 @@ const PaystubAnalyzerPage: React.FC = () => {
   );
 
   return (
-    <div className="bg-zinc-950 min-h-screen text-base text-zinc-200 font-sans selection:bg-indigo-500/30 rounded-3xl -mx-4 sm:-mx-6 lg:-mx-8 -mt-20 p-4 sm:p-6 lg:p-8">
-      <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20 pointer-events-none" />
+    <div className="bg-aura-bg min-h-screen text-base text-aura-text-primary font-sans selection:bg-aura-accent/30 rounded-3xl -mx-4 sm:-mx-6 lg:-mx-8 -mt-20 p-4 sm:p-6 lg:p-8">
+      <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-40 pointer-events-none" />
 
       <main className="relative container mx-auto p-4 md:p-8 max-w-7xl">
         <motion.header
@@ -347,14 +409,14 @@ const PaystubAnalyzerPage: React.FC = () => {
           className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20 backdrop-blur-sm">
-              <DocumentTextIcon className="w-8 h-8 text-indigo-400" />
+            <div className="p-3 bg-aura-accent/10 rounded-xl border border-aura-accent/20 backdrop-blur-sm">
+              <DocumentTextIcon className="w-8 h-8 text-aura-accent" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white">
-                Paystub Analyzer <span className="text-indigo-400">Pro</span>
+              <h1 className="text-3xl font-bold tracking-tight text-aura-text-primary">
+                Paystub Analyzer <span className="text-aura-accent">Pro</span>
               </h1>
-              <p className="text-base text-zinc-300">
+              <p className="text-base text-aura-text-secondary">
                 Intelligent Payroll Tracking
               </p>
             </div>
@@ -412,15 +474,15 @@ const PaystubAnalyzerPage: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-20 px-6 rounded-3xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm"
+                className="text-center py-20 px-6 rounded-3xl border border-aura-text-primary/10 bg-white/50 backdrop-blur-sm"
               >
-                <div className="w-20 h-20 mx-auto bg-zinc-800/50 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-white/10">
-                  <DocumentTextIcon className="h-10 w-10 text-zinc-400" />
+                <div className="w-20 h-20 mx-auto bg-white/80 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-aura-text-primary/10">
+                  <DocumentTextIcon className="h-10 w-10 text-aura-accent" />
                 </div>
-                <h3 className="text-2xl font-semibold text-white mb-2">
+                <h3 className="text-2xl font-semibold text-aura-text-primary mb-2">
                   No paystubs analyzed yet
                 </h3>
-                <p className="text-zinc-400 max-w-md mx-auto mb-8">
+                <p className="text-aura-text-secondary max-w-md mx-auto mb-8">
                   Upload your PDF paystubs to automatically extract hours, track
                   earnings, and verify your paycheck accuracy.
                 </p>
@@ -437,11 +499,13 @@ const PaystubAnalyzerPage: React.FC = () => {
                 <PaycheckTable
                   paycheckData={paycheckData}
                   onHoursChange={handleHoursChange}
+                  onEdit={openEditModal}
                 />
               ) : (
                 <PaycheckSpreadsheet
                   paycheckData={paycheckData}
                   onHoursChange={handleHoursChange}
+                  onEdit={openEditModal}
                 />
               )}
             </motion.div>
@@ -477,22 +541,22 @@ const PaystubAnalyzerPage: React.FC = () => {
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 p-2 bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50"
+        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 p-2 bg-white/90 backdrop-blur-xl border border-aura-text-primary/10 rounded-2xl shadow-2xl shadow-black/10"
       >
         <FileUpload onFileProcess={handleFileProcess} isLoading={isLoading} />
 
-        <div className="w-px h-8 bg-white/10 mx-1" />
+        <div className="w-px h-8 bg-aura-text-primary/10 mx-1" />
 
         <button
           onClick={() => setIsFutureHoursModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/25"
+          className="flex items-center gap-2 px-4 py-3 bg-aura-accent hover:bg-aura-accent/90 text-white rounded-xl font-medium transition-all hover:scale-105 active:scale-95 shadow-lg shadow-aura-accent/25"
           title="Manage Future Week Hours & Timekeeper"
         >
           <ClockIcon className="w-5 h-5" />
           <span className="hidden sm:inline">Manage Hours</span>
         </button>
 
-        <div className="w-px h-8 bg-white/10 mx-1" />
+        <div className="w-px h-8 bg-aura-text-primary/10 mx-1" />
 
         <button
           onClick={() => setIsClearDataModalOpen(true)}
@@ -513,6 +577,154 @@ const PaystubAnalyzerPage: React.FC = () => {
           onHoursChange={handleFutureHoursChange}
           onClose={() => setIsFutureHoursModalOpen(false)}
         />
+      )}
+      {/* Edit Paystub Modal - Basic Implementation for Speed, consider moving to separate component later */}
+      {editModalOpen && editFormData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Edit Paystub Data
+              </h3>
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <span className="sr-only">Close</span>
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 overflow-auto">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pay Period Start
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-aura-accent focus:ring-aura-accent"
+                    value={editFormData.payPeriodStart}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        payPeriodStart: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pay Period End
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-aura-accent focus:ring-aura-accent"
+                    value={editFormData.payPeriodEnd}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        payPeriodEnd: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <DocumentTextIcon className="w-4 h-4 text-aura-accent" />{" "}
+                  Extracted Paid Hours
+                </h4>
+                <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                  {editFormData.paidHours.map((entry, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        className="flex-1 rounded-md border-gray-200 text-sm"
+                        value={entry.category}
+                        onChange={(e) => {
+                          const newHours = [...editFormData.paidHours];
+                          newHours[idx].category = e.target.value;
+                          setEditFormData({
+                            ...editFormData,
+                            paidHours: newHours,
+                          });
+                        }}
+                      />
+                      <input
+                        type="number"
+                        className="w-24 rounded-md border-gray-200 text-sm text-right"
+                        value={entry.hours}
+                        onChange={(e) => {
+                          const newHours = [...editFormData.paidHours];
+                          newHours[idx].hours = parseFloat(e.target.value) || 0;
+                          setEditFormData({
+                            ...editFormData,
+                            paidHours: newHours,
+                          });
+                        }}
+                      />
+                      <button
+                        className="text-red-400 hover:text-red-600 p-1"
+                        onClick={() => {
+                          const newHours = editFormData.paidHours.filter(
+                            (_, i) => i !== idx
+                          );
+                          setEditFormData({
+                            ...editFormData,
+                            paidHours: newHours,
+                          });
+                        }}
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() =>
+                      setEditFormData({
+                        ...editFormData,
+                        paidHours: [
+                          ...editFormData.paidHours,
+                          { category: "New Category", hours: 0 },
+                        ],
+                      })
+                    }
+                    className="text-xs text-aura-accent font-medium hover:underline mt-2 flex items-center gap-1"
+                  >
+                    + Add Category
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditSave}
+                className="px-4 py-2 text-sm font-medium text-white bg-aura-accent rounded-lg hover:bg-aura-accent/90 shadow-sm"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

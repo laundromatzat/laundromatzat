@@ -31,7 +31,7 @@ export default function LoginPage() {
       }
 
       login(data.token, data.user);
-      navigate(from, { replace: true });
+      navigate(from, { replace: true, state: { welcome: true } });
     } catch (err) {
       console.error("Login error:", err);
       if (err instanceof Error) {

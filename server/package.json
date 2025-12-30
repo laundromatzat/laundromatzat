@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node server.js",
     "test": "jest",
-    "test": "jest",
     "backup": "node scripts/backup_db.js"
   },
   "keywords": [],
@@ -14,7 +13,6 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "pg": "^8.11.3",
     "canvas": "^3.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -24,9 +22,11 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
     "node-fetch": "^2.7.0",
+    "nodemailer": "^7.0.12",
     "ollama": "^0.6.2",
     "pdf-parse": "1.1.1",
-    "pdfjs-dist": "^3.11.174"
+    "pdfjs-dist": "^3.11.174",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "jest": "^30.2.0"

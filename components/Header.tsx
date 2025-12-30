@@ -108,9 +108,6 @@ function Header(): React.ReactNode {
                   <span className="hidden sm:block text-sm font-medium">
                     {user.username}
                   </span>
-                  <span className="hidden sm:block text-sm font-medium">
-                    {user.username}
-                  </span>
                 </NavLink>
                 {user.role === "admin" && (
                   <NavLink
