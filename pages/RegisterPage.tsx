@@ -38,10 +38,8 @@ export default function RegisterPage() {
       // Show success feedback and redirect to Login.
       // login(data.token, data.user); // <--- REMOVED
 
-      alert(
-        "Registration successful! Your account is pending admin approval. Please log in once approved."
-      );
-      navigate("/login");
+      // Redirect to the pending approval page instead of login
+      navigate("/registration-pending");
     } catch (err) {
       console.error("Registration error:", err);
       if (err instanceof Error) {

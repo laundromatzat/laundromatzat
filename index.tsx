@@ -36,6 +36,7 @@ import IntelligentIdeasBoardPage from "./pages/IntelligentIdeasBoardPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
+import RegistrationPendingPage from "./pages/RegistrationPendingPage";
 import AdminMailingListPage from "./pages/AdminMailingListPage";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -174,6 +175,10 @@ const router = createBrowserRouter([
       {
         path: "register",
         element: <RegisterPage />,
+      },
+      {
+        path: "registration-pending",
+        element: <RegistrationPendingPage />,
       },
       {
         path: "profile",
