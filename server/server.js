@@ -116,7 +116,15 @@ const uploadAvatar = multer({
 });
 
 // Serve uploads directory
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serve uploads directory with proper headers for COOP/COEP
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // LM Studio API configuration
 const LM_STUDIO_API = process.env.LM_STUDIO_API_URL || "http://localhost:1234";

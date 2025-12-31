@@ -183,9 +183,10 @@ export default function ProfilePage() {
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-aura-accent/20 mx-auto">
                 {avatarUrl ? (
                   <img
-                    src={getFullAvatarUrl(avatarUrl)!}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
+                    src={getFullAvatarUrl(user.profile_picture)}
+                    alt={user.username}
+                    crossOrigin="anonymous"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl"
                   />
                 ) : (
                   <div className="w-full h-full bg-white/10 flex items-center justify-center">

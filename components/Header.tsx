@@ -96,6 +96,7 @@ function Header(): React.ReactNode {
                         return `${API_BASE_URL}${user.profile_picture}`;
                       })()}
                       alt={user.username}
+                      crossOrigin="anonymous"
                       className="w-8 h-8 rounded-full object-cover border border-white/20"
                     />
                   ) : (
