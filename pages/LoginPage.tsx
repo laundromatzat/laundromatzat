@@ -98,7 +98,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-aura-accent text-white py-2 rounded-lg font-medium hover:bg-aura-accent/90 transition-colors"
+            className="w-full bg-aura-text-primary text-white py-2 rounded-lg font-medium hover:bg-aura-text-primary/90 transition-colors"
           >
             Sign In
           </button>
@@ -106,7 +106,10 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-sm text-gray-400">
           Don&apos;t have an account?{" "}
-          <Link to="/register" className="text-aura-accent hover:underline">
+          <Link
+            to="/register"
+            className="text-aura-text-primary font-semibold hover:underline"
+          >
             Register
           </Link>
         </p>
