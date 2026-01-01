@@ -2,9 +2,7 @@ const { Pool } = require("pg");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // Required for many hosted Postgres services like Render/Heroku
-  },
+  ssl: false, // Force disable SSL for local dev simplicity
 });
 
 const initializeDatabase = async () => {

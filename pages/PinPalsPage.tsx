@@ -266,6 +266,94 @@ const PinPalsPage: React.FC = () => {
     }
   };
 
+  const handleDownloadPrintTemplate = async () => {
+    if (!state.generatedImage) return;
+
+    try {
+      // 1. Create a canvas for 6x4" print at 300 DPI (1800x1200)
+      const canvas = document.createElement("canvas");
+      canvas.width = 1800;
+      canvas.height = 1200;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      // 2. Fill white background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 3. Load the generated image
+      const img = new Image();
+      img.src = state.generatedImage;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      // 4. Calculate dimensions for 4 pins (Staggered Layout)
+      // Canvas is 1800x1200 (6x4" @ 300DPI).
+      // Pin diameter = 600px (2 inches @ 300 DPI).
+      // Vertical Packing: 2 rows staggered to fit with margins.
+
+      const pinSize = 600;
+      const radius = 300;
+      const margin = 20;
+
+      // Vertical Centers
+      // Top Row: Y = Margin + Radius = 320
+      // Bottom Row: Y = 1200 - Margin - Radius = 880
+      const topRowY = 320;
+      const botRowY = 880;
+
+      // Horizontal Centers (Staggered)
+      // Top Row (Shifted Left): X = 425 & 1075
+      // Bottom Row (Shifted Right): X = 725 & 1375
+      // This ensures >20px margin from all edges and >35px gap between any two pins.
+      const tr_x1 = 425;
+      const tr_x2 = 1075;
+      const br_x1 = 725;
+      const br_x2 = 1375;
+
+      const drawPinAt = (xCenter: number, yCenter: number) => {
+        const x = xCenter - pinSize / 2;
+        const y = yCenter - pinSize / 2;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(xCenter, yCenter, pinSize / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip(); // Clip to circle so corners don't overlap neighbors
+        ctx.drawImage(img, x, y, pinSize, pinSize);
+        ctx.restore();
+
+        // Cut line
+        ctx.beginPath();
+        ctx.arc(xCenter, yCenter, pinSize / 2, 0, Math.PI * 2);
+        ctx.strokeStyle = "#cccccc";
+        ctx.lineWidth = 1; // Thinner guide for print
+        ctx.stroke();
+      };
+
+      // Draw Top Row
+      drawPinAt(tr_x1, topRowY);
+      drawPinAt(tr_x2, topRowY);
+
+      // Draw Bottom Row
+      drawPinAt(br_x1, botRowY);
+      drawPinAt(br_x2, botRowY);
+
+      // 5. Download
+      const link = document.createElement("a");
+      link.download = `pin-pals-print-sheet-${state.petType.toLowerCase()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error("Failed to generate print template", e);
+      alert("Failed to generate print template.");
+    }
+  };
+
   const handleReset = () => {
     setState({
       petImage: null,
@@ -355,6 +443,26 @@ const PinPalsPage: React.FC = () => {
                 >
                   Save to Gallery ❤️
                 </button>
+                <div className="flex justify-center mt-2">
+                  <button
+                    onClick={handleDownloadPrintTemplate}
+                    className="text-sm text-aura-text-secondary hover:text-aura-text-primary underline flex items-center gap-1"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 9a1 1 0 011 1v2.586l4.293-4.293a1 1 0 111.414 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L4 12.586V12a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Download 6x4" Print Sheet (4 copies)
+                  </button>
+                </div>
               </div>
             ) : (
               <Setup

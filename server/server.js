@@ -1,5 +1,6 @@
 // backend/server.js
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -15,7 +16,6 @@ const rateLimit = require("express-rate-limit");
 const app = express();
 const port = process.env.PORT || 4000;
 const pdfjsLib = require("pdfjs-dist");
-const path = require("path");
 const fs = require("fs");
 
 // Security Middleware (Helmet)
@@ -197,11 +197,20 @@ app.post("/api/auth/login", async (req, res) => {
     ]);
     const user = result.rows[0];
 
+    console.log("Login attempt for:", username);
+    console.log("User found:", user ? "YES" : "NO");
+
+    if (!user) {
+      console.log("User not found in DB");
+    }
+
     if (!user || !(await bcrypt.compare(password, user.password))) {
+      console.log("Password mismatch or user missing");
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
     if (!user.is_approved) {
+      console.log("User not approved");
       return res
         .status(403)
         .json({ error: "Account pending approval. Please contact an admin." });
@@ -217,8 +226,8 @@ app.post("/api/auth/login", async (req, res) => {
       user: { id: user.id, username: user.username, role: user.role },
     });
   } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ error: "Login failed" });
+    console.error("Login error details:", err);
+    res.status(500).json({ error: "Login failed: " + err.message });
   }
 });
 
