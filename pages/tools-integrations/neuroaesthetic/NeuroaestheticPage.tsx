@@ -4,25 +4,30 @@ import { AppState, AnalysisResult, UserPreferences } from "./types";
 import { AnalysisDisplay } from "./components/AnalysisDisplay";
 import { ComparisonView } from "./components/ComparisonView";
 import { Loader } from "./components/Loader";
-import { analyzeRoom, generateNeuroaestheticImage } from "./services/geminiService";
+import {
+  analyzeRoom,
+  generateNeuroaestheticImage,
+} from "./services/geminiService";
 
-const NeuroaestheticPage: React.FC = () =&gt; {
-  const [appState, setAppState] = useState&lt;AppState&gt;(AppState.UPLOAD);
-  const [selectedImages, setSelectedImages] = useState&lt;File[]&gt;([]);
-  const [imageSrcs, setImageSrcs] = useState&lt;string[]&gt;([]);
-  const [base64Images, setBase64Images] = useState&lt;string[]&gt;([]);
-  const [analysis, setAnalysis] = useState&lt;AnalysisResult | null&gt;(null);
-  const [improvedImageBase64, setImprovedImageBase64] = useState&lt;string | null&gt;(null);
-  const [history, setHistory] = useState&lt;string[]&gt;([]);
+const NeuroaestheticPage: React.FC = () => {
+  const [appState, setAppState] = useState<AppState>(AppState.UPLOAD);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imageSrcs, setImageSrcs] = useState<string[]>([]);
+  const [base64Images, setBase64Images] = useState<string[]>([]);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [improvedImageBase64, setImprovedImageBase64] = useState<string | null>(
+    null
+  );
+  const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [preferences] = useState&lt;UserPreferences&gt;({
+  const [preferences] = useState<UserPreferences>({
     sensitivities: "",
     colorPreferences: "",
     designGoals: "General Well-being",
   });
-  const fileInputRef = useRef&lt;HTMLInputElement&gt;(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (e: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
@@ -55,7 +60,7 @@ const NeuroaestheticPage: React.FC = () =&gt; {
     }
   };
 
-  const handleVisualize = async () =&gt; {
+  const handleVisualize = async () => {
     if (!analysis || base64Images.length === 0) return;
     setAppState(AppState.GENERATING);
 
@@ -77,7 +82,7 @@ const NeuroaestheticPage: React.FC = () =&gt; {
     }
   };
 
-  const handleReset = () =&gt; {
+  const handleReset = () => {
     setAppState(AppState.UPLOAD);
     setSelectedImages([]);
     setImageSrcs([]);
@@ -88,21 +93,21 @@ const NeuroaestheticPage: React.FC = () =&gt; {
     setHistoryIndex(-1);
   };
 
-  const handleUndo = () =&gt; {
-    if (historyIndex &gt; 0) {
+  const handleUndo = () => {
+    if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
       setImprovedImageBase64(history[historyIndex - 1]);
     }
   };
 
-  const handleRedo = () =&gt; {
-    if (historyIndex &lt; history.length - 1) {
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
       setImprovedImageBase64(history[historyIndex + 1]);
     }
   };
 
-  const handleRegenerate = async () =&gt; {
+  const handleRegenerate = async () => {
     if (!analysis || base64Images.length === 0) return;
     setAppState(AppState.GENERATING);
 
@@ -114,7 +119,10 @@ const NeuroaestheticPage: React.FC = () =&gt; {
       );
       setImprovedImageBase64(generatedBase64);
       // Replace current history item
-      const newHistory = [...history.slice(0, historyIndex + 1), generatedBase64];
+      const newHistory = [
+        ...history.slice(0, historyIndex + 1),
+        generatedBase64,
+      ];
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
       setAppState(AppState.COMPARISON);
@@ -125,100 +133,104 @@ const NeuroaestheticPage: React.FC = () =&gt; {
     }
   };
 
-  const fileToDataUrl = (file: File): Promise&lt;string&gt; =&gt; {
-    return new Promise((resolve, reject) =&gt; {
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () =&gt; resolve(reader.result as string);
+      reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
   };
 
   return (
-    &lt;div className="min-h-screen bg-slate-900"&gt;
-      &lt;PageMetadata
+    <div className="min-h-screen bg-slate-900">
+      <PageMetadata
         title="Neuroaesthetic Lens"
         description="Reimagine environments using neuroaesthetic principles."
-      /&gt;
+      />
 
-      {appState === AppState.UPLOAD &amp;&amp; (
-        &lt;div className="container mx-auto px-4 py-16 max-w-4xl"&gt;
-          &lt;div className="text-center mb-12"&gt;
-            &lt;h1 className="text-5xl font-serif text-white mb-4"&gt;
+      {appState === AppState.UPLOAD && (
+        <div className="container mx-auto px-4 py-16 max-w-4xl">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-serif text-white mb-4">
               Neuroaesthetic Lens
-            &lt;/h1&gt;
-            &lt;p className="text-slate-300 text-lg max-w-2xl mx-auto mb-2"&gt;
-              Analyze and transform spaces based on how the brain perceives beauty and environment.
-            &lt;/p&gt;
-            &lt;p className="text-slate-500 text-sm max-w-xl mx-auto"&gt;
-              Upload 1-3 images of a room for comprehensive analysis using principles of biophilia, prospect-refuge, and fractal fluency.
-            &lt;/p&gt;
-          &lt;/div&gt;
+            </h1>
+            <p className="text-slate-300 text-lg max-w-2xl mx-auto mb-2">
+              Analyze and transform spaces based on how the brain perceives
+              beauty and environment.
+            </p>
+            <p className="text-slate-500 text-sm max-w-xl mx-auto">
+              Upload 1-3 images of a room for comprehensive analysis using
+              principles of biophilia, prospect-refuge, and fractal fluency.
+            </p>
+          </div>
 
-          &lt;div
+          <div
             className="border-2 border-dashed border-slate-700 rounded-2xl p-16 text-center hover:border-emerald-500/50 hover:bg-slate-800/30 transition-all cursor-pointer"
-            onClick={() =&gt; fileInputRef.current?.click()}
-          &gt;
-            &lt;svg
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <svg
               className="w-16 h-16 text-slate-600 mx-auto mb-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-            &gt;
-              &lt;path
+            >
+              <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={1.5}
                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              /&gt;
-            &lt;/svg&gt;
-            &lt;p className="text-slate-300 font-medium mb-2"&gt;
+              />
+            </svg>
+            <p className="text-slate-300 font-medium mb-2">
               Click to upload room photos
-            &lt;/p&gt;
-            &lt;p className="text-slate-500 text-sm"&gt;
+            </p>
+            <p className="text-slate-500 text-sm">
               Supports JPEG, PNG • Up to 3 images
-            &lt;/p&gt;
-            &lt;input
+            </p>
+            <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               multiple
               onChange={handleFileSelect}
               className="hidden"
-            /&gt;
-          &lt;/div&gt;
-        &lt;/div&gt;
+            />
+          </div>
+        </div>
       )}
 
-      {appState === AppState.ANALYZING &amp;&amp; (
-        &lt;Loader text="Analyzing neuroaesthetic properties..." /&gt;
+      {appState === AppState.ANALYZING && (
+        <Loader text="Analyzing neuroaesthetic properties..." />
       )}
 
-      {appState === AppState.RESULTS &amp;&amp; analysis &amp;&amp; (
-        &lt;AnalysisDisplay
+      {appState === AppState.RESULTS && analysis && (
+        <AnalysisDisplay
           imageSrcs={imageSrcs}
           analysis={analysis}
           onVisualize={handleVisualize}
-        /&gt;
+        />
       )}
 
-      {appState === AppState.GENERATING &amp;&amp; (
-        &lt;Loader text="Generating neuroaesthetic improvements..." /&gt;
+      {appState === AppState.GENERATING && (
+        <Loader text="Generating neuroaesthetic improvements..." />
       )}
 
-      {appState === AppState.COMPARISON &amp;&amp; improvedImageBase64 &amp;&amp; imageSrcs[0] &amp;&amp; (
-        &lt;ComparisonView
-          originalImage={imageSrcs[0]}
-          improvedImage={improvedImageBase64}
-          onReset={handleReset}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          onRegenerate={handleRegenerate}
-          canUndo={historyIndex &gt; 0}
-          canRedo={historyIndex &lt; history.length - 1}
-        /&gt;
-      )}
-    &lt;/div&gt;
+      {appState === AppState.COMPARISON &&
+        improvedImageBase64 &&
+        imageSrcs[0] && (
+          <ComparisonView
+            originalImage={imageSrcs[0]}
+            improvedImage={improvedImageBase64}
+            onReset={handleReset}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onRegenerate={handleRegenerate}
+            canUndo={historyIndex > 0}
+            canRedo={historyIndex < history.length - 1}
+          />
+        )}
+    </div>
   );
 };
 
