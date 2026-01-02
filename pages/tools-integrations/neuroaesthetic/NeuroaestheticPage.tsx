@@ -11,7 +11,6 @@ import {
 
 const NeuroaestheticPage: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.UPLOAD);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imageSrcs, setImageSrcs] = useState<string[]>([]);
   const [base64Images, setBase64Images] = useState<string[]>([]);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
@@ -31,7 +30,6 @@ const NeuroaestheticPage: React.FC = () => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    setSelectedImages(files);
     setAppState(AppState.ANALYZING);
 
     // Convert to base64
@@ -84,7 +82,6 @@ const NeuroaestheticPage: React.FC = () => {
 
   const handleReset = () => {
     setAppState(AppState.UPLOAD);
-    setSelectedImages([]);
     setImageSrcs([]);
     setBase64Images([]);
     setAnalysis(null);
@@ -168,6 +165,15 @@ const NeuroaestheticPage: React.FC = () => {
           <div
             className="border-2 border-dashed border-slate-700 rounded-2xl p-16 text-center hover:border-emerald-500/50 hover:bg-slate-800/30 transition-all cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Upload room photos"
           >
             <svg
               className="w-16 h-16 text-slate-600 mx-auto mb-4"
