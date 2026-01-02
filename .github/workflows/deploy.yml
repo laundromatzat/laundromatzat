@@ -35,6 +35,7 @@ jobs:
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_SITE_URL: https://laundromatzat.com
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
