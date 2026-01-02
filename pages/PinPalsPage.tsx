@@ -297,8 +297,6 @@ const PinPalsPage: React.FC = () => {
       // Vertical Packing: 2 rows staggered to fit with margins.
 
       const pinSize = 600;
-      const radius = 300;
-      const margin = 20;
 
       // Vertical Centers
       // Top Row: Y = Margin + Radius = 320
