@@ -3,6 +3,7 @@ import PageMetadata from "../components/PageMetadata";
 import FeaturedHero from "../components/FeaturedHero";
 import MasonryGrid from "../components/MasonryGrid";
 import PortfolioModal from "../components/PortfolioModal";
+import Container from "../components/Container";
 import { PROJECTS } from "../constants";
 
 const HomePage: React.FC = () => {
@@ -43,7 +44,7 @@ const HomePage: React.FC = () => {
       )}
 
       {/* Main Grid */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+      <Container className="pb-24">
         <div className="flex items-end justify-between mb-12">
           <div>
             <h2 className="text-3xl md:text-4xl font-serif font-light text-zinc-900 mb-4">
@@ -60,7 +61,7 @@ const HomePage: React.FC = () => {
           projects={projects}
           onProjectSelect={setSelectedProjectIndex}
         />
-      </section>
+      </Container>
 
       {/* Project Modal */}
       {selectedProjectIndex !== null && (

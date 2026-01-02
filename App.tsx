@@ -21,7 +21,7 @@ function App(): React.ReactNode {
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-aura-bg font-sans text-aura-text-primary selection:bg-aura-accent selection:text-aura-text-primary">
+    <div className="min-h-screen overflow-x-hidden bg-aura-bg font-sans text-aura-text-primary selection:bg-aura-accent selection:text-aura-text-primary">
       <GlobalLoadingCursor />
       <a className="skip-link" href="#main-content">
         Skip to main content
@@ -31,7 +31,7 @@ function App(): React.ReactNode {
         id="main-content"
         ref={mainRef}
         tabIndex={-1}
-        className="container px-4 sm:px-6 lg:px-8 pt-16 pb-space-6 lg:pb-space-8"
+        className="pt-16 min-h-screen flex flex-col"
       >
         <Outlet />
         {/* Admin Route is rendered via Outlet or main router configuration usually, 

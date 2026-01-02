@@ -118,7 +118,7 @@ function ProjectGrid({
         )
       ) : (
         <ul
-          className={clsx(gridClassName)}
+          className={clsx("w-full max-w-full", gridClassName)}
           aria-describedby={announcementId}
           data-testid="project-grid"
         >

@@ -12,7 +12,7 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
   onProjectSelect,
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[300px]">
+    <div className="w-full max-w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {projects.map((project, index) => {
         // Create a pseudo-random pattern for grid spans based on index
         const isLarge = index % 5 === 0;
@@ -22,7 +22,7 @@ const MasonryGrid: React.FC<MasonryGridProps> = ({
           <div
             key={project.id}
             className={clsx(
-              "group relative overflow-hidden rounded-2xl bg-zinc-100",
+              "group relative overflow-hidden rounded-2xl bg-zinc-100 min-h-[300px]",
               isLarge && "md:col-span-2 md:row-span-2",
               isTall && "md:row-span-2",
               !isLarge && !isTall && "md:col-span-1 md:row-span-1"
