@@ -76,7 +76,7 @@ export const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({ onContinue }) => {
           </div>
         </div>
 
-        {(window as any).aistudio ? (
+        {(window as Window & { aistudio?: unknown }).aistudio ? (
           <button onClick={onContinue} className="btn-primary w-full">
             Authenticate & Continue
           </button>
@@ -96,7 +96,7 @@ export const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({ onContinue }) => {
               Save & Continue
             </button>
             <p className="text-xs text-center text-zinc-500 mt-2">
-              Don't have a key?{" "}
+              Don&apos;t have a key?{" "}
               <a
                 href="https://aistudio.google.com/app/apikey"
                 target="_blank"
