@@ -155,8 +155,8 @@ function Header(): React.ReactNode {
         className={clsx(
           "fixed inset-0 bg-[#F5F2EB] z-[2000] flex flex-col justify-center items-center transition-all duration-500 ease-in-out",
           isMenuOpen
-            ? "opacity-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 -translate-y-10 pointer-events-none"
+            ? "opacity-100 translate-y-0 pointer-events-auto visible"
+            : "opacity-0 -translate-y-10 pointer-events-none invisible"
         )}
       >
         <div className="flex flex-col items-center space-y-8 text-xl font-serif font-medium text-aura-text-primary">

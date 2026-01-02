@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import PageMetadata from "../components/PageMetadata";
 import { getApiUrl } from "../utils/api";
 import { Check, Trash2, Shield, User as UserIcon } from "lucide-react";
+import Container from "../components/Container";
 
 interface AdminUser {
   id: number;
@@ -75,7 +76,7 @@ export default function AdminDashboard() {
     return <div className="p-8 text-center text-red-500">Access Denied</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-24 text-white">
+    <Container className="py-8 pt-24 text-white">
       <PageMetadata
         title="Admin Dashboard"
         description="Manage users and approvals."
@@ -167,6 +168,6 @@ export default function AdminDashboard() {
           <div className="p-8 text-center text-zinc-500">No users found.</div>
         )}
       </div>
-    </div>
+    </Container>
   );
 }

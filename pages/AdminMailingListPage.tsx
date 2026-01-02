@@ -1,9 +1,10 @@
-import React from 'react';
-import PageMetadata from '../components/PageMetadata';
+import React from "react";
+import PageMetadata from "../components/PageMetadata";
+import Container from "../components/Container";
 
 function AdminMailingListPage(): React.ReactNode {
   return (
-    <div className="space-y-space-6">
+    <Container className="space-y-space-6 pt-8">
       <PageMetadata
         title="Mailing list admin"
         description="Manage subscribers and send updates to the Laundromatzat mailing list."
@@ -12,9 +13,12 @@ function AdminMailingListPage(): React.ReactNode {
       />
 
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold text-aura-text-primary">Mailing list admin</h1>
+        <h1 className="text-3xl font-semibold text-aura-text-primary">
+          Mailing list admin
+        </h1>
         <p className="text-aura-text-secondary">
-          This feature has been disabled in the simplified static version of the site.
+          This feature has been disabled in the simplified static version of the
+          site.
         </p>
       </header>
 
@@ -24,7 +28,7 @@ function AdminMailingListPage(): React.ReactNode {
           Mailing list management is no longer available in this version.
         </p>
       </div>
-    </div>
+    </Container>
   );
 }
 

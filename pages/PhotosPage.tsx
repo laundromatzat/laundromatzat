@@ -2,6 +2,7 @@ import React from "react";
 import { PROJECTS } from "../constants";
 import { ProjectType } from "../types";
 import ProjectGrid from "../components/ProjectGrid";
+import Container from "../components/Container";
 
 function PhotosPage(): React.ReactNode {
   const photoProjects = PROJECTS.filter(
@@ -18,9 +19,9 @@ function PhotosPage(): React.ReactNode {
   });
 
   return (
-    <div className="space-y-8 pt-24">
+    <Container className="space-y-8 pt-8">
       <ProjectGrid projects={photoProjects} />
-    </div>
+    </Container>
   );
 }
 

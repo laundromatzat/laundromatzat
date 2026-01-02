@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import PageMetadata from "../components/PageMetadata";
 import { useAuth } from "../context/AuthContext";
 import { getApiUrl } from "../utils/api";
+import Container from "../components/Container";
 
 interface LinkItem {
   id: number;
@@ -344,7 +345,7 @@ function LinksPage(): React.ReactNode {
   );
 
   return (
-    <div className="space-y-space-5 pt-24 pb-20">
+    <Container className="space-y-space-5 pt-8 pb-20">
       <PageMetadata
         title="Links"
         description="Your curated collection of bookmarks and resources."
@@ -509,7 +510,7 @@ function LinksPage(): React.ReactNode {
         onSubmit={editingLink ? handleUpdate : handleCreate}
         initialData={editingLink}
       />
-    </div>
+    </Container>
   );
 }
 

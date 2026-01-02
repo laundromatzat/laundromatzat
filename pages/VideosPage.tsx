@@ -5,6 +5,7 @@ import { ProjectType } from "../types";
 import ProjectGrid from "../components/ProjectGrid";
 import PageMetadata from "../components/PageMetadata";
 import { compareProjectsByDateDesc } from "../utils/projectDates";
+import Container from "../components/Container";
 
 interface VideosPageProps {
   forcedSlug?: string;
@@ -35,7 +36,7 @@ function VideosPage({ forcedSlug }: VideosPageProps): React.ReactNode {
   );
 
   return (
-    <div className="space-y-space-5 pt-24">
+    <Container className="space-y-space-5 pt-8">
       <PageMetadata
         title="Videos"
         description="Road films, holiday epics, and family travelogues spanning two decades."
@@ -48,7 +49,7 @@ function VideosPage({ forcedSlug }: VideosPageProps): React.ReactNode {
         activeSlug={slug}
         onSlugChange={handleSlugChange}
       />
-    </div>
+    </Container>
   );
 }
 

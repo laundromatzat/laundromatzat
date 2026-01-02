@@ -121,7 +121,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "pin-pals",
+        path: "tools/pin-pals",
         element: (
           <ProtectedRoute>
             <PinPalsPage />

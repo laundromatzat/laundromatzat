@@ -126,6 +126,7 @@ const PinPalsPage: React.FC = () => {
           import.meta.env.VITE_GEMINI_API_KEY ||
           import.meta.env.VITE_GOOGLE_GENAI_API_KEY ||
           import.meta.env.VITE_API_KEY ||
+          localStorage.getItem("gemini_api_key") ||
           "";
         const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({
@@ -194,6 +195,7 @@ const PinPalsPage: React.FC = () => {
         import.meta.env.VITE_GEMINI_API_KEY ||
         import.meta.env.VITE_GOOGLE_GENAI_API_KEY ||
         import.meta.env.VITE_API_KEY ||
+        localStorage.getItem("gemini_api_key") ||
         "";
       const ai = new GoogleGenAI({ apiKey });
 

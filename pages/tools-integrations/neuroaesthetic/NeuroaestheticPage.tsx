@@ -1,9 +1,10 @@
 import React from "react";
 import PageMetadata from "../../../components/PageMetadata";
+import Container from "../../../components/Container";
 
 const NeuroaestheticPage: React.FC = () => {
   return (
-    <div className="space-y-8">
+    <Container className="space-y-8 pt-8">
       <PageMetadata
         title="Neuroaesthetic Lens"
         description="Reimagine environments using neuroaesthetic principles."
@@ -20,7 +21,7 @@ const NeuroaestheticPage: React.FC = () => {
           <p className="text-zinc-500">Analysis Component Loading...</p>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

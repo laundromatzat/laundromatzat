@@ -5,6 +5,7 @@ import { ProjectType } from "../types";
 import ProjectGrid from "../components/ProjectGrid";
 import PageMetadata from "../components/PageMetadata";
 import { compareProjectsByDateDesc } from "../utils/projectDates";
+import Container from "../components/Container";
 
 function CinemagraphsPage(): React.ReactNode {
   const { slug } = useParams<{ slug: string }>();
@@ -30,7 +31,7 @@ function CinemagraphsPage(): React.ReactNode {
   );
 
   return (
-    <div className="space-y-space-5 pt-24">
+    <Container className="space-y-space-5 pt-8">
       <PageMetadata
         title="Cinemagraphs"
         description="Looping living photos that blend still imagery with subtle motion."
@@ -43,7 +44,7 @@ function CinemagraphsPage(): React.ReactNode {
         activeSlug={slug}
         onSlugChange={handleSlugChange}
       />
-    </div>
+    </Container>
   );
 }
 

@@ -5,6 +5,7 @@ import { ProjectType } from "../types";
 import ProjectGrid from "../components/ProjectGrid";
 import PageMetadata from "../components/PageMetadata";
 import { compareProjectsByDateDesc } from "../utils/projectDates";
+import Container from "../components/Container";
 
 function ImagesPage(): React.ReactNode {
   const { slug } = useParams<{ slug: string }>();
@@ -30,7 +31,7 @@ function ImagesPage(): React.ReactNode {
   );
 
   return (
-    <div className="space-y-space-5 pt-24">
+    <Container className="space-y-space-5 pt-8">
       <PageMetadata
         title="Images"
         description="Browse still photography captured across Alaska, California, and beyond."
@@ -43,7 +44,7 @@ function ImagesPage(): React.ReactNode {
         activeSlug={slug}
         onSlugChange={handleSlugChange}
       />
-    </div>
+    </Container>
   );
 }
 

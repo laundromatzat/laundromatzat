@@ -1,27 +1,27 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const TOOLS = [
   {
-    id: 'pin-pals',
-    title: 'Pin Pals',
-    description: 'A collaborative map for pinning your favorite spots.',
-    path: '/pin-pals',
-    imageUrl: '/assets/tools/pin-pals.png',
+    id: "pin-pals",
+    title: "Pin Pals",
+    description: "A collaborative map for pinning your favorite spots.",
+    path: "/tools/pin-pals",
+    imageUrl: "/assets/tools/pin-pals.png",
   },
   {
-    id: 'bg-remover',
-    title: 'Background Remover',
-    description: 'Instant, in-browser background removal for your photos.',
-    path: '/tools/background-removal',
-    imageUrl: '/assets/tools/bg-remover.png',
+    id: "bg-remover",
+    title: "Background Remover",
+    description: "Instant, in-browser background removal for your photos.",
+    path: "/tools/background-removal",
+    imageUrl: "/assets/tools/bg-remover.png",
   },
   {
-    id: 'fabric-designer',
-    title: 'Nylon Fabric Designer',
-    description: 'Design and visualize nylon fabric projects with AI.',
-    path: '/tools/nylon-fabric-designer',
-    imageUrl: '/assets/tools/fabric-designer.png',
+    id: "fabric-designer",
+    title: "Nylon Fabric Designer",
+    description: "Design and visualize nylon fabric projects with AI.",
+    path: "/tools/nylon-fabric-designer",
+    imageUrl: "/assets/tools/fabric-designer.png",
   },
 ];
 
@@ -35,11 +35,12 @@ const ToolsSection: React.FC = () => {
               The Lab
             </span>
             <h2 className="text-4xl md:text-5xl font-serif text-zinc-900 leading-tight">
-              Experimental Tools & <br/> <span className="italic text-zinc-500">Creative Utilities.</span>
+              Experimental Tools & <br />{" "}
+              <span className="italic text-zinc-500">Creative Utilities.</span>
             </h2>
           </div>
-          <Link 
-            to="/tools" 
+          <Link
+            to="/tools"
             className="text-sm font-semibold uppercase tracking-widest border-b border-zinc-900 pb-1 hover:text-zinc-600 hover:border-zinc-600 transition-colors"
           >
             View All Tools
@@ -59,9 +60,9 @@ const ToolsSection: React.FC = () => {
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 loading="lazy"
               />
-              
+
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
-              
+
               <div className="absolute inset-0 p-8 flex flex-col justify-end">
                 <h3 className="text-2xl font-serif text-white mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                   {tool.title}

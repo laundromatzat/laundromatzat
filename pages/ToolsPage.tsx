@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import PageMetadata from "../components/PageMetadata";
+import Container from "../components/Container";
 
 const TOOL_LINKS = [
   {
@@ -32,7 +33,7 @@ const TOOL_LINKS = [
     badge: "New service",
   },
   {
-    to: "/pin-pals",
+    to: "/tools/pin-pals",
     title: "Pin Pals",
     description: "A collaborative map for pinning your favorite spots.",
     imageUrl: "/assets/tools/pin-pals.png",
@@ -71,7 +72,7 @@ const TOOL_LINKS = [
 
 function ToolsPage(): React.ReactNode {
   return (
-    <div className="space-y-space-5 pt-24">
+    <Container className="space-y-space-5 pt-8">
       <PageMetadata
         title="Tools"
         description="Interactive experiments for background removal, color palettes, and other creative workflows."
@@ -114,7 +115,7 @@ function ToolsPage(): React.ReactNode {
           </Link>
         ))}
       </section>
-    </div>
+    </Container>
   );
 }
 

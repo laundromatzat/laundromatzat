@@ -15,7 +15,7 @@ export const GlobalLoadingCursor: React.FC = () => {
     document.body.style.cursor = "none";
 
     const updatePosition = (e: MouseEvent) => {
-      if (cursorRef.current) {
+      if (cursorRef.current && cursorRef.current.style) {
         // Translate X/Y to move the div.
         // Note: The div has negative margins to center it on the cursor point.
         cursorRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;

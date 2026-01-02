@@ -391,7 +391,7 @@ const PaystubAnalyzerPage: React.FC = () => {
   );
 
   return (
-    <div className="bg-aura-bg min-h-screen text-base text-aura-text-primary font-sans selection:bg-aura-accent/30 rounded-3xl -mx-4 sm:-mx-6 lg:-mx-8 -mt-20 p-4 sm:p-6 lg:p-8">
+    <div className="bg-aura-bg min-h-screen text-base text-aura-text-primary font-sans selection:bg-aura-accent/30 p-4 sm:p-6 lg:p-8">
       <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-40 pointer-events-none" />
 
       <main className="relative container mx-auto p-4 md:p-8 max-w-7xl">
