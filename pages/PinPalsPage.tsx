@@ -301,8 +301,8 @@ const PinPalsPage: React.FC = () => {
       // Vertical Centers
       // Top Row: Y = Margin + Radius = 320
       // Bottom Row: Y = 1200 - Margin - Radius = 880
-      const topRowY = 320;
-      const botRowY = 880;
+      const topRowY = margin + radius;
+      const botRowY = 1200 - margin - radius;
 
       // Horizontal Centers (Staggered)
       // Top Row (Shifted Left): X = 425 & 1075
@@ -460,7 +460,7 @@ const PinPalsPage: React.FC = () => {
                         clipRule="evenodd"
                       />
                     </svg>
-                    Download 6x4" Print Sheet (4 copies)
+                    Download 6x4&quot; Print Sheet (4 copies)
                   </button>
                 </div>
               </div>
