@@ -95,17 +95,27 @@ function Header(): React.ReactNode {
                           return user.profile_picture;
                         return `${API_BASE_URL}${user.profile_picture}`;
                       })()}
-                      alt={user.username}
+                      alt=""
                       crossOrigin="anonymous"
+                      onError={(e) => {
+                        // Hide broken image and show initials fallback
+                        e.currentTarget.style.display = "none";
+                        const fallback = e.currentTarget.nextElementSibling;
+                        if (fallback) {
+                          (fallback as HTMLElement).style.display = "flex";
+                        }
+                      }}
                       className="w-8 h-8 rounded-full object-cover border border-white/20"
                     />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-aura-accent/20 flex items-center justify-center border border-white/10">
-                      <span className="text-xs font-bold text-aura-accent">
-                        {user.username[0].toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                  ) : null}
+                  <div
+                    className="w-8 h-8 rounded-full bg-aura-accent/20 flex items-center justify-center border border-white/10"
+                    style={{ display: user.profile_picture ? "none" : "flex" }}
+                  >
+                    <span className="text-xs font-bold text-aura-accent">
+                      {user.username[0].toUpperCase()}
+                    </span>
+                  </div>
                   <span className="hidden sm:block text-sm font-medium">
                     {user.username}
                   </span>
