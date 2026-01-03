@@ -573,14 +573,14 @@ const PaystubAnalyzerPage: React.FC = () => {
       {/* Edit Paystub Modal - Basic Implementation for Speed, consider moving to separate component later */}
       {editModalOpen && editFormData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-lg font-semibold text-gray-900">
+          <div className="bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-800">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+              <h3 className="text-lg font-semibold text-white">
                 Edit Paystub Data
               </h3>
               <button
                 onClick={() => setEditModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-slate-400 hover:text-white"
               >
                 <span className="sr-only">Close</span>
                 <svg
@@ -602,14 +602,14 @@ const PaystubAnalyzerPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="edit-pay-period-start"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-slate-300 mb-1"
                   >
                     Pay Period Start
                   </label>
                   <input
                     id="edit-pay-period-start"
                     type="date"
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-aura-accent focus:ring-aura-accent"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     value={editFormData.payPeriodStart}
                     onChange={(e) =>
                       setEditFormData({
@@ -622,14 +622,14 @@ const PaystubAnalyzerPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="edit-pay-period-end"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-slate-300 mb-1"
                   >
                     Pay Period End
                   </label>
                   <input
                     id="edit-pay-period-end"
                     type="date"
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-aura-accent focus:ring-aura-accent"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     value={editFormData.payPeriodEnd}
                     onChange={(e) =>
                       setEditFormData({
@@ -642,16 +642,16 @@ const PaystubAnalyzerPage: React.FC = () => {
               </div>
 
               <div className="mb-4">
-                <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
                   <DocumentTextIcon className="w-4 h-4 text-aura-accent" />{" "}
                   Extracted Paid Hours
                 </h4>
-                <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <div className="space-y-2 bg-slate-900/30 p-4 rounded-lg border border-slate-800">
                   {editFormData.paidHours.map((entry, idx) => (
                     <div key={idx} className="flex gap-2 items-center">
                       <input
                         type="text"
-                        className="flex-1 rounded-md border-gray-200 text-sm"
+                        className="flex-1 rounded-md bg-slate-950 border-slate-700 text-white text-sm focus:ring-2 focus:ring-indigo-500 px-3 py-2"
                         value={entry.category}
                         onChange={(e) => {
                           const newHours = [...editFormData.paidHours];
@@ -664,7 +664,7 @@ const PaystubAnalyzerPage: React.FC = () => {
                       />
                       <input
                         type="number"
-                        className="w-24 rounded-md border-gray-200 text-sm text-right"
+                        className="w-24 rounded-md bg-slate-950 border-slate-700 text-white text-sm text-right focus:ring-2 focus:ring-indigo-500 px-3 py-2"
                         value={entry.hours}
                         onChange={(e) => {
                           const newHours = [...editFormData.paidHours];
@@ -709,10 +709,10 @@ const PaystubAnalyzerPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+            <div className="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
               <button
                 onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700"
               >
                 Cancel
               </button>
