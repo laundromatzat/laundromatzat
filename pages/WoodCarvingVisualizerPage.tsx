@@ -47,9 +47,8 @@ const WoodCarvingVisualizerPage: React.FC = () => {
     setGlobalLoading(true);
 
     try {
-      const generatedVariations = await generateCarvingVariations(
-        projectDescription
-      );
+      const generatedVariations =
+        await generateCarvingVariations(projectDescription);
       setVariations(generatedVariations);
     } catch (err) {
       const message =
@@ -128,7 +127,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
             </h2>
             <p className="text-aura-text-secondary mb-6">
               Tell us what you want to carve. Be detailed about the subject,
-              style, and any specific elements you'd like to include.
+              style, and any specific elements you&apos;d like to include.
             </p>
             <textarea
               id="projectDescription"
@@ -153,7 +152,9 @@ const WoodCarvingVisualizerPage: React.FC = () => {
               onClick={handleGenerateVariations}
               disabled={isLoading}
             >
-              {isLoading ? "Generating Variations..." : "Generate Design Variations"}
+              {isLoading
+                ? "Generating Variations..."
+                : "Generate Design Variations"}
             </button>
             {error && <p className="text-status-error-text mt-4">{error}</p>}
           </div>
@@ -201,12 +202,20 @@ const WoodCarvingVisualizerPage: React.FC = () => {
               {variations.map((variation, index) => (
                 <div
                   key={index}
+                  role="button"
+                  tabIndex={0}
                   className={`border-2 rounded-lg shadow-layer-1 overflow-hidden bg-brand-primary cursor-pointer transition-all ${
                     selectedVariation === variation
                       ? "border-brand-accent ring-4 ring-brand-accent/30"
                       : "border-brand-surface-highlight hover:border-brand-accent/50"
                   }`}
                   onClick={() => handleSelectVariation(variation)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectVariation(variation);
+                    }
+                  }}
                 >
                   <div
                     className="bg-brand-secondary p-4 flex items-center justify-center min-h-[400px]"
@@ -236,7 +245,8 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                   Refine Your Design (Optional)
                 </h3>
                 <p className="text-aura-text-secondary mb-4">
-                  Add any notes or requested changes for the detailed renderings:
+                  Add any notes or requested changes for the detailed
+                  renderings:
                 </p>
                 <textarea
                   className="w-full min-h-[100px] p-4 border-2 border-brand-surface-highlight bg-brand-primary text-aura-text-primary placeholder:text-aura-text-secondary rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent transition"
