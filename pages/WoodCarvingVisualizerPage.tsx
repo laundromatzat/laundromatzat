@@ -128,7 +128,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
             </h2>
             <p className="text-aura-text-secondary mb-6">
               Tell us what you want to carve. Be detailed about the subject,
-              style, and any specific elements you'd like to include.
+              style, and any specific elements you&apos;d like to include.
             </p>
             <textarea
               id="projectDescription"
@@ -199,14 +199,17 @@ const WoodCarvingVisualizerPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               {variations.map((variation, index) => (
-                <div
+                <button
                   key={index}
-                  className={`border-2 rounded-lg shadow-layer-1 overflow-hidden bg-brand-primary cursor-pointer transition-all ${
+                  type="button"
+                  className={`border-2 rounded-lg shadow-layer-1 overflow-hidden bg-brand-primary cursor-pointer transition-all text-left ${
                     selectedVariation === variation
                       ? "border-brand-accent ring-4 ring-brand-accent/30"
                       : "border-brand-surface-highlight hover:border-brand-accent/50"
                   }`}
                   onClick={() => handleSelectVariation(variation)}
+                  aria-pressed={selectedVariation === variation}
+                  aria-label={`Select ${variation.name}: ${variation.description}`}
                 >
                   <div
                     className="bg-brand-secondary p-4 flex items-center justify-center min-h-[400px]"
@@ -225,7 +228,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                       ✓ Selected
                     </div>
                   )}
-                </div>
+                </button>
               ))}
             </div>
 
