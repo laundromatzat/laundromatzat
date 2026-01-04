@@ -28,8 +28,9 @@ const TOOL_LINKS = [
   {
     to: "/tools/wood-carving-visualizer",
     title: "Wood Carving Visualizer",
-    description: "Generate multiple design variations and create detailed carving renderings.",
-    imageUrl: "/assets/tools/wood-carving.svg",
+    description:
+      "Generate multiple design variations and create detailed carving renderings.",
+    imageUrl: "/assets/tools/wood-carving.png",
     badge: "New service",
   },
   {
