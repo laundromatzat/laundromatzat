@@ -26,6 +26,13 @@ const TOOL_LINKS = [
     badge: "New service",
   },
   {
+    to: "/tools/wood-carving-visualizer",
+    title: "Wood Carving Visualizer",
+    description: "Generate multiple design variations and create detailed carving renderings.",
+    imageUrl: "/assets/tools/wood-carving.svg",
+    badge: "New service",
+  },
+  {
     to: "/tools/intelligent-ideas-board",
     title: "Intelligent Ideas",
     description: "Brain-dump thoughts and let AI organize them for you.",
