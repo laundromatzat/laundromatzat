@@ -32,6 +32,7 @@ import PaystubAnalyzerPage from "./pages/PaystubAnalyzerPage";
 import BackgroundRemovalPage from "./pages/BackgroundRemovalPage";
 import ColorPalettePage from "./pages/ColorPalettePage";
 import NylonFabricDesignerPage from "./pages/NylonFabricDesignerPage";
+import WoodCarvingVisualizerPage from "./pages/WoodCarvingVisualizerPage";
 import IntelligentIdeasBoardPage from "./pages/IntelligentIdeasBoardPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -157,6 +158,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <NylonFabricDesignerPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "tools/wood-carving-visualizer",
+        element: (
+          <ProtectedRoute>
+            <WoodCarvingVisualizerPage />
           </ProtectedRoute>
         ),
       },
