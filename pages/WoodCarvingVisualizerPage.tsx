@@ -50,7 +50,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
       const results = await generateCarvingVariations(description);
       setVariations(results);
       setPhase(2);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
@@ -83,7 +83,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
       );
       setDesignData(plan);
       setPhase(4);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
@@ -186,7 +186,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
               placeholder="Describe your idea (e.g., 'An owl perched on a drift wood branch, geometric style')..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleGenerateVariations();
@@ -256,7 +256,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                   role="button"
                   tabIndex={0}
                   onClick={() => handleSelectVariation(variation)}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       handleSelectVariation(variation);

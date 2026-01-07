@@ -370,11 +370,15 @@ const MeasurementWorkbench: React.FC<WorkbenchProps> = ({
 
         {/* Height Input & Close */}
         <div className="flex items-center gap-3">
-          <label className="text-sage-400 text-sm font-medium">
+          <label
+            htmlFor="physical-height-input"
+            className="text-sage-400 text-sm font-medium"
+          >
             Real Block Height:
           </label>
           <div className="relative group">
             <input
+              id="physical-height-input"
               type="number"
               value={physicalHeight}
               onChange={(e) => setPhysicalHeight(e.target.value)}
@@ -441,8 +445,16 @@ const CutCalculator: React.FC<CutCalculatorProps> = ({ imageUrl, unit }) => {
       {/* Card View */}
       <div className="mt-4 flex flex-col md:flex-row gap-8 items-center justify-between">
         <div
+          role="button"
+          tabIndex={0}
           className="relative group cursor-pointer overflow-hidden rounded-xl border border-sage-200 shadow-sm max-w-md"
           onClick={() => setIsOpen(true)}
+          onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsOpen(true);
+            }
+          }}
         >
           <img
             src={imageUrl}
