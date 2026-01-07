@@ -15,6 +15,49 @@ When a GitHub Actions workflow fails (lint or build errors), the CI workflow wil
    - Link to the workflow run
    - Special marker for AI agents
 
+## Self-Healing CI/CD (Auto-Fix)
+
+**Status**: ✅ Enabled by default
+
+AI agents can now automatically detect and fix CI failures without user intervention!
+
+### How Auto-Fix Works
+
+After an AI agent pushes code to GitHub:
+
+1. **Auto-Monitor**: Automatically wait and monitor CI status (up to 5 minutes)
+2. **Auto-Detect**: If CI fails, fetch error details from commit comment
+3. **Auto-Fix**: Parse errors, fix the issues in code
+4. **Auto-Push**: Commit and push the fixes
+5. **Auto-Verify**: Monitor the new CI run (repeat up to 3 times)
+
+### Safety Mechanisms
+
+- **Max 3 retry attempts** - Prevents infinite loops
+- **Attempt tracking** - Commit messages show: `fix: auto-resolve CI errors (attempt 2/3)`
+- **User notification** - Only notified if all 3 attempts fail
+- **Timeout protection** - 5-minute max wait per CI run
+
+### Workflow File
+
+See [.agent/workflows/auto-fix-ci.md](file:///Users/stephenmatzat/Projects/laundromatzat/.agent/workflows/auto-fix-ci.md) for the complete workflow.
+
+### Scripts
+
+- **monitor-ci-status.js** - Polls GitHub API to check CI status
+- **auto-fix-ci.js** - Orchestrates the complete auto-fix process
+- **fetch-ci-errors.js** - Retrieves error details from commit comments
+
+### Disabling Auto-Fix
+
+To disable for a session:
+
+```bash
+export ANTIGRAVITY_AUTO_FIX_CI=false
+```
+
+Or remove `// turbo-all` from `.agent/workflows/auto-fix-ci.md`
+
 ## For AI Agents
 
 ### Automatic Error Detection
