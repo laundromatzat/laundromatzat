@@ -223,7 +223,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-brand-accent text-white rounded-lg hover:bg-brand-accent/90 transition-colors font-semibold shadow-md"
+            className="px-4 py-2 bg-brand-accent text-brand-on-accent rounded-lg hover:bg-brand-accent-strong transition-colors font-semibold shadow-md"
           >
             Save Settings
           </button>

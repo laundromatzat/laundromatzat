@@ -74,7 +74,7 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
       {/* Rename Button */}
       <button
         onClick={() => onRename(file)}
-        className="w-full bg-brand-accent hover:bg-brand-accent/90 text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center shadow-sm hover:shadow-md"
+        className="w-full bg-brand-accent hover:bg-brand-accent-strong text-brand-on-accent font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center shadow-sm hover:shadow-md"
       >
         <Edit3 size={18} className="mr-2" />
         Rename File with AI Suggestion
@@ -112,7 +112,7 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
                   // TODO: Apply custom tags
                   setIsEditingTags(false);
                 }}
-                className="flex-1 bg-brand-accent text-white py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center"
+                className="flex-1 bg-brand-accent text-brand-on-accent py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center hover:bg-brand-accent-strong transition-colors"
               >
                 <Check size={14} className="mr-1" />
                 Apply

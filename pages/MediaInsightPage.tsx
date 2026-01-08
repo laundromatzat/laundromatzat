@@ -386,7 +386,7 @@ function MediaInsightPage(): React.ReactNode {
                 setMode("record");
                 setResult(null);
               }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "record" ? "bg-brand-accent text-white" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "record" ? "bg-brand-accent text-brand-on-accent" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
             >
               <Mic size={16} className="inline mr-2" />
               Record
@@ -396,14 +396,14 @@ function MediaInsightPage(): React.ReactNode {
                 setMode("upload");
                 setResult(null);
               }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "upload" ? "bg-brand-accent text-white" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "upload" ? "bg-brand-accent text-brand-on-accent" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
             >
               <Upload size={16} className="inline mr-2" />
               Upload
             </button>
             <button
               onClick={openWorkspace}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "workspace" ? "bg-brand-accent text-white" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "workspace" ? "bg-brand-accent text-brand-on-accent" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
             >
               <FolderOpen size={16} className="inline mr-2" />
               Workspace
