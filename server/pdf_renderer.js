@@ -1,6 +1,6 @@
-const canvas = require('canvas');
-const assert = require('assert');
-const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
+const canvas = require("canvas");
+const assert = require("assert");
+const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
 
 // Polyfill for pdfjs-dist environment
 global.Canvas = canvas.Canvas;
@@ -11,22 +11,22 @@ global.DOMMatrix = canvas.DOMMatrix;
 function NodeCanvasFactory() {}
 NodeCanvasFactory.prototype = {
   create: function NodeCanvasFactory_create(width, height) {
-    assert(width > 0 && height > 0, 'Invalid canvas size');
+    assert(width > 0 && height > 0, "Invalid canvas size");
     var canvasInstance = canvas.createCanvas(width, height);
-    var context = canvasInstance.getContext('2d');
+    var context = canvasInstance.getContext("2d");
     return {
       canvas: canvasInstance,
       context: context,
     };
   },
   reset: function NodeCanvasFactory_reset(canvasAndContext, width, height) {
-    assert(canvasAndContext.canvas, 'Canvas is not specified');
-    assert(width > 0 && height > 0, 'Invalid canvas size');
+    assert(canvasAndContext.canvas, "Canvas is not specified");
+    assert(width > 0 && height > 0, "Invalid canvas size");
     canvasAndContext.canvas.width = width;
     canvasAndContext.canvas.height = height;
   },
   destroy: function NodeCanvasFactory_destroy(canvasAndContext) {
-    assert(canvasAndContext.canvas, 'Canvas is not specified');
+    assert(canvasAndContext.canvas, "Canvas is not specified");
     canvasAndContext.canvas.width = 0;
     canvasAndContext.canvas.height = 0;
     canvasAndContext.canvas = null;
@@ -49,7 +49,7 @@ async function convertPdfToImages(dataBuffer, options = {}) {
     cMapUrl: `node_modules/pdfjs-dist/cmaps/`,
     cMapPacked: true,
     canvasFactory: new NodeCanvasFactory(),
-    standardFontDataUrl: `node_modules/pdfjs-dist/standard_fonts/`
+    standardFontDataUrl: `node_modules/pdfjs-dist/standard_fonts/`,
   });
 
   const pdfDocument = await loadingTask.promise;
@@ -62,7 +62,10 @@ async function convertPdfToImages(dataBuffer, options = {}) {
     const page = await pdfDocument.getPage(pageNum);
     const viewport = page.getViewport({ scale: 3.0 }); // Scale 3.0 for better quality
     const canvasFactory = new NodeCanvasFactory();
-    const canvasAndContext = canvasFactory.create(viewport.width, viewport.height);
+    const canvasAndContext = canvasFactory.create(
+      viewport.width,
+      viewport.height
+    );
     const renderContext = {
       canvasContext: canvasAndContext.context,
       viewport: viewport,
@@ -72,9 +75,11 @@ async function convertPdfToImages(dataBuffer, options = {}) {
     await page.render(renderContext).promise;
 
     // Convert to base64
-    const base64 = canvasAndContext.canvas.toBuffer('image/png').toString('base64');
+    const base64 = canvasAndContext.canvas
+      .toBuffer("image/png")
+      .toString("base64");
     images.push(base64);
-    
+
     // Cleanup
     page.cleanup();
   }

@@ -65,16 +65,24 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
             </div>
             <div className="opacity-0 group-hover:opacity-100 flex items-center space-x-1">
               {file.status === "done" && (
-                <button
+                <div
                   onClick={(e) => {
                     e.stopPropagation();
                     onRename(file);
                   }}
-                  className="p-1 hover:bg-brand-accent/10 rounded"
+                  className="p-1 hover:bg-brand-accent/10 rounded cursor-pointer"
                   title="Rename using AI"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.stopPropagation();
+                      onRename(file);
+                    }
+                  }}
                 >
                   <Edit3 size={14} />
-                </button>
+                </div>
               )}
             </div>
           </button>

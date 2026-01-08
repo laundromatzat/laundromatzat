@@ -10,6 +10,8 @@
     "build": "vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview",
     "electron:dev": "NODE_ENV=development electron .",
+    "electron:dev:full": "concurrently \"vite\" \"wait-on http://localhost:5173 && npm run electron:dev\"",
+    "electron:dev:all": "concurrently \"vite\" \"npm run server\" \"wait-on -t 30000 http://localhost:5173 http://localhost:4000 && npm run electron:dev\"",
     "electron:build": "vite build && electron-builder",
     "electron:build:mac": "vite build && electron-builder --mac",
     "test": "vitest run",
@@ -38,7 +40,7 @@
     "dotenv": "^17.2.3",
     "focus-trap-react": "^11.0.4",
     "framer-motion": "^12.23.25",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.0.0",
     "lucide-react": "^0.559.0",
     "mime-types": "^3.0.2",
     "onnxruntime-web": "^1.21.0",
@@ -81,7 +83,8 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "wait-on": "^9.0.3"
   },
   "build": {
     "appId": "com.laundromatzat.mediainsight",

@@ -9,13 +9,14 @@ const pdfParse = require("pdf-parse");
 const fetch = require("node-fetch");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
 const port = process.env.PORT || 4000;
-const pdfjsLib = require("pdfjs-dist");
+const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
 const fs = require("fs");
 
 // Security Middleware (Helmet)
@@ -130,6 +131,11 @@ app.use(
 const LM_STUDIO_API = process.env.LM_STUDIO_API_URL || "http://localhost:1234";
 const MODEL_NAME = process.env.LM_STUDIO_MODEL_NAME || "qwen3-vl-8b-instruct";
 
+// Health check endpoint for wait-on
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
+});
+
 // --- Authentication ---
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-prod";
 
@@ -147,6 +153,15 @@ const requireAuth = (req, res, next) => {
     return res.status(401).json({ error: "Invalid token" });
   }
 };
+
+// Rate limiter for file uploads to prevent DoS
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each user to 10 uploads per 15 minutes
+  message: "Too many file uploads from this IP, please try again later",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const requireAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== "admin") {
@@ -619,6 +634,7 @@ const { convertPdfToImages } = require("./pdf_renderer");
 app.post(
   "/analyze",
   requireAuth,
+  uploadLimiter,
   upload.single("paystub"),
   async (req, res) => {
     if (!req.file) {
@@ -637,7 +653,10 @@ app.post(
       if (!fs.existsSync(uploadsDir)) {
         fs.mkdirSync(uploadsDir);
       }
-      const filePath = path.join(uploadsDir, req.file.originalname);
+      // Generate safe filename to prevent path traversal attacks
+      const fileExt = path.extname(req.file.originalname);
+      const safeFilename = `${crypto.randomUUID()}${fileExt}`;
+      const filePath = path.join(uploadsDir, safeFilename);
       fs.writeFileSync(filePath, req.file.buffer);
       console.log(`Saved PDF to: ${filePath}`);
 

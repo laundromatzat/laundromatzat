@@ -105,15 +105,31 @@ async function setFileMetadata(filePath, metadata) {
 
     // Set Spotlight comment
     if (summary) {
+      // Properly escape shell special characters
+      const escapedSummary = summary
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"')
+        .replace(/'/g, "'\\''")
+        .replace(/\$/g, "\\$")
+        .replace(/`/g, "\\`");
+
       await execPromise(
-        `xattr -w com.apple.metadata:kMDItemComment "${summary.replace(/"/g, '\\"')}" "${filePath}"`
+        `xattr -w com.apple.metadata:kMDItemComment "${escapedSummary}" "${filePath}"`
       );
     }
 
     // Set custom category attribute
     if (category) {
+      // Escape category value
+      const escapedCategory = category
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"')
+        .replace(/'/g, "'\\''")
+        .replace(/\$/g, "\\$")
+        .replace(/`/g, "\\`");
+
       await execPromise(
-        `xattr -w com.mediainsight.category "${category}" "${filePath}"`
+        `xattr -w com.mediainsight.category "${escapedCategory}" "${filePath}"`
       );
     }
 

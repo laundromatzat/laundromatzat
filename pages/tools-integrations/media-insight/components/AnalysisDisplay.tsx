@@ -122,7 +122,9 @@ const ImageView: React.FC<{ data: ImageAnalysisResult }> = ({ data }) => {
           {data.visualElements?.map((el, i) => (
             <li key={i} className="flex items-start text-aura-text-primary">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent mt-2 mr-3 flex-shrink-0" />
-              {el}
+              {typeof el === "string"
+                ? el
+                : el?.description || JSON.stringify(el)}
             </li>
           )) || (
             <p className="text-aura-text-secondary italic">

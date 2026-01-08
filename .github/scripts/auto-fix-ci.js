@@ -84,6 +84,12 @@ async function main() {
   console.log("\n📋 Step 2: Fetching error details...");
 
   try {
+    // Validate commitSha to prevent command injection
+    if (!/^[a-f0-9]{40}$/.test(commitSha)) {
+      console.error("❌ Invalid commit SHA format");
+      process.exit(3);
+    }
+
     const errors = execSync(
       `node ${path.join(__dirname, "fetch-ci-errors.js")} ${commitSha}`,
       { encoding: "utf8" }
