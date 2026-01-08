@@ -58,6 +58,138 @@ export ANTIGRAVITY_AUTO_FIX_CI=false
 
 Or remove `// turbo-all` from `.agent/workflows/auto-fix-ci.md`
 
+## Best Practices for AI Agents
+
+### **CRITICAL: Always Lint Before Pushing**
+
+**Never push code without running lint locally first.** This prevents wasting CI/CD resources and avoids iterative error-fixing cycles.
+
+#### Recommended Workflow
+
+```bash
+# 1. Make your code changes
+
+# 2. Run lint locally to catch ALL errors at once
+npm run lint
+
+# 3. If errors exist, save them for batch fixing
+npm run lint 2>&1 | tee lint-errors.txt
+
+# 4. Fix all errors in one go (don't fix incrementally)
+
+# 5. Verify lint passes
+npm run lint
+
+# 6. Commit (let pre-commit hook run - DO NOT use --no-verify)
+git add .
+git commit -m "fix: description"
+
+# 7. Only push when local lint passes
+git push origin main
+```
+
+### Common TypeScript Linting Patterns
+
+When fixing linting errors, watch for these common patterns:
+
+#### 1. Unused Imports/Variables
+
+```typescript
+// ❌ Error: 'useState' is defined but never used
+import { useState, useEffect } from "react";
+
+// ✅ Fix: Remove unused import
+import { useEffect } from "react";
+
+// ❌ Error: 'data' is assigned but never used
+const data = fetchData();
+
+// ✅ Fix: Prefix with underscore if intentionally unused
+const _data = fetchData();
+```
+
+#### 2. TypeScript `any` Types
+
+```typescript
+// ❌ Error: Unexpected any. Specify a different type
+const mockChat = client.chats.create({} as any);
+
+// ✅ Fix: Use proper type or unknown
+const mockChat = client.chats.create({} as { model: string });
+// or
+const mockChat = client.chats.create({} as unknown as ChatConfig);
+```
+
+#### 3. Accessibility Issues
+
+```typescript
+// ❌ Error: A form label must be associated with a control
+<label>
+  <input type="radio" name="model" />
+  Gemini API
+</label>
+
+// ✅ Fix: Add aria-label
+<label>
+  <input
+    type="radio"
+    name="model"
+    aria-label="Gemini API (Cloud)"
+  />
+  Gemini API
+</label>
+```
+
+#### 4. Escaped Characters
+
+```typescript
+// ❌ Error: `'` can be escaped with `&apos;`
+<div>Google's Gemini API</div>
+
+// ✅ Fix: Use HTML entities
+<div>Google&apos;s Gemini API</div>
+
+// ❌ Error: `"` can be escaped with `&quot;`
+<p>"{transcript}"</p>
+
+// ✅ Fix: Use HTML entities
+<p>&quot;{transcript}&quot;</p>
+```
+
+#### 5. `const` vs `let`
+
+```typescript
+// ❌ Error: 'API_KEY' is never reassigned. Use 'const' instead
+let API_KEY: string = "key";
+
+// ✅ Fix: Use const for never-reassigned variables
+const API_KEY: string = "key";
+```
+
+### Batch Fixing Strategy
+
+**DO NOT fix errors one file at a time.** This leads to multiple push cycles.
+
+1. **Run full lint scan first**: `npm run lint 2>&1 | tee errors.txt`
+2. **Identify all error patterns** across the entire codebase
+3. **Group similar errors** (e.g., all `any` types, all unused imports)
+4. **Fix all instances in one commit**
+5. **Verify with local lint before pushing**
+
+### Pre-Commit Hooks
+
+This project uses Husky + lint-staged for pre-commit linting.
+
+**NEVER bypass with `--no-verify`** unless you have a specific reason and understand the consequences.
+
+```bash
+# ❌ BAD: Bypasses all checks
+git commit --no-verify -m "quick fix"
+
+# ✅ GOOD: Let pre-commit hooks run
+git commit -m "fix: resolve linting errors"
+```
+
 ## For AI Agents
 
 ### Automatic Error Detection
