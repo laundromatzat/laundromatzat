@@ -76,10 +76,13 @@ export interface MediaInput {
 
 export interface WorkspaceFile {
   name: string;
-  handle: FileSystemFileHandle;
+  path?: string; // File path for Electron
+  handle?: FileSystemFileHandle; // File handle for browser
   type: MediaType;
-  status: "pending" | "analyzing" | "done";
-  result?: AnalysisResult;
+  status: "pending" | "analyzing" | "done" | "error";
+  analysisResult?: AnalysisResult; // Renamed from 'result' for clarity
+  thumbnail?: string; // Base64 data URL for thumbnail
+  lastModified?: number; // Timestamp for cache invalidation
 }
 
 export interface AudioData {

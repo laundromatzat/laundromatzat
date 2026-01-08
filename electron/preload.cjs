@@ -20,6 +20,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
   organizeFiles: (baseDir, operations) =>
     ipcRenderer.invoke("organize-files", baseDir, operations),
 
+  // Generate thumbnail for file
+  generateThumbnail: (filePath) =>
+    ipcRenderer.invoke("generate-thumbnail", filePath),
+
+  // Open file in default application
+  openFile: (filePath) => ipcRenderer.invoke("open-file", filePath),
+
   // Check if running in Electron
   isElectron: true,
 });

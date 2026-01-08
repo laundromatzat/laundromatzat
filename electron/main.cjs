@@ -90,6 +90,26 @@ function registerIPCHandlers() {
       throw error;
     }
   });
+
+  // Generate thumbnail
+  ipcMain.handle("generate-thumbnail", async (event, filePath) => {
+    try {
+      return await fileOps.generateThumbnail(filePath);
+    } catch (error) {
+      console.error("Failed to generate thumbnail:", error);
+      throw error;
+    }
+  });
+
+  // Open file
+  ipcMain.handle("open-file", async (event, filePath) => {
+    try {
+      return await fileOps.openFile(filePath);
+    } catch (error) {
+      console.error("Failed to open file:", error);
+      throw error;
+    }
+  });
 }
 
 app.whenReady().then(() => {

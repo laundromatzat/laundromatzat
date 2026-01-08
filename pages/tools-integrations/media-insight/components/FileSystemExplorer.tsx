@@ -10,6 +10,10 @@ import {
   Circle,
   Loader2,
   Sparkles,
+  ExternalLink,
+  FileImage,
+  FileVideo,
+  FileAudio,
 } from "lucide-react";
 import { WorkspaceFile } from "../types";
 
@@ -18,12 +22,14 @@ interface FileSystemExplorerProps {
   onSelectFile: (file: WorkspaceFile) => void;
   onRename: (file: WorkspaceFile) => void;
   onOrganize: () => void;
+  onOpenFile?: (file: WorkspaceFile) => void;
   activeFileName?: string;
 }
 
 const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
   files,
   onSelectFile,
+  onOpenFile,
   activeFileName,
 }) => {
   const getStatusIcon = (status: string) => {
@@ -58,6 +64,19 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
             Pending
           </span>
         );
+    }
+  };
+
+  const getFileIcon = (type: string) => {
+    switch (type) {
+      case "image":
+        return <FileImage size={16} className="text-brand-accent" />;
+      case "video":
+        return <FileVideo size={16} className="text-brand-accent" />;
+      case "audio":
+        return <FileAudio size={16} className="text-brand-accent" />;
+      default:
+        return <Circle size={16} className="text-brand-secondary" />;
     }
   };
 
@@ -99,8 +118,23 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
                 : "text-aura-text-secondary hover:bg-brand-secondary/5 hover:text-aura-text-primary border-transparent hover:border-brand-secondary/20"
             }`}
           >
-            <div className="mr-3 mt-0.5 flex-shrink-0">
-              {getStatusIcon(file.status)}
+            <div className="mr-3 flex-shrink-0">
+              {file.thumbnail ? (
+                <div className="relative w-12 h-12 rounded-md overflow-hidden bg-brand-secondary/10">
+                  <img
+                    src={file.thumbnail}
+                    alt={file.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-0 right-0 bg-black/60 rounded-tl px-1">
+                    {getStatusIcon(file.status)}
+                  </div>
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-md bg-brand-secondary/10 flex items-center justify-center">
+                  {getFileIcon(file.type)}
+                </div>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">
@@ -110,12 +144,26 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
                 >
                   {file.name}
                 </p>
-                {file.status === "done" && (
-                  <Sparkles
-                    size={14}
-                    className="text-brand-accent flex-shrink-0 mt-0.5"
-                  />
-                )}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {file.status === "done" && (
+                    <Sparkles size={14} className="text-brand-accent" />
+                  )}
+                  {onOpenFile && file.path && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenFile(file);
+                      }}
+                      className="p-1 rounded hover:bg-brand-accent/10 transition-colors"
+                      title="Open file"
+                    >
+                      <ExternalLink
+                        size={14}
+                        className="text-aura-text-secondary hover:text-brand-accent"
+                      />
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-aura-text-secondary/75 uppercase font-medium">

@@ -4,19 +4,29 @@
  */
 
 import React, { useState } from "react";
-import { Edit3, Tag, FolderTree, Sparkles, Check, X } from "lucide-react";
+import {
+  Edit3,
+  Tag,
+  FolderTree,
+  Sparkles,
+  Check,
+  X,
+  ExternalLink,
+} from "lucide-react";
 import { WorkspaceFile } from "../types";
 
 interface FileActionsPanelProps {
   file: WorkspaceFile | null;
   onRename: (file: WorkspaceFile) => void;
   onOrganize: () => void;
+  onOpenFile?: (file: WorkspaceFile) => void;
 }
 
 const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
   file,
   onRename,
   onOrganize,
+  onOpenFile,
 }) => {
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [customTags, setCustomTags] = useState("");
@@ -49,6 +59,31 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
           Perform operations on this file
         </p>
       </div>
+
+      {/* File Preview */}
+      {file.thumbnail && (
+        <div className="bg-gradient-to-br from-brand-secondary/5 to-brand-accent/5 rounded-lg p-4 border border-brand-secondary/20">
+          <div className="text-xs font-semibold text-aura-text-secondary uppercase tracking-wide block mb-3">
+            File Preview
+          </div>
+          <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-brand-secondary/10 mb-3">
+            <img
+              src={file.thumbnail}
+              alt={file.name}
+              className="w-full h-full object-contain"
+            />
+          </div>
+          {onOpenFile && file.path && (
+            <button
+              onClick={() => onOpenFile(file)}
+              className="w-full bg-white/50 hover:bg-white/80 text-aura-text-primary font-medium py-2 px-3 rounded-lg transition-all flex items-center justify-center border border-brand-secondary/30"
+            >
+              <ExternalLink size={16} className="mr-2" />
+              Open in Default App
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Current Filename */}
       <div className="bg-brand-secondary/5 rounded-lg p-4 border border-brand-secondary/20">

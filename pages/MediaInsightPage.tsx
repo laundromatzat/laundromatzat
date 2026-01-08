@@ -24,7 +24,7 @@ import {
   MediaType,
   WorkspaceFile,
 } from "./tools-integrations/media-insight/types";
-import { persistAnalysis, loadAnalyses } from "../services/mediaInsightStorage";
+import { saveAnalysis, getAnalysis } from "../services/mediaInsightStorage";
 
 function MediaInsightPage(): React.ReactNode {
   const [mode, setMode] = useState<"record" | "upload" | "workspace">("record");
@@ -80,12 +80,48 @@ function MediaInsightPage(): React.ReactNode {
         const result = await window.electronAPI.selectWorkspace();
         if (result) {
           const files: WorkspaceFile[] = result.files.map(
-            (f: { name: string; path: string; type: string }) => ({
-              name: f.name,
-              path: f.path,
-              type: f.type as MediaType,
-              status: "pending" as const,
-            })
+            (f: {
+              name: string;
+              path: string;
+              type: string;
+              modified: Date;
+            }) => {
+              // Check for cached analysis
+              const cached = getAnalysis(f.path, f.modified.getTime());
+
+              // Generate thumbnail if missing (async, will update state later)
+              if (window.electronAPI!.generateThumbnail) {
+                window.electronAPI!.generateThumbnail(f.path).then((thumb) => {
+                  if (thumb) {
+                    setWorkspaceFiles((prev) =>
+                      prev.map((pf) =>
+                        pf.path === f.path ? { ...pf, thumbnail: thumb } : pf
+                      )
+                    );
+                    // Update cache if we have analysis but no thumbnail
+                    if (cached && !cached.thumbnail) {
+                      saveAnalysis(
+                        f.path,
+                        f.name,
+                        cached.result,
+                        thumb,
+                        f.modified.getTime()
+                      );
+                    }
+                  }
+                });
+              }
+
+              return {
+                name: f.name,
+                path: f.path,
+                type: f.type as MediaType,
+                status: (cached ? "done" : "pending") as AppStatus,
+                analysisResult: cached?.result,
+                lastModified: f.modified.getTime(),
+                thumbnail: cached?.thumbnail,
+              };
+            }
           );
 
           setWorkspaceFiles(files);
@@ -150,8 +186,9 @@ function MediaInsightPage(): React.ReactNode {
   };
 
   const selectWorkspaceFile = async (wFile: WorkspaceFile) => {
-    if (wFile.status === "done" && wFile.result) {
-      setResult(wFile.result);
+    if (wFile.status === "done" && wFile.analysisResult) {
+      setResult(wFile.analysisResult);
+      setSelectedFile(wFile);
       return;
     }
 
@@ -203,14 +240,32 @@ function MediaInsightPage(): React.ReactNode {
       );
 
       setWorkspaceFiles((prev) =>
-        prev.map((f) =>
-          f.name === wFile.name || f.path === wFile.path
-            ? { ...f, status: "done", analysisResult: result }
-            : f
-        )
+        prev.map((f) => {
+          if (f.name === wFile.name || f.path === wFile.path) {
+            const updated = {
+              ...f,
+              status: "done" as AppStatus,
+              analysisResult: result,
+            };
+
+            // Save to persistence cache
+            if (f.path) {
+              saveAnalysis(f.path, f.name, result, f.thumbnail, f.lastModified);
+            }
+
+            return updated;
+          }
+          return f;
+        })
       );
       setResult(result);
-      setSelectedFile({ ...wFile, status: "done", analysisResult: result });
+      // Update selected file
+      const updatedFile = {
+        ...wFile,
+        status: "done" as AppStatus,
+        analysisResult: result,
+      };
+      setSelectedFile(updatedFile);
       setStatus("success");
     } catch {
       setError("Failed to process file.");
@@ -218,31 +273,47 @@ function MediaInsightPage(): React.ReactNode {
     }
   };
 
+  const handleOpenFile = async (wFile: WorkspaceFile) => {
+    if (isElectron && window.electronAPI?.openFile && wFile.path) {
+      const result = await window.electronAPI.openFile(wFile.path);
+      if (!result.success) {
+        console.error("Failed to open file:", result.error);
+        alert(`Failed to open file: ${result.error}`);
+      }
+    } else {
+      alert("Opening files is only supported in the desktop app.");
+    }
+  };
+
   const handleRename = async (wFile: WorkspaceFile) => {
-    if (!wFile.result?.suggestedName) return;
+    if (!wFile.analysisResult?.suggestedName) return;
 
     try {
       if (isElectron && window.electronAPI && wFile.path) {
         // Use Electron API
         const newPath = await window.electronAPI.renameFile(
           wFile.path,
-          wFile.result.suggestedName
+          wFile.analysisResult.suggestedName
         );
 
         // Also set metadata
         await window.electronAPI.setMetadata(newPath, {
-          tags: wFile.result.tags,
-          summary: wFile.result.summary,
+          tags: wFile.analysisResult.tags,
+          summary: wFile.analysisResult.summary,
         });
 
         setWorkspaceFiles((prev) =>
           prev.map((f) =>
             f.path === wFile.path
-              ? { ...f, name: wFile.result!.suggestedName!, path: newPath }
+              ? {
+                  ...f,
+                  name: wFile.analysisResult!.suggestedName!,
+                  path: newPath,
+                }
               : f
           )
         );
-        alert(`Renamed and tagged: ${wFile.result.suggestedName}`);
+        alert(`Renamed and tagged: ${wFile.analysisResult.suggestedName}`);
       } else {
         // Browser API (requires Chrome 100+)
         await (
@@ -390,6 +461,7 @@ function MediaInsightPage(): React.ReactNode {
               onSelectFile={selectWorkspaceFile}
               onRename={handleRename}
               onOrganize={handleOrganize}
+              onOpenFile={handleOpenFile}
               activeFileName={result?.suggestedName}
             />
           </aside>
@@ -522,6 +594,7 @@ function MediaInsightPage(): React.ReactNode {
                     file={selectedFile}
                     onRename={handleRename}
                     onOrganize={handleOrganize}
+                    onOpenFile={handleOpenFile}
                   />
                 </div>
               )}

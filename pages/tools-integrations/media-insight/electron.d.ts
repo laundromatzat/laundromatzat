@@ -41,6 +41,8 @@ declare global {
           error?: string;
         }>
       >;
+      generateThumbnail: (path: string) => Promise<string | null>;
+      openFile: (path: string) => Promise<{ success: boolean; error?: string }>;
       isElectron: boolean;
     };
   }
