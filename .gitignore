@@ -31,6 +31,17 @@ data/*
 *.sln
 *.sw?
 
+# Vite cache
+.vite
+
+# Temporary files
+*.pdf
+*.png
+!public/**/*.png
+*.db
+!server/**/*.db
+
 # Paystub Analyzer Data
 server/paystubs.db
 server/uploads/
+release/
