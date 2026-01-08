@@ -21,7 +21,6 @@ import {
   MediaInput,
   AnalysisResult,
   MediaType,
-  AudioData,
   WorkspaceFile,
 } from "./tools-integrations/media-insight/types";
 
@@ -69,12 +68,14 @@ function MediaInsightPage(): React.ReactNode {
       try {
         const result = await window.electronAPI.selectWorkspace();
         if (result) {
-          const files: WorkspaceFile[] = result.files.map((f: any) => ({
-            name: f.name,
-            path: f.path,
-            type: f.type as MediaType,
-            status: "pending" as const,
-          }));
+          const files: WorkspaceFile[] = result.files.map(
+            (f: { name: string; path: string; type: string }) => ({
+              name: f.name,
+              path: f.path,
+              type: f.type as MediaType,
+              status: "pending" as const,
+            })
+          );
 
           setWorkspaceFiles(files);
           setWorkspacePath(result.path);
@@ -96,7 +97,11 @@ function MediaInsightPage(): React.ReactNode {
       }
 
       try {
-        const handle = await (window as any).showDirectoryPicker();
+        const handle = await (
+          window as Window & {
+            showDirectoryPicker: () => Promise<FileSystemDirectoryHandle>;
+          }
+        ).showDirectoryPicker();
         const files: WorkspaceFile[] = [];
 
         for await (const entry of handle.values()) {
@@ -196,7 +201,7 @@ function MediaInsightPage(): React.ReactNode {
 
       setResult(result);
       setStatus("success");
-    } catch (err) {
+    } catch {
       setError("Failed to process file.");
       setStatus("error");
     }
@@ -229,7 +234,11 @@ function MediaInsightPage(): React.ReactNode {
         alert(`Renamed and tagged: ${wFile.result.suggestedName}`);
       } else {
         // Browser API (requires Chrome 100+)
-        await (wFile.handle as any).move(wFile.result.suggestedName);
+        await (
+          wFile.handle as FileSystemFileHandle & {
+            move: (name: string) => Promise<void>;
+          }
+        ).move(wFile.result.suggestedName);
         setWorkspaceFiles((prev) =>
           prev.map((f) =>
             f.name === wFile.name

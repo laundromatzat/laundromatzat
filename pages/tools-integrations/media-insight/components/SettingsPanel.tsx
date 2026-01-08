@@ -75,13 +75,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 checked={!useLocalModel}
                 onChange={() => setUseLocalModel(false)}
                 className="mt-1"
+                aria-label="Gemini API (Cloud)"
               />
               <div className="flex-1">
                 <div className="font-semibold text-aura-text-primary">
                   Gemini API (Cloud)
                 </div>
                 <div className="text-sm text-aura-text-secondary mt-1">
-                  Use Google's Gemini 2.0 Flash model for fast, accurate
+                  Use Google&apos;s Gemini 2.0 Flash model for fast, accurate
                   analysis. Requires API key.
                 </div>
               </div>
@@ -94,6 +95,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 checked={useLocalModel}
                 onChange={() => setUseLocalModel(true)}
                 className="mt-1"
+                aria-label="Local AI Model"
               />
               <div className="flex-1">
                 <div className="font-semibold text-aura-text-primary">

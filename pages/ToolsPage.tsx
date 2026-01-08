@@ -76,6 +76,14 @@ const TOOL_LINKS = [
     imageUrl: "/assets/tools/neuroaesthetic.png",
     badge: "Integrated",
   },
+  {
+    to: "/tools/media-insight",
+    title: "MediaInsight Pro",
+    description:
+      "Analyze audio, video, and images with AI-powered transcription and insights.",
+    imageUrl: "/assets/tools/media-insight.png",
+    badge: "AI powered",
+  },
 ];
 
 function ToolsPage(): React.ReactNode {

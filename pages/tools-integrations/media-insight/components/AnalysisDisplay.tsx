@@ -197,7 +197,7 @@ const VideoView: React.FC<{ data: VideoAnalysisResult }> = ({ data }) => {
                     Transcript
                   </h4>
                   <p className="text-aura-text-primary italic">
-                    "{segment.transcript}"
+                    &quot;{segment.transcript}&quot;
                   </p>
                 </div>
               )}
