@@ -3,7 +3,6 @@ import {
   FileType,
   ChatMessage,
   AIOrganizationSuggestion,
-  LearnedPreferenceExample,
   SummaryLength,
   OrganizationPattern,
 } from "../types";
@@ -66,7 +65,7 @@ const callLMStudioAPI = async (
       let errorData: LMStudioErrorResponse | string = await response.text();
       try {
         errorData = JSON.parse(errorData as string) as LMStudioErrorResponse;
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       const message =
@@ -308,7 +307,7 @@ export const getOrganizationRecommendations = async (
   fileName: string,
   fileType: FileType,
   userDefinedPatterns: OrganizationPattern[] = [],
-  recentLearnedExamples: LearnedPreferenceExample[] = [],
+  _recentLearnedExamples: unknown[] = [],
   customUserPrompt?: string
 ): Promise<AIOrganizationSuggestion> => {
   if (!summary || summary.trim() === "" || summary.startsWith("Error:"))
@@ -371,7 +370,7 @@ Suggest organizational improvements for "${fileName}". Make it findable, underst
     const match = processedJsonText.match(/^```(\w*)?\s*\n?(.*?)\n?\s*```$/s);
     if (match?.[2]) processedJsonText = match[2].trim();
     return JSON.parse(processedJsonText) as AIOrganizationSuggestion;
-  } catch (error: unknown) {
+  } catch {
     console.error(
       `Malformed JSON (org recs): "${responseText.substring(0, 200)}..."`
     );

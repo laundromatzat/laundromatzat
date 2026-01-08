@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   generateContent,
   createChatSession,
-  type ChatSessionLike,
 } from "../../services/geminiClient";
 import { GoogleGenAI } from "@google/genai";
 
@@ -49,7 +48,7 @@ describe("geminiClient", () => {
       const mockResponse = { text: "Generated content response" };
       const client = new GoogleGenAI({ apiKey: "test" });
       vi.mocked(client.models.generateContent).mockResolvedValue(
-        mockResponse as any
+        mockResponse as { text: string }
       );
 
       const result = await generateContent("Test prompt");
@@ -90,7 +89,7 @@ describe("geminiClient", () => {
       const client = new GoogleGenAI({ apiKey: "test" });
       vi.mocked(client.models.generateContent).mockResolvedValue({
         text: null,
-      } as any);
+      } as { text: null });
 
       const result = await generateContent("Test prompt");
       expect(result).toBe("");
@@ -122,13 +121,15 @@ describe("geminiClient", () => {
   describe("ChatSession", () => {
     it("should send messages and return responses", async () => {
       const client = new GoogleGenAI({ apiKey: "test" });
-      const mockChat = client.chats.create({} as any);
+      const mockChat = client.chats.create(
+        {} as { model: string; systemInstruction?: string }
+      );
       vi.mocked(mockChat.sendMessage).mockResolvedValue({
         text: "Chat response",
-      } as any);
+      } as { text: string });
 
       const session = await createChatSession();
-      const response = await session.sendMessage("Hello");
+      await session.sendMessage("Hello");
 
       expect(mockChat.sendMessage).toHaveBeenCalledWith({
         message: "Hello",
@@ -137,7 +138,9 @@ describe("geminiClient", () => {
 
     it("should handle chat errors gracefully", async () => {
       const client = new GoogleGenAI({ apiKey: "test" });
-      const mockChat = client.chats.create({} as any);
+      const mockChat = client.chats.create(
+        {} as { model: string; systemInstruction?: string }
+      );
       vi.mocked(mockChat.sendMessage).mockRejectedValue(
         new Error("Chat error")
       );
