@@ -24,6 +24,7 @@ import {
   MediaType,
   WorkspaceFile,
 } from "./tools-integrations/media-insight/types";
+import { persistAnalysis, loadAnalyses } from "../services/mediaInsightStorage";
 
 function MediaInsightPage(): React.ReactNode {
   const [mode, setMode] = useState<"record" | "upload" | "workspace">("record");
@@ -37,6 +38,14 @@ function MediaInsightPage(): React.ReactNode {
   const [workspaceFiles, setWorkspaceFiles] = useState<WorkspaceFile[]>([]);
   const [workspacePath, setWorkspacePath] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<WorkspaceFile | null>(null);
+
+  // Storage (history panel UI to be added in follow-up)
+  // const [history, setHistory] = useState<StoredAnalysis[]>([]);
+
+  // Load history on mount (ready for history panel)
+  useEffect(() => {
+    loadAnalyses().catch(console.error);
+  }, []);
 
   // Settings State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -309,6 +318,14 @@ function MediaInsightPage(): React.ReactNode {
       );
       setResult(data);
       setStatus("success");
+
+      // Save to storage after successful analysis
+      await persistAnalysis({
+        id: `analysis-${Date.now()}`,
+        mediaInput: mediaData,
+        result: data,
+        createdAt: new Date().toISOString(),
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed.");
       setStatus("error");
