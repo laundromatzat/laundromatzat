@@ -47,7 +47,7 @@
     "pg": "^8.16.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.8.1",
+    "react-router-dom": "^7.12.0",
     "tailwind-merge": "^3.4.0",
     "uuid": "^13.0.0",
     "zod": "^3.24.1"
