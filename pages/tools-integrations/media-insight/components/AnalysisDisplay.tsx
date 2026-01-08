@@ -124,7 +124,11 @@ const ImageView: React.FC<{ data: ImageAnalysisResult }> = ({ data }) => {
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent mt-2 mr-3 flex-shrink-0" />
               {typeof el === "string"
                 ? el
-                : el?.description || JSON.stringify(el)}
+                : typeof el === "object" && el !== null
+                  ? ((el as Record<string, unknown>).text as string) ||
+                    ((el as Record<string, unknown>).description as string) ||
+                    JSON.stringify(el)
+                  : String(el)}
             </li>
           )) || (
             <p className="text-aura-text-secondary italic">
