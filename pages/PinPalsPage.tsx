@@ -41,7 +41,7 @@ const savePinToGallery = async (pin: {
     });
 
     const canvas = document.createElement("canvas");
-    const maxSize = 800; // Max dimension
+    const maxSize = 600; // Reduced from 800 for smaller payload
     let width = img.width;
     let height = img.height;
 
@@ -60,7 +60,8 @@ const savePinToGallery = async (pin: {
       ctx.drawImage(img, 0, 0, width, height);
     }
 
-    const compressedImageUrl = canvas.toDataURL("image/jpeg", 0.8);
+    // More aggressive compression: 60% quality instead of 80%
+    const compressedImageUrl = canvas.toDataURL("image/jpeg", 0.6);
 
     const res = await fetch(getApiUrl("/api/pin-pals/gallery"), {
       method: "POST",
