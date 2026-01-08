@@ -25,7 +25,7 @@
     "nodemailer": "^7.0.12",
     "ollama": "^0.6.2",
     "pdf-parse": "1.1.1",
-    "pdfjs-dist": "^3.11.174",
+    "pdfjs-dist": "^4.2.67",
     "pg": "^8.11.3"
   },
   "devDependencies": {
