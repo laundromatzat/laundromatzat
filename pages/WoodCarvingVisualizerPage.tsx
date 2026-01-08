@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CarvingVariation,
   Unit,
@@ -9,6 +9,7 @@ import {
 import { Camera, Check, Ruler, Wand2, Edit, RefreshCw } from "lucide-react";
 import CutCalculator from "../components/wood-carving/CutCalculator";
 import { ImageAnnotator } from "../components/wood-carving/ImageAnnotator";
+import { persistProject, loadProjects } from "../services/woodCarvingStorage";
 
 const EXAMPLE_DESCRIPTIONS = [
   "A majestic eagle landing on a branch, realistic style",
@@ -37,6 +38,15 @@ const WoodCarvingVisualizerPage: React.FC = () => {
 
   // Error Handling
   const [error, setError] = useState<string | null>(null);
+
+  // Storage (history panel UI to be added in follow-up)
+  // const [history, setHistory] = useState<StoredProject[]>([]);
+  // const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+
+  // Load history on mount (ready for history panel)
+  useEffect(() => {
+    loadProjects().catch(console.error);
+  }, []);
 
   const handleGenerateVariations = async () => {
     if (!description.trim()) return;
@@ -83,6 +93,15 @@ const WoodCarvingVisualizerPage: React.FC = () => {
       );
       setDesignData(plan);
       setPhase(4);
+
+      // Save to storage after successful generation
+      await persistProject({
+        id: `project-${Date.now()}`,
+        description,
+        selectedVariation,
+        blueprint: plan,
+        createdAt: new Date().toISOString(),
+      });
     } catch (err: unknown) {
       setError(
         err instanceof Error
