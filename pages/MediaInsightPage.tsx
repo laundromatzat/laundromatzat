@@ -11,6 +11,7 @@ import PageMetadata from "../components/PageMetadata";
 import AudioRecorder from "./tools-integrations/media-insight/components/AudioRecorder";
 import FileUploader from "./tools-integrations/media-insight/components/FileUploader";
 import FileSystemExplorer from "./tools-integrations/media-insight/components/FileSystemExplorer";
+import FileActionsPanel from "./tools-integrations/media-insight/components/FileActionsPanel";
 import AnalysisDisplay from "./tools-integrations/media-insight/components/AnalysisDisplay";
 import Button from "./tools-integrations/media-insight/components/Button";
 import SettingsPanel from "./tools-integrations/media-insight/components/SettingsPanel";
@@ -35,6 +36,7 @@ function MediaInsightPage(): React.ReactNode {
   // Workspace State
   const [workspaceFiles, setWorkspaceFiles] = useState<WorkspaceFile[]>([]);
   const [workspacePath, setWorkspacePath] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<WorkspaceFile | null>(null);
 
   // Settings State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -194,12 +196,12 @@ function MediaInsightPage(): React.ReactNode {
       setWorkspaceFiles((prev) =>
         prev.map((f) =>
           f.name === wFile.name || f.path === wFile.path
-            ? { ...f, status: "done", result }
+            ? { ...f, status: "done", analysisResult: result }
             : f
         )
       );
-
       setResult(result);
+      setSelectedFile({ ...wFile, status: "done", analysisResult: result });
       setStatus("success");
     } catch {
       setError("Failed to process file.");
@@ -466,32 +468,46 @@ function MediaInsightPage(): React.ReactNode {
           )}
 
           {result && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex flex-wrap gap-2">
-                  {result.tags?.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-brand-accent/10 text-brand-accent text-xs font-bold rounded uppercase tracking-wider"
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Analysis Display - Takes 2 columns */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    {result.tags?.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-1 bg-brand-accent/10 text-brand-accent text-xs font-bold rounded uppercase tracking-wider"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                  {mode !== "workspace" && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setResult(null);
+                        setMediaData(null);
+                        setStatus("idle");
+                      }}
                     >
-                      #{tag}
-                    </span>
-                  ))}
+                      New Analysis
+                    </Button>
+                  )}
                 </div>
-                {mode !== "workspace" && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setResult(null);
-                      setMediaData(null);
-                      setStatus("idle");
-                    }}
-                  >
-                    New Analysis
-                  </Button>
-                )}
+                <AnalysisDisplay data={result} />
               </div>
-              <AnalysisDisplay data={result} />
+
+              {/* File Actions Panel - Takes 1 column, only in workspace mode */}
+              {mode === "workspace" && (
+                <div className="lg:col-span-1">
+                  <FileActionsPanel
+                    file={selectedFile}
+                    onRename={handleRename}
+                    onOrganize={handleOrganize}
+                  />
+                </div>
+              )}
             </div>
           )}
         </main>

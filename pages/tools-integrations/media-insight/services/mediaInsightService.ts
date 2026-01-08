@@ -8,11 +8,42 @@ import { AnalysisResult, Emotion, MediaType } from "../types";
 
 const parseJson = (text: string) => {
   try {
-    const cleanText = text.replace(/```json\n|\n```/g, "").trim();
+    // Remove markdown code blocks
+    let cleanText = text.replace(/```json\n?|```\n?/g, "").trim();
+
+    // Remove any text before the first { or [
+    const firstBrace = cleanText.indexOf("{");
+    const firstBracket = cleanText.indexOf("[");
+    const start =
+      firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)
+        ? firstBrace
+        : firstBracket;
+
+    if (start !== -1) {
+      cleanText = cleanText.substring(start);
+    }
+
+    // Remove any text after the last } or ]
+    const lastBrace = cleanText.lastIndexOf("}");
+    const lastBracket = cleanText.lastIndexOf("]");
+    const end = lastBrace > lastBracket ? lastBrace : lastBracket;
+
+    if (end !== -1) {
+      cleanText = cleanText.substring(0, end + 1);
+    }
+
+    // Try to parse
     return JSON.parse(cleanText);
   } catch (e) {
     console.error("Failed to parse JSON response:", e);
-    return { summary: "Error parsing response", type: "audio", segments: [] };
+    console.error("Raw text:", text);
+    // Return a minimal valid response
+    return {
+      summary: "Analysis completed but response format was invalid",
+      type: "image",
+      visualElements: ["Unable to parse detailed analysis"],
+      tags: ["error"],
+    };
   }
 };
 
