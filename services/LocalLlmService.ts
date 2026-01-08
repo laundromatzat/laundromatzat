@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import {
   FileType,
   ChatMessage,
@@ -307,7 +306,6 @@ export const getOrganizationRecommendations = async (
   fileName: string,
   fileType: FileType,
   userDefinedPatterns: OrganizationPattern[] = [],
-  _recentLearnedExamples: unknown[] = [],
   customUserPrompt?: string
 ): Promise<AIOrganizationSuggestion> => {
   if (!summary || summary.trim() === "" || summary.startsWith("Error:"))

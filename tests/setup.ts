@@ -41,7 +41,7 @@ global.IntersectionObserver = class IntersectionObserver {
     return [];
   }
   unobserve() {}
-} as any;
+} as unknown as IntersectionObserver;
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -49,7 +49,7 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
   observe() {}
   unobserve() {}
-} as any;
+} as unknown as ResizeObserver;
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -69,4 +69,4 @@ const localStorageMock = (() => {
   };
 })();
 
-global.localStorage = localStorageMock as any;
+global.localStorage = localStorageMock as unknown as Storage;
