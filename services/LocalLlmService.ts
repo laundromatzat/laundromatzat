@@ -11,9 +11,7 @@ import {
 // Default configuration - should be overridable via settings
 let LM_STUDIO_BASE_URL: string = "http://localhost:1234/v1";
 let LM_STUDIO_CHAT_MODEL: string = "phi-3-mini-4k-instruct";
-let LM_STUDIO_VISION_MODEL: string = "llava-phi-3-mini";
-let LM_STUDIO_EMBEDDING_MODEL: string = "text-embedding-bge-small-en-v1.5";
-let LM_STUDIO_API_KEY: string = "lm-studio";
+const LM_STUDIO_API_KEY: string = "lm-studio";
 
 export const configureLocalAI = (
   url: string,
@@ -28,7 +26,6 @@ export const configureLocalAI = (
 export const MAX_CHARS_PER_CHUNK = 10000;
 const MAX_SUMMARY_INPUT_CHARS = 10000;
 const MAX_CONTEXT_SAMPLES = 3;
-const MAX_LEARNED_EXAMPLES_FOR_PROMPT = 3;
 
 interface LMStudioErrorResponse {
   error?: { message: string };
@@ -38,7 +35,10 @@ const callLMStudioAPI = async (
   endpoint: string,
   body: object,
   signal?: AbortSignal
-): Promise<any> => {
+): Promise<{
+  choices?: Array<{ message?: { content?: string } }>;
+  error?: { message: string };
+}> => {
   try {
     const headers: HeadersInit = { "Content-Type": "application/json" };
     if (
@@ -131,7 +131,13 @@ const generateTextCompletion = async (
     messages.push({ role: "system", content: systemPrompt });
   messages.push({ role: "user", content: userPrompt || "Provide a response." });
 
-  const requestBody: any = {
+  const requestBody: {
+    model: string;
+    messages: Array<{ role: string; content: string }>;
+    temperature: number;
+    max_tokens: number;
+    response_format?: { type: string; json_schema: { schema: object } };
+  } = {
     model: modelIdentifier,
     messages: messages,
     temperature: 0.7,
@@ -286,7 +292,7 @@ export const suggestActionsForFile = async (
     )
       return parsedActions;
     return ["Failed to get actions in expected format (array of strings)."];
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof SyntaxError)
       return [
         `Error: Invalid JSON for actions from LLM. (Content: "${responseText.substring(0, 100)}...")`,
@@ -365,7 +371,7 @@ Suggest organizational improvements for "${fileName}". Make it findable, underst
     const match = processedJsonText.match(/^```(\w*)?\s*\n?(.*?)\n?\s*```$/s);
     if (match?.[2]) processedJsonText = match[2].trim();
     return JSON.parse(processedJsonText) as AIOrganizationSuggestion;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(
       `Malformed JSON (org recs): "${responseText.substring(0, 200)}..."`
     );

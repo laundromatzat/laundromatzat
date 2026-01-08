@@ -47,7 +47,11 @@ const analyzeWithLocalModel = async (
 
   try {
     // Build the content array - standard OpenAI vision format
-    const content: any[] = [
+    const content: Array<{
+      type: string;
+      text?: string;
+      image_url?: { url: string };
+    }> = [
       {
         type: "text",
         text:
@@ -203,7 +207,15 @@ const analyzeWithGemini = async (
   Provide a suggested descriptive filename (lowercase, underscores, no spaces, keep extension).
   Identify 3-5 tags for local file organization.`;
 
-  let responseSchema: any = {};
+  let responseSchema: {
+    type: Type;
+    properties: Record<string, unknown>;
+    required: string[];
+  } = {
+    type: Type.OBJECT,
+    properties: {},
+    required: [],
+  };
 
   if (mediaType === "image") {
     prompt += `

@@ -27,7 +27,11 @@ declare global {
           oldPath: string;
           newName: string;
           category: string;
-          metadata: any;
+          metadata: {
+            tags?: string[];
+            summary?: string;
+            category?: string;
+          };
         }>
       ) => Promise<
         Array<{
