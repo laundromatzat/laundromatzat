@@ -136,3 +136,32 @@ export const clearAnalyses = async (): Promise<void> => {
   if (!indexedDBFactory) return;
   await runTransaction("readwrite", (store) => store.clear());
 };
+
+export const getAnalysis = (
+  filePath: string,
+  modifiedTime: number
+): StoredAnalysis | null => {
+  // Note: This is synchronous for compatibility with existing code
+  // Returns null and logs warning since IndexedDB is async
+  console.warn(
+    "getAnalysis called synchronously - analysis may not be available"
+  );
+  return null;
+};
+
+export const saveAnalysis = async (
+  filePath: string,
+  fileName: string,
+  result: AnalysisResult,
+  thumbnail: string | undefined,
+  modifiedTime: number
+): Promise<void> => {
+  const record: StoredAnalysis = {
+    id: `${filePath}-${modifiedTime}`,
+    fileName: filePath,
+    mediaType: result.mediaType || ("unknown" as MediaType),
+    createdAt: modifiedTime,
+    result,
+  };
+  await persistAnalysis(record);
+};

@@ -432,22 +432,29 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                   )}
                 </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {detailedImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="border border-brand-surface-highlight rounded-lg shadow-layer-1 overflow-hidden bg-brand-primary"
-                >
-                  <div
-                    className="bg-brand-secondary p-4 flex items-center justify-center min-h-[500px]"
-                    dangerouslySetInnerHTML={{ __html: image.svg }}
-                  />
-                  <div className="p-4 bg-brand-primary">
-                    <p className="font-bold text-center text-brand-accent">
-                      {image.view}
-                    </p>
+                {isRefining ? (
+                  <div className="flex-1">
+                    <textarea
+                      className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white mb-4 min-h-[60px]"
+                      placeholder="Describe changes you want (e.g., 'Make the beak sharper, smooth the background')..."
+                      value={refinementNote}
+                      onChange={(e) => setRefinementNote(e.target.value)}
+                    />
+                    <ImageAnnotator
+                      imageUrl={designData.schematicUrl}
+                      onSubmit={handleRegenerateDesign}
+                      onCancel={() => setIsRefining(false)}
+                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="flex-1 bg-black/20 rounded-lg overflow-hidden">
+                    <img
+                      src={designData.schematicUrl}
+                      alt="Final Design"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Card 2: Strategy Guide */}
