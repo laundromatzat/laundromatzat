@@ -84,6 +84,14 @@ const TOOL_LINKS = [
     imageUrl: "/assets/tools/media-insight.png",
     badge: "AI powered",
   },
+  {
+    to: "/tools/dev-task-manager",
+    title: "Dev Task Manager",
+    description:
+      "Mobile-friendly task manager for tracking site features, bugs, and fixes with AI agent integration.",
+    imageUrl: "/assets/tools/dev-task-manager.svg",
+    badge: "New service",
+  },
 ];
 
 function ToolsPage(): React.ReactNode {

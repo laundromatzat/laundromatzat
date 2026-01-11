@@ -35,6 +35,7 @@ import NylonFabricDesignerPage from "./pages/NylonFabricDesignerPage";
 import WoodCarvingVisualizerPage from "./pages/WoodCarvingVisualizerPage";
 import IntelligentIdeasBoardPage from "./pages/IntelligentIdeasBoardPage";
 import MediaInsightPage from "./pages/MediaInsightPage";
+import DevTaskManager from "./pages/DevTaskManager";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -183,6 +184,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <MediaInsightPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "tools/dev-task-manager",
+        element: (
+          <ProtectedRoute>
+            <DevTaskManager />
           </ProtectedRoute>
         ),
       },

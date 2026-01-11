@@ -89,6 +89,21 @@ const initializeDatabase = async () => {
           image_url TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS dev_tasks (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          title TEXT NOT NULL,
+          description TEXT,
+          category VARCHAR(50) DEFAULT 'feature',
+          priority VARCHAR(20) DEFAULT 'medium',
+          status VARCHAR(20) DEFAULT 'new',
+          tags TEXT,
+          ai_prompt TEXT,
+          notes TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // --- Auto-Migration for existing tables ---
