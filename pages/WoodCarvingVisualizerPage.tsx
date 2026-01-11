@@ -197,7 +197,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
 
             {error && <p className="text-status-error-text mb-4">{error}</p>}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-8 mb-8">
               {variations.map((variation, index) => (
                 <button
                   key={index}
@@ -310,7 +310,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {detailedImages.map((image, index) => (
                 <div
                   key={index}
