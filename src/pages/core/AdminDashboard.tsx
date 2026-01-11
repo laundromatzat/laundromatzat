@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "../context/AuthContext";
-import PageMetadata from "../components/PageMetadata";
-import { getApiUrl } from "../utils/api";
+import { useAuth } from "@/context/AuthContext";
+import PageMetadata from "@/components/PageMetadata";
+import { getApiUrl } from "@/utils/api";
 import { Check, Trash2, Shield, User as UserIcon } from "lucide-react";
-import Container from "../components/Container";
+import Container from "@/components/Container";
 
 interface AdminUser {
   id: number;

@@ -1,7 +1,7 @@
 import {
   AnalysisResult,
   MediaType,
-} from "../pages/tools-integrations/media-insight/types";
+} from "@/pages/tools/media-insight/types";
 
 const DB_NAME = "laundromatzat-media-insight";
 const STORE_NAME = "analyses";

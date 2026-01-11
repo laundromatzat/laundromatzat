@@ -9,7 +9,7 @@ import React, {
   useRef,
   useCallback,
 } from "react";
-import { AnalysisResult, AnalyzedDocument, SavedDocument } from "../types";
+import { AnalysisResult, AnalyzedDocument, SavedDocument } from "@/types";
 import {
   FolderIcon,
   DocumentTextIcon,

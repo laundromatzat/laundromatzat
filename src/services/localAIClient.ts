@@ -1,4 +1,4 @@
-import { AI_SYSTEM_PROMPT } from '../constants';
+import { AI_SYSTEM_PROMPT } from '@/constants';
 import { ChatSessionLike } from './geminiClient';
 
 const LOCAL_API_URL = import.meta.env.VITE_LOCAL_AI_URL || 'http://localhost:1234/v1';

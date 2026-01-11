@@ -10,37 +10,41 @@ import App from "./App";
 import "./index.css";
 
 // Context Providers
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
 
-import { LoadingProvider } from "./context/LoadingContext";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { LoadingProvider } from "@/context/LoadingContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-// Pages
-import HomePage from "./pages/HomePage";
-import NotFoundPage from "./pages/NotFoundPage";
-import ToolsPage from "./pages/ToolsPage";
-import VideosPage from "./pages/VideosPage";
-import ImagesPage from "./pages/ImagesPage";
-import CinemagraphsPage from "./pages/CinemagraphsPage";
-import LinksPage from "./pages/LinksPage";
-import PhotosPage from "./pages/PhotosPage";
-import PublicHealthPage from "./pages/tools-integrations/public-health/PublicHealthPage";
-import MediscribePage from "./pages/tools-integrations/mediscribe/MediscribePage";
-import NeuroaestheticPage from "./pages/tools-integrations/neuroaesthetic/NeuroaestheticPage";
-import PinPalsPage from "./pages/PinPalsPage";
-import PaystubAnalyzerPage from "./pages/PaystubAnalyzerPage";
-import BackgroundRemovalPage from "./pages/BackgroundRemovalPage";
-import ColorPalettePage from "./pages/ColorPalettePage";
-import NylonFabricDesignerPage from "./pages/NylonFabricDesignerPage";
-import WoodCarvingVisualizerPage from "./pages/WoodCarvingVisualizerPage";
-import IntelligentIdeasBoardPage from "./pages/IntelligentIdeasBoardPage";
-import MediaInsightPage from "./pages/MediaInsightPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ProfilePage from "./pages/ProfilePage";
-import RegistrationPendingPage from "./pages/RegistrationPendingPage";
-import AdminMailingListPage from "./pages/AdminMailingListPage";
-import AdminDashboard from "./pages/AdminDashboard";
+// Pages - Core
+import HomePage from "@/pages/core/HomePage";
+import NotFoundPage from "@/pages/core/NotFoundPage";
+import LoginPage from "@/pages/core/LoginPage";
+import RegisterPage from "@/pages/core/RegisterPage";
+import ProfilePage from "@/pages/core/ProfilePage";
+import RegistrationPendingPage from "@/pages/core/RegistrationPendingPage";
+import AdminMailingListPage from "@/pages/core/AdminMailingListPage";
+import AdminDashboard from "@/pages/core/AdminDashboard";
+
+// Pages - Portfolio
+import VideosPage from "@/pages/portfolio/VideosPage";
+import ImagesPage from "@/pages/portfolio/ImagesPage";
+import CinemagraphsPage from "@/pages/portfolio/CinemagraphsPage";
+
+// Pages - Tools
+import ToolsPage from "@/pages/tools/ToolsPage";
+import LinksPage from "@/pages/tools/LinksPage";
+import PhotosPage from "@/pages/tools/CinemagraphsPage";
+import PublicHealthPage from "@/pages/tools/public-health/PublicHealthPage";
+import MediscribePage from "@/pages/tools/mediscribe/MediscribePage";
+import NeuroaestheticPage from "@/pages/tools/neuroaesthetic/NeuroaestheticPage";
+import PinPalsPage from "@/pages/tools/PinPalsPage";
+import PaystubAnalyzerPage from "@/pages/tools/PaystubAnalyzerPage";
+import BackgroundRemovalPage from "@/pages/tools/BackgroundRemovalPage";
+import ColorPalettePage from "@/pages/tools/ColorPalettePage";
+import NylonFabricDesignerPage from "@/pages/tools/NylonFabricDesignerPage";
+import WoodCarvingVisualizerPage from "@/pages/tools/WoodCarvingVisualizerPage";
+import IntelligentIdeasBoardPage from "@/pages/tools/IntelligentIdeasBoardPage";
+import MediaInsightPage from "@/pages/tools/MediaInsightPage";
 
 const router = createBrowserRouter([
   {

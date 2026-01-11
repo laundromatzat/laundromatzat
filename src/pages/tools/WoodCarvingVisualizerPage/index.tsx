@@ -5,15 +5,15 @@ import {
   generateCarvingPlan,
   generateCarvingVariations,
   GeneratedDesign,
-} from "../services/woodCarvingService";
+} from "@/services/woodCarvingService";
 import { Camera, Check, Ruler, Wand2, Edit, RefreshCw } from "lucide-react";
-import CutCalculator from "../components/wood-carving/CutCalculator";
-import { ImageAnnotator } from "../components/wood-carving/ImageAnnotator";
+import CutCalculator from "./components/CutCalculator";
+import { ImageAnnotator } from "./components/ImageAnnotator";
 import {
   persistProject,
   loadProjects,
   clearProjects,
-} from "../services/woodCarvingStorage";
+} from "@/services/woodCarvingStorage";
 
 const EXAMPLE_DESCRIPTIONS = [
   "A majestic eagle landing on a branch, realistic style",

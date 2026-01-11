@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import React, { useState, useEffect, useRef } from "react";
-import { ChatMessage } from "../types";
+import { ChatMessage } from "@/types";
 import Spinner from "./Spinner";
 import SendIcon from "./icons/SendIcon";
 import RefreshIcon from "./icons/RefreshIcon";

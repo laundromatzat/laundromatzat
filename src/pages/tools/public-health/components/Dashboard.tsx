@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo } from "react";
-import { SavedDocument } from "../types";
+import { SavedDocument } from "@/types";
 import {
   ChatBubbleLeftRightIcon,
   DocumentTextIcon,

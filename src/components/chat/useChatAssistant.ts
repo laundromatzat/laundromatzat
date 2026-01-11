@@ -5,22 +5,22 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { useLoading } from "../../context/LoadingContext";
-import type { ChatMessage, Project } from "../../types";
-import type { SearchOptions } from "../../utils/projectSearch";
-import { searchProjects } from "../../utils/projectSearch";
-import { isChatResetPayload } from "../../utils/chatReset";
+import { useLoading } from "@/context/LoadingContext";
+import type { ChatMessage, Project } from "@/types";
+import type { SearchOptions } from "@/utils/projectSearch";
+import { searchProjects } from "@/utils/projectSearch";
+import { isChatResetPayload } from "@/utils/chatReset";
 import {
   createChatSession,
   type ChatSessionLike,
-} from "../../services/geminiClient";
+} from "@/services/geminiClient";
 import {
   trackChatClear,
   trackChatClose,
   trackChatError,
   trackChatOpen,
   trackChatReset,
-} from "../../lib/analytics";
+} from "@/lib/analytics";
 
 export interface UseChatAssistantParams {
   onSearch: (projects: Project[]) => void;

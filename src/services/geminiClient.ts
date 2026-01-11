@@ -1,5 +1,5 @@
 import { GoogleGenAI, type Chat } from '@google/genai';
-import { AI_SYSTEM_PROMPT } from '../constants';
+import { AI_SYSTEM_PROMPT } from '@/constants';
 import { generateContentLocal, createLocalChatSession } from './localAIClient';
 
 const FUNCTION_INSTRUCTIONS = `

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { useLoading } from "../context/LoadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import {
   generateSewingGuide,
   generateProjectImages,
-} from "../services/nylonFabricDesignerService";
+} from "@/services/nylonFabricDesignerService";
 import {
   persistDesign,
   loadDesigns,
   clearDesigns,
-} from "../services/nylonFabricStorage";
+} from "@/services/nylonFabricStorage";
 
 const NylonFabricDesignerPage: React.FC = () => {
   const { setIsLoading: setGlobalLoading } = useLoading();

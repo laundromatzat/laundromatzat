@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext"; // Unused
+// import { useAuth } from "@/context/AuthContext"; // Unused
 import { Lock, User } from "lucide-react";
 
 export default function RegisterPage() {

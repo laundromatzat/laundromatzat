@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TrainingExample } from "../types";
+import { TrainingExample } from "@/types";
 import { Button } from "./Button";
 import { Trash2, FileText } from "lucide-react";
 

@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
-import { AnalysisResult, UserPreferences } from "../types";
+import { AnalysisResult, UserPreferences } from "@/types";
 
 // Helper to remove markdown code blocks if present
 const cleanJsonString = (str: string): string => {

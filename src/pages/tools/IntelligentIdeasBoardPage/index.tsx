@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { useLoading } from "../context/LoadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import {
   organizeData,
   reorganizeWithInstruction,
   type Item,
   type OrganizedData,
-} from "../services/intelligentIdeasService";
-import { LightbulbIcon } from "../components/icons/LightbulbIcon";
-import { ListTodoIcon } from "../components/icons/ListTodoIcon";
-import { BookmarkCheckIcon } from "../components/icons/BookmarkCheckIcon";
-import { SparklesIcon } from "../components/icons/SparklesIcon";
-import { Trash2Icon } from "../components/icons/Trash2Icon";
-import { RefreshCwIcon } from "../components/icons/RefreshCwIcon";
-import { CheckIcon } from "../components/icons/CheckIcon";
-import { ChevronDownIcon } from "../components/icons/ChevronDownIcon";
-import { ChevronUpIcon } from "../components/icons/ChevronUpIcon";
-import { SettingsIcon } from "../components/icons/SettingsIcon";
+} from "@/services/intelligentIdeasService";
+import { LightbulbIcon } from "@/components/icons/LightbulbIcon";
+import { ListTodoIcon } from "@/components/icons/ListTodoIcon";
+import { BookmarkCheckIcon } from "@/components/icons/BookmarkCheckIcon";
+import { SparklesIcon } from "@/components/icons/SparklesIcon";
+import { Trash2Icon } from "@/components/icons/Trash2Icon";
+import { RefreshCwIcon } from "@/components/icons/RefreshCwIcon";
+import { CheckIcon } from "@/components/icons/CheckIcon";
+import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon";
+import { ChevronUpIcon } from "@/components/icons/ChevronUpIcon";
+import { SettingsIcon } from "@/components/icons/SettingsIcon";
 import {
   persistBoard,
   loadBoards,
   clearBoards,
-} from "../services/intelligentIdeasStorage";
+} from "@/services/intelligentIdeasStorage";
 
 const IntelligentIdeasBoardPage = () => {
   const [inputText, setInputText] = useState("");

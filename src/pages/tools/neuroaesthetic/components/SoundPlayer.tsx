@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { SoundscapeAnalysis } from "../types";
+import { SoundscapeAnalysis } from "@/types";
 
 interface SoundPlayerProps {
   soundscape: SoundscapeAnalysis;

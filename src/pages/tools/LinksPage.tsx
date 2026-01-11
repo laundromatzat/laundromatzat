@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import PageMetadata from "../components/PageMetadata";
-import { useAuth } from "../context/AuthContext";
-import { getApiUrl } from "../utils/api";
-import Container from "../components/Container";
+import PageMetadata from "@/components/PageMetadata";
+import { useAuth } from "@/context/AuthContext";
+import { getApiUrl } from "@/utils/api";
+import Container from "@/components/Container";
 
 interface LinkItem {
   id: number;

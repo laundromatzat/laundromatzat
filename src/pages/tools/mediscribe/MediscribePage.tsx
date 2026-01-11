@@ -5,7 +5,7 @@ import {
   Settings as SettingsIcon,
   Stethoscope,
 } from "lucide-react";
-import { getApiUrl } from "../../../utils/api";
+import { getApiUrl } from "@/utils/api";
 import {
   UserSettings,
   AppState,
@@ -16,7 +16,7 @@ import {
 import { SettingsPanel } from "./components/SettingsPanel";
 import { StyleTrainer } from "./components/StyleTrainer";
 import { NoteGenerator } from "./components/NoteGenerator";
-import PageMetadata from "../../../components/PageMetadata";
+import PageMetadata from "@/components/PageMetadata";
 
 function MediscribePage() {
   // Load initial state

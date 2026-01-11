@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import PageMetadata from "../../../components/PageMetadata";
+import PageMetadata from "@/components/PageMetadata";
 import { AppState, AnalysisResult, UserPreferences } from "./types";
 import { AnalysisDisplay } from "./components/AnalysisDisplay";
 import { ComparisonView } from "./components/ComparisonView";

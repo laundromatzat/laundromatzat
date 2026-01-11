@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import { Project, ProjectType } from "../types";
+import { Project, ProjectType } from "@/types";
 import { CloseIcon } from "./icons/CloseIcon";
 import { CopyIcon } from "./icons/CopyIcon";
 import { CheckIcon } from "./icons/CheckIcon";

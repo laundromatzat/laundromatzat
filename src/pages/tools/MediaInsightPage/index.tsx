@@ -6,29 +6,29 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Mic, Upload, Sparkles, FolderOpen, Settings2 } from "lucide-react";
-import Container from "../components/Container";
-import PageMetadata from "../components/PageMetadata";
-import AudioRecorder from "./tools-integrations/media-insight/components/AudioRecorder";
-import FileUploader from "./tools-integrations/media-insight/components/FileUploader";
-import FileSystemExplorer from "./tools-integrations/media-insight/components/FileSystemExplorer";
-import FileActionsPanel from "./tools-integrations/media-insight/components/FileActionsPanel";
-import AnalysisDisplay from "./tools-integrations/media-insight/components/AnalysisDisplay";
-import Button from "./tools-integrations/media-insight/components/Button";
-import SettingsPanel from "./tools-integrations/media-insight/components/SettingsPanel";
-import { analyzeMedia } from "./tools-integrations/media-insight/services/mediaInsightService";
-import "./tools-integrations/media-insight/electron.d.ts";
-import "./tools-integrations/media-insight/media-insight-styles.css";
+import Container from "@/components/Container";
+import PageMetadata from "@/components/PageMetadata";
+import AudioRecorder from "../media-insight/components/AudioRecorder";
+import FileUploader from "../media-insight/components/FileUploader";
+import FileSystemExplorer from "../media-insight/components/FileSystemExplorer";
+import FileActionsPanel from "../media-insight/components/FileActionsPanel";
+import AnalysisDisplay from "../media-insight/components/AnalysisDisplay";
+import Button from "../media-insight/components/Button";
+import SettingsPanel from "../media-insight/components/SettingsPanel";
+import { analyzeMedia } from "../media-insight/services/mediaInsightService";
+import "../media-insight/electron.d.ts";
+import "../media-insight/media-insight-styles.css";
 import {
   AppStatus,
   MediaInput,
   AnalysisResult,
   MediaType,
   WorkspaceFile,
-} from "./tools-integrations/media-insight/types";
+} from "../media-insight/types";
 import {
   saveAnalysis,
   getAnalysis,
-} from "./tools-integrations/media-insight/services/mediaInsightStorage";
+} from "../media-insight/services/mediaInsightStorage";
 
 function MediaInsightPage(): React.ReactNode {
   const [mode, setMode] = useState<"record" | "upload" | "workspace">("record");

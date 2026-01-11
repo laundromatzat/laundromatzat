@@ -6,15 +6,15 @@ import React, {
   useState,
 } from "react";
 import { Link } from "react-router-dom";
-import PageMetadata from "../components/PageMetadata";
-import Container from "../components/Container";
+import PageMetadata from "@/components/PageMetadata";
+import Container from "@/components/Container";
 import {
   persistPalette,
   loadPalettes,
   deletePalette,
   clearPalettes,
   type StoredPalette,
-} from "../services/colorPaletteStorage";
+} from "@/services/colorPaletteStorage";
 
 interface ExtractedColor {
   hex: string;

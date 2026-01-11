@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import PageMetadata from "../components/PageMetadata";
-import Container from "../components/Container";
+import PageMetadata from "@/components/PageMetadata";
+import Container from "@/components/Container";
 
 const TOOL_LINKS = [
   {

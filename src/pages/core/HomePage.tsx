@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import PageMetadata from "../components/PageMetadata";
-import FeaturedHero from "../components/FeaturedHero";
-import MasonryGrid from "../components/MasonryGrid";
-import PortfolioModal from "../components/PortfolioModal";
-import Container from "../components/Container";
-import { PROJECTS } from "../constants";
+import PageMetadata from "@/components/PageMetadata";
+import FeaturedHero from "@/components/FeaturedHero";
+import MasonryGrid from "@/components/MasonryGrid";
+import PortfolioModal from "@/components/PortfolioModal";
+import Container from "@/components/Container";
+import { PROJECTS } from "@/constants";
 
 const HomePage: React.FC = () => {
   const [selectedProjectIndex, setSelectedProjectIndex] = useState<

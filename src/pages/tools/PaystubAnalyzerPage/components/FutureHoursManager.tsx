@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import React, { useState, useEffect } from "react";
-import { ReportedHourEntry } from "../../types/paystubTypes";
+import { ReportedHourEntry } from "../types/paystubTypes";
 import { ReportedHoursInput } from "./ReportedHoursInput";
 import { PlusIcon } from "./icons/PlusIcon";
 import { TrashIcon } from "./icons/TrashIcon";

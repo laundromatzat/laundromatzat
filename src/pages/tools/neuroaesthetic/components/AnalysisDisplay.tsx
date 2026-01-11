@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { AnalysisResult } from "../types";
+import { AnalysisResult } from "@/types";
 import { SoundPlayer } from "./SoundPlayer";
 
 interface AnalysisDisplayProps {

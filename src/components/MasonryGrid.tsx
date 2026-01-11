@@ -1,5 +1,5 @@
 import React from "react";
-import { Project } from "../types";
+import { Project } from "@/types";
 import clsx from "clsx";
 
 interface MasonryGridProps {

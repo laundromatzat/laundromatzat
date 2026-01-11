@@ -1,6 +1,6 @@
 import React from "react";
-import { payrollCodeMap, sortedPayrollCodes } from "../../utils/payrollCodes";
-import { ReportedHourEntry } from "../../types/paystubTypes";
+import { payrollCodeMap, sortedPayrollCodes } from "@/utils/payrollCodes";
+import { ReportedHourEntry } from "../types/paystubTypes";
 import { TrashIcon } from "./icons/TrashIcon";
 
 interface ReportedHoursInputProps {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import PageMetadata from '../components/PageMetadata';
+import PageMetadata from '@/components/PageMetadata';
 
 function NotFoundPage(): React.ReactNode {
   return (

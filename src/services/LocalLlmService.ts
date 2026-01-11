@@ -4,7 +4,7 @@ import {
   AIOrganizationSuggestion,
   SummaryLength,
   OrganizationPattern,
-} from "../types";
+} from "@/types";
 
 // Default configuration - should be overridable via settings
 let LM_STUDIO_BASE_URL: string = "http://localhost:1234/v1";

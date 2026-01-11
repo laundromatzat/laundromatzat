@@ -1,4 +1,4 @@
-import { Project, ProjectType } from '../types';
+import { Project, ProjectType } from '@/types';
 import { parseCsv } from './csv';
 import { parseYearMonth } from './projectDates';
 

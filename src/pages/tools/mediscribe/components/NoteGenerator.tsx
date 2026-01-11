@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLoading } from "../../../../context/LoadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import {
   generateClinicalNote,
   analyzeStyleDiff,

@@ -1,6 +1,6 @@
 import React from "react";
-import PageMetadata from "../components/PageMetadata";
-import Container from "../components/Container";
+import PageMetadata from "@/components/PageMetadata";
+import Container from "@/components/Container";
 
 function AdminMailingListPage(): React.ReactNode {
   return (

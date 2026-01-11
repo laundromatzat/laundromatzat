@@ -1,27 +1,27 @@
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useEffect, useState } from "react";
-import { ConfirmationModal } from "../components/paystub-analyzer/ConfirmationModal";
-import { FileUpload } from "../components/paystub-analyzer/FileUpload";
-import { FutureHoursManager } from "../components/paystub-analyzer/FutureHoursManager";
-import { PaycheckSpreadsheet } from "../components/paystub-analyzer/PaycheckSpreadsheet";
-import { PaycheckTable } from "../components/paystub-analyzer/PaycheckTable";
-import { DocumentTextIcon } from "../components/paystub-analyzer/icons/DocumentTextIcon";
+import { ConfirmationModal } from "./components/ConfirmationModal";
+import { FileUpload } from "./components/FileUpload";
+import { FutureHoursManager } from "./components/FutureHoursManager";
+import { PaycheckSpreadsheet } from "./components/PaycheckSpreadsheet";
+import { PaycheckTable } from "./components/PaycheckTable";
+import { DocumentTextIcon } from "./components/icons/DocumentTextIcon";
 
-import { ViewGridIcon } from "../components/paystub-analyzer/icons/ViewGridIcon";
-import { ViewListIcon } from "../components/paystub-analyzer/icons/ViewListIcon";
-import { TrashIcon } from "../components/paystub-analyzer/icons/TrashIcon";
-import { ClockIcon } from "../components/paystub-analyzer/icons/ClockIcon";
+import { ViewGridIcon } from "./components/icons/ViewGridIcon";
+import { ViewListIcon } from "./components/icons/ViewListIcon";
+import { TrashIcon } from "./components/icons/TrashIcon";
+import { ClockIcon } from "./components/icons/ClockIcon";
 // Unused imports removed
 
-import { useAuth } from "../context/AuthContext";
-import { useLoading } from "../context/LoadingContext";
+import { useAuth } from "@/context/AuthContext";
+import { useLoading } from "@/context/LoadingContext";
 import {
   analyzePaycheckPdf,
   fetchPaychecks,
   setAuthToken,
-} from "../services/paystubApiService";
-import { PaycheckData, ReportedHourEntry } from "../types/paystubTypes";
+} from "@/services/paystubApiService";
+import { PaycheckData, ReportedHourEntry } from "./types/paystubTypes";
 
 type ViewMode = "card" | "spreadsheet";
 
@@ -293,7 +293,7 @@ const PaystubAnalyzerPage: React.FC = () => {
     // Persist to backend
     try {
       const { updatePaycheckReportedHours } = await import(
-        "../services/paystubApiService"
+        "@/services/paystubApiService"
       );
       if (currentData.id) {
         await updatePaycheckReportedHours(
@@ -514,7 +514,7 @@ const PaystubAnalyzerPage: React.FC = () => {
         onConfirm={async () => {
           try {
             const { clearAllData } = await import(
-              "../services/paystubApiService"
+              "@/services/paystubApiService"
             );
             await clearAllData();
             setPaycheckData([]);

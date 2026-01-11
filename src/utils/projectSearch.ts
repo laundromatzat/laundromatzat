@@ -1,5 +1,5 @@
-import { PROJECTS } from '../constants';
-import { Project, ProjectType } from '../types';
+import { PROJECTS } from '@/constants';
+import { Project, ProjectType } from '@/types';
 import { parseYearMonth } from './projectDates';
 
 /**
@@ -201,4 +201,4 @@ export function searchProjects(query: string, opts: SearchOptions = {}): Project
   });
 }
 
-export type { Project } from '../types';
+export type { Project } from '@/types';

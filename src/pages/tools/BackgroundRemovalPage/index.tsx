@@ -7,13 +7,13 @@ import React, {
 } from "react";
 import { Link } from "react-router-dom";
 import { removeBackground } from "@imgly/background-removal";
-import PageMetadata from "../components/PageMetadata";
-import Container from "../components/Container";
+import PageMetadata from "@/components/PageMetadata";
+import Container from "@/components/Container";
 import {
   clearBackgroundRemovalJobs,
   loadBackgroundRemovalJobs,
   persistBackgroundRemovalJob,
-} from "../services/backgroundRemovalStorage";
+} from "@/services/backgroundRemovalStorage";
 
 type ProcessingState = "idle" | "loading" | "success" | "error";
 

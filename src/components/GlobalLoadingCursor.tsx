@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { useLoading } from "../context/LoadingContext";
+import { useLoading } from "@/context/LoadingContext";
 import { LuminousSpinner } from "./ui/LuminousSpinner";
 
 export const GlobalLoadingCursor: React.FC = () => {

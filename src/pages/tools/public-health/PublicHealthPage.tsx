@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { getApiUrl } from "../../../utils/api";
+import { getApiUrl } from "@/utils/api";
 import WelcomeScreen from "./components/WelcomeScreen";
 import OrganizationResultView from "./components/OrganizationResultView";
 import ProgressBar from "./components/ProgressBar";
@@ -17,7 +17,7 @@ import {
 } from "./types";
 import * as geminiService from "./services/geminiService";
 import ChatInterface from "./components/ChatInterface";
-import PageMetadata from "../../../components/PageMetadata";
+import PageMetadata from "@/components/PageMetadata";
 
 declare global {
   interface AIStudio {

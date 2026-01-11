@@ -7,7 +7,7 @@ import React, { useState, useCallback } from "react";
 import Spinner from "./Spinner";
 import UploadCloudIcon from "./icons/UploadCloudIcon";
 import TrashIcon from "./icons/TrashIcon";
-import { AnalyzedDocument, SavedDocument } from "../types";
+import { AnalyzedDocument, SavedDocument } from "@/types";
 
 interface WelcomeScreenProps {
   onUpload: () => Promise<void>;

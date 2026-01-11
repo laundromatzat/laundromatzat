@@ -3,7 +3,7 @@ import {
   Unit,
   Point,
   MeasurementState,
-} from "../../services/woodCarvingService";
+} from "@/services/woodCarvingService";
 
 interface CutCalculatorProps {
   imageUrl: string;

@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PROJECTS } from "../constants";
-import { ProjectType } from "../types";
-import ProjectGrid from "../components/ProjectGrid";
-import PageMetadata from "../components/PageMetadata";
-import { compareProjectsByDateDesc } from "../utils/projectDates";
-import Container from "../components/Container";
+import { PROJECTS } from "@/constants";
+import { ProjectType } from "@/types";
+import ProjectGrid from "@/components/ProjectGrid";
+import PageMetadata from "@/components/PageMetadata";
+import { compareProjectsByDateDesc } from "@/utils/projectDates";
+import Container from "@/components/Container";
 
 interface VideosPageProps {
   forcedSlug?: string;

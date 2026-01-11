@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useId, useMemo, useState } from "react";
 import clsx from "clsx";
-import { Project } from "../types";
-import { getProjectSlug } from "../utils/slugs";
+import { Project } from "@/types";
+import { getProjectSlug } from "@/utils/slugs";
 import ProjectCard from "./ProjectCard";
 import PortfolioModal from "./PortfolioModal";
 

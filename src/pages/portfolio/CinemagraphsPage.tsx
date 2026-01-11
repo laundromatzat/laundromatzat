@@ -1,8 +1,8 @@
 import React from "react";
-import { PROJECTS } from "../constants";
-import { ProjectType } from "../types";
-import ProjectGrid from "../components/ProjectGrid";
-import Container from "../components/Container";
+import { PROJECTS } from "@/constants";
+import { ProjectType } from "@/types";
+import ProjectGrid from "@/components/ProjectGrid";
+import Container from "@/components/Container";
 
 function PhotosPage(): React.ReactNode {
   const photoProjects = PROJECTS.filter(

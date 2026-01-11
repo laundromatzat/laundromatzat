@@ -1,6 +1,6 @@
-import rawProjects from "./data/projects.json";
-import { Project, Link } from "./types";
-import { parseProjectsFromJson } from "./utils/projectData";
+import rawProjects from "../public/data/projects.json";
+import { Project, Link } from "@/types";
+import { parseProjectsFromJson } from "@/utils/projectData";
 
 let parsedProjects: Project[] = [];
 try {

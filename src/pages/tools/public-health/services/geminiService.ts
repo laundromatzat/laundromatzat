@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
-import { QueryResult, AnalysisResult } from "../types";
+import { QueryResult, AnalysisResult } from "@/types";
 
 let ai: GoogleGenAI;
 

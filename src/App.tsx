@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Outlet, ScrollRestoration, useLocation } from "react-router-dom";
-import Header from "./components/Header";
-import { GlobalLoadingCursor } from "./components/GlobalLoadingCursor";
+import Header from "@/components/Header";
+import { GlobalLoadingCursor } from "@/components/GlobalLoadingCursor";
 
 function App(): React.ReactNode {
   const mainRef = useRef<HTMLElement | null>(null);

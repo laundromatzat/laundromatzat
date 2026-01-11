@@ -5,18 +5,18 @@
 
 import React, { useState } from "react";
 import { GoogleGenAI, Type } from "@google/genai";
-import { PinState } from "../components/pin-pals/types";
-import { Setup } from "../components/pin-pals/Setup";
-import { Book } from "../components/pin-pals/Book";
-import { useApiKey } from "../components/pin-pals/useApiKey";
-import { ApiKeyDialog } from "../components/pin-pals/ApiKeyDialog";
-import { LoadingFX } from "../components/pin-pals/LoadingFX";
+import { PinState } from "./components/types";
+import { Setup } from "./components/Setup";
+import { Book } from "./components/Book";
+import { useApiKey } from "./components/useApiKey";
+import { ApiKeyDialog } from "./components/ApiKeyDialog";
+import { LoadingFX } from "./components/LoadingFX";
 
 const MODEL_NAME = "gemini-3-pro-image-preview";
 const DETECTION_MODEL = "gemini-2.5-flash";
 
 // --- API Helpers ---
-import { getApiUrl } from "../utils/api";
+import { getApiUrl } from "@/utils/api";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");

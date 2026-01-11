@@ -1,5 +1,5 @@
-import { PaycheckData } from "../types/paystubTypes";
-import { getApiUrl } from "../utils/api";
+import { PaycheckData } from "@/pages/tools/PaystubAnalyzerPage/types/paystubTypes";
+import { getApiUrl } from "@/utils/api";
 
 let authToken: string | null = null;
 

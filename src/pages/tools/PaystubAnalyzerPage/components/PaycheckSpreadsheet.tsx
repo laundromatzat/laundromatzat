@@ -4,12 +4,12 @@ import {
   getCategorySortIndex,
   getPayrollCode,
   payrollCodeMap,
-} from "../../utils/payrollCodes";
+} from "@/utils/payrollCodes";
 import {
   HourEntry,
   PaycheckData,
   ReportedHourEntry,
-} from "../../types/paystubTypes";
+} from "../types/paystubTypes";
 import { ChevronDownIcon } from "./icons/ChevronDownIcon";
 import { FileTextIcon } from "./icons/FileTextIcon";
 import { PencilIcon } from "./icons/PencilIcon";

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import clsx from "clsx";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import MenuIcon from "./icons/MenuIcon";
 import { CloseIcon } from "./icons/CloseIcon";
-import { API_BASE_URL } from "../utils/api";
+import { API_BASE_URL } from "@/utils/api";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home" },

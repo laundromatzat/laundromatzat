@@ -1,6 +1,6 @@
 import React, { useId } from "react";
 import clsx from "clsx";
-import { Project } from "../types";
+import { Project } from "@/types";
 
 interface ProjectCardProps {
   project: Project;

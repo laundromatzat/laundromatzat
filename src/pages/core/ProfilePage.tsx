@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { User, Upload, FileText, Activity, DollarSign } from "lucide-react";
 import { Helmet } from "@dr.pogodin/react-helmet";
-import { getApiUrl, API_BASE_URL } from "../utils/api";
+import { getApiUrl, API_BASE_URL } from "@/utils/api";
 
 interface DashboardItem {
   id: number;

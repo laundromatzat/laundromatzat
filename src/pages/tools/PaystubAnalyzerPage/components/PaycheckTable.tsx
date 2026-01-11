@@ -5,12 +5,12 @@ import {
   getCategorySortIndex,
   getPayrollCode,
   payrollCodeMap,
-} from "../../utils/payrollCodes";
+} from "@/utils/payrollCodes";
 import {
   HourEntry,
   PaycheckData,
   ReportedHourEntry,
-} from "../../types/paystubTypes";
+} from "../types/paystubTypes";
 import { ReportedHoursInput } from "./ReportedHoursInput";
 import { BankIcon } from "./icons/BankIcon";
 import { CalendarIcon } from "./icons/CalendarIcon";
