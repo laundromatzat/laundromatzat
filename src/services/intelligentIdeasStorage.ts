@@ -20,7 +20,7 @@ const indexedDBFactory = getIndexedDBFactory();
 
 export type StoredBoard = {
   id: string;
-  rawInput: string;
+  inputs: string[];
   createdAt: number;
   organizedData: OrganizedData;
 };

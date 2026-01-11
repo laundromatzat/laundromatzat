@@ -81,57 +81,70 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white/80 backdrop-blur-sm border-r border-brand-secondary/40 transition-colors">
-      <div className="p-4 border-b border-brand-secondary/40 bg-gradient-to-r from-brand-accent/5 to-transparent">
-        <h3 className="font-semibold text-aura-text-primary flex items-center mb-1">
-          <FolderOpen size={18} className="mr-2 text-brand-accent" />
+    <div className="flex flex-col h-full mi-glass border-r-2 border-purple-200/50 rounded-l-2xl overflow-hidden shadow-lg">
+      <div className="p-5 border-b border-purple-200/50 bg-gradient-to-br from-purple-50 to-pink-50">
+        <h3 className="font-bold text-lg mi-gradient-text flex items-center mb-2">
+          <FolderOpen size={20} className="mr-2 text-purple-600" />
           Workspace Files
         </h3>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-aura-text-secondary">
-            {files.filter((f) => f.status === "done").length} / {files.length}{" "}
-            analyzed
+          <span className="text-xs text-aura-text-secondary font-medium">
+            <span className="text-purple-600 font-bold">
+              {files.filter((f) => f.status === "done").length}
+            </span>{" "}
+            / {files.length} analyzed
           </span>
-          <span className="text-xs bg-brand-accent/10 px-2 py-1 rounded-full text-brand-accent font-medium">
+          <span className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1 rounded-full text-purple-700 font-bold border border-purple-200">
             {files.length} items
           </span>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 mi-scrollbar">
         {files.length === 0 && (
-          <div className="p-8 text-center text-aura-text-secondary">
-            <FolderOpen size={48} className="mx-auto mb-3 opacity-20" />
-            <p className="text-sm font-medium mb-1">No media files found</p>
+          <div className="p-8 text-center text-aura-text-secondary mi-animate-fadeIn">
+            <div className="mi-animate-float">
+              <FolderOpen size={56} className="mx-auto mb-4 text-purple-300" />
+            </div>
+            <p className="text-sm font-semibold mb-2 text-purple-600">
+              No media files found
+            </p>
             <p className="text-xs opacity-75">
               Select a folder containing images or videos
             </p>
           </div>
         )}
         {files.map((file) => (
-          <button
+          <div
             key={file.name}
             onClick={() => onSelectFile(file)}
-            className={`w-full flex items-start p-3 rounded-lg text-left transition-all group border ${
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                onSelectFile(file);
+              }
+            }}
+            className={`w-full flex items-start p-3 rounded-xl text-left transition-all duration-300 group border-2 cursor-pointer ${
               activeFileName === file.name
-                ? "bg-brand-accent/10 text-brand-accent ring-2 ring-brand-accent/30 border-brand-accent/30 shadow-sm"
-                : "text-aura-text-secondary hover:bg-brand-secondary/5 hover:text-aura-text-primary border-transparent hover:border-brand-secondary/20"
+                ? "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-400 shadow-lg ring-2 ring-purple-300 scale-[1.02]"
+                : "bg-white/50 hover:bg-white/80 border-transparent hover:border-purple-200 hover:shadow-md"
             }`}
           >
             <div className="mr-3 flex-shrink-0">
               {file.thumbnail ? (
-                <div className="relative w-12 h-12 rounded-md overflow-hidden bg-brand-secondary/10">
+                <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100 ring-2 ring-purple-200 shadow-sm">
                   <img
                     src={file.thumbnail}
                     alt={file.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
-                  <div className="absolute bottom-0 right-0 bg-black/60 rounded-tl px-1">
+                  <div className="absolute bottom-0 right-0 bg-gradient-to-r from-purple-600/90 to-pink-600/90 rounded-tl-lg px-1.5 py-0.5">
                     {getStatusIcon(file.status)}
                   </div>
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-md bg-brand-secondary/10 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center ring-2 ring-purple-200">
                   {getFileIcon(file.type)}
                 </div>
               )}
@@ -172,14 +185,14 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
                 {getStatusBadge(file.status)}
               </div>
             </div>
-          </button>
+          </div>
         ))}
       </div>
 
       {files.some((f) => f.status === "done") && (
-        <div className="p-3 border-t border-brand-secondary/40 bg-brand-secondary/5">
-          <p className="text-xs text-center text-aura-text-secondary">
-            <Sparkles size={12} className="inline mr-1" />
+        <div className="p-4 border-t border-purple-200/50 bg-gradient-to-r from-purple-50 to-pink-50">
+          <p className="text-xs text-center text-purple-600 font-medium flex items-center justify-center gap-1">
+            <Sparkles size={14} className="mi-animate-pulse" />
             Select a file to see actions
           </p>
         </div>

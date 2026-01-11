@@ -9,7 +9,11 @@ import {
 import { Camera, Check, Ruler, Wand2, Edit, RefreshCw } from "lucide-react";
 import CutCalculator from "../components/wood-carving/CutCalculator";
 import { ImageAnnotator } from "../components/wood-carving/ImageAnnotator";
-import { persistProject, loadProjects } from "../services/woodCarvingStorage";
+import {
+  persistProject,
+  loadProjects,
+  clearProjects,
+} from "../services/woodCarvingStorage";
 
 const EXAMPLE_DESCRIPTIONS = [
   "A majestic eagle landing on a branch, realistic style",
@@ -45,7 +49,27 @@ const WoodCarvingVisualizerPage: React.FC = () => {
 
   // Load history on mount (ready for history panel)
   useEffect(() => {
-    loadProjects().catch(console.error);
+    loadProjects()
+      .then((projects) => {
+        if (projects.length > 0) {
+          // Restore the most recent project
+          const latest = projects[0];
+          setDescription(latest.description);
+          setVariations(latest.variations);
+          setSelectedVariation(latest.selectedVariation);
+          setDesignData(latest.blueprint);
+
+          // Restore phase based on data availability
+          if (latest.blueprint) {
+            setPhase(4);
+          } else if (latest.selectedVariation) {
+            setPhase(2);
+          } else if (latest.variations.length > 0) {
+            setPhase(2);
+          }
+        }
+      })
+      .catch(console.error);
   }, []);
 
   const handleGenerateVariations = async () => {
@@ -175,6 +199,24 @@ const WoodCarvingVisualizerPage: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-full transition-all"
             >
               <RefreshCw className="w-4 h-4" /> Start New Project
+            </button>
+          )}
+          {phase === 0 && (
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Are you sure you want to clear your project history?"
+                  )
+                ) {
+                  clearProjects()
+                    .then(() => handleReset())
+                    .catch(console.error);
+                }
+              }}
+              className="text-xs text-red-400 hover:text-red-300 underline"
+            >
+              Clear History
             </button>
           )}
         </div>

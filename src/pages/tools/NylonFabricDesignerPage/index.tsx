@@ -4,6 +4,11 @@ import {
   generateSewingGuide,
   generateProjectImages,
 } from "../services/nylonFabricDesignerService";
+import {
+  persistDesign,
+  loadDesigns,
+  clearDesigns,
+} from "../services/nylonFabricStorage";
 
 const NylonFabricDesignerPage: React.FC = () => {
   const { setIsLoading: setGlobalLoading } = useLoading();
@@ -27,6 +32,21 @@ const NylonFabricDesignerPage: React.FC = () => {
     apron:
       "I need a work apron for my woodshop with multiple pockets for tools. It should be about 24 inches long with adjustable straps and reinforced pocket corners for durability.",
   };
+
+  // Load history on mount
+  useEffect(() => {
+    loadDesigns()
+      .then((designs) => {
+        if (designs.length > 0) {
+          // Restore the most recent design
+          const latest = designs[0];
+          setProjectDescription(latest.description);
+          setSanitizedGuideContent(latest.guideText);
+          setVisuals(latest.visuals);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const handleGenerateGuide = async () => {
     if (!projectDescription) {
@@ -56,6 +76,16 @@ const NylonFabricDesignerPage: React.FC = () => {
       try {
         const projectVisuals = await generateProjectImages(projectDescription);
         setVisuals(projectVisuals);
+
+        // Save automatically after successful generation
+        await persistDesign({
+          id: `design-${Date.now()}`,
+          projectName: projectDescription.slice(0, 30) + "...",
+          description: projectDescription,
+          createdAt: Date.now(),
+          guideText: guide,
+          visuals: projectVisuals,
+        });
       } catch (err) {
         const message =
           err instanceof Error
@@ -80,6 +110,18 @@ const NylonFabricDesignerPage: React.FC = () => {
     setVisuals(null);
     setError(null);
     setResearchStatus(null);
+  };
+
+  const handleClearHistory = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to clear all saved designs? This cannot be undone."
+      )
+    ) {
+      clearDesigns()
+        .then(() => startNewProject())
+        .catch(console.error);
+    }
   };
 
   return (
@@ -154,12 +196,20 @@ const NylonFabricDesignerPage: React.FC = () => {
               <h2 className="text-3xl font-bold text-aura-text-primary">
                 Your Custom Sewing Guide
               </h2>
-              <button
-                className="bg-brand-accent text-brand-on-accent font-bold py-2 px-4 rounded-lg hover:bg-brand-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent transition"
-                onClick={startNewProject}
-              >
-                New Project
-              </button>
+              <div className="flex gap-2">
+                <button
+                  className="bg-brand-surface border border-brand-surface-highlight text-status-error-text font-bold py-2 px-4 rounded-lg hover:bg-status-error-bg hover:border-status-error-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-status-error-text transition"
+                  onClick={handleClearHistory}
+                >
+                  Clear History
+                </button>
+                <button
+                  className="bg-brand-accent text-brand-on-accent font-bold py-2 px-4 rounded-lg hover:bg-brand-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent transition"
+                  onClick={startNewProject}
+                >
+                  New Project
+                </button>
+              </div>
             </div>
             {error && <p className="text-status-error-text mb-4">{error}</p>}
             <div dangerouslySetInnerHTML={{ __html: sanitizedGuideContent }} />

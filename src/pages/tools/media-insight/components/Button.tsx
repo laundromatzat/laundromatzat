@@ -21,17 +21,16 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-aura-bg disabled:opacity-50 disabled:cursor-not-allowed";
+    "flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-aura-bg disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]";
 
   const variants = {
-    primary:
-      "bg-brand-accent text-brand-on-accent hover:bg-brand-accent-strong focus:ring-brand-accent shadow-md hover:shadow-lg font-semibold",
+    primary: "mi-btn-gradient shadow-lg hover:shadow-xl",
     secondary:
-      "bg-white/80 backdrop-blur-sm text-aura-text-primary border border-brand-secondary/40 hover:bg-white/90 hover:border-brand-secondary/60 focus:ring-brand-secondary shadow-sm",
+      "mi-card-glass text-aura-text-primary border-2 border-purple-200 hover:border-purple-400 focus:ring-purple-400 shadow-md hover:shadow-lg",
     danger:
-      "bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-md",
+      "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-red-500 shadow-lg hover:shadow-xl",
     ghost:
-      "bg-transparent text-aura-text-secondary hover:bg-brand-secondary/10 hover:text-aura-text-primary",
+      "bg-transparent text-aura-text-secondary hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700",
   };
 
   return (
@@ -42,7 +41,7 @@ const Button: React.FC<ButtonProps> = ({
     >
       {isLoading ? (
         <svg
-          className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
+          className="animate-spin h-5 w-5 text-current"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -62,7 +61,7 @@ const Button: React.FC<ButtonProps> = ({
           ></path>
         </svg>
       ) : icon ? (
-        <span className="mr-2">{icon}</span>
+        <span>{icon}</span>
       ) : null}
       {children}
     </button>

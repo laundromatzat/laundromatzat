@@ -23,13 +23,21 @@ data/*
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
 
 # Vite cache
 .vite
@@ -45,3 +53,8 @@ data/*
 server/paystubs.db
 server/uploads/
 release/
+
+# Test outputs
+coverage/
+.nyc_output/
+playwright-report/

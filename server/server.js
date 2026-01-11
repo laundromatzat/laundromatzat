@@ -19,6 +19,19 @@ const port = process.env.PORT || 4000;
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
 const fs = require("fs");
 
+// Ensure uploads directory exists on startup
+const uploadsDir = path.join(__dirname, "uploads");
+const avatarsDir = path.join(uploadsDir, "avatars");
+
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+  console.log("Created uploads directory");
+}
+if (!fs.existsSync(avatarsDir)) {
+  fs.mkdirSync(avatarsDir);
+  console.log("Created avatars directory");
+}
+
 // Security Middleware (Helmet)
 app.use(
   helmet({

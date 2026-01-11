@@ -1,4 +1,4 @@
-const { dialog } = require("electron");
+const { dialog, shell } = require("electron");
 const fs = require("fs").promises;
 const path = require("path");
 const { exec } = require("child_process");
@@ -191,10 +191,65 @@ function getMediaType(ext) {
   return null;
 }
 
+// Generate thumbnail for image or video file
+async function generateThumbnail(filePath) {
+  try {
+    const ext = path.extname(filePath).toLowerCase();
+    const mediaType = getMediaType(ext);
+
+    if (!mediaType) {
+      return null;
+    }
+
+    // Read file and convert to base64
+    const buffer = await fs.readFile(filePath);
+    const base64 = buffer.toString("base64");
+
+    // Get mime type
+    const mimeTypes = {
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".png": "image/png",
+      ".gif": "image/gif",
+      ".webp": "image/webp",
+      ".heic": "image/heic",
+      ".heif": "image/heif",
+      ".mp4": "video/mp4",
+      ".mov": "video/quicktime",
+      ".webm": "video/webm",
+    };
+
+    const mimeType = mimeTypes[ext] || "application/octet-stream";
+
+    // Return data URL (browser will handle resizing)
+    return `data:${mimeType};base64,${base64}`;
+  } catch (error) {
+    console.error("Failed to generate thumbnail:", error);
+    return null;
+  }
+}
+
+// Open file in default system application
+async function openFile(filePath) {
+  try {
+    const result = await shell.openPath(filePath);
+    if (result) {
+      // Non-empty string means error
+      throw new Error(result);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to open file:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 module.exports = {
   selectWorkspaceDirectory,
   readFileAsBase64,
   renameFile,
   setFileMetadata,
   organizeFiles,
+  generateThumbnail,
+  openFile,
 };

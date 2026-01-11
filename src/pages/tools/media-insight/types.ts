@@ -36,7 +36,7 @@ export interface AudioAnalysisResult extends BaseAnalysisResult {
 export interface ImageAnalysisResult extends BaseAnalysisResult {
   type: "image";
   visualElements: string[];
-  detectedText?: string;
+  detectedText?: string | string[];
   mood?: string;
 }
 

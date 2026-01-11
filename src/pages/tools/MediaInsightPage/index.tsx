@@ -17,6 +17,7 @@ import Button from "./tools-integrations/media-insight/components/Button";
 import SettingsPanel from "./tools-integrations/media-insight/components/SettingsPanel";
 import { analyzeMedia } from "./tools-integrations/media-insight/services/mediaInsightService";
 import "./tools-integrations/media-insight/electron.d.ts";
+import "./tools-integrations/media-insight/media-insight-styles.css";
 import {
   AppStatus,
   MediaInput,
@@ -24,7 +25,10 @@ import {
   MediaType,
   WorkspaceFile,
 } from "./tools-integrations/media-insight/types";
-import { saveAnalysis, getAnalysis } from "../services/mediaInsightStorage";
+import {
+  saveAnalysis,
+  getAnalysis,
+} from "./tools-integrations/media-insight/services/mediaInsightStorage";
 
 function MediaInsightPage(): React.ReactNode {
   const [mode, setMode] = useState<"record" | "upload" | "workspace">("record");
@@ -43,9 +47,9 @@ function MediaInsightPage(): React.ReactNode {
   // const [history, setHistory] = useState<StoredAnalysis[]>([]);
 
   // Load history on mount (ready for history panel)
-  useEffect(() => {
-    loadAnalyses().catch(console.error);
-  }, []);
+  // useEffect(() => {
+  //   loadAnalyses().catch(console.error);
+  // }, []);
 
   // Settings State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -289,11 +293,20 @@ function MediaInsightPage(): React.ReactNode {
     if (!wFile.analysisResult?.suggestedName) return;
 
     try {
+      // Preserve file extension
+      const currentExt = wFile.name.split(".").pop();
+      let newName = wFile.analysisResult.suggestedName;
+
+      // If new name doesn't have the extension, add it
+      if (currentExt && !newName.endsWith(`.${currentExt}`)) {
+        newName = `${newName}.${currentExt}`;
+      }
+
       if (isElectron && window.electronAPI && wFile.path) {
         // Use Electron API
         const newPath = await window.electronAPI.renameFile(
           wFile.path,
-          wFile.analysisResult.suggestedName
+          newName
         );
 
         // Also set metadata
@@ -307,28 +320,39 @@ function MediaInsightPage(): React.ReactNode {
             f.path === wFile.path
               ? {
                   ...f,
-                  name: wFile.analysisResult!.suggestedName!,
+                  name: newName,
                   path: newPath,
                 }
               : f
           )
         );
-        alert(`Renamed and tagged: ${wFile.analysisResult.suggestedName}`);
+        alert(`Renamed and tagged: ${newName}`);
       } else {
         // Browser API (requires Chrome 100+)
-        await (
-          wFile.handle as FileSystemFileHandle & {
-            move: (name: string) => Promise<void>;
-          }
-        ).move(wFile.result.suggestedName);
-        setWorkspaceFiles((prev) =>
-          prev.map((f) =>
-            f.name === wFile.name
-              ? { ...f, name: wFile.result!.suggestedName! }
-              : f
-          )
-        );
-        alert(`Renamed to: ${wFile.result.suggestedName}`);
+        // Note: The File System Access API "move" method is not fully standardized/supported everywhere yet
+        // This is a best-effort fallback
+        if (
+          "move" in wFile.handle! &&
+          typeof (
+            wFile.handle as FileSystemFileHandle & {
+              move?: (name: string) => Promise<void>;
+            }
+          ).move === "function"
+        ) {
+          await (
+            wFile.handle as FileSystemFileHandle & {
+              move: (name: string) => Promise<void>;
+            }
+          ).move(newName);
+          setWorkspaceFiles((prev) =>
+            prev.map((f) =>
+              f.name === wFile.name ? { ...f, name: newName } : f
+            )
+          );
+          alert(`Renamed to: ${newName}`);
+        } else {
+          alert("Renaming is not supported in this browser environment.");
+        }
       }
     } catch (err) {
       console.error("Rename failed:", err);
@@ -340,17 +364,33 @@ function MediaInsightPage(): React.ReactNode {
     if (isElectron && window.electronAPI && workspacePath) {
       // Build operations from analyzed files
       const operations = workspaceFiles
-        .filter((f) => f.status === "done" && f.result)
-        .map((f) => ({
-          oldPath: f.path || "",
-          newName: f.result!.suggestedName || f.name,
-          category: f.result!.tags?.[0] || "uncategorized",
-          metadata: {
-            tags: f.result!.tags,
-            summary: f.result!.summary,
-            category: f.result!.tags?.[0],
-          },
-        }));
+        .filter((f) => f.status === "done" && f.analysisResult)
+        .map((f) => {
+          // Calculate new name with extension preservation
+          const currentExt = f.name.split(".").pop();
+          let newName = f.analysisResult!.suggestedName || f.name;
+          if (currentExt && !newName.endsWith(`.${currentExt}`)) {
+            newName = `${newName}.${currentExt}`;
+          }
+
+          return {
+            oldPath: f.path || "",
+            newName: newName,
+            category: f.analysisResult!.tags?.[0] || "uncategorized",
+            metadata: {
+              tags: f.analysisResult!.tags,
+              summary: f.analysisResult!.summary,
+              category: f.analysisResult!.tags?.[0],
+            },
+          };
+        });
+
+      if (operations.length === 0) {
+        alert(
+          "No analyzed files found to organize. Please analyze some files first."
+        );
+        return;
+      }
 
       try {
         setStatus("processing");
@@ -362,7 +402,7 @@ function MediaInsightPage(): React.ReactNode {
         const successCount = results.filter((r) => r.success).length;
         alert(`Organized ${successCount} of ${results.length} files!`);
 
-        // Refresh workspace
+        // Refresh workspace to show new locations
         openWorkspace();
       } catch (err) {
         setError("Organization failed: " + (err as Error).message);
@@ -417,30 +457,44 @@ function MediaInsightPage(): React.ReactNode {
         type="article"
       />
 
-      <section className="space-y-4">
-        <div className="flex items-center gap-4 text-aura-text-secondary">
-          <Link to="/tools" className="text-brand-accent hover:underline">
+      <section className="relative space-y-4 pb-6">
+        {/* Gradient background overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-2xl -mx-4 -my-2 opacity-50" />
+
+        <div className="relative flex items-center gap-4 text-aura-text-secondary">
+          <Link
+            to="/tools"
+            className="text-brand-accent hover:underline font-medium transition-colors"
+          >
             ← back to tools
           </Link>
-          <span className="text-sm">AI-powered media analysis</span>
+          <span className="text-sm flex items-center gap-2">
+            <Sparkles size={16} className="text-purple-500" />
+            AI-powered media analysis
+          </span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-aura-text-primary">
-          MediaInsight Pro
-        </h1>
-        <div className="flex items-center gap-4">
-          <p className="text-lg text-aura-text-secondary max-w-2xl">
+
+        <div className="relative">
+          <h1 className="text-4xl sm:text-5xl font-bold mi-gradient-text mb-2">
+            MediaInsight Pro
+          </h1>
+          <div className="h-1 w-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+        </div>
+
+        <div className="relative flex items-start gap-4">
+          <p className="text-lg text-aura-text-secondary max-w-2xl leading-relaxed">
             Analyze audio, video, and images with AI-powered transcription,
             visual analysis, and intelligent tagging.
           </p>
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 hover:bg-brand-secondary/10 rounded-lg transition-colors shrink-0"
+            className="p-3 hover:bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl transition-all duration-300 shrink-0 group"
             aria-label="Settings"
             title="AI Model Settings"
           >
             <Settings2
               size={24}
-              className="text-aura-text-secondary hover:text-brand-accent"
+              className="text-aura-text-secondary group-hover:text-purple-600 transition-colors group-hover:rotate-90 duration-300"
             />
           </button>
         </div>
@@ -469,38 +523,53 @@ function MediaInsightPage(): React.ReactNode {
 
         <main className="flex-1 space-y-6">
           {/* Mode Switcher */}
-          <div className="bg-white/80 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-brand-secondary/40 inline-flex transition-colors">
+          <div className="mi-mode-switcher mi-animate-fadeIn">
             <button
               onClick={() => {
                 setMode("record");
                 setResult(null);
               }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "record" ? "bg-brand-accent text-brand-on-accent" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
+              className={`mi-mode-btn ${mode === "record" ? "active" : ""}`}
             >
-              <Mic size={16} className="inline mr-2" />
-              Record
+              <Mic size={18} />
+              <span>Record</span>
             </button>
             <button
               onClick={() => {
                 setMode("upload");
                 setResult(null);
               }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "upload" ? "bg-brand-accent text-brand-on-accent" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
+              className={`mi-mode-btn ${mode === "upload" ? "active" : ""}`}
             >
-              <Upload size={16} className="inline mr-2" />
-              Upload
+              <Upload size={18} />
+              <span>Upload</span>
             </button>
             <button
               onClick={openWorkspace}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === "workspace" ? "bg-brand-accent text-brand-on-accent" : "text-aura-text-secondary hover:text-aura-text-primary"}`}
+              className={`mi-mode-btn ${mode === "workspace" ? "active" : ""}`}
             >
-              <FolderOpen size={16} className="inline mr-2" />
-              Workspace
+              <FolderOpen size={18} />
+              <span>Workspace</span>
             </button>
+            {/* Animated indicator */}
+            <div
+              className="mi-mode-indicator"
+              style={{
+                left:
+                  mode === "record"
+                    ? "0.375rem"
+                    : mode === "upload"
+                      ? "calc(33.333% + 0.125rem)"
+                      : "calc(66.666% - 0.125rem)",
+                width: "calc(33.333% - 0.25rem)",
+                height: "calc(100% - 0.75rem)",
+                top: "0.375rem",
+              }}
+            />
           </div>
 
           {mode !== "workspace" && !result && status !== "processing" && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-brand-secondary/40 shadow-sm">
+            <div className="mi-card-glass mi-animate-scaleIn p-8">
               {mode === "record" ? (
                 <AudioRecorder
                   onAudioCaptured={(d) =>
@@ -515,12 +584,12 @@ function MediaInsightPage(): React.ReactNode {
                 <FileUploader onFileSelected={handleMediaReady} />
               )}
               {mediaData && (
-                <div className="mt-8 pt-6 border-t border-brand-secondary/30 flex flex-col items-center">
+                <div className="mt-8 pt-6 border-t border-purple-200/50 flex flex-col items-center">
                   {mediaData.type === "image" && (
                     <img
                       src={mediaPreviewUrl!}
                       alt="Preview"
-                      className="max-h-64 rounded-lg shadow-sm mb-4"
+                      className="max-h-64 rounded-xl shadow-lg mb-4 ring-2 ring-purple-200"
                     />
                   )}
                   <Button
@@ -536,17 +605,30 @@ function MediaInsightPage(): React.ReactNode {
           )}
 
           {status === "processing" && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center border border-brand-secondary/40">
-              <div className="w-16 h-16 border-4 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin mx-auto mb-6" />
-              <h3 className="text-xl font-bold mb-2 text-aura-text-primary">
+            <div className="mi-card-glass p-12 text-center mi-animate-scaleIn">
+              <div className="relative w-20 h-20 mx-auto mb-6">
+                <div className="absolute inset-0 border-4 border-purple-200 rounded-full" />
+                <div className="absolute inset-0 border-4 border-transparent border-t-purple-600 rounded-full animate-spin" />
+                <Sparkles
+                  className="absolute inset-0 m-auto text-purple-600 mi-animate-pulse"
+                  size={32}
+                />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 mi-gradient-text">
                 Analyzing...
               </h3>
-              <div className="max-w-xs mx-auto h-2 bg-brand-secondary/20 rounded-full overflow-hidden">
+              <p className="text-sm text-aura-text-secondary mb-4">
+                AI is processing your media
+              </p>
+              <div className="max-w-xs mx-auto h-3 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full overflow-hidden shadow-inner">
                 <div
-                  className="h-full bg-brand-accent transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 transition-all duration-300 rounded-full shadow-lg"
                   style={{ width: `${progress}%` }}
                 />
               </div>
+              <p className="text-xs text-purple-600 font-semibold mt-2">
+                {progress}%
+              </p>
             </div>
           )}
 
@@ -557,15 +639,21 @@ function MediaInsightPage(): React.ReactNode {
           )}
 
           {result && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mi-animate-fadeIn">
               {/* Analysis Display - Takes 2 columns */}
               <div className="lg:col-span-2 space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex flex-wrap gap-2">
-                    {result.tags?.map((tag) => (
+                    {result.tags?.map((tag, idx) => (
                       <span
                         key={tag}
-                        className="px-2 py-1 bg-brand-accent/10 text-brand-accent text-xs font-bold rounded uppercase tracking-wider"
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm border-2 transition-all hover:scale-105 ${
+                          idx % 3 === 0
+                            ? "bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 border-purple-300"
+                            : idx % 3 === 1
+                              ? "bg-gradient-to-r from-pink-100 to-pink-200 text-pink-700 border-pink-300"
+                              : "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 border-blue-300"
+                        }`}
                       >
                         #{tag}
                       </span>

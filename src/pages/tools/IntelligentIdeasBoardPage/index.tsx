@@ -16,7 +16,11 @@ import { CheckIcon } from "../components/icons/CheckIcon";
 import { ChevronDownIcon } from "../components/icons/ChevronDownIcon";
 import { ChevronUpIcon } from "../components/icons/ChevronUpIcon";
 import { SettingsIcon } from "../components/icons/SettingsIcon";
-import { persistBoard, loadBoards } from "../services/intelligentIdeasStorage";
+import {
+  persistBoard,
+  loadBoards,
+  clearBoards,
+} from "../services/intelligentIdeasStorage";
 
 const IntelligentIdeasBoardPage = () => {
   const [inputText, setInputText] = useState("");
@@ -31,9 +35,18 @@ const IntelligentIdeasBoardPage = () => {
   >({});
   const { setIsLoading: setGlobalLoading } = useLoading();
 
-  // Load history on mount (ready for history panel)
+  // Load history on mount
   useEffect(() => {
-    loadBoards().catch(console.error);
+    loadBoards()
+      .then((boards) => {
+        if (boards.length > 0) {
+          // Restore the most recent board
+          const latest = boards[0];
+          setAllInputs(latest.inputs);
+          setOrganizedData(latest.organizedData);
+        }
+      })
+      .catch(console.error);
   }, []);
 
   const processInput = async () => {
@@ -85,7 +98,7 @@ const IntelligentIdeasBoardPage = () => {
         id: `board-${Date.now()}`,
         inputs: newInputs,
         organizedData: organized,
-        createdAt: new Date().toISOString(),
+        createdAt: Date.now(),
       });
     } catch (error) {
       console.error("Error processing input:", error);
@@ -114,6 +127,7 @@ const IntelligentIdeasBoardPage = () => {
       setOrganizedData(null);
       setInputText("");
       setExpandedCategories({});
+      clearBoards().catch(console.error);
     }
   };
 

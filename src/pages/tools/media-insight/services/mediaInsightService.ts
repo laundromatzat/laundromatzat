@@ -160,8 +160,8 @@ Specifically for this IMAGE:
 Respond in JSON format:
 {
   "summary": "string",
-  "visualElements": ["string", ...],
-  "detectedText": "string",
+  "visualElements": ["string"],
+  "detectedText": ["string"],
   "mood": "string",
   "suggestedName": "string",
   "tags": ["string", ...],

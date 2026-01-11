@@ -23,6 +23,7 @@ import {
   Image as ImageIcon,
   Video,
   Type as TypeIcon,
+  Sparkles,
 } from "lucide-react";
 
 interface AnalysisDisplayProps {
@@ -71,32 +72,32 @@ const AudioView: React.FC<{ data: AudioAnalysisResult }> = ({ data }) => {
       {data.segments.map((segment, index) => (
         <div
           key={index}
-          className="bg-white/80 backdrop-blur-sm border border-brand-secondary/40 rounded-xl p-5 hover:shadow-md transition-all duration-300"
+          className="mi-card-glass p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
         >
-          <div className="flex flex-wrap items-center gap-3 mb-3 text-sm text-aura-text-secondary">
-            <div className="flex items-center font-semibold text-brand-accent bg-brand-accent/10 px-2 py-1 rounded">
-              <User size={14} className="mr-1.5" />
+          <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
+            <div className="flex items-center font-semibold bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-300 shadow-sm">
+              <User size={16} className="mr-1.5" />
               {segment.speaker}
             </div>
-            <div className="flex items-center bg-brand-secondary/10 px-2 py-1 rounded">
-              <Clock size={14} className="mr-1.5" />
+            <div className="flex items-center bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200">
+              <Clock size={16} className="mr-1.5" />
               {segment.timestamp}
             </div>
-            <div className="flex items-center bg-brand-secondary/10 px-2 py-1 rounded">
-              <Globe size={14} className="mr-1.5" />
+            <div className="flex items-center bg-gradient-to-r from-pink-50 to-pink-100 text-pink-700 px-3 py-1.5 rounded-lg border border-pink-200">
+              <Globe size={16} className="mr-1.5" />
               {segment.language}
             </div>
             {segment.emotion && getEmotionBadge(segment.emotion)}
           </div>
 
-          <p className="text-aura-text-primary leading-relaxed whitespace-pre-wrap">
+          <p className="text-aura-text-primary leading-relaxed whitespace-pre-wrap text-base">
             {segment.content}
           </p>
 
           {segment.translation && (
-            <div className="mt-4 pt-3 border-t border-brand-secondary/30 bg-brand-secondary/5 -mx-5 -mb-5 px-5 pb-5 rounded-b-xl">
-              <div className="flex items-center text-xs font-semibold text-brand-accent mb-1.5 uppercase tracking-wide pt-2">
-                <Languages size={14} className="mr-1.5" />
+            <div className="mt-4 pt-4 border-t border-purple-200/50 bg-gradient-to-r from-purple-50/50 to-pink-50/50 -mx-6 -mb-6 px-6 pb-6 rounded-b-2xl">
+              <div className="flex items-center text-xs font-bold text-purple-700 mb-2 uppercase tracking-wide">
+                <Languages size={16} className="mr-1.5" />
                 English Translation
               </div>
               <p className="text-aura-text-secondary italic leading-relaxed">
@@ -122,13 +123,17 @@ const ImageView: React.FC<{ data: ImageAnalysisResult }> = ({ data }) => {
           {data.visualElements?.map((el, i) => (
             <li key={i} className="flex items-start text-aura-text-primary">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent mt-2 mr-3 flex-shrink-0" />
-              {typeof el === "string"
-                ? el
-                : typeof el === "object" && el !== null
-                  ? ((el as Record<string, unknown>).text as string) ||
-                    ((el as Record<string, unknown>).description as string) ||
-                    JSON.stringify(el)
-                  : String(el)}
+              {(() => {
+                if (typeof el === "string") return el;
+                if (typeof el === "object" && el !== null) {
+                  const record = el as Record<string, unknown>;
+                  if (typeof record.text === "string") return record.text;
+                  if (typeof record.description === "string")
+                    return record.description;
+                  return JSON.stringify(el);
+                }
+                return String(el);
+              })()}
             </li>
           )) || (
             <p className="text-aura-text-secondary italic">
@@ -155,7 +160,9 @@ const ImageView: React.FC<{ data: ImageAnalysisResult }> = ({ data }) => {
         </h3>
         {data.detectedText ? (
           <div className="bg-brand-secondary/5 p-4 rounded-lg border border-brand-secondary/30 font-mono text-sm text-aura-text-primary whitespace-pre-wrap leading-relaxed">
-            {data.detectedText}
+            {Array.isArray(data.detectedText)
+              ? data.detectedText.join("\n")
+              : data.detectedText}
           </div>
         ) : (
           <p className="text-aura-text-secondary italic">
@@ -217,25 +224,28 @@ const VideoView: React.FC<{ data: VideoAnalysisResult }> = ({ data }) => {
 
 const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ data }) => {
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 mi-animate-fadeIn">
       {/* Summary Section */}
-      <div className="bg-gradient-to-br from-brand-accent/5 to-white/80 backdrop-blur-sm border border-brand-accent/20 rounded-2xl p-6 shadow-sm transition-colors duration-300">
-        <h2 className="text-lg font-semibold text-brand-accent mb-3 flex items-center">
+      <div className="mi-card-gradient p-6 shadow-lg">
+        <h2 className="text-xl font-bold mi-gradient-text mb-4 flex items-center">
           {data.type === "video" ? (
-            <Video size={20} className="mr-2" />
+            <Video size={24} className="mr-2 text-purple-600" />
           ) : data.type === "image" ? (
-            <ImageIcon size={20} className="mr-2" />
+            <ImageIcon size={24} className="mr-2 text-pink-600" />
           ) : (
-            <Languages size={20} className="mr-2" />
+            <Languages size={24} className="mr-2 text-blue-600" />
           )}
           Overview
         </h2>
-        <p className="text-aura-text-primary leading-relaxed">{data.summary}</p>
+        <p className="text-aura-text-primary leading-relaxed text-base">
+          {data.summary}
+        </p>
       </div>
 
       {/* Detail Views */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-aura-text-primary px-1">
+        <h2 className="text-xl font-bold mi-gradient-text px-1 flex items-center gap-2">
+          <Sparkles size={20} className="text-purple-600" />
           {data.type === "image" ? "Detailed Analysis" : "Timeline"}
         </h2>
 

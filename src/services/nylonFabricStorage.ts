@@ -22,7 +22,7 @@ export type StoredDesign = {
   description: string;
   createdAt: number;
   guideText: string;
-  imageUrls: string[];
+  visuals: { stage: string; svg: string }[];
 };
 
 export const isNylonFabricStorageSupported = (): boolean =>

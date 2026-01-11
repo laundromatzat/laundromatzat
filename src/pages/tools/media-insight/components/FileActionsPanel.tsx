@@ -33,10 +33,12 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
 
   if (!file || file.status !== "done" || !file.analysisResult) {
     return (
-      <div className="bg-white/80 backdrop-blur-sm border border-brand-secondary/40 rounded-xl p-6">
+      <div className="mi-card-glass p-8">
         <div className="text-center text-aura-text-secondary">
-          <Sparkles size={48} className="mx-auto mb-3 opacity-30" />
-          <p className="text-sm">
+          <div className="mi-animate-float mb-4">
+            <Sparkles size={56} className="mx-auto text-purple-300" />
+          </div>
+          <p className="text-sm font-semibold text-purple-600">
             Select and analyze a file to see available actions
           </p>
         </div>
@@ -48,11 +50,14 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
   const tags = file.analysisResult.tags || [];
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border border-brand-secondary/40 rounded-xl p-6 space-y-6">
+    <div className="mi-card-glass p-6 space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-semibold text-aura-text-primary mb-1 flex items-center">
-          <Sparkles size={20} className="mr-2 text-brand-accent" />
+        <h3 className="text-xl font-bold mi-gradient-text mb-1 flex items-center">
+          <Sparkles
+            size={22}
+            className="mr-2 text-purple-600 mi-animate-pulse"
+          />
           File Actions
         </h3>
         <p className="text-xs text-aura-text-secondary">
@@ -62,23 +67,23 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
 
       {/* File Preview */}
       {file.thumbnail && (
-        <div className="bg-gradient-to-br from-brand-secondary/5 to-brand-accent/5 rounded-lg p-4 border border-brand-secondary/20">
-          <div className="text-xs font-semibold text-aura-text-secondary uppercase tracking-wide block mb-3">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border-2 border-purple-200">
+          <div className="text-xs font-bold text-purple-700 uppercase tracking-wide block mb-3">
             File Preview
           </div>
-          <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-brand-secondary/10 mb-3">
+          <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-white shadow-lg ring-2 ring-purple-300 mb-3">
             <img
               src={file.thumbnail}
               alt={file.name}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
             />
           </div>
           {onOpenFile && file.path && (
             <button
               onClick={() => onOpenFile(file)}
-              className="w-full bg-white/50 hover:bg-white/80 text-aura-text-primary font-medium py-2 px-3 rounded-lg transition-all flex items-center justify-center border border-brand-secondary/30"
+              className="w-full mi-btn-gradient text-sm py-2.5 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
             >
-              <ExternalLink size={16} className="mr-2" />
+              <ExternalLink size={16} />
               Open in Default App
             </button>
           )}
@@ -109,9 +114,9 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
       {/* Rename Button */}
       <button
         onClick={() => onRename(file)}
-        className="w-full bg-brand-accent hover:bg-brand-accent-strong text-brand-on-accent font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center shadow-sm hover:shadow-md"
+        className="w-full mi-btn-gradient py-3.5 px-4 flex items-center justify-center gap-2 text-base font-bold shadow-lg hover:shadow-xl"
       >
-        <Edit3 size={18} className="mr-2" />
+        <Edit3 size={20} />
         Rename File with AI Suggestion
       </button>
 
