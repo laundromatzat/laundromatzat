@@ -444,6 +444,107 @@ app.delete("/api/links/:id", requireAuth, async (req, res) => {
   }
 });
 
+// --- Dev Tasks API Endpoints ---
+
+// GET all dev tasks for the user
+app.get("/api/dev-tasks", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT * FROM dev_tasks WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Failed to fetch dev tasks:", err.message);
+    res.status(500).json({ error: "Failed to fetch dev tasks" });
+  }
+});
+
+// POST a new dev task
+app.post("/api/dev-tasks", requireAuth, async (req, res) => {
+  const { title, description, category, priority, status, tags, ai_prompt, notes } = req.body;
+  if (!title) {
+    return res.status(400).json({ error: "Title is required" });
+  }
+
+  try {
+    const result = await db.query(
+      `INSERT INTO dev_tasks (user_id, title, description, category, priority, status, tags, ai_prompt, notes, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+       RETURNING *`,
+      [
+        req.user.id,
+        title,
+        description || null,
+        category || 'feature',
+        priority || 'medium',
+        status || 'new',
+        tags || null,
+        ai_prompt || null,
+        notes || null
+      ]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Failed to create dev task:", err.message);
+    res.status(500).json({ error: "Failed to create dev task" });
+  }
+});
+
+// PUT (update) a dev task
+app.put("/api/dev-tasks/:id", requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { title, description, category, priority, status, tags, ai_prompt, notes } = req.body;
+
+  try {
+    const result = await db.query(
+      `UPDATE dev_tasks
+       SET title = COALESCE($1, title),
+           description = COALESCE($2, description),
+           category = COALESCE($3, category),
+           priority = COALESCE($4, priority),
+           status = COALESCE($5, status),
+           tags = COALESCE($6, tags),
+           ai_prompt = COALESCE($7, ai_prompt),
+           notes = COALESCE($8, notes),
+           updated_at = NOW()
+       WHERE id = $9 AND user_id = $10
+       RETURNING *`,
+      [title, description, category, priority, status, tags, ai_prompt, notes, id, req.user.id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Dev task not found or unauthorized" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Failed to update dev task:", err.message);
+    res.status(500).json({ error: "Failed to update dev task" });
+  }
+});
+
+// DELETE a dev task
+app.delete("/api/dev-tasks/:id", requireAuth, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await db.query(
+      "DELETE FROM dev_tasks WHERE id = $1 AND user_id = $2",
+      [id, req.user.id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Dev task not found or unauthorized" });
+    }
+
+    res.json({ message: "Dev task deleted successfully" });
+  } catch (err) {
+    console.error("Failed to delete dev task:", err.message);
+    res.status(500).json({ error: "Failed to delete dev task" });
+  }
+});
+
 // --- Admin Routes ---
 
 // List all users
