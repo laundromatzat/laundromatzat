@@ -3,14 +3,30 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "concurrently \"vite\" \"npm run server\"",
     "server": "cd server && npm start",
     "build": "vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview",
+    "electron:dev": "NODE_ENV=development electron .",
+    "electron:dev:full": "concurrently \"vite\" \"wait-on http://localhost:5173 && npm run electron:dev\"",
+    "electron:dev:all": "concurrently \"vite\" \"npm run server\" \"wait-on -t 30000 http://localhost:5173 http://localhost:4000 && npm run electron:dev\"",
+    "electron:build": "vite build && electron-builder",
+    "electron:build:mac": "vite build && electron-builder --mac",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
-    "lint": "eslint . --ext .ts,.tsx --max-warnings=0"
+    "test:e2e:ui": "playwright test --ui",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings=0"
+    ]
   },
   "dependencies": {
     "@dr.pogodin/react-helmet": "^3.0.4",
@@ -24,37 +40,75 @@
     "dotenv": "^17.2.3",
     "focus-trap-react": "^11.0.4",
     "framer-motion": "^12.23.25",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.0.0",
     "lucide-react": "^0.559.0",
+    "mime-types": "^3.0.2",
     "onnxruntime-web": "^1.21.0",
     "pg": "^8.16.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.8.1",
     "tailwind-merge": "^3.4.0",
+    "uuid": "^13.0.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.14.0",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
     "@vitejs/plugin-react": "^5.0.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.1",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.4.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
+    "husky": "^9.1.7",
     "jsdom": "^27.0.0",
+    "lint-staged": "^16.2.7",
+    "msw": "^2.12.7",
     "postcss": "^8.5.6",
     "prettier": "^3.5.1",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.laundromatzat.mediainsight",
+    "productName": "MediaInsight Pro",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "!electron/**/*.ts",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    }
   }
 }

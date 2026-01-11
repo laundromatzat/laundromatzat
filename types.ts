@@ -40,3 +40,42 @@ export interface User {
   role?: "user" | "admin";
   is_approved?: boolean;
 }
+
+// --- Local AI & File System Types ---
+
+export type FileType =
+  | "image"
+  | "video"
+  | "audio"
+  | "document"
+  | "code"
+  | "unknown";
+
+export type SummaryLength = "short" | "medium" | "long";
+
+export interface AIOrganizationSuggestion {
+  suggestedName?: string;
+  suggestedTags?: string[];
+  suggestedLogicalPath?: string;
+  reasoning?: string;
+}
+
+export interface OrganizationPattern {
+  type: string;
+  fileTypeApplicability: FileType[] | "all";
+  categoryKeywords: string[];
+  pattern: string;
+  description?: string;
+}
+
+export interface LearnedPreferenceExample {
+  fileType: FileType;
+  originalValue: string;
+  appliedValue: string;
+  actionType: "rename" | "tag" | "move";
+}
+
+export interface UserSettings {
+  localAiUrl?: string;
+  localAiModel?: string;
+}

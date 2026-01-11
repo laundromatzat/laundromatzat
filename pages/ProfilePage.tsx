@@ -186,7 +186,7 @@ export default function ProfilePage() {
                     src={getFullAvatarUrl(user.profile_picture)}
                     alt={user.username}
                     crossOrigin="anonymous"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-white/10 flex items-center justify-center">

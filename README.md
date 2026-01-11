@@ -20,6 +20,8 @@ This project is configured as a single workspace with shared dependencies where 
     npm install
     ```
 
+    > **Note**: This project installs git hooks via Husky. `lint-staged` will automatically lint your code before every commit.
+
 2.  **Configure Environment**
     Create `.env.local`:
 

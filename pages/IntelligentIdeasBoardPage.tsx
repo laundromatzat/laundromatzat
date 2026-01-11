@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLoading } from "../context/LoadingContext";
 import {
   organizeData,
@@ -16,6 +16,7 @@ import { CheckIcon } from "../components/icons/CheckIcon";
 import { ChevronDownIcon } from "../components/icons/ChevronDownIcon";
 import { ChevronUpIcon } from "../components/icons/ChevronUpIcon";
 import { SettingsIcon } from "../components/icons/SettingsIcon";
+import { persistBoard, loadBoards } from "../services/intelligentIdeasStorage";
 
 const IntelligentIdeasBoardPage = () => {
   const [inputText, setInputText] = useState("");
@@ -29,6 +30,11 @@ const IntelligentIdeasBoardPage = () => {
     Record<string, boolean>
   >({});
   const { setIsLoading: setGlobalLoading } = useLoading();
+
+  // Load history on mount (ready for history panel)
+  useEffect(() => {
+    loadBoards().catch(console.error);
+  }, []);
 
   const processInput = async () => {
     if (!inputText.trim()) return;
@@ -73,6 +79,14 @@ const IntelligentIdeasBoardPage = () => {
       const organized = await organizeData(newInputs);
       setOrganizedData(organized);
       setInputText("");
+
+      // Save to storage after successful organization
+      await persistBoard({
+        id: `board-${Date.now()}`,
+        inputs: newInputs,
+        organizedData: organized,
+        createdAt: new Date().toISOString(),
+      });
     } catch (error) {
       console.error("Error processing input:", error);
       alert(

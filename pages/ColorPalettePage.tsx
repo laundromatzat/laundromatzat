@@ -1,7 +1,20 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 import PageMetadata from "../components/PageMetadata";
 import Container from "../components/Container";
+import {
+  persistPalette,
+  loadPalettes,
+  deletePalette,
+  clearPalettes,
+  type StoredPalette,
+} from "../services/colorPaletteStorage";
 
 interface ExtractedColor {
   hex: string;
@@ -139,8 +152,15 @@ const ColorPalettePage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedValue, setCopiedValue] = useState<string | null>(null);
+  const [history, setHistory] = useState<StoredPalette[]>([]);
+  const [currentPaletteId, setCurrentPaletteId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Load history on mount
+  useEffect(() => {
+    loadPalettes().then(setHistory).catch(console.error);
+  }, []);
 
   const sampleColors = useCallback(
     (context: CanvasRenderingContext2D, width: number, height: number) => {
@@ -160,7 +180,7 @@ const ColorPalettePage: React.FC = () => {
   );
 
   const processImage = useCallback(
-    (img: HTMLImageElement) => {
+    async (img: HTMLImageElement, file: File) => {
       const canvas = canvasRef.current;
       if (!canvas) {
         return;
@@ -202,6 +222,26 @@ const ColorPalettePage: React.FC = () => {
       });
 
       setPalette(colors);
+
+      // Save to storage
+      const paletteId = `palette-${Date.now()}`;
+      setCurrentPaletteId(paletteId);
+
+      try {
+        await persistPalette({
+          id: paletteId,
+          fileName: file.name,
+          imageBlob: file,
+          palette: colors,
+          createdAt: Date.now(),
+        });
+
+        // Reload history
+        const updatedHistory = await loadPalettes();
+        setHistory(updatedHistory);
+      } catch (err) {
+        console.error("Failed to save palette:", err);
+      }
     },
     [sampleColors]
   );
@@ -235,7 +275,7 @@ const ColorPalettePage: React.FC = () => {
           const img = new Image();
           img.onload = () => {
             setImagePreview(result);
-            processImage(img);
+            processImage(img, file);
             setIsProcessing(false);
           };
           img.onerror = () => {
@@ -270,6 +310,52 @@ const ColorPalettePage: React.FC = () => {
       .catch(() => {
         setError("Copy to clipboard failed.");
       });
+  }, []);
+
+  const loadHistoricalPalette = useCallback(async (stored: StoredPalette) => {
+    setPalette(stored.palette);
+    setCurrentPaletteId(stored.id);
+
+    // Create preview from blob
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(stored.imageBlob);
+  }, []);
+
+  const handleDeletePalette = useCallback(
+    async (paletteId: string) => {
+      try {
+        await deletePalette(paletteId);
+        const updatedHistory = await loadPalettes();
+        setHistory(updatedHistory);
+
+        // Clear current if deleted
+        if (currentPaletteId === paletteId) {
+          setPalette([]);
+          setImagePreview(null);
+          setCurrentPaletteId(null);
+        }
+      } catch (err) {
+        console.error("Failed to delete palette:", err);
+      }
+    },
+    [currentPaletteId]
+  );
+
+  const handleClearHistory = useCallback(async () => {
+    if (!confirm("Are you sure you want to clear all palette history?")) return;
+
+    try {
+      await clearPalettes();
+      setHistory([]);
+      setPalette([]);
+      setImagePreview(null);
+      setCurrentPaletteId(null);
+    } catch (err) {
+      console.error("Failed to clear history:", err);
+    }
   }, []);
 
   const placeholders = useMemo(() => new Array(PALETTE_SIZE).fill(null), []);
@@ -443,6 +529,74 @@ const ColorPalettePage: React.FC = () => {
 
         <canvas ref={canvasRef} className="hidden" />
       </section>
+
+      {/* History Panel */}
+      {history.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-aura-text-primary">
+              Palette History
+            </h2>
+            <button
+              type="button"
+              onClick={handleClearHistory}
+              className="text-sm text-aura-text-secondary hover:text-red-500 transition"
+            >
+              Clear All
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {history.map((stored) => (
+              <div
+                key={stored.id}
+                className={`rounded-2xl border ${currentPaletteId === stored.id ? "border-brand-accent" : "border-brand-secondary/40"} bg-white/60 p-4 shadow-sm cursor-pointer transition hover:shadow-md`}
+                onClick={() => loadHistoricalPalette(stored)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    loadHistoricalPalette(stored);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Load palette from ${stored.fileName}`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-aura-text-primary truncate">
+                      {stored.fileName}
+                    </p>
+                    <p className="text-xs text-aura-text-secondary">
+                      {new Date(stored.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePalette(stored.id);
+                    }}
+                    className="ml-2 text-xs text-aura-text-secondary hover:text-red-500 transition"
+                    aria-label="Delete palette"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="flex gap-1">
+                  {stored.palette.map((color, idx) => (
+                    <div
+                      key={idx}
+                      className="flex-1 h-8 rounded"
+                      style={{ backgroundColor: color.hex }}
+                      title={color.hex}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </Container>
   );
 };

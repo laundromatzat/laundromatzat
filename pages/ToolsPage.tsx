@@ -28,8 +28,9 @@ const TOOL_LINKS = [
   {
     to: "/tools/wood-carving-visualizer",
     title: "Wood Carving Visualizer",
-    description: "Generate multiple design variations and create detailed carving renderings.",
-    imageUrl: "/assets/tools/wood-carving.svg",
+    description:
+      "Generate multiple design variations and create detailed carving renderings.",
+    imageUrl: "/assets/tools/wood-carving.png",
     badge: "New service",
   },
   {
@@ -74,6 +75,14 @@ const TOOL_LINKS = [
     description: "Reimagine environments using neuroaesthetic principles.",
     imageUrl: "/assets/tools/neuroaesthetic.png",
     badge: "Integrated",
+  },
+  {
+    to: "/tools/media-insight",
+    title: "MediaInsight Pro",
+    description:
+      "Analyze audio, video, and images with AI-powered transcription and insights.",
+    imageUrl: "/assets/tools/media-insight.png",
+    badge: "AI powered",
   },
 ];
 

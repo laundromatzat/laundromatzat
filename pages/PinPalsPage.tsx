@@ -32,16 +32,48 @@ const savePinToGallery = async (pin: {
   petCount: number;
 }) => {
   try {
+    // Compress image to avoid 413 Payload Too Large
+    const img = new Image();
+    img.src = pin.imageUrl;
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+    });
+
+    const canvas = document.createElement("canvas");
+    const maxSize = 600; // Reduced from 800 for smaller payload
+    let width = img.width;
+    let height = img.height;
+
+    if (width > height && width > maxSize) {
+      height = (height * maxSize) / width;
+      width = maxSize;
+    } else if (height > maxSize) {
+      width = (width * maxSize) / height;
+      height = maxSize;
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(img, 0, 0, width, height);
+    }
+
+    // More aggressive compression: 60% quality instead of 80%
+    const compressedImageUrl = canvas.toDataURL("image/jpeg", 0.6);
+
     const res = await fetch(getApiUrl("/api/pin-pals/gallery"), {
       method: "POST",
       headers: getAuthHeaders(),
-      body: JSON.stringify(pin),
+      body: JSON.stringify({ ...pin, imageUrl: compressedImageUrl }),
     });
     if (!res.ok) throw new Error("Failed to save pin");
     return await res.json();
   } catch (e) {
     console.error(e);
     alert("Failed to save pin to gallery. Ensure you are logged in.");
+    throw e;
   }
 };
 
@@ -94,12 +126,16 @@ const PinPalsPage: React.FC = () => {
 
   const handleSaveToGallery = async () => {
     if (state.generatedImage) {
-      await savePinToGallery({
-        imageUrl: state.generatedImage,
-        petType: state.petType,
-        petCount: state.petCount,
-      });
-      alert("Pin saved to gallery!");
+      try {
+        await savePinToGallery({
+          imageUrl: state.generatedImage,
+          petType: state.petType,
+          petCount: state.petCount,
+        });
+        alert("Pin saved to gallery!");
+      } catch {
+        // Error already handled in savePinToGallery
+      }
     }
   };
 
@@ -297,6 +333,8 @@ const PinPalsPage: React.FC = () => {
       // Vertical Packing: 2 rows staggered to fit with margins.
 
       const pinSize = 600;
+      const radius = pinSize / 2;
+      const margin = 20; // 20px margin from edges
 
       // Vertical Centers
       // Top Row: Y = Margin + Radius = 320

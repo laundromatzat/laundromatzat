@@ -1,0 +1,295 @@
+# GitHub Actions Integration for AI Agents
+
+## Overview
+
+This repository is configured to automatically capture and expose CI/CD errors for AI agents to fix automatically.
+
+## How It Works
+
+When a GitHub Actions workflow fails (lint or build errors), the CI workflow will:
+
+1. **Capture error output** - Lint errors are saved to `lint-output.txt`
+2. **Post a commit comment** - A formatted comment is added to the failing commit containing:
+   - Lint errors (if any)
+   - Build failure notification (if applicable)
+   - Link to the workflow run
+   - Special marker for AI agents
+
+## Self-Healing CI/CD (Auto-Fix)
+
+**Status**: ✅ Enabled by default
+
+AI agents can now automatically detect and fix CI failures without user intervention!
+
+### How Auto-Fix Works
+
+After an AI agent pushes code to GitHub:
+
+1. **Auto-Monitor**: Automatically wait and monitor CI status (up to 5 minutes)
+2. **Auto-Detect**: If CI fails, fetch error details from commit comment
+3. **Auto-Fix**: Parse errors, fix the issues in code
+4. **Auto-Push**: Commit and push the fixes
+5. **Auto-Verify**: Monitor the new CI run (repeat up to 3 times)
+
+### Safety Mechanisms
+
+- **Max 3 retry attempts** - Prevents infinite loops
+- **Attempt tracking** - Commit messages show: `fix: auto-resolve CI errors (attempt 2/3)`
+- **User notification** - Only notified if all 3 attempts fail
+- **Timeout protection** - 5-minute max wait per CI run
+
+### Workflow File
+
+See [.agent/workflows/auto-fix-ci.md](file:///Users/stephenmatzat/Projects/laundromatzat/.agent/workflows/auto-fix-ci.md) for the complete workflow.
+
+### Scripts
+
+- **monitor-ci-status.js** - Polls GitHub API to check CI status
+- **auto-fix-ci.js** - Orchestrates the complete auto-fix process
+- **fetch-ci-errors.js** - Retrieves error details from commit comments
+
+### Disabling Auto-Fix
+
+To disable for a session:
+
+```bash
+export ANTIGRAVITY_AUTO_FIX_CI=false
+```
+
+Or remove `// turbo-all` from `.agent/workflows/auto-fix-ci.md`
+
+## Best Practices for AI Agents
+
+### **CRITICAL: Always Lint Before Pushing**
+
+**Never push code without running lint locally first.** This prevents wasting CI/CD resources and avoids iterative error-fixing cycles.
+
+#### Recommended Workflow
+
+```bash
+# 1. Make your code changes
+
+# 2. Run lint locally to catch ALL errors at once
+npm run lint
+
+# 3. If errors exist, save them for batch fixing
+npm run lint 2>&1 | tee lint-errors.txt
+
+# 4. Fix all errors in one go (don't fix incrementally)
+
+# 5. Verify lint passes
+npm run lint
+
+# 6. Commit (let pre-commit hook run - DO NOT use --no-verify)
+git add .
+git commit -m "fix: description"
+
+# 7. Only push when local lint passes
+git push origin main
+```
+
+### Common TypeScript Linting Patterns
+
+When fixing linting errors, watch for these common patterns:
+
+#### 1. Unused Imports/Variables
+
+```typescript
+// ❌ Error: 'useState' is defined but never used
+import { useState, useEffect } from "react";
+
+// ✅ Fix: Remove unused import
+import { useEffect } from "react";
+
+// ❌ Error: 'data' is assigned but never used
+const data = fetchData();
+
+// ✅ Fix: Prefix with underscore if intentionally unused
+const _data = fetchData();
+```
+
+#### 2. TypeScript `any` Types
+
+```typescript
+// ❌ Error: Unexpected any. Specify a different type
+const mockChat = client.chats.create({} as any);
+
+// ✅ Fix: Use proper type or unknown
+const mockChat = client.chats.create({} as { model: string });
+// or
+const mockChat = client.chats.create({} as unknown as ChatConfig);
+```
+
+#### 3. Accessibility Issues
+
+```typescript
+// ❌ Error: A form label must be associated with a control
+<label>
+  <input type="radio" name="model" />
+  Gemini API
+</label>
+
+// ✅ Fix: Add aria-label
+<label>
+  <input
+    type="radio"
+    name="model"
+    aria-label="Gemini API (Cloud)"
+  />
+  Gemini API
+</label>
+```
+
+#### 4. Escaped Characters
+
+```typescript
+// ❌ Error: `'` can be escaped with `&apos;`
+<div>Google's Gemini API</div>
+
+// ✅ Fix: Use HTML entities
+<div>Google&apos;s Gemini API</div>
+
+// ❌ Error: `"` can be escaped with `&quot;`
+<p>"{transcript}"</p>
+
+// ✅ Fix: Use HTML entities
+<p>&quot;{transcript}&quot;</p>
+```
+
+#### 5. `const` vs `let`
+
+```typescript
+// ❌ Error: 'API_KEY' is never reassigned. Use 'const' instead
+let API_KEY: string = "key";
+
+// ✅ Fix: Use const for never-reassigned variables
+const API_KEY: string = "key";
+```
+
+### Batch Fixing Strategy
+
+**DO NOT fix errors one file at a time.** This leads to multiple push cycles.
+
+1. **Run full lint scan first**: `npm run lint 2>&1 | tee errors.txt`
+2. **Identify all error patterns** across the entire codebase
+3. **Group similar errors** (e.g., all `any` types, all unused imports)
+4. **Fix all instances in one commit**
+5. **Verify with local lint before pushing**
+
+### Pre-Commit Hooks
+
+This project uses Husky + lint-staged for pre-commit linting.
+
+**NEVER bypass with `--no-verify`** unless you have a specific reason and understand the consequences.
+
+```bash
+# ❌ BAD: Bypasses all checks
+git commit --no-verify -m "quick fix"
+
+# ✅ GOOD: Let pre-commit hooks run
+git commit -m "fix: resolve linting errors"
+```
+
+## For AI Agents
+
+### Automatic Error Detection
+
+When a user reports "GitHub Actions failed" or similar:
+
+1. **Fetch the latest commit comments** using the GitHub MCP server:
+
+   ```javascript
+   // Use mcp_github-mcp-server tools to get commit details
+   const commit = await getLatestCommit("laundromatzat", "laundromatzat");
+   // Check for comments containing "CI Build Failed"
+   ```
+
+2. **Or use the helper script**:
+   ```bash
+   node .github/scripts/fetch-ci-errors.js
+   ```
+
+### Error Comment Format
+
+Comments will look like this:
+
+```markdown
+## ❌ CI Build Failed
+
+### Lint Errors
+```
+
+/path/to/file.tsx
+123:45 error Description of error rule-name
+
+✖ X problems (X errors, 0 warnings)
+
+```
+
+---
+**For AI Agents**: Use this error output to fix the issues automatically.
+**Workflow Run**: https://github.com/owner/repo/actions/runs/12345
+```
+
+### Workflow for Fixing Errors
+
+1. Parse the error comment to extract:
+   - File paths
+   - Line numbers
+   - Error descriptions
+   - Rule names
+
+2. Fix the errors in the identified files
+
+3. Commit and push the fixes
+
+4. The workflow will run again and either:
+   - Pass ✅ (no new comment)
+   - Fail ❌ (new comment with remaining errors)
+
+## Manual Usage
+
+### Check for CI Errors
+
+```bash
+# For the latest commit
+node .github/scripts/fetch-ci-errors.js
+
+# For a specific commit
+node .github/scripts/fetch-ci-errors.js abc123def
+```
+
+### Requirements
+
+- GitHub CLI (`gh`) must be installed and authenticated
+- Run `gh auth login` if not already authenticated
+
+## Workflow Configuration
+
+The CI workflow is configured in `.github/workflows/ci.yml` with:
+
+- **Permissions**: `contents: read`, `pull-requests: write`
+- **Error capture**: Lint output is piped to `lint-output.txt`
+- **Continue on error**: Steps use `continue-on-error: true` to allow commenting
+- **Conditional commenting**: Only comments when `lint` or `build` steps fail
+
+## Future Enhancements
+
+- [ ] Add support for test failures
+- [ ] Include code snippets in error comments
+- [ ] Suggest fixes using AI in the comment itself
+- [ ] Support for pull request comments (not just commits)
+
+## Troubleshooting
+
+### No comments appearing
+
+1. Check workflow permissions in repository settings
+2. Verify `GITHUB_TOKEN` has write access
+3. Check workflow run logs for comment step errors
+
+### Script fails to fetch comments
+
+1. Ensure GitHub CLI is installed: `gh --version`
+2. Authenticate: `gh auth login`
+3. Check repository access: `gh repo view`

@@ -34,6 +34,7 @@ import ColorPalettePage from "./pages/ColorPalettePage";
 import NylonFabricDesignerPage from "./pages/NylonFabricDesignerPage";
 import WoodCarvingVisualizerPage from "./pages/WoodCarvingVisualizerPage";
 import IntelligentIdeasBoardPage from "./pages/IntelligentIdeasBoardPage";
+import MediaInsightPage from "./pages/MediaInsightPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -174,6 +175,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <IntelligentIdeasBoardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "tools/media-insight",
+        element: (
+          <ProtectedRoute>
+            <MediaInsightPage />
           </ProtectedRoute>
         ),
       },
