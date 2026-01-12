@@ -6,7 +6,7 @@ import {
   TaskCategory,
   TaskPriority,
   TaskStatus,
-} from "../types/devTaskTypes";
+} from "../../types/devTaskTypes";
 import {
   fetchDevTasks,
   createDevTask,
@@ -14,17 +14,17 @@ import {
   deleteDevTask,
   generateAIPrompt,
   setAuthToken,
-} from "../services/devTasksService";
+} from "../../services/devTasksService";
 import {
   persistTasks,
   loadTasks,
   deleteTask as deleteTaskFromStorage,
-} from "../services/devTasksStorage";
-import QuickAddTask from "../components/dev-tasks/QuickAddTask";
-import TaskList from "../components/dev-tasks/TaskList";
-import TaskDetailModal from "../components/dev-tasks/TaskDetailModal";
-import Hero from "../components/Hero";
-import Container from "../components/Container";
+} from "../../services/devTasksStorage";
+import QuickAddTask from "../../components/dev-tasks/QuickAddTask";
+import TaskList from "../../components/dev-tasks/TaskList";
+import TaskDetailModal from "../../components/dev-tasks/TaskDetailModal";
+import Hero from "../../components/Hero";
+import Container from "../../components/Container";
 
 const DevTaskManager = () => {
   const { token } = useAuth();
