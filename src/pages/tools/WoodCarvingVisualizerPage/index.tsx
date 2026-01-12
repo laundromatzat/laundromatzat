@@ -483,12 +483,23 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                   <div
                     className="bg-brand-secondary p-4 flex items-center justify-center min-h-[500px]"
                     dangerouslySetInnerHTML={{ __html: image.svg }}
-                  />
-                  <div className="p-4 bg-brand-primary">
-                    <p className="font-bold text-center text-brand-accent">
-                      {image.view}
-                    </p>
-                  </div>
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {detailedImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="border border-brand-surface-highlight rounded-lg shadow-layer-1 overflow-hidden bg-brand-primary"
+                    >
+                      <div
+                        className="bg-brand-secondary p-4 flex items-center justify-center min-h-[500px]"
+                        dangerouslySetInnerHTML={{ __html: image.svg }}
+                      />
+                      <div className="p-4 bg-brand-primary">
+                        <p className="font-bold text-center text-brand-accent">
+                          {image.view}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
