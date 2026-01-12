@@ -27,9 +27,23 @@ This project is configured as a single workspace with shared dependencies where 
 
     ```env
     VITE_GEMINI_API_KEY=your_key
+    DATABASE_URL=postgresql://localhost/laundromatzat_dev
     ```
 
-3.  **Run Development Server**
+3.  **Set Up Local Database (Development)**
+
+    ```bash
+    # Install PostgreSQL (macOS)
+    brew install postgresql@14
+    brew services start postgresql@14
+
+    # Create development database
+    createdb laundromatzat_dev
+    ```
+
+    > **Note**: The backend will automatically create all required tables on first run.
+
+4.  **Run Development Server**
 
     ```bash
     npm run dev
@@ -73,13 +87,21 @@ You must configure the following environment variables in your production enviro
 
 ### 2. Database & Storage Strategy
 
-The application uses **SQLite** (`paystubs.db`) and local file storage (`server/uploads/`).
+The application uses **PostgreSQL** (managed database) and persistent file storage (`server/uploads/`).
 
-- **Persistence**: If deploying to a containerized platform (Heroku, Render, AWS ECS), the filesystem is often _ephemeral_ (deleted on restart).
-- **Solution**:
-  - **VPS (DigitalOcean Droplet/EC2)**: SQLite is fine. Ensure the `server/` directory is backed up.
-  - **PaaS (Heroku/Render)**: You MUST mount a **Persistent Volume** (Disk) to `/app/server` (or specifically `server/paystubs.db` and `server/uploads`).
-  - **Alternative**: Migrate to PostgreSQL/MySQL and S3 for uploads if scaling is required.
+#### **Development Environment**
+
+- **Database**: Set `DATABASE_URL` in `.env.local` to point to a **separate development database**
+  - **Recommended**: Local PostgreSQL instance (`postgresql://localhost/laundromatzat_dev`)
+  - **Alternative**: Render dev database (separate from production)
+  - **⚠️ Never use production `DATABASE_URL` in development** to avoid data corruption
+- **Storage**: Local filesystem (`server/uploads/`) - data persists on your machine
+
+#### **Production Environment (Render)**
+
+- **Database**: Render-managed PostgreSQL (set via `DATABASE_URL` environment variable)
+- **Storage**: Render persistent disk mounted to `server/uploads/`
+- **Backups**: Use `npm run backup` to create JSON dumps (see Admin Features section)
 
 ### 3. Build & Run
 
