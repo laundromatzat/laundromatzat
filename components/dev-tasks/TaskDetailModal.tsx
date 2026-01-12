@@ -71,6 +71,7 @@ const TaskDetailModal = ({
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <div
           role="dialog"
           aria-modal="true"
@@ -381,7 +382,7 @@ const TaskDetailModal = ({
                   <Save className="w-4 h-4" />
                   {saving ? "Saving..." : "Save Changes"}
                 </button>
-      {/* eslint-enable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+                {/* eslint-enable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                 <button
                   onClick={() => {
                     setIsEditing(false);
