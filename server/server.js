@@ -1,6 +1,9 @@
 // backend/server.js
 const path = require("path");
+// Load .env first (shared defaults)
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
+// Load .env.local second (local overrides, gitignored)
+require("dotenv").config({ path: path.join(__dirname, "../.env.local") });
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -475,7 +478,16 @@ app.get("/api/dev-tasks", requireAuth, async (req, res) => {
 
 // POST a new dev task
 app.post("/api/dev-tasks", requireAuth, async (req, res) => {
-  const { title, description, category, priority, status, tags, ai_prompt, notes } = req.body;
+  const {
+    title,
+    description,
+    category,
+    priority,
+    status,
+    tags,
+    ai_prompt,
+    notes,
+  } = req.body;
   if (!title) {
     return res.status(400).json({ error: "Title is required" });
   }
@@ -489,12 +501,12 @@ app.post("/api/dev-tasks", requireAuth, async (req, res) => {
         req.user.id,
         title,
         description || null,
-        category || 'feature',
-        priority || 'medium',
-        status || 'new',
+        category || "feature",
+        priority || "medium",
+        status || "new",
         tags || null,
         ai_prompt || null,
-        notes || null
+        notes || null,
       ]
     );
     res.status(201).json(result.rows[0]);
@@ -507,7 +519,16 @@ app.post("/api/dev-tasks", requireAuth, async (req, res) => {
 // PUT (update) a dev task
 app.put("/api/dev-tasks/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
-  const { title, description, category, priority, status, tags, ai_prompt, notes } = req.body;
+  const {
+    title,
+    description,
+    category,
+    priority,
+    status,
+    tags,
+    ai_prompt,
+    notes,
+  } = req.body;
 
   try {
     const result = await db.query(
@@ -523,11 +544,24 @@ app.put("/api/dev-tasks/:id", requireAuth, async (req, res) => {
            updated_at = NOW()
        WHERE id = $9 AND user_id = $10
        RETURNING *`,
-      [title, description, category, priority, status, tags, ai_prompt, notes, id, req.user.id]
+      [
+        title,
+        description,
+        category,
+        priority,
+        status,
+        tags,
+        ai_prompt,
+        notes,
+        id,
+        req.user.id,
+      ]
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Dev task not found or unauthorized" });
+      return res
+        .status(404)
+        .json({ error: "Dev task not found or unauthorized" });
     }
 
     res.json(result.rows[0]);
@@ -548,7 +582,9 @@ app.delete("/api/dev-tasks/:id", requireAuth, async (req, res) => {
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Dev task not found or unauthorized" });
+      return res
+        .status(404)
+        .json({ error: "Dev task not found or unauthorized" });
     }
 
     res.json({ message: "Dev task deleted successfully" });
