@@ -1,24 +1,30 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { DevTask, CreateDevTaskRequest, TaskCategory, TaskPriority, TaskStatus } from '../types/devTaskTypes';
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../context/AuthContext";
+import {
+  DevTask,
+  CreateDevTaskRequest,
+  TaskCategory,
+  TaskPriority,
+  TaskStatus,
+} from "../types/devTaskTypes";
 import {
   fetchDevTasks,
   createDevTask,
   updateDevTask,
   deleteDevTask,
   generateAIPrompt,
-  setAuthToken
-} from '../services/devTasksService';
+  setAuthToken,
+} from "../services/devTasksService";
 import {
   persistTasks,
   loadTasks,
-  deleteTask as deleteTaskFromStorage
-} from '../services/devTasksStorage';
-import QuickAddTask from '../components/dev-tasks/QuickAddTask';
-import TaskList from '../components/dev-tasks/TaskList';
-import TaskDetailModal from '../components/dev-tasks/TaskDetailModal';
-import Hero from '../components/Hero';
-import Container from '../components/Container';
+  deleteTask as deleteTaskFromStorage,
+} from "../services/devTasksStorage";
+import QuickAddTask from "../components/dev-tasks/QuickAddTask";
+import TaskList from "../components/dev-tasks/TaskList";
+import TaskDetailModal from "../components/dev-tasks/TaskDetailModal";
+import Hero from "../components/Hero";
+import Container from "../components/Container";
 
 const DevTaskManager = () => {
   const { token } = useAuth();
@@ -32,16 +38,19 @@ const DevTaskManager = () => {
     category?: TaskCategory;
   }>({});
 
-  useEffect(() => {
-    if (token) {
-      setAuthToken(token);
-      loadTasksFromServer();
-    } else {
-      loadTasksFromCache();
+  const loadTasksFromCache = async () => {
+    setLoading(true);
+    try {
+      const cached = await loadTasks();
+      setTasks(cached);
+    } catch (err) {
+      console.error("Failed to load tasks from cache:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [token]);
+  };
 
-  const loadTasksFromServer = async () => {
+  const loadTasksFromServer = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -49,25 +58,22 @@ const DevTaskManager = () => {
       setTasks(data);
       await persistTasks(data); // Cache in IndexedDB
     } catch (err) {
-      console.error('Failed to load tasks from server:', err);
-      setError('Failed to load tasks from server. Loading cached data...');
+      console.error("Failed to load tasks from server:", err);
+      setError("Failed to load tasks from server. Loading cached data...");
       await loadTasksFromCache();
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadTasksFromCache = async () => {
-    setLoading(true);
-    try {
-      const cached = await loadTasks();
-      setTasks(cached);
-    } catch (err) {
-      console.error('Failed to load tasks from cache:', err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (token) {
+      setAuthToken(token);
+      loadTasksFromServer();
+    } else {
+      loadTasksFromCache();
     }
-  };
+  }, [token, loadTasksFromServer]);
 
   const handleCreateTask = async (taskData: CreateDevTaskRequest) => {
     try {
@@ -76,7 +82,7 @@ const DevTaskManager = () => {
       await persistTasks([newTask, ...tasks]);
       return newTask;
     } catch (err) {
-      console.error('Failed to create task:', err);
+      console.error("Failed to create task:", err);
       throw err;
     }
   };
@@ -84,13 +90,13 @@ const DevTaskManager = () => {
   const handleUpdateTask = async (id: number, updates: Partial<DevTask>) => {
     try {
       const updatedTask = await updateDevTask(id, updates);
-      setTasks(tasks.map(t => t.id === id ? updatedTask : t));
-      await persistTasks(tasks.map(t => t.id === id ? updatedTask : t));
+      setTasks(tasks.map((t) => (t.id === id ? updatedTask : t)));
+      await persistTasks(tasks.map((t) => (t.id === id ? updatedTask : t)));
       if (selectedTask?.id === id) {
         setSelectedTask(updatedTask);
       }
     } catch (err) {
-      console.error('Failed to update task:', err);
+      console.error("Failed to update task:", err);
       throw err;
     }
   };
@@ -98,13 +104,13 @@ const DevTaskManager = () => {
   const handleDeleteTask = async (id: number) => {
     try {
       await deleteDevTask(id);
-      setTasks(tasks.filter(t => t.id !== id));
+      setTasks(tasks.filter((t) => t.id !== id));
       await deleteTaskFromStorage(id);
       if (selectedTask?.id === id) {
         setSelectedTask(null);
       }
     } catch (err) {
-      console.error('Failed to delete task:', err);
+      console.error("Failed to delete task:", err);
       throw err;
     }
   };
@@ -113,7 +119,7 @@ const DevTaskManager = () => {
     return generateAIPrompt(task);
   };
 
-  const filteredTasks = tasks.filter(task => {
+  const filteredTasks = tasks.filter((task) => {
     if (filter.status && task.status !== filter.status) return false;
     if (filter.priority && task.priority !== filter.priority) return false;
     if (filter.category && task.category !== filter.category) return false;
@@ -122,10 +128,10 @@ const DevTaskManager = () => {
 
   const taskCounts = {
     total: tasks.length,
-    new: tasks.filter(t => t.status === 'new').length,
-    in_progress: tasks.filter(t => t.status === 'in_progress').length,
-    completed: tasks.filter(t => t.status === 'completed').length,
-    urgent: tasks.filter(t => t.priority === 'urgent').length,
+    new: tasks.filter((t) => t.status === "new").length,
+    in_progress: tasks.filter((t) => t.status === "in_progress").length,
+    completed: tasks.filter((t) => t.status === "completed").length,
+    urgent: tasks.filter((t) => t.priority === "urgent").length,
   };
 
   return (
@@ -168,8 +174,13 @@ const DevTaskManager = () => {
 
       <div className="mb-4 flex flex-wrap gap-2">
         <select
-          value={filter.status || ''}
-          onChange={(e) => setFilter({ ...filter, status: e.target.value as TaskStatus || undefined })}
+          value={filter.status || ""}
+          onChange={(e) =>
+            setFilter({
+              ...filter,
+              status: (e.target.value as TaskStatus) || undefined,
+            })
+          }
           className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
         >
           <option value="">All Status</option>
@@ -181,8 +192,13 @@ const DevTaskManager = () => {
         </select>
 
         <select
-          value={filter.priority || ''}
-          onChange={(e) => setFilter({ ...filter, priority: e.target.value as TaskPriority || undefined })}
+          value={filter.priority || ""}
+          onChange={(e) =>
+            setFilter({
+              ...filter,
+              priority: (e.target.value as TaskPriority) || undefined,
+            })
+          }
           className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
         >
           <option value="">All Priorities</option>
@@ -193,8 +209,13 @@ const DevTaskManager = () => {
         </select>
 
         <select
-          value={filter.category || ''}
-          onChange={(e) => setFilter({ ...filter, category: e.target.value as TaskCategory || undefined })}
+          value={filter.category || ""}
+          onChange={(e) =>
+            setFilter({
+              ...filter,
+              category: (e.target.value as TaskCategory) || undefined,
+            })
+          }
           className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
         >
           <option value="">All Categories</option>
@@ -220,7 +241,9 @@ const DevTaskManager = () => {
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading tasks...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
+            Loading tasks...
+          </p>
         </div>
       ) : (
         <TaskList

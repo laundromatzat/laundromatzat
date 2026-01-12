@@ -1,6 +1,11 @@
-import { useState } from 'react';
-import { DevTask, TaskCategory, TaskPriority, TaskStatus } from '../../types/devTaskTypes';
-import { X, Copy, Check, Sparkles, Edit2, Save } from 'lucide-react';
+import { useState } from "react";
+import {
+  DevTask,
+  TaskCategory,
+  TaskPriority,
+  TaskStatus,
+} from "../../types/devTaskTypes";
+import { X, Copy, Check, Sparkles, Edit2, Save } from "lucide-react";
 
 interface TaskDetailModalProps {
   task: DevTask;
@@ -10,7 +15,13 @@ interface TaskDetailModalProps {
   onGeneratePrompt: (task: DevTask) => string;
 }
 
-const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }: TaskDetailModalProps) => {
+const TaskDetailModal = ({
+  task,
+  onClose,
+  onUpdate,
+  onDelete,
+  onGeneratePrompt,
+}: TaskDetailModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
   const [showPrompt, setShowPrompt] = useState(false);
@@ -33,8 +44,8 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
       });
       setIsEditing(false);
     } catch (err) {
-      console.error('Failed to save:', err);
-      alert('Failed to save changes');
+      console.error("Failed to save:", err);
+      alert("Failed to save changes");
     } finally {
       setSaving(false);
     }
@@ -47,20 +58,32 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
   };
 
   const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this task?')) {
+    if (confirm("Are you sure you want to delete this task?")) {
       await onDelete(task.id);
       onClose();
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div
+      role="button"
+      tabIndex={-1}
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+    >
       <div
+        role="dialog"
+        aria-modal="true"
         className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Task Details</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            Task Details
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -79,7 +102,9 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
                 <input
                   type="text"
                   value={editedTask.title}
-                  onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
+                  onChange={(e) =>
+                    setEditedTask({ ...editedTask, title: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -89,8 +114,13 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
                   Description
                 </label>
                 <textarea
-                  value={editedTask.description || ''}
-                  onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
+                  value={editedTask.description || ""}
+                  onChange={(e) =>
+                    setEditedTask({
+                      ...editedTask,
+                      description: e.target.value,
+                    })
+                  }
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                 />
@@ -103,7 +133,12 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
                   </label>
                   <select
                     value={editedTask.category}
-                    onChange={(e) => setEditedTask({ ...editedTask, category: e.target.value as TaskCategory })}
+                    onChange={(e) =>
+                      setEditedTask({
+                        ...editedTask,
+                        category: e.target.value as TaskCategory,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="feature">Feature</option>
@@ -122,7 +157,12 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
                   </label>
                   <select
                     value={editedTask.priority}
-                    onChange={(e) => setEditedTask({ ...editedTask, priority: e.target.value as TaskPriority })}
+                    onChange={(e) =>
+                      setEditedTask({
+                        ...editedTask,
+                        priority: e.target.value as TaskPriority,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="low">Low</option>
@@ -138,7 +178,12 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
                   </label>
                   <select
                     value={editedTask.status}
-                    onChange={(e) => setEditedTask({ ...editedTask, status: e.target.value as TaskStatus })}
+                    onChange={(e) =>
+                      setEditedTask({
+                        ...editedTask,
+                        status: e.target.value as TaskStatus,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="new">New</option>
@@ -156,8 +201,10 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
                 </label>
                 <input
                   type="text"
-                  value={editedTask.tags || ''}
-                  onChange={(e) => setEditedTask({ ...editedTask, tags: e.target.value })}
+                  value={editedTask.tags || ""}
+                  onChange={(e) =>
+                    setEditedTask({ ...editedTask, tags: e.target.value })
+                  }
                   placeholder="Comma-separated tags"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
@@ -168,8 +215,10 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
                   Notes
                 </label>
                 <textarea
-                  value={editedTask.notes || ''}
-                  onChange={(e) => setEditedTask({ ...editedTask, notes: e.target.value })}
+                  value={editedTask.notes || ""}
+                  onChange={(e) =>
+                    setEditedTask({ ...editedTask, notes: e.target.value })
+                  }
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                 />
@@ -178,33 +227,54 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
           ) : (
             <>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{task.title}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  {task.title}
+                </h3>
                 {task.description && (
-                  <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{task.description}</p>
+                  <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+                    {task.description}
+                  </p>
                 )}
               </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Category</div>
-                  <div className="font-medium text-gray-900 dark:text-white capitalize">{task.category}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Category
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-white capitalize">
+                    {task.category}
+                  </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Priority</div>
-                  <div className="font-medium text-gray-900 dark:text-white capitalize">{task.priority}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Priority
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-white capitalize">
+                    {task.priority}
+                  </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Status</div>
-                  <div className="font-medium text-gray-900 dark:text-white capitalize">{task.status.replace('_', ' ')}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Status
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-white capitalize">
+                    {task.status.replace("_", " ")}
+                  </div>
                 </div>
               </div>
 
               {task.tags && (
                 <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Tags</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Tags
+                  </div>
                   <div className="flex flex-wrap gap-2">
-                    {task.tags.split(',').map((tag, i) => (
-                      <span key={i} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-sm">
+                    {task.tags.split(",").map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-sm"
+                      >
                         {tag.trim()}
                       </span>
                     ))}
@@ -214,8 +284,12 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
 
               {task.notes && (
                 <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Notes</div>
-                  <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{task.notes}</p>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Notes
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+                    {task.notes}
+                  </p>
                 </div>
               )}
 
@@ -234,7 +308,7 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
               className="flex items-center gap-2 text-blue-500 hover:text-blue-600 font-medium mb-3"
             >
               <Sparkles className="w-5 h-5" />
-              {showPrompt ? 'Hide' : 'Show'} AI Agent Prompt
+              {showPrompt ? "Hide" : "Show"} AI Agent Prompt
             </button>
 
             {showPrompt && (
@@ -277,7 +351,7 @@ const TaskDetailModal = ({ task, onClose, onUpdate, onDelete, onGeneratePrompt }
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors"
               >
                 <Save className="w-4 h-4" />
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? "Saving..." : "Save Changes"}
               </button>
               <button
                 onClick={() => {
