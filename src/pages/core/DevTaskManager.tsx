@@ -20,11 +20,11 @@ import {
   loadTasks,
   deleteTask as deleteTaskFromStorage,
 } from "../../services/devTasksStorage";
-import QuickAddTask from "../../components/dev-tasks/QuickAddTask";
-import TaskList from "../../components/dev-tasks/TaskList";
-import TaskDetailModal from "../../components/dev-tasks/TaskDetailModal";
-import Hero from "../../components/Hero";
-import Container from "../../components/Container";
+import QuickAddTask from "../../../components/dev-tasks/QuickAddTask";
+import TaskList from "../../../components/dev-tasks/TaskList";
+import TaskDetailModal from "../../../components/dev-tasks/TaskDetailModal";
+import Hero from "@/components/Hero";
+import Container from "@/components/Container";
 
 const DevTaskManager = () => {
   const { token } = useAuth();
