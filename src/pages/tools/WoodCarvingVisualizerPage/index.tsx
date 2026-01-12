@@ -491,6 +491,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                   </div>
                 </div>
               ))}
+              ))}
               {/* Card 2: Strategy Guide */}
               <div className="bg-zinc-800/50 backdrop-blur border border-white/10 rounded-2xl overflow-hidden p-6 h-[400px] overflow-y-auto custom-scrollbar">
                 <h3 className="text-xl font-semibold text-white mb-4">
