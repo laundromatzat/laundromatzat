@@ -310,27 +310,19 @@ const WoodCarvingVisualizerPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-8 mb-8">
               {variations.map((variation, index) => (
-                <div
+                <button
                   key={index}
-                  role="button"
-                  tabIndex={0}
+                  type="button"
+                  className={`border-2 rounded-lg shadow-layer-1 overflow-hidden bg-brand-primary cursor-pointer transition-all text-left ${
+                    selectedVariation === variation
+                      ? "border-brand-accent ring-4 ring-brand-accent/30"
+                      : "border-brand-surface-highlight hover:border-brand-accent/50"
+                  }`}
                   onClick={() => handleSelectVariation(variation)}
-                  onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleSelectVariation(variation);
-                    }
-                  }}
-                  className={`
-                    relative group cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-300
-                    ${
-                      selectedVariation === variation
-                        ? "border-brand-accent ring-4 ring-brand-accent/20 scale-[1.02]"
-                        : "border-white/10 hover:border-white/30 hover:-translate-y-1"
-                    }
-                  `}
+                  aria-pressed={selectedVariation === variation}
+                  aria-label={`Select ${variation.name}: ${variation.description}`}
                 >
                   <div className="aspect-square bg-zinc-900 rounded-lg overflow-hidden relative">
                     <img
@@ -360,7 +352,12 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                       {variation.description}
                     </p>
                   </div>
-                </div>
+                  {selectedVariation === variation && (
+                    <div className="bg-brand-accent text-brand-on-accent text-center py-2 font-semibold">
+                      ✓ Selected
+                    </div>
+                  )}
+                </button>
               ))}
             </div>
 
@@ -477,41 +474,21 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex-1 bg-black/40 rounded-xl overflow-hidden shadow-inner min-h-[300px]">
-                  {isRefining ? (
-                    <div className="p-2 h-full flex flex-col gap-4">
-                      {/* Note Input Area - placed above or alongside? Putting it above actions in drawing tool would be ideal, but here works too */}
-                      <div className="bg-zinc-900/50 p-3 rounded-lg border border-white/5">
-                        <label
-                          htmlFor="refinement-notes"
-                          className="text-xs font-semibold uppercase text-brand-accent tracking-wider block mb-1"
-                        >
-                          Refinement Instructions
-                        </label>
-                        <input
-                          id="refinement-notes"
-                          type="text"
-                          value={refinementNote}
-                          onChange={(e) => setRefinementNote(e.target.value)}
-                          placeholder="Describe changes (e.g. 'Make the texture rougher', 'Fix the beak')..."
-                          className="w-full bg-black/40 border-b border-white/20 px-2 py-1 text-white focus:border-brand-accent outline-none text-sm placeholder-zinc-500"
-                        />
-                      </div>
-
-                      <ImageAnnotator
-                        imageUrl={designData.conceptUrl}
-                        onSave={handleRegenerateDesign}
-                        onCancel={() => setIsRefining(false)}
-                        className="flex-1 min-h-[400px]"
-                      />
-                    </div>
-                  ) : (
-                    <img
-                      src={designData.conceptUrl}
-                      alt="Concept Art"
-                      className="w-full h-full object-contain"
-                    />
-                  )}
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {detailedImages.map((image, index) => (
+                <div
+                  key={index}
+                  className="border border-brand-surface-highlight rounded-lg shadow-layer-1 overflow-hidden bg-brand-primary"
+                >
+                  <div
+                    className="bg-brand-secondary p-4 flex items-center justify-center min-h-[500px]"
+                    dangerouslySetInnerHTML={{ __html: image.svg }}
+                  />
+                  <div className="p-4 bg-brand-primary">
+                    <p className="font-bold text-center text-brand-accent">
+                      {image.view}
+                    </p>
+                  </div>
                 </div>
               </div>
 

@@ -45,6 +45,7 @@ import NylonFabricDesignerPage from "@/pages/tools/NylonFabricDesignerPage";
 import WoodCarvingVisualizerPage from "@/pages/tools/WoodCarvingVisualizerPage";
 import IntelligentIdeasBoardPage from "@/pages/tools/IntelligentIdeasBoardPage";
 import MediaInsightPage from "@/pages/tools/MediaInsightPage";
+import DevTaskManager from "@/pages/core/DevTaskManager";
 
 const router = createBrowserRouter([
   {
@@ -187,6 +188,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <MediaInsightPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "tools/dev-task-manager",
+        element: (
+          <ProtectedRoute>
+            <DevTaskManager />
           </ProtectedRoute>
         ),
       },
