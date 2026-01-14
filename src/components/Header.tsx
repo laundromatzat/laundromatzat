@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useAuth } from "@/context/AuthContext";
 import MenuIcon from "./icons/MenuIcon";
 import { CloseIcon } from "./icons/CloseIcon";
-import { API_BASE_URL } from "@/utils/api";
+import { getAvatarUrl } from "@/utils/avatar";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home" },
@@ -90,11 +90,7 @@ function Header(): React.ReactNode {
                 >
                   {user.profile_picture ? (
                     <img
-                      src={(() => {
-                        if (user.profile_picture.startsWith("http"))
-                          return user.profile_picture;
-                        return `${API_BASE_URL}${user.profile_picture}`;
-                      })()}
+                      src={getAvatarUrl(user.profile_picture) || ""}
                       alt=""
                       crossOrigin="anonymous"
                       onError={(e) => {

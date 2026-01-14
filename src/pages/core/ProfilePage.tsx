@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { User, Upload, FileText, Activity, DollarSign } from "lucide-react";
 import { Helmet } from "@dr.pogodin/react-helmet";
-import { getApiUrl, API_BASE_URL } from "@/utils/api";
+import { getApiUrl } from "@/utils/api";
+import { getAvatarUrl } from "@/utils/avatar";
 
 interface DashboardItem {
   id: number;
@@ -139,14 +140,6 @@ export default function ProfilePage() {
     }
   };
 
-  const getFullAvatarUrl = (path: string | null | undefined) => {
-    if (!path) return null;
-    if (path.startsWith("http")) return path;
-    // Add timestamp to force reload if it is the same filename but updated content
-    const baseUrl = `${API_BASE_URL}${path}`;
-    return `${baseUrl}?t=${new Date().getTime()}`;
-  };
-
   return (
     <>
       <Helmet>
@@ -183,8 +176,8 @@ export default function ProfilePage() {
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-aura-accent/20 mx-auto">
                 {avatarUrl ? (
                   <img
-                    src={getFullAvatarUrl(user.profile_picture)}
-                    alt={user.username}
+                    src={getAvatarUrl(user?.profile_picture) || ""}
+                    alt={user?.username || "User avatar"}
                     crossOrigin="anonymous"
                     className="w-full h-full object-cover"
                   />
