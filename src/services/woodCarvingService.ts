@@ -30,20 +30,46 @@ function getDomPurify(): DOMPurifyInstance | null {
 function stripExecutableContent(markup: string): string {
   if (!markup) return "";
 
-  return (
-    markup
+  const domPurify = getDomPurify();
+  if (domPurify) {
+    // Prefer DOMPurify when available to ensure robust sanitization.
+    return domPurify.sanitize(markup, {
+      FORBID_TAGS: ["script", "style"],
+      FORBID_ATTR: ["onload", "onerror", "onclick", "onmouseover", "onfocus"],
+      USE_PROFILES: { svg: true, svgFilters: true },
+    });
+  }
+
+  // Fallback: manual sanitization without DOMPurify.
+  // Apply multi-character pattern replacements repeatedly until a fixed point
+  // is reached to avoid incomplete sanitization issues.
+  let sanitized = markup;
+  let previous: string;
+
+  // Remove script and style blocks (including nested or overlapping cases)
+  do {
+    previous = sanitized;
+    sanitized = sanitized
       // Remove script tags (case-insensitive, handles various formats)
       .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
       // Remove style tags
-      .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
+      .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "");
+  } while (sanitized !== previous);
+
+  // Remove dangerous attributes and protocols until stable
+  do {
+    previous = sanitized;
+    sanitized = sanitized
       // Remove all event handlers (on*)
       .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "")
       .replace(/\s*on\w+\s*=\s*[^\s>]+/gi, "")
       // Remove javascript: protocol
       .replace(/javascript:/gi, "")
       // Remove data: URIs that could contain scripts
-      .replace(/data:text\/html[^"'\s>]*/gi, "")
-  );
+      .replace(/data:text\/html[^"'\s>]*/gi, "");
+  } while (sanitized !== previous);
+
+  return sanitized;
 }
 
 async function sanitizeSvg(svgMarkup: string): Promise<string> {
