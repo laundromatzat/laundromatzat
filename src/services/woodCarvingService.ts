@@ -30,8 +30,10 @@ function getDomPurify(): DOMPurifyInstance | null {
 function stripExecutableContent(markup: string): string {
   if (!markup) return "";
 
-  return (
-    markup
+  let previous: string;
+  do {
+    previous = markup;
+    markup = markup
       // Remove script tags (case-insensitive, handles various formats)
       .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
       // Remove style tags
@@ -42,8 +44,10 @@ function stripExecutableContent(markup: string): string {
       // Remove javascript: protocol
       .replace(/javascript:/gi, "")
       // Remove data: URIs that could contain scripts
-      .replace(/data:text\/html[^"'\s>]*/gi, "")
-  );
+      .replace(/data:text\/html[^"'\s>]*/gi, "");
+  } while (markup !== previous);
+
+  return markup;
 }
 
 async function sanitizeSvg(svgMarkup: string): Promise<string> {
