@@ -26,9 +26,7 @@ function getDomPurify(): DOMPurifyInstance | null {
   return domPurifyInstance;
 }
 
-function stripExecutableContent(markup: string): string {
-  if (!markup) return "";
-
+function applyExecutableContentStrippingOnce(markup: string): string {
   return (
     markup
       // Remove script tags (case-insensitive, handles various formats)
@@ -43,6 +41,20 @@ function stripExecutableContent(markup: string): string {
       // Remove data: URIs that could contain scripts
       .replace(/data:text\/html[^"'\s>]*/gi, "")
   );
+}
+
+function stripExecutableContent(markup: string): string {
+  if (!markup) return "";
+
+  let previous: string;
+  let current = markup;
+
+  do {
+    previous = current;
+    current = applyExecutableContentStrippingOnce(previous);
+  } while (current !== previous);
+
+  return current;
 }
 
 async function sanitizeGuideContent(html: string): Promise<string> {
