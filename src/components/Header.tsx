@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { to: "/vids", label: "Videos" },
   { to: "/cinemagraphs", label: "Cinemagraphs" },
   { to: "/tools", label: "Tools" },
+  { to: "/ai-apps", label: "AI Apps" },
   { to: "/links", label: "Links" },
 ];
 
