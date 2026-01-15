@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import MenuIcon from "./icons/MenuIcon";
 import { CloseIcon } from "./icons/CloseIcon";
 import { getAvatarUrl } from "@/utils/avatar";
+import { AuraButton } from "@/components/aura";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home" },
@@ -117,26 +118,31 @@ function Header(): React.ReactNode {
                   </span>
                 </NavLink>
                 {user.role === "admin" && (
-                  <NavLink
-                    to="/admin"
-                    className="text-xs font-bold text-amber-400 border border-amber-400/30 px-2 py-1 rounded hover:bg-amber-400/10 transition-colors hidden md:block"
-                  >
-                    Admin
+                  <NavLink to="/admin" className="hidden md:block">
+                    <AuraButton
+                      component="div"
+                      variant="secondary"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      Mission Control
+                    </AuraButton>
                   </NavLink>
                 )}
-                <button
+                <AuraButton
+                  variant="ghost"
+                  size="sm"
                   onClick={logout}
-                  className="text-xs hover:text-aura-accent transition-colors hidden md:block"
+                  className="hidden md:flex text-xs"
                 >
                   Log Out
-                </button>
+                </AuraButton>
               </div>
             ) : (
-              <NavLink
-                to="/login"
-                className="hidden md:block text-sm font-medium hover:text-aura-accent transition-colors"
-              >
-                Login
+              <NavLink to="/login" className="hidden md:block">
+                <AuraButton variant="primary" size="sm">
+                  Login
+                </AuraButton>
               </NavLink>
             )}
 
@@ -188,10 +194,10 @@ function Header(): React.ReactNode {
               {user.role === "admin" && (
                 <NavLink
                   to="/admin"
-                  className="hover:opacity-60 transition-opacity text-amber-400"
+                  className="hover:opacity-60 transition-opacity text-purple-400"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Admin
+                  Mission Control
                 </NavLink>
               )}
               <button

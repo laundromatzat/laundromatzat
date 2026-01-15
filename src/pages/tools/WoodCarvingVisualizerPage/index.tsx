@@ -14,6 +14,7 @@ import {
   loadProjects,
   clearProjects,
 } from "@/services/woodCarvingStorage";
+import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 
 const EXAMPLE_DESCRIPTIONS = [
   "A majestic eagle landing on a branch, realistic style",
@@ -194,15 +195,19 @@ const WoodCarvingVisualizerPage: React.FC = () => {
           </div>
 
           {phase > 0 && (
-            <button
+            <AuraButton
+              variant="secondary"
+              size="sm"
               onClick={handleReset}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-full transition-all"
+              icon={<RefreshCw className="w-4 h-4" />}
             >
-              <RefreshCw className="w-4 h-4" /> Start New Project
-            </button>
+              Start New Project
+            </AuraButton>
           )}
           {phase === 0 && (
-            <button
+            <AuraButton
+              variant="danger"
+              size="sm"
               onClick={() => {
                 if (
                   window.confirm(
@@ -214,10 +219,10 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                     .catch(console.error);
                 }
               }}
-              className="text-xs text-red-400 hover:text-red-300 underline"
+              className="text-xs underline bg-transparent border-none text-red-400 hover:bg-red-500/10"
             >
               Clear History
-            </button>
+            </AuraButton>
           )}
         </div>
 
@@ -233,51 +238,55 @@ const WoodCarvingVisualizerPage: React.FC = () => {
 
         {/* PHASE 0: INPUT */}
         {phase === 0 && (
-          <div className="max-w-3xl mx-auto bg-zinc-800/50 backdrop-blur-sm border border-white/10 p-8 rounded-2xl shadow-2xl">
+          <AuraCard variant="glass" padding="lg" className="max-w-3xl mx-auto">
             <label
               htmlFor="prompt-input"
               className="block text-sm font-medium text-brand-accent mb-2 uppercase tracking-wider"
             >
               What would you like to carve?
             </label>
-            <textarea
+            <AuraInput
               id="prompt-input"
-              className="w-full bg-black/40 border-2 border-white/10 rounded-xl p-4 text-white placeholder-zinc-500 focus:border-brand-accent focus:ring-0 transition-all text-lg mb-6"
+              type="textarea"
               rows={4}
               placeholder="Describe your idea (e.g., 'An owl perched on a drift wood branch, geometric style')..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleGenerateVariations();
                 }
               }}
+              className="text-lg mb-6 bg-black/40 border-white/10"
             />
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="flex flex-wrap gap-2">
                 {EXAMPLE_DESCRIPTIONS.map((desc, i) => (
-                  <button
+                  <AuraButton
                     key={i}
+                    variant="secondary"
+                    size="sm"
                     onClick={() => setDescription(desc)}
-                    className="px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg text-xs text-zinc-400 hover:text-white transition-colors border border-white/5"
+                    className="text-xs"
                   >
                     {desc}
-                  </button>
+                  </AuraButton>
                 ))}
               </div>
 
-              <button
+              <AuraButton
                 onClick={handleGenerateVariations}
                 disabled={!description.trim()}
-                className="w-full sm:w-auto px-8 py-3 bg-brand-accent hover:bg-brand-accent-light text-white rounded-xl font-medium shadow-lg hover:shadow-brand-accent/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                variant="accent"
+                size="lg"
+                icon={<Wand2 className="w-5 h-5" />}
               >
-                <Wand2 className="w-5 h-5" />
                 Generate Styles
-              </button>
+              </AuraButton>
             </div>
-          </div>
+          </AuraCard>
         )}
 
         {/* PHASE 1: GENERATING VARIATIONS */}
@@ -312,33 +321,27 @@ const WoodCarvingVisualizerPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {variations.map((variation, index) => (
-                <div
+                <AuraCard
                   key={index}
-                  role="button"
-                  tabIndex={0}
+                  variant="interactive"
+                  padding="none"
                   onClick={() => handleSelectVariation(variation)}
-                  onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleSelectVariation(variation);
-                    }
-                  }}
                   className={`
-                    relative group cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-300
+                    overflow-hidden transition-all duration-300
                     ${
                       selectedVariation === variation
-                        ? "border-brand-accent ring-4 ring-brand-accent/20 scale-[1.02]"
-                        : "border-white/10 hover:border-white/30 hover:-translate-y-1"
+                        ? "border-brand-accent ring-2 ring-brand-accent scale-[1.02]"
+                        : "hover:scale-[1.02]"
                     }
                   `}
                 >
-                  <div className="aspect-square bg-zinc-900 rounded-lg overflow-hidden relative">
+                  <div className="aspect-square bg-zinc-900 overflow-hidden relative">
                     <img
                       src={variation.imageUrl}
                       alt={variation.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
                       <span className="text-white text-sm font-medium">
                         {variation.name}
                       </span>
@@ -360,7 +363,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                       {variation.description}
                     </p>
                   </div>
-                </div>
+                </AuraCard>
               ))}
             </div>
 
@@ -374,13 +377,13 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                     >
                       Refining Notes (Optional)
                     </label>
-                    <input
+                    <AuraInput
                       id="notes-input"
                       type="text"
                       placeholder="E.g., Make the beak sharper, remove the background..."
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-brand-accent outline-none"
                       value={userNotes}
                       onChange={(e) => setUserNotes(e.target.value)}
+                      className="bg-black/40 border-white/10"
                     />
                   </div>
                   <div className="flex items-center gap-4 w-full md:w-auto">
@@ -392,13 +395,14 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                         Generates blueprint & cutting guide
                       </div>
                     </div>
-                    <button
+                    <AuraButton
                       onClick={handleGenerateBlueprint}
-                      className="flex-1 md:flex-none px-8 py-3 bg-brand-accent hover:bg-brand-accent-light text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 transition-all"
+                      variant="accent"
+                      size="lg"
+                      icon={<Ruler className="w-5 h-5" />}
                     >
-                      <Ruler className="w-5 h-5" />
                       Generate Blueprint
-                    </button>
+                    </AuraButton>
                   </div>
                 </div>
               </div>
@@ -443,19 +447,21 @@ const WoodCarvingVisualizerPage: React.FC = () => {
               </div>
               <div className="flex items-center gap-4 mt-4 md:mt-0">
                 <span className="text-sm text-zinc-500">Unit:</span>
-                <button
+                <AuraButton
+                  variant="secondary"
+                  size="sm"
                   onClick={toggleUnit}
-                  className="px-4 py-1 bg-zinc-800 text-brand-accent border border-brand-accent/20 rounded-full text-sm font-medium hover:bg-brand-accent/10 transition-colors"
+                  className="text-xs"
                 >
                   {unit === Unit.INCHES ? "Inches (in)" : "Millimeters (mm)"}
-                </button>
-                <button
+                </AuraButton>
+                <AuraButton
+                  variant="ghost"
+                  size="sm"
                   onClick={() => window.print()}
-                  className="p-2 text-zinc-400 hover:text-white transition-colors"
+                  icon={<Camera className="w-5 h-5" />}
                   title="Print Blueprint"
-                >
-                  <Camera className="w-5 h-5" />
-                </button>
+                />
               </div>
             </div>
 
@@ -468,12 +474,14 @@ const WoodCarvingVisualizerPage: React.FC = () => {
                     {isRefining ? "Refine Design" : "Final Design Reference"}
                   </h3>
                   {!isRefining && (
-                    <button
+                    <AuraButton
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setIsRefining(true)}
-                      className="flex items-center gap-2 px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm transition-colors"
+                      icon={<Edit className="w-4 h-4" />}
                     >
-                      <Edit className="w-4 h-4" /> Refine
-                    </button>
+                      Refine
+                    </AuraButton>
                   )}
                 </div>
 

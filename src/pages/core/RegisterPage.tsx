@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 // import { useAuth } from "@/context/AuthContext"; // Unused
 import { Lock, User } from "lucide-react";
+import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -52,88 +53,63 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-aura-bg text-aura-text-primary px-4">
-      <div className="max-w-md w-full bg-white/5 backdrop-blur-sm p-8 rounded-2xl border border-white/10 shadow-xl">
-        <h2 className="text-3xl font-bold mb-6 text-center">Create Account</h2>
+      <AuraCard
+        variant="glass"
+        padding="lg"
+        className="max-w-md w-full animate-in-up"
+      >
+        <h2 className="text-3xl font-bold mb-6 text-center text-aura-text-primary">
+          Create Account
+        </h2>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg mb-4 text-sm">
+          <div className="bg-aura-error/10 border border-aura-error/20 text-aura-error p-3 rounded-lg mb-4 text-sm font-medium text-center">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium mb-1"
-            >
-              Username
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-              <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-aura-accent"
-                placeholder="Choose a username"
-                required
-              />
-            </div>
-          </div>
+          <AuraInput
+            label="Username"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Choose a username"
+            required
+            prefixIcon={<User size={18} />}
+            fullWidth
+          />
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium mb-1"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-aura-accent"
-                placeholder="Create a password"
-                required
-              />
-            </div>
-          </div>
+          <AuraInput
+            label="Password"
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Create a password"
+            required
+            prefixIcon={<Lock size={18} />}
+            fullWidth
+          />
 
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium mb-1"
-            >
-              Confirm Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-aura-accent"
-                placeholder="Confirm your password"
-                required
-              />
-            </div>
-          </div>
+          <AuraInput
+            label="Confirm Password"
+            id="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm your password"
+            required
+            prefixIcon={<Lock size={18} />}
+            fullWidth
+          />
 
-          <button
-            type="submit"
-            className="w-full bg-aura-text-primary text-white py-2 rounded-lg font-medium hover:bg-aura-text-primary/90 transition-colors"
-          >
+          <AuraButton type="submit" variant="primary" fullWidth size="lg">
             Register
-          </button>
+          </AuraButton>
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-400">
+        <p className="mt-4 text-center text-sm text-aura-text-secondary">
           Already have an account?{" "}
           <Link
             to="/login"
@@ -142,7 +118,7 @@ export default function RegisterPage() {
             Sign In
           </Link>
         </p>
-      </div>
+      </AuraCard>
     </div>
   );
 }

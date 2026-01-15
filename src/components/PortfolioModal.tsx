@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import clsx from "clsx";
 import { Project, ProjectType } from "@/types";
+import { AuraButton } from "./aura";
 import { CloseIcon } from "./icons/CloseIcon";
 import { CopyIcon } from "./icons/CopyIcon";
 import { CheckIcon } from "./icons/CheckIcon";
@@ -106,48 +106,43 @@ function PortfolioModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black/70"
+        className="absolute inset-0 bg-aura-text-primary/70 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
       <div className="relative z-10 w-full max-w-5xl px-4">
-        <div className="bg-brand-secondary rounded-xl shadow-2xl overflow-hidden">
-          <div className="flex items-start justify-between px-6 py-4 border-b border-brand-accent/20 bg-zinc-800">
+        <div className="bg-aura-surface rounded-2xl shadow-aura-2xl overflow-hidden border border-aura-border">
+          <div className="flex items-start justify-between px-6 py-4 border-b border-aura-border bg-aura-surface-elevated">
             <div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-white">
+              <h2 className="text-xl sm:text-2xl font-semibold text-aura-text-primary">
                 {project.title}
               </h2>
-              <p className="text-sm text-zinc-400 mt-1">
+              <p className="text-sm text-aura-text-secondary mt-1">
                 {[project.date, project.location].filter(Boolean).join(" · ")}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
+              <AuraButton
+                variant="ghost"
+                size="sm"
                 onClick={handleCopyUrl}
-                className={clsx(
-                  "p-2 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60",
-                  isCopied
-                    ? "bg-green-100/10 text-green-600 hover:bg-green-100/20"
-                    : "text-zinc-400 hover:text-white hover:bg-white/10"
-                )}
-                title="Copy link to project"
+                className={isCopied ? "text-aura-success" : ""}
                 aria-label="Copy link to project"
-              >
-                {isCopied ? (
-                  <CheckIcon className="h-5 w-5" />
-                ) : (
-                  <CopyIcon className="h-5 w-5" />
-                )}
-              </button>
-              <button
-                type="button"
+                icon={
+                  isCopied ? (
+                    <CheckIcon className="h-5 w-5" />
+                  ) : (
+                    <CopyIcon className="h-5 w-5" />
+                  )
+                }
+              />
+              <AuraButton
+                variant="ghost"
+                size="sm"
                 onClick={onClose}
-                className="text-zinc-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 rounded-full p-1 hover:bg-white/10 transition-colors"
                 aria-label="Close"
-              >
-                <CloseIcon className="h-6 w-6" />
-              </button>
+                icon={<CloseIcon className="h-6 w-6" />}
+              />
             </div>
           </div>
 
@@ -173,42 +168,42 @@ function PortfolioModal({
               />
             )}
 
-            <button
-              type="button"
+            <AuraButton
+              variant="ghost"
               onClick={onPrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/80 text-white rounded-full p-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white transition-opacity opacity-0 group-hover:opacity-100"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100"
               aria-label="Previous project"
             >
               <span className="text-2xl leading-none">&#8249;</span>
-            </button>
-            <button
-              type="button"
+            </AuraButton>
+            <AuraButton
+              variant="ghost"
               onClick={onNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/80 text-white rounded-full p-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white transition-opacity opacity-0 group-hover:opacity-100"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100"
               aria-label="Next project"
             >
               <span className="text-2xl leading-none">&#8250;</span>
-            </button>
+            </AuraButton>
 
             {!isVideo && (
-              <button
-                type="button"
+              <AuraButton
+                variant="ghost"
                 onClick={handleFullscreen}
-                className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg border border-white/20 hover:bg-black/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white transition-opacity opacity-0 group-hover:opacity-100"
+                className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white shadow-lg border border-white/20 hover:bg-black/80 opacity-0 group-hover:opacity-100"
               >
                 view fullscreen
-              </button>
+              </AuraButton>
             )}
           </div>
 
-          <div className="px-6 py-4 text-brand-text-secondary text-sm sm:text-base">
+          <div className="px-6 py-4 text-aura-text-secondary text-sm sm:text-base">
             <p>{project.description}</p>
             {project.tags?.length ? (
-              <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase tracking-wide text-brand-text-secondary/80">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase tracking-wide text-aura-text-tertiary">
                 {project.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="bg-brand-primary/20 px-3 py-1 rounded-full"
+                    className="bg-aura-accent-light px-3 py-1 rounded-full"
                   >
                     {tag}
                   </span>

@@ -16,11 +16,8 @@ import { CheckIcon } from "@/components/icons/CheckIcon";
 import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon";
 import { ChevronUpIcon } from "@/components/icons/ChevronUpIcon";
 import { SettingsIcon } from "@/components/icons/SettingsIcon";
-import {
-  persistBoard,
-  loadBoards,
-  clearBoards,
-} from "@/services/intelligentIdeasStorage";
+import { loadBoards, clearBoards } from "@/services/intelligentIdeasStorage";
+import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 
 const IntelligentIdeasBoardPage = () => {
   const [inputText, setInputText] = useState("");
@@ -108,12 +105,6 @@ const IntelligentIdeasBoardPage = () => {
     } finally {
       setIsProcessing(false);
       setGlobalLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && e.ctrlKey) {
-      processInput();
     }
   };
 
@@ -248,235 +239,144 @@ const IntelligentIdeasBoardPage = () => {
     items.filter((item) => item.completed);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-5 md:p-10 text-gray-800 font-sans">
+    <div className="min-h-screen bg-aura-bg p-5 md:p-10 font-sans text-aura-text-primary">
       <div className="max-w-[1400px] mx-auto">
         <header className="mb-10 text-center">
           <div className="inline-flex items-center gap-3 mb-3">
-            <SparklesIcon className="h-8 w-8 text-white" />
-            <h1 className="text-4xl font-bold m-0 text-white drop-shadow-sm">
+            <SparklesIcon className="h-8 w-8 text-aura-accent" />
+            <h1 className="text-4xl font-bold m-0 text-white bg-clip-text text-transparent bg-gradient-to-r from-aura-accent to-purple-400 drop-shadow-sm">
               Intelligent Ideas Board
             </h1>
           </div>
-          <p className="text-base text-white/90 m-0 max-w-[600px] mx-auto">
+          <p className="text-base text-aura-text-secondary m-0 max-w-[600px] mx-auto">
             Drop your thoughts here—stream of consciousness, random ideas,
             tasks, anything. I’ll organize it all intelligently.
           </p>
         </header>
 
-        <div
-          style={{
-            backgroundColor: "white",
-            borderRadius: "16px",
-            padding: "24px",
-            marginBottom: "32px",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
-          }}
-        >
+        <AuraCard variant="elevated" padding="lg" className="mb-8">
           <div className="mb-4 flex gap-2">
-            <button
+            <AuraButton
+              size="sm"
+              variant={inputMode === "content" ? "accent" : "ghost"}
               onClick={() => setInputMode("content")}
-              className={`px-4 py-2 rounded-lg border-none text-sm font-semibold cursor-pointer transition-all duration-200 flex items-center gap-1.5 ${
-                inputMode === "content"
-                  ? "bg-indigo-500 text-white"
-                  : "bg-gray-100 text-gray-500"
-              }`}
+              icon={<SparklesIcon className="h-4 w-4" />}
             >
-              <SparklesIcon className="h-4 w-4" />
               Add Content
-            </button>
-            <button
+            </AuraButton>
+            <AuraButton
+              size="sm"
+              variant={inputMode === "instruction" ? "accent" : "ghost"}
               onClick={() => setInputMode("instruction")}
-              className={`px-4 py-2 rounded-lg border-none text-sm font-semibold cursor-pointer transition-all duration-200 flex items-center gap-1.5 ${
-                inputMode === "instruction"
-                  ? "bg-indigo-500 text-white"
-                  : "bg-gray-100 text-gray-500"
-              }`}
+              icon={<SettingsIcon className="h-4 w-4" />}
             >
-              <SettingsIcon className="h-4 w-4" />
               Give Instruction
-            </button>
+            </AuraButton>
           </div>
 
-          <textarea
+          <AuraInput
+            type="textarea"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.ctrlKey) {
+                processInput();
+              }
+            }}
             placeholder={
               inputMode === "content"
                 ? "Just start typing... anything that's on your mind. Ideas, tasks, things to remember. I’ll figure out how it all fits together."
                 : "Give an instruction on how to reorganize your data. Examples: 'Split work items into separate categories by project', 'Group all urgent tasks together', 'Organize ideas by theme'"
             }
-            className={`w-full min-h-[120px] p-4 border-2 rounded-xl text-base font-inherit resize-y outline-none transition-colors duration-200 mb-4 ${
+            className={`min-h-[120px] mb-4 ${
               inputMode === "instruction"
-                ? "border-amber-500 bg-amber-50 focus:border-amber-500"
-                : "border-gray-200 bg-white focus:border-indigo-500"
+                ? "border-aura-accent/50 bg-aura-accent/5"
+                : ""
             }`}
           />
 
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ fontSize: "14px", color: "#6b7280" }}>
+          <div className="flex justify-between items-center gap-3 flex-wrap">
+            <div className="text-sm text-aura-text-secondary">
               Press{" "}
-              <kbd
-                style={{
-                  padding: "2px 6px",
-                  backgroundColor: "#f3f4f6",
-                  borderRadius: "4px",
-                  fontSize: "12px",
-                }}
-              >
+              <kbd className="px-1.5 py-0.5 bg-aura-surface-elevated rounded text-xs font-mono border border-aura-border">
                 Ctrl+Enter
               </kbd>{" "}
               to {inputMode === "content" ? "add" : "apply"}
             </div>
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div className="flex gap-3">
               {organizedData && (
                 <>
-                  <button
+                  <AuraButton
+                    variant="secondary"
                     onClick={reprocess}
                     disabled={isProcessing}
-                    style={{
-                      padding: "12px 20px",
-                      borderRadius: "10px",
-                      border: "2px solid #667eea",
-                      backgroundColor: "white",
-                      color: "#667eea",
-                      fontSize: "15px",
-                      fontWeight: "600",
-                      cursor: isProcessing ? "not-allowed" : "pointer",
-                      opacity: isProcessing ? 0.6 : 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      transition: "all 0.2s",
-                    }}
+                    isLoading={isProcessing}
+                    icon={<RefreshCwIcon className="h-4 w-4" />}
                   >
-                    <RefreshCwIcon className="h-4 w-4" />
                     Reorganize
-                  </button>
-                  <button
+                  </AuraButton>
+                  <AuraButton
+                    variant="danger"
                     onClick={clearAll}
-                    style={{
-                      padding: "12px 20px",
-                      borderRadius: "10px",
-                      border: "2px solid #ef4444",
-                      backgroundColor: "white",
-                      color: "#ef4444",
-                      fontSize: "15px",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      transition: "all 0.2s",
-                    }}
+                    icon={<Trash2Icon className="h-4 w-4" />}
                   >
-                    <Trash2Icon className="h-4 w-4" />
                     Clear All
-                  </button>
+                  </AuraButton>
                 </>
               )}
-              <button
+              <AuraButton
+                variant={inputMode === "instruction" ? "accent" : "primary"}
                 onClick={processInput}
                 disabled={isProcessing || !inputText.trim()}
-                style={{
-                  padding: "12px 24px",
-                  borderRadius: "10px",
-                  border: "none",
-                  background:
-                    inputMode === "instruction"
-                      ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-                      : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  color: "white",
-                  fontSize: "15px",
-                  fontWeight: "600",
-                  cursor:
-                    isProcessing || !inputText.trim()
-                      ? "not-allowed"
-                      : "pointer",
-                  opacity: isProcessing || !inputText.trim() ? 0.6 : 1,
-                  transition: "all 0.2s",
-                  boxShadow: "0 4px 12px rgba(102, 126, 234, 0.4)",
-                }}
+                isLoading={isProcessing}
+                className="shadow-lg"
               >
-                {isProcessing
-                  ? "Processing..."
-                  : inputMode === "content"
-                    ? "Add & Organize"
-                    : "Apply Instruction"}
-              </button>
+                {inputMode === "content"
+                  ? "Add & Organize"
+                  : "Apply Instruction"}
+              </AuraButton>
             </div>
           </div>
-        </div>
+        </AuraCard>
 
         {organizedData && (
           <div>
             {organizedData.summary && (
-              <div
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.95)",
-                  borderRadius: "16px",
-                  padding: "20px 24px",
-                  marginBottom: "24px",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                  borderLeft: "4px solid #667eea",
-                }}
+              <AuraCard
+                variant="glass"
+                padding="md"
+                className="mb-6 border-l-4 border-l-aura-accent"
               >
-                <div
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    color: "#667eea",
-                    marginBottom: "8px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                  }}
-                >
+                <div className="text-sm font-semibold text-aura-accent mb-2 uppercase tracking-wide">
                   Overview
                 </div>
-                <div
-                  style={{
-                    fontSize: "15px",
-                    color: "#4b5563",
-                    lineHeight: "1.6",
-                  }}
-                >
+                <div className="text-base text-aura-text-primary leading-relaxed">
                   {organizedData.summary}
                 </div>
-              </div>
+              </AuraCard>
             )}
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
-                gap: "24px",
-              }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {organizedData.categories.map((category, catIndex) => {
                 const activeItems = getActiveItems(category.items);
                 const completedItems = getCompletedItems(category.items);
                 const isExpanded = expandedCategories[category.id];
 
                 return (
-                  <div
+                  <AuraCard
                     key={category.id || catIndex}
-                    className="bg-white rounded-2xl p-6 shadow-lg transition-transform hover:shadow-xl"
+                    variant="elevated"
+                    padding="md"
+                    className="h-fit"
                   >
                     <div className="flex items-center gap-2.5 mb-4">
-                      <div className="text-indigo-500">
+                      <div className="text-aura-accent">
                         {getTypeIcon(category.type)}
                       </div>
-                      <h3 className="m-0 text-lg font-semibold text-gray-800">
+                      <h3 className="m-0 text-lg font-semibold text-aura-text-primary">
                         {category.name}
                       </h3>
-                      <div className="ml-auto text-xs px-2.5 py-1 bg-gray-100 rounded-xl text-gray-500 font-medium">
+                      <div className="ml-auto text-xs px-2.5 py-1 bg-aura-surface-elevated rounded-xl text-aura-text-secondary font-medium">
                         {activeItems.length}
                       </div>
                     </div>
@@ -485,19 +385,19 @@ const IntelligentIdeasBoardPage = () => {
                       {activeItems.map((item, itemIndex) => (
                         <div
                           key={item.id || itemIndex}
-                          className={`p-3.5 bg-gray-50 rounded-lg border-l-[3px] transition-colors duration-200 relative border-${getPriorityColorName(item.priority)}-500`}
+                          className={`p-3.5 bg-aura-bg/50 rounded-lg border-l-[3px] transition-colors duration-200 relative border-${getPriorityColorName(item.priority)}-500`}
                         >
                           <div className="flex gap-2.5 items-start">
                             <button
                               onClick={() =>
                                 toggleItemCompletion(category.id, item.id)
                               }
-                              className="min-w-[20px] w-5 h-5 rounded-md border-2 border-gray-300 bg-white cursor-pointer flex items-center justify-center transition-all mt-0.5 hover:border-indigo-500"
+                              className="min-w-[20px] w-5 h-5 rounded-md border-2 border-aura-border bg-aura-surface cursor-pointer flex items-center justify-center transition-all mt-0.5 hover:border-aura-accent"
                             ></button>
 
                             <div className="flex-1">
                               <div
-                                className={`text-[15px] text-gray-800 leading-normal ${
+                                className={`text-[15px] text-aura-text-primary leading-normal ${
                                   item.dueDate || item.relatedInputs
                                     ? "mb-2"
                                     : "mb-0"
@@ -508,32 +408,24 @@ const IntelligentIdeasBoardPage = () => {
 
                               <div className="flex gap-3 flex-wrap items-center">
                                 {item.dueDate && (
-                                  <div className="text-[13px] text-gray-500 flex items-center gap-1 px-2 py-0.5 bg-white rounded-md font-medium">
+                                  <div className="text-[13px] text-aura-text-secondary flex items-center gap-1 px-2 py-0.5 bg-aura-surface rounded-md font-medium">
                                     📅 {formatDate(item.dueDate)}
                                   </div>
                                 )}
 
                                 {item.priority && (
                                   <div
-                                    className={`text-[11px] uppercase font-semibold tracking-wider px-2 py-0.5 bg-white rounded-md text-${getPriorityColorName(item.priority)}-500`}
+                                    className={`text-[11px] uppercase font-semibold tracking-wider px-2 py-0.5 bg-aura-surface rounded-md text-${getPriorityColorName(item.priority)}-500`}
                                   >
                                     {item.priority}
                                   </div>
                                 )}
-
-                                {item.relatedInputs &&
-                                  item.relatedInputs.length > 0 && (
-                                    <div className="text-xs text-gray-400 italic">
-                                      From inputs:{" "}
-                                      {item.relatedInputs.join(", ")}
-                                    </div>
-                                  )}
                               </div>
                             </div>
 
                             <button
                               onClick={() => deleteItem(category.id, item.id)}
-                              className="min-w-[24px] w-6 h-6 rounded-md border-none bg-transparent text-gray-400 cursor-pointer flex items-center justify-center transition-all mt-0.5 hover:text-red-500 hover:bg-red-50"
+                              className="min-w-[24px] w-6 h-6 rounded-md border-none bg-transparent text-aura-text-secondary cursor-pointer flex items-center justify-center transition-all mt-0.5 hover:text-red-500 hover:bg-red-500/10"
                             >
                               <Trash2Icon className="h-4 w-4" />
                             </button>
@@ -546,7 +438,7 @@ const IntelligentIdeasBoardPage = () => {
                       <div className="mt-4">
                         <button
                           onClick={() => toggleCategoryExpanded(category.id)}
-                          className="w-full p-2.5 rounded-lg border border-dashed border-gray-300 bg-transparent text-gray-500 text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-gray-50 hover:text-gray-700"
+                          className="w-full p-2.5 rounded-lg border border-dashed border-aura-border bg-transparent text-aura-text-secondary text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-aura-surface-elevated hover:text-aura-text-primary"
                         >
                           {isExpanded ? (
                             <ChevronUpIcon className="h-4 w-4" />
@@ -557,11 +449,11 @@ const IntelligentIdeasBoardPage = () => {
                         </button>
 
                         {isExpanded && (
-                          <div className="mt-3 flex flex-col gap-3 pt-3 border-t border-gray-200">
+                          <div className="mt-3 flex flex-col gap-3 pt-3 border-t border-aura-border">
                             {completedItems.map((item, itemIndex) => (
                               <div
                                 key={item.id || `completed-${itemIndex}`}
-                                className="p-3.5 bg-gray-50 rounded-lg border-l-[3px] border-gray-300 opacity-60 relative"
+                                className="p-3.5 bg-aura-bg/30 rounded-lg border-l-[3px] border-aura-border opacity-60 relative"
                               >
                                 <div className="flex gap-2.5 items-start">
                                   <button
@@ -577,7 +469,7 @@ const IntelligentIdeasBoardPage = () => {
                                   </button>
 
                                   <div className="flex-1">
-                                    <div className="text-[15px] text-gray-800 leading-normal line-through">
+                                    <div className="text-[15px] text-aura-text-primary leading-normal line-through">
                                       {item.content}
                                     </div>
                                   </div>
@@ -586,7 +478,7 @@ const IntelligentIdeasBoardPage = () => {
                                     onClick={() =>
                                       deleteItem(category.id, item.id)
                                     }
-                                    className="min-w-[24px] w-6 h-6 rounded-md border-none bg-transparent text-gray-400 cursor-pointer flex items-center justify-center transition-all mt-0.5 hover:text-red-500 hover:bg-red-50"
+                                    className="min-w-[24px] w-6 h-6 rounded-md border-none bg-transparent text-aura-text-secondary cursor-pointer flex items-center justify-center transition-all mt-0.5 hover:text-red-500 hover:bg-red-500/10"
                                   >
                                     <Trash2Icon className="h-4 w-4" />
                                   </button>
@@ -597,7 +489,7 @@ const IntelligentIdeasBoardPage = () => {
                         )}
                       </div>
                     )}
-                  </div>
+                  </AuraCard>
                 );
               })}
             </div>
@@ -605,17 +497,21 @@ const IntelligentIdeasBoardPage = () => {
         )}
 
         {!organizedData && !isProcessing && (
-          <div className="bg-white/90 rounded-2xl p-[60px_40px] text-center shadow-lg">
-            <SparklesIcon className="h-12 w-12 text-indigo-500 mx-auto mb-4" />
-            <h3 className="text-2xl font-semibold text-gray-800 mb-3">
+          <AuraCard
+            variant="glass"
+            padding="lg"
+            className="text-center p-[60px_40px]"
+          >
+            <SparklesIcon className="h-12 w-12 text-aura-accent mx-auto mb-4" />
+            <h3 className="text-2xl font-semibold text-aura-text-primary mb-3">
               Your organized board will appear here
             </h3>
-            <p className="text-base text-gray-500 max-w-[500px] mx-auto">
+            <p className="text-base text-aura-text-secondary max-w-[500px] mx-auto">
               Start by typing any thought, idea, or task above. I’ll
               automatically organize everything into categories, extract to-dos,
               and keep track of what’s important.
             </p>
-          </div>
+          </AuraCard>
         )}
       </div>
     </div>

@@ -4,6 +4,7 @@ import PageMetadata from "@/components/PageMetadata";
 import { getApiUrl } from "@/utils/api";
 import { Check, Trash2, Shield, User as UserIcon } from "lucide-react";
 import Container from "@/components/Container";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface AdminUser {
   id: number;
@@ -71,7 +72,51 @@ export default function AdminDashboard() {
   };
 
   if (loading)
-    return <div className="p-8 text-center text-white">Loading...</div>;
+    return (
+      <Container className="py-8 pt-24 text-white">
+        <div className="animate-pulse space-y-6">
+          {/* Header Skeleton */}
+          <div className="flex items-center gap-3 mb-8">
+            <Skeleton className="w-8 h-8 rounded-full" />
+            <Skeleton className="h-8 w-48" />
+          </div>
+
+          {/* Table Skeleton */}
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
+            {/* Table Header */}
+            <div className="bg-zinc-800/50 p-4 grid grid-cols-5 gap-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-16 ml-auto" />
+            </div>
+
+            {/* Table Rows */}
+            <div className="divide-y divide-zinc-800">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="p-4 grid grid-cols-5 gap-4 items-center"
+                >
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-8 h-8 rounded-full" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
+                  <div className="flex justify-end gap-2">
+                    <Skeleton className="h-7 w-16 rounded-md" />
+                    <Skeleton className="h-7 w-7 rounded-md" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Container>
+    );
   if (!user || user.role !== "admin")
     return <div className="p-8 text-center text-red-500">Access Denied</div>;
 

@@ -5,6 +5,8 @@
 
 import React, { useState } from "react";
 import { GoogleGenAI, Type } from "@google/genai";
+import { Download } from "lucide-react";
+import { AuraButton } from "@/components/aura";
 import { PinState } from "./components/types";
 import { Setup } from "./components/Setup";
 import { Book } from "./components/Book";
@@ -12,7 +14,7 @@ import { useApiKey } from "./components/useApiKey";
 import { ApiKeyDialog } from "./components/ApiKeyDialog";
 import { LoadingFX } from "./components/LoadingFX";
 
-const MODEL_NAME = "gemini-3-pro-image-preview";
+const MODEL_NAME = "gemini-2.5-flash-image";
 const DETECTION_MODEL = "gemini-2.5-flash";
 
 // --- API Helpers ---
@@ -420,26 +422,18 @@ const PinPalsPage: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <button
+            <AuraButton
               onClick={() => setView("create")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                view === "create"
-                  ? "bg-aura-accent text-white shadow-md shadow-aura-accent/20"
-                  : "bg-white text-aura-text-secondary hover:text-aura-text-primary border border-aura-text-primary/10 hover:bg-aura-text-primary/5"
-              }`}
+              variant={view === "create" ? "accent" : "ghost"}
             >
               Create
-            </button>
-            <button
+            </AuraButton>
+            <AuraButton
               onClick={() => setView("gallery")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                view === "gallery"
-                  ? "bg-aura-accent text-white shadow-md shadow-aura-accent/20"
-                  : "bg-white text-aura-text-secondary hover:text-aura-text-primary border border-aura-text-primary/10 hover:bg-aura-text-primary/5"
-              }`}
+              variant={view === "gallery" ? "accent" : "ghost"}
             >
               My Pins
-            </button>
+            </AuraButton>
           </div>
         </header>
 
@@ -475,31 +469,21 @@ const PinPalsPage: React.FC = () => {
             ) : state.generatedImage ? (
               <div className="flex flex-col gap-4">
                 <Book imageUrl={state.generatedImage} onReset={handleReset} />
-                <button
+                <AuraButton
                   onClick={handleSaveToGallery}
-                  className="mx-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-bold shadow-lg transition-colors border-2 border-emerald-400/30"
+                  variant="primary"
+                  className="mx-auto"
                 >
                   Save to Gallery ❤️
-                </button>
+                </AuraButton>
                 <div className="flex justify-center mt-2">
-                  <button
+                  <AuraButton
                     onClick={handleDownloadPrintTemplate}
-                    className="text-sm text-aura-text-secondary hover:text-aura-text-primary underline flex items-center gap-1"
+                    variant="ghost"
+                    icon={<Download size={16} />}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 9a1 1 0 011 1v2.586l4.293-4.293a1 1 0 111.414 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L4 12.586V12a1 1 0 011-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
                     Download 6x4&quot; Print Sheet (4 copies)
-                  </button>
+                  </AuraButton>
                 </div>
               </div>
             ) : (

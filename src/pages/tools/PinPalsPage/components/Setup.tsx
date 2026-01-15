@@ -4,6 +4,8 @@
  */
 
 import React, { useState } from "react";
+import { Plus, Minus, Settings, Loader2 } from "lucide-react";
+import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 
 interface SetupProps {
   petImage: string | null;
@@ -33,21 +35,24 @@ export const Setup: React.FC<SetupProps> = ({
   const isCustom = !isDog && !isCat;
 
   return (
-    <div className="card animate-in-up">
+    <div className="animate-in-up">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Left: Upload Area */}
         <div className="flex-1">
-          <label htmlFor="pet-image-upload" className="text-label">
+          <label
+            htmlFor="pet-image-upload"
+            className="text-sm font-medium text-aura-text-secondary block mb-2"
+          >
             Source Image
           </label>
           <div
             className={`
-            relative h-72 rounded-xl border border-dashed transition-all duration-300
+            relative h-72 rounded-xl border-2 border-dashed transition-all duration-300
             flex flex-col items-center justify-center p-6 cursor-pointer group overflow-hidden
             ${
               petImage
-                ? "border-zinc-700 bg-zinc-950"
-                : "border-zinc-700 bg-zinc-900/30 hover:bg-zinc-900 hover:border-zinc-600"
+                ? "border-aura-border bg-aura-surface-elevated"
+                : "border-aura-border bg-aura-bg/30 hover:bg-aura-bg hover:border-aura-accent"
             }
           `}
           >
@@ -75,8 +80,8 @@ export const Setup: React.FC<SetupProps> = ({
                 </div>
               </>
             ) : (
-              <div className="text-center text-zinc-500 space-y-3 pointer-events-none">
-                <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mx-auto text-zinc-400 group-hover:text-white transition-colors">
+              <div className="text-center text-aura-text-tertiary space-y-3 pointer-events-none">
+                <div className="w-12 h-12 bg-aura-border-light rounded-full flex items-center justify-center mx-auto text-aura-text-secondary group-hover:text-aura-primary transition-colors">
                   <svg
                     width="20"
                     height="20"
@@ -93,10 +98,10 @@ export const Setup: React.FC<SetupProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <span className="block text-sm font-medium text-zinc-300">
+                  <span className="block text-sm font-medium text-aura-text-primary">
                     Upload Photo
                   </span>
-                  <span className="block text-xs mt-1 text-zinc-600">
+                  <span className="block text-xs mt-1 text-aura-text-tertiary">
                     JPG, PNG up to 5MB
                   </span>
                 </div>
@@ -108,17 +113,27 @@ export const Setup: React.FC<SetupProps> = ({
         {/* Right: Controls */}
         <div className="flex-1 flex flex-col">
           <div className="flex-grow">
-            <span className="text-label font-medium block mb-2">
+            <span className="text-sm font-medium text-aura-text-secondary block mb-2">
               Subject Analysis
             </span>
 
             {isDetecting ? (
-              <div className="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-400 text-sm h-[52px]">
-                <div className="w-4 h-4 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin"></div>
-                <span>Identifying species...</span>
-              </div>
+              <AuraCard
+                padding="sm"
+                variant="bordered"
+                className="flex items-center gap-3 h-[52px]"
+              >
+                <Loader2 className="w-4 h-4 text-aura-accent animate-spin" />
+                <span className="text-sm text-aura-text-secondary">
+                  Identifying species...
+                </span>
+              </AuraCard>
             ) : (
-              <div className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800 rounded-lg h-[52px]">
+              <AuraCard
+                padding="sm"
+                variant="bordered"
+                className="flex items-center justify-between h-[52px]"
+              >
                 <div className="flex items-center gap-2">
                   <svg
                     className="text-emerald-500"
@@ -134,80 +149,76 @@ export const Setup: React.FC<SetupProps> = ({
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  <span className="text-sm font-medium text-white uppercase tracking-wide">
+                  <span className="text-sm font-medium text-aura-text-primary uppercase tracking-wide">
                     {petCount > 1 ? `${petCount} ` : ""}
                     {petType}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
+                  <AuraButton
+                    variant="ghost"
+                    size="sm"
+                    icon={<Settings size={16} />}
                     onClick={() => setIsOverrideOpen(!isOverrideOpen)}
-                    className={`p-2 rounded-md transition-colors ${isOverrideOpen ? "text-white bg-zinc-800" : "text-zinc-500 hover:text-white hover:bg-zinc-800"}`}
                     aria-label="Toggle settings override"
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                    </svg>
-                  </button>
+                  />
                 </div>
-              </div>
+              </AuraCard>
             )}
 
             {isOverrideOpen && (
-              <div className="mt-4 p-4 rounded-xl bg-zinc-950/50 border border-zinc-800 space-y-4 animate-in-up">
+              <AuraCard
+                variant="glass"
+                padding="md"
+                className="mt-4 space-y-4 animate-scale-in"
+              >
                 {/* Species Toggle */}
                 <div>
-                  <span className="text-xs text-zinc-500 font-medium mb-2 block">
+                  <span className="text-xs text-aura-text-secondary font-medium mb-2 block">
                     Species
                   </span>
-                  <div className="flex bg-zinc-950 p-1 rounded-lg border border-zinc-800">
-                    <button
+                  <div className="flex gap-2">
+                    <AuraButton
                       onClick={() =>
                         onTypeChange(petCount > 1 ? "DOGS" : "DOG")
                       }
-                      className={`btn-pill ${isDog ? "active" : "inactive"}`}
+                      variant={isDog ? "primary" : "secondary"}
+                      size="sm"
+                      className="flex-1 justify-center"
                     >
                       Dog
-                    </button>
-                    <button
+                    </AuraButton>
+                    <AuraButton
                       onClick={() =>
                         onTypeChange(petCount > 1 ? "CATS" : "CAT")
                       }
-                      className={`btn-pill ${isCat ? "active" : "inactive"}`}
+                      variant={isCat ? "primary" : "secondary"}
+                      size="sm"
+                      className="flex-1 justify-center"
                     >
                       Cat
-                    </button>
-                    <button
+                    </AuraButton>
+                    <AuraButton
                       onClick={() => {
                         if (!isCustom) onTypeChange("");
                       }}
-                      className={`btn-pill ${isCustom ? "active" : "inactive"}`}
+                      variant={isCustom ? "primary" : "secondary"}
+                      size="sm"
+                      className="flex-1 justify-center"
                     >
                       Custom
-                    </button>
+                    </AuraButton>
                   </div>
 
                   {isCustom && (
                     <div className="mt-2">
-                      <input
-                        type="text"
+                      <AuraInput
                         value={petType}
                         onChange={(e) =>
                           onTypeChange(e.target.value.toUpperCase())
                         }
                         placeholder="Enter species..."
-                        className="input-minimal"
                         aria-label="Custom species"
                       />
                     </div>
@@ -216,62 +227,41 @@ export const Setup: React.FC<SetupProps> = ({
 
                 {/* Count Stepper */}
                 <div>
-                  <span className="text-xs text-zinc-500 font-medium mb-2 block">
+                  <span className="text-xs text-aura-text-secondary font-medium mb-2 block">
                     Quantity
                   </span>
                   <div className="flex items-center gap-3">
-                    <button
+                    <AuraButton
                       onClick={() => onCountChange(Math.max(1, petCount - 1))}
-                      className="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-white transition-colors"
+                      variant="secondary"
+                      size="icon"
+                      icon={<Minus size={16} />}
                       aria-label="Decrease quantity"
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                    </button>
+                    />
 
-                    <span className="w-8 text-center font-medium text-white">
+                    <span className="w-8 text-center font-medium text-aura-text-primary">
                       {petCount}
                     </span>
 
-                    <button
+                    <AuraButton
                       onClick={() => onCountChange(petCount + 1)}
-                      className="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-white transition-colors"
+                      variant="secondary"
+                      size="icon"
+                      icon={<Plus size={16} />}
                       aria-label="Increase quantity"
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                    </button>
+                    />
                   </div>
                 </div>
-              </div>
+              </AuraCard>
             )}
           </div>
 
-          <button
+          <AuraButton
             onClick={onGenerate}
             disabled={!petImage || isDetecting}
-            className="btn-primary w-full mt-8"
+            variant="primary"
+            className="w-full mt-8"
+            size="lg"
           >
             <svg
               width="18"
@@ -282,12 +272,13 @@ export const Setup: React.FC<SetupProps> = ({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="mr-2"
             >
               <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
               <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z" />
             </svg>
             Generate Pin
-          </button>
+          </AuraButton>
         </div>
       </div>
     </div>

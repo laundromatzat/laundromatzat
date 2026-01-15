@@ -25,6 +25,7 @@ import {
   Type as TypeIcon,
   Sparkles,
 } from "lucide-react";
+import { AuraCard, AuraBadge } from "@/components/aura";
 
 interface AnalysisDisplayProps {
   data: AnalysisResult;
@@ -37,32 +38,28 @@ const AudioView: React.FC<{ data: AudioAnalysisResult }> = ({ data }) => {
     switch (emotion) {
       case Emotion.Happy:
         return (
-          <div className="flex items-center bg-green-50 text-green-700 px-2 py-1 rounded border border-green-100">
-            <Smile size={14} className="mr-1.5" />
+          <AuraBadge variant="success" icon={<Smile size={12} />}>
             {emotion}
-          </div>
+          </AuraBadge>
         );
       case Emotion.Sad:
         return (
-          <div className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100">
-            <Frown size={14} className="mr-1.5" />
+          <AuraBadge variant="info" icon={<Frown size={12} />}>
             {emotion}
-          </div>
+          </AuraBadge>
         );
       case Emotion.Angry:
         return (
-          <div className="flex items-center bg-red-50 text-red-700 px-2 py-1 rounded border border-red-100">
-            <AlertCircle size={14} className="mr-1.5" />
+          <AuraBadge variant="error" icon={<AlertCircle size={12} />}>
             {emotion}
-          </div>
+          </AuraBadge>
         );
       case Emotion.Neutral:
       default:
         return (
-          <div className="flex items-center bg-brand-secondary/20 text-aura-text-secondary px-2 py-1 rounded border border-brand-secondary/30">
-            <Meh size={14} className="mr-1.5" />
+          <AuraBadge variant="neutral" icon={<Meh size={12} />}>
             {emotion}
-          </div>
+          </AuraBadge>
         );
     }
   };
@@ -70,20 +67,22 @@ const AudioView: React.FC<{ data: AudioAnalysisResult }> = ({ data }) => {
   return (
     <div className="space-y-4">
       {data.segments.map((segment, index) => (
-        <div
+        <AuraCard
           key={index}
-          className="mi-card-glass p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+          variant="glass"
+          padding="md"
+          className="hover:scale-[1.01] transition-transform duration-300"
         >
           <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
-            <div className="flex items-center font-semibold bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-300 shadow-sm">
+            <div className="flex items-center font-semibold bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-200">
               <User size={16} className="mr-1.5" />
               {segment.speaker}
             </div>
-            <div className="flex items-center bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200">
+            <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200">
               <Clock size={16} className="mr-1.5" />
               {segment.timestamp}
             </div>
-            <div className="flex items-center bg-gradient-to-r from-pink-50 to-pink-100 text-pink-700 px-3 py-1.5 rounded-lg border border-pink-200">
+            <div className="flex items-center bg-pink-50 text-pink-700 px-3 py-1.5 rounded-lg border border-pink-200">
               <Globe size={16} className="mr-1.5" />
               {segment.language}
             </div>
@@ -105,7 +104,7 @@ const AudioView: React.FC<{ data: AudioAnalysisResult }> = ({ data }) => {
               </p>
             </div>
           )}
-        </div>
+        </AuraCard>
       ))}
     </div>
   );
@@ -114,15 +113,15 @@ const AudioView: React.FC<{ data: AudioAnalysisResult }> = ({ data }) => {
 const ImageView: React.FC<{ data: ImageAnalysisResult }> = ({ data }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-white/80 backdrop-blur-sm border border-brand-secondary/40 rounded-xl p-6 h-full">
+      <AuraCard variant="glass" padding="md" className="h-full">
         <h3 className="flex items-center text-lg font-semibold text-aura-text-primary mb-4">
-          <ImageIcon size={20} className="mr-2 text-brand-accent" />
+          <ImageIcon size={20} className="mr-2 text-aura-accent" />
           Visual Elements
         </h3>
         <ul className="space-y-2">
           {data.visualElements?.map((el, i) => (
             <li key={i} className="flex items-start text-aura-text-primary">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent mt-2 mr-3 flex-shrink-0" />
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-aura-accent mt-2 mr-3 flex-shrink-0" />
               {(() => {
                 if (typeof el === "string") return el;
                 if (typeof el === "object" && el !== null) {
@@ -142,24 +141,24 @@ const ImageView: React.FC<{ data: ImageAnalysisResult }> = ({ data }) => {
           )}
         </ul>
         {data.mood && (
-          <div className="mt-6 pt-4 border-t border-brand-secondary/30">
+          <div className="mt-6 pt-4 border-t border-aura-border">
             <span className="text-sm font-medium text-aura-text-secondary uppercase tracking-wider">
               Mood / Atmosphere
             </span>
-            <p className="mt-1 text-lg font-medium text-brand-accent capitalize">
+            <p className="mt-1 text-lg font-medium text-aura-accent capitalize">
               {data.mood}
             </p>
           </div>
         )}
-      </div>
+      </AuraCard>
 
-      <div className="bg-white/80 backdrop-blur-sm border border-brand-secondary/40 rounded-xl p-6 h-full">
+      <AuraCard variant="glass" padding="md" className="h-full">
         <h3 className="flex items-center text-lg font-semibold text-aura-text-primary mb-4">
-          <TypeIcon size={20} className="mr-2 text-brand-accent" />
+          <TypeIcon size={20} className="mr-2 text-aura-accent" />
           Detected Text
         </h3>
         {data.detectedText ? (
-          <div className="bg-brand-secondary/5 p-4 rounded-lg border border-brand-secondary/30 font-mono text-sm text-aura-text-primary whitespace-pre-wrap leading-relaxed">
+          <div className="bg-aura-surface-elevated/50 p-4 rounded-lg border border-aura-border font-mono text-sm text-aura-text-primary whitespace-pre-wrap leading-relaxed">
             {Array.isArray(data.detectedText)
               ? data.detectedText.join("\n")
               : data.detectedText}
@@ -169,7 +168,7 @@ const ImageView: React.FC<{ data: ImageAnalysisResult }> = ({ data }) => {
             No legible text found in the image.
           </p>
         )}
-      </div>
+      </AuraCard>
     </div>
   );
 };
@@ -178,17 +177,19 @@ const VideoView: React.FC<{ data: VideoAnalysisResult }> = ({ data }) => {
   return (
     <div className="space-y-4">
       {data.segments.map((segment, index) => (
-        <div
+        <AuraCard
           key={index}
-          className="bg-white/80 backdrop-blur-sm border border-brand-secondary/40 rounded-xl p-5 hover:shadow-md transition-all duration-300"
+          variant="glass"
+          padding="md"
+          className="hover:shadow-md transition-all duration-300"
         >
           <div className="flex flex-wrap items-center gap-3 mb-3 text-sm text-aura-text-secondary">
-            <div className="flex items-center bg-brand-accent/10 text-brand-accent px-2 py-1 rounded font-mono">
+            <div className="flex items-center bg-aura-accent/10 text-aura-accent px-2 py-1 rounded font-mono">
               <Clock size={14} className="mr-1.5" />
               {segment.timestamp}
             </div>
             {segment.speaker && (
-              <div className="flex items-center bg-brand-secondary/10 px-2 py-1 rounded">
+              <div className="flex items-center bg-aura-secondary/10 px-2 py-1 rounded">
                 <User size={14} className="mr-1.5" />
                 {segment.speaker}
               </div>
@@ -205,7 +206,7 @@ const VideoView: React.FC<{ data: VideoAnalysisResult }> = ({ data }) => {
               </p>
 
               {segment.transcript && (
-                <div className="bg-brand-secondary/5 p-3 rounded-lg border border-brand-secondary/30">
+                <div className="bg-aura-secondary/10 p-3 rounded-lg border border-aura-border">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-aura-text-secondary mb-1">
                     Transcript
                   </h4>
@@ -216,7 +217,7 @@ const VideoView: React.FC<{ data: VideoAnalysisResult }> = ({ data }) => {
               )}
             </div>
           </div>
-        </div>
+        </AuraCard>
       ))}
     </div>
   );
@@ -224,10 +225,10 @@ const VideoView: React.FC<{ data: VideoAnalysisResult }> = ({ data }) => {
 
 const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ data }) => {
   return (
-    <div className="space-y-8 mi-animate-fadeIn">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Summary Section */}
-      <div className="mi-card-gradient p-6 shadow-lg">
-        <h2 className="text-xl font-bold mi-gradient-text mb-4 flex items-center">
+      <AuraCard variant="elevated" padding="lg">
+        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 mb-4 flex items-center">
           {data.type === "video" ? (
             <Video size={24} className="mr-2 text-purple-600" />
           ) : data.type === "image" ? (
@@ -240,11 +241,11 @@ const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ data }) => {
         <p className="text-aura-text-primary leading-relaxed text-base">
           {data.summary}
         </p>
-      </div>
+      </AuraCard>
 
       {/* Detail Views */}
       <div className="space-y-4">
-        <h2 className="text-xl font-bold mi-gradient-text px-1 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-aura-text-primary px-1 flex items-center gap-2">
           <Sparkles size={20} className="text-purple-600" />
           {data.type === "image" ? "Detailed Analysis" : "Timeline"}
         </h2>

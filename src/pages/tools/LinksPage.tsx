@@ -3,6 +3,14 @@ import PageMetadata from "@/components/PageMetadata";
 import { useAuth } from "@/context/AuthContext";
 import { getApiUrl } from "@/utils/api";
 import Container from "@/components/Container";
+import {
+  AuraButton,
+  AuraCard,
+  AuraInput,
+  AuraModal,
+  AuraBadge,
+} from "@/components/aura";
+import { Plus, Search, Trash2, Edit2, ExternalLink } from "lucide-react";
 
 interface LinkItem {
   id: number;
@@ -48,7 +56,7 @@ const matchesFilters = (
   return true;
 };
 
-// Simple Modal Component for Add/Edit
+// Modal Component for Add/Edit
 const LinkModal = ({
   isOpen,
   onClose,
@@ -88,133 +96,80 @@ const LinkModal = ({
     }
   }, [initialData, isOpen]);
 
-  if (!isOpen) return null;
+  const handleSubmit = () => {
+    onSubmit({
+      title: formData.title,
+      url: formData.url,
+      description: formData.description,
+      tags: formData.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+      image_url: formData.image_url,
+    });
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl bg-zinc-900 border border-zinc-800 p-6 shadow-2xl">
-        <h3 className="mb-4 text-xl font-bold text-white">
-          {initialData ? "Edit Link" : "Add New Link"}
-        </h3>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit({
-              title: formData.title,
-              url: formData.url,
-              description: formData.description,
-              tags: formData.tags
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean),
-              image_url: formData.image_url,
-            });
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <label
-              htmlFor="link-title"
-              className="block text-sm font-medium text-zinc-400"
-            >
-              Title
-            </label>
-            <input
-              id="link-title"
-              required
-              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="link-url"
-              className="block text-sm font-medium text-zinc-400"
-            >
-              URL
-            </label>
-            <input
-              id="link-url"
-              required
-              type="url"
-              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
-              value={formData.url}
-              onChange={(e) =>
-                setFormData({ ...formData, url: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="link-desc"
-              className="block text-sm font-medium text-zinc-400"
-            >
-              Description
-            </label>
-            <textarea
-              id="link-desc"
-              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
-              rows={3}
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="link-tags"
-              className="block text-sm font-medium text-zinc-400"
-            >
-              Tags (comma separated)
-            </label>
-            <input
-              id="link-tags"
-              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
-              value={formData.tags}
-              onChange={(e) =>
-                setFormData({ ...formData, tags: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="link-image"
-              className="block text-sm font-medium text-zinc-400"
-            >
-              Image URL (optional)
-            </label>
-            <input
-              id="link-image"
-              type="url"
-              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
-              value={formData.image_url}
-              onChange={(e) =>
-                setFormData({ ...formData, image_url: e.target.value })
-              }
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-md px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-            >
-              Save
-            </button>
-          </div>
-        </form>
+    <AuraModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={initialData ? "Edit Link" : "Add New Link"}
+      size="md"
+    >
+      <div className="space-y-4">
+        <AuraInput
+          label="Title"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          placeholder="e.g. Design Inspiration"
+          fullWidth
+        />
+        <AuraInput
+          label="URL"
+          inputType="url"
+          value={formData.url}
+          onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+          placeholder="https://example.com"
+          fullWidth
+        />
+        <AuraInput
+          label="Description"
+          inputType="textarea"
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+          placeholder="A brief description..."
+          fullWidth
+          rows={3}
+        />
+        <AuraInput
+          label="Tags (comma separated)"
+          value={formData.tags}
+          onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+          placeholder="design, resources, tools"
+          fullWidth
+        />
+        <AuraInput
+          label="Image URL (optional)"
+          inputType="url"
+          value={formData.image_url}
+          onChange={(e) =>
+            setFormData({ ...formData, image_url: e.target.value })
+          }
+          placeholder="https://example.com/image.jpg"
+          fullWidth
+        />
+        <div className="flex justify-end gap-3 pt-4">
+          <AuraButton onClick={onClose} variant="ghost">
+            Cancel
+          </AuraButton>
+          <AuraButton onClick={handleSubmit} variant="primary">
+            Save
+          </AuraButton>
+        </div>
       </div>
-    </div>
+    </AuraModal>
   );
 };
 
@@ -340,12 +295,15 @@ function LinksPage(): React.ReactNode {
 
   const skeletonPlaceholders = Array.from({ length: SKELETON_COUNT }).map(
     (_, i) => (
-      <div key={i} className="h-48 rounded-2xl bg-zinc-200 animate-pulse" />
+      <AuraCard
+        key={i}
+        className="h-48 animate-pulse bg-aura-surface-elevated"
+      />
     )
   );
 
   return (
-    <Container className="space-y-space-5 pt-8 pb-20">
+    <Container className="space-y-8 pt-8 pb-20">
       <PageMetadata
         title="Links"
         description="Your curated collection of bookmarks and resources."
@@ -362,32 +320,29 @@ function LinksPage(): React.ReactNode {
             Build and manage your private library of inspiration.
           </p>
         </div>
-        <button
+        <AuraButton
           onClick={openCreateModal}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-full font-medium shadow-md hover:bg-indigo-500 transition active:scale-95"
+          variant="primary"
+          icon={<Plus size={18} />}
         >
-          + Add New Link
-        </button>
+          Add New Link
+        </AuraButton>
       </div>
 
       {/* Filters */}
-      <div className="p-4 rounded-xl border border-brand-surface-highlight/60 bg-brand-secondary/40 space-y-4">
+      <AuraCard variant="bordered" padding="md" className="space-y-4">
         <div>
-          <label
-            htmlFor="search-links"
-            className="text-xs font-semibold uppercase tracking-widest text-aura-text-secondary mb-1 block"
-          >
+          <span className="text-xs font-semibold uppercase tracking-widest text-aura-text-secondary mb-2 block">
             Search
-          </label>
-          <input
-            id="search-links"
-            type="search"
+          </span>
+          <AuraInput
             placeholder="Search bookmarks..."
-            className="w-full px-4 py-2 rounded-lg border border-brand-surface-highlight/60 bg-brand-primary/70 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            prefixIcon={<Search size={16} />}
             value={filters.query}
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, query: e.target.value }))
             }
+            fullWidth
           />
         </div>
         {availableTags.length > 0 && (
@@ -397,30 +352,30 @@ function LinksPage(): React.ReactNode {
             </span>
             <div className="flex flex-wrap gap-2">
               {availableTags.map((tag) => (
-                <button
+                <AuraButton
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border transition ${
-                    filters.tags.includes(tag)
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300"
-                  }`}
+                  variant={filters.tags.includes(tag) ? "accent" : "secondary"}
+                  size="sm"
+                  className="capitalize"
                 >
                   #{tag}
-                </button>
+                </AuraButton>
               ))}
             </div>
           </div>
         )}
         {(filters.query || filters.tags.length > 0) && (
-          <button
+          <AuraButton
             onClick={clearFilters}
-            className="text-xs text-indigo-600 font-medium hover:underline"
+            variant="ghost"
+            size="sm"
+            className="text-aura-accent hover:underline px-0"
           >
             Clear all filters
-          </button>
+          </AuraButton>
         )}
-      </div>
+      </AuraCard>
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -436,7 +391,7 @@ function LinksPage(): React.ReactNode {
             return (
               <div
                 key={link.id}
-                className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-zinc-900 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1"
+                className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-aura-surface shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 block"
               >
                 {/* Background Image */}
                 <img
@@ -454,9 +409,9 @@ function LinksPage(): React.ReactNode {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block"
+                    className="block group-hover:text-aura-accent transition-colors"
                   >
-                    <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 hover:text-indigo-300 transition-colors">
+                    <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 transition-colors">
                       {link.title}
                     </h3>
                   </a>
@@ -466,37 +421,46 @@ function LinksPage(): React.ReactNode {
 
                   <div className="flex flex-wrap gap-2 mb-4">
                     {link.tags.slice(0, 3).map((tag) => (
-                      <span
+                      <AuraBadge
                         key={tag}
-                        className="text-[10px] uppercase font-bold text-white/80 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm"
+                        variant="neutral"
+                        size="sm"
+                        className="bg-white/10 text-white border-none backdrop-blur-sm"
                       >
                         {tag}
-                      </span>
+                      </AuraBadge>
                     ))}
                   </div>
 
-                  {/* Actions (Edit/Delete) - Only visible on hover/focus-within for cleaner look, or always visible? 
-                      Let's stick to visible but subtle. */}
+                  {/* Actions (Edit/Delete) */}
                   <div className="flex gap-2 mt-auto pt-2 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => openEditModal(link)}
-                      className="flex-1 py-1.5 text-xs font-semibold bg-white/10 text-white rounded hover:bg-white/20 backdrop-blur-md transition"
+                      className="flex-1 py-1.5 text-xs font-semibold bg-white/10 text-white rounded hover:bg-white/20 backdrop-blur-md transition flex items-center justify-center gap-1"
                     >
-                      Edit
+                      <Edit2 size={12} /> Edit
                     </button>
                     <button
                       onClick={() => handleDelete(link.id)}
-                      className="flex-1 py-1.5 text-xs font-semibold bg-red-500/20 text-red-200 rounded hover:bg-red-500/40 backdrop-blur-md transition"
+                      className="flex-1 py-1.5 text-xs font-semibold bg-red-500/20 text-red-200 rounded hover:bg-red-500/40 backdrop-blur-md transition flex items-center justify-center gap-1"
                     >
-                      Delete
+                      <Trash2 size={12} /> Delete
                     </button>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 py-1.5 text-xs font-semibold bg-indigo-500/20 text-indigo-200 rounded hover:bg-indigo-500/40 backdrop-blur-md transition flex items-center justify-center gap-1"
+                    >
+                      <ExternalLink size={12} /> Visit
+                    </a>
                   </div>
                 </div>
               </div>
             );
           })
         ) : (
-          <div className="col-span-full py-12 text-center text-zinc-500">
+          <div className="col-span-full py-12 text-center text-aura-text-tertiary">
             {links.length === 0
               ? "You haven't added any links yet. Create your first one!"
               : "No links match your filters."}

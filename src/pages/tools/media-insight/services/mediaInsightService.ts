@@ -216,7 +216,8 @@ Respond in JSON format:
   return prompt;
 };
 
-// Analyze using Gemini API
+// Analyze using Gemini API (not used in Media Insight Pro - local-only)
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const analyzeWithGemini = async (
   base64Data: string,
   mimeType: string,
@@ -384,6 +385,9 @@ export const analyzeMedia = async (
       visionModel
     );
   } else {
-    return analyzeWithGemini(base64Data, mimeType, mediaType, originalName);
+    // MediaInsight Pro is LOCAL-ONLY - no cloud fallback
+    throw new Error(
+      "MediaInsight Pro requires local LM Studio. Please enable 'Use Local Model' in settings and ensure LM Studio is running."
+    );
   }
 };

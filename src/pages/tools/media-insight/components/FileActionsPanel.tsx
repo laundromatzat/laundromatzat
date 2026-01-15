@@ -13,6 +13,7 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
+import { AuraButton, AuraCard, AuraBadge } from "@/components/aura";
 import { WorkspaceFile } from "../types";
 
 interface FileActionsPanelProps {
@@ -33,16 +34,16 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
 
   if (!file || file.status !== "done" || !file.analysisResult) {
     return (
-      <div className="mi-card-glass p-8">
+      <AuraCard variant="glass" padding="lg">
         <div className="text-center text-aura-text-secondary">
-          <div className="mi-animate-float mb-4">
+          <div className="animate-bounce mb-4">
             <Sparkles size={56} className="mx-auto text-purple-300" />
           </div>
           <p className="text-sm font-semibold text-purple-600">
             Select and analyze a file to see available actions
           </p>
         </div>
-      </div>
+      </AuraCard>
     );
   }
 
@@ -50,14 +51,11 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
   const tags = file.analysisResult.tags || [];
 
   return (
-    <div className="mi-card-glass p-6 space-y-6">
+    <AuraCard variant="glass" padding="md" className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-xl font-bold mi-gradient-text mb-1 flex items-center">
-          <Sparkles
-            size={22}
-            className="mr-2 text-purple-600 mi-animate-pulse"
-          />
+        <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-1 flex items-center">
+          <Sparkles size={22} className="mr-2 text-purple-600 animate-pulse" />
           File Actions
         </h3>
         <p className="text-xs text-aura-text-secondary">
@@ -79,13 +77,15 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
             />
           </div>
           {onOpenFile && file.path && (
-            <button
+            <AuraButton
               onClick={() => onOpenFile(file)}
-              className="w-full mi-btn-gradient text-sm py-2.5 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+              variant="secondary"
+              icon={<ExternalLink size={16} />}
+              className="w-full justify-center"
+              size="sm"
             >
-              <ExternalLink size={16} />
               Open in Default App
-            </button>
+            </AuraButton>
           )}
         </div>
       )}
@@ -112,13 +112,15 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
       </div>
 
       {/* Rename Button */}
-      <button
+      <AuraButton
         onClick={() => onRename(file)}
-        className="w-full mi-btn-gradient py-3.5 px-4 flex items-center justify-center gap-2 text-base font-bold shadow-lg hover:shadow-xl"
+        variant="primary"
+        icon={<Edit3 size={20} />}
+        className="w-full justify-center py-6"
+        size="lg"
       >
-        <Edit3 size={20} />
         Rename File with AI Suggestion
-      </button>
+      </AuraButton>
 
       {/* Tags Section */}
       <div className="border-t border-brand-secondary/20 pt-6">
@@ -147,38 +149,39 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
               className="w-full px-3 py-2 border border-brand-secondary/40 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
             />
             <div className="flex gap-2">
-              <button
+              <AuraButton
                 onClick={() => {
                   // TODO: Apply custom tags
                   setIsEditingTags(false);
                 }}
-                className="flex-1 bg-brand-accent text-brand-on-accent py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center hover:bg-brand-accent-strong transition-colors"
+                variant="accent"
+                size="sm"
+                icon={<Check size={14} />}
+                className="flex-1 justify-center"
               >
-                <Check size={14} className="mr-1" />
                 Apply
-              </button>
-              <button
+              </AuraButton>
+              <AuraButton
                 onClick={() => {
                   setCustomTags("");
                   setIsEditingTags(false);
                 }}
-                className="flex-1 bg-brand-secondary/10 text-aura-text-secondary py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center"
+                variant="ghost"
+                size="sm"
+                icon={<X size={14} />}
+                className="flex-1 justify-center"
               >
-                <X size={14} className="mr-1" />
                 Cancel
-              </button>
+              </AuraButton>
             </div>
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
             {tags.length > 0 ? (
               tags.map((tag, i) => (
-                <span
-                  key={i}
-                  className="bg-brand-accent/10 text-brand-accent px-3 py-1 rounded-full text-xs font-medium border border-brand-accent/20"
-                >
+                <AuraBadge key={i} variant="neutral" size="sm">
                   {tag}
-                </span>
+                </AuraBadge>
               ))
             ) : (
               <p className="text-xs text-aura-text-secondary italic">
@@ -191,18 +194,19 @@ const FileActionsPanel: React.FC<FileActionsPanelProps> = ({
 
       {/* Organize Button */}
       <div className="border-t border-brand-secondary/20 pt-6">
-        <button
+        <AuraButton
           onClick={onOrganize}
-          className="w-full bg-brand-secondary/10 hover:bg-brand-secondary/20 text-aura-text-primary font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center border border-brand-secondary/30"
+          variant="secondary"
+          icon={<FolderTree size={18} />}
+          className="w-full justify-center"
         >
-          <FolderTree size={18} className="mr-2" />
           Organize All Files
-        </button>
+        </AuraButton>
         <p className="text-xs text-aura-text-secondary mt-2 text-center">
           Move files into categorized folders
         </p>
       </div>
-    </div>
+    </AuraCard>
   );
 };
 

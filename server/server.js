@@ -22,6 +22,10 @@ const port = process.env.PORT || 4000;
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
 const fs = require("fs");
 
+// AI Agent Services
+const aiAgentService = require("./services/aiAgentService");
+const websocketService = require("./services/websocketService");
+
 // Ensure uploads directory exists on startup
 const uploadsDir = path.join(__dirname, "uploads");
 const avatarsDir = path.join(uploadsDir, "avatars");
@@ -594,6 +598,146 @@ app.delete("/api/dev-tasks/:id", requireAuth, async (req, res) => {
   }
 });
 
+// --- AI Agent API Endpoints ---
+
+// Submit a task to the AI agent
+app.post(
+  "/api/dev-tasks/:id/submit-to-agent",
+  requireAuth,
+  async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const execution = await aiAgentService.submitTask(
+        parseInt(id),
+        req.user.id
+      );
+      res.status(201).json(execution);
+    } catch (err) {
+      console.error("Failed to submit task to agent:", err.message);
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// Get agent execution details for a task
+app.get("/api/dev-tasks/:id/agent-execution", requireAuth, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await db.query(
+      `SELECT * FROM agent_executions 
+       WHERE task_id = $1 AND user_id = $2 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+      [id, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No execution found for this task" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Failed to get agent execution:", err.message);
+    res.status(500).json({ error: "Failed to get agent execution" });
+  }
+});
+
+// Cancel an agent execution
+app.post(
+  "/api/dev-tasks/:id/agent-execution/cancel",
+  requireAuth,
+  async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      // Get the active execution for this task
+      const result = await db.query(
+        `SELECT id FROM agent_executions 
+       WHERE task_id = $1 AND user_id = $2 AND status IN ('pending', 'running')
+       ORDER BY created_at DESC 
+       LIMIT 1`,
+        [id, req.user.id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "No active execution found" });
+      }
+
+      await aiAgentService.cancelExecution(result.rows[0].id, req.user.id);
+      res.json({ message: "Execution cancelled successfully" });
+    } catch (err) {
+      console.error("Failed to cancel execution:", err.message);
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// Get execution logs
+app.get("/api/agent-executions/:id/logs", requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const limit = parseInt(req.query.limit) || 100;
+  const offset = parseInt(req.query.offset) || 0;
+
+  try {
+    const logs = await aiAgentService.getExecutionLogs(
+      parseInt(id),
+      req.user.id,
+      limit,
+      offset
+    );
+    res.json(logs);
+  } catch (err) {
+    console.error("Failed to get execution logs:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GitHub webhook handler for Actions status
+app.post("/api/github/webhook", async (req, res) => {
+  try {
+    const { action, workflow_run } = req.body;
+
+    if (action && workflow_run) {
+      const commitSha = workflow_run.head_sha;
+      const status =
+        workflow_run.status === "completed"
+          ? workflow_run.conclusion
+          : workflow_run.status;
+
+      // Update all executions with this commit SHA
+      await db.query(
+        `UPDATE agent_executions 
+         SET github_actions_status = $1, github_actions_url = $2, updated_at = NOW()
+         WHERE github_commit_sha = $3`,
+        [status, workflow_run.html_url, commitSha]
+      );
+
+      // Notify users via WebSocket
+      const executions = await db.query(
+        "SELECT id, user_id FROM agent_executions WHERE github_commit_sha = $1",
+        [commitSha]
+      );
+
+      executions.rows.forEach((execution) => {
+        websocketService.notifyAgentStatusChange(
+          execution.user_id,
+          execution.id,
+          status
+        );
+      });
+    }
+
+    res.json({ message: "Webhook received" });
+  } catch (err) {
+    console.error("GitHub webhook error:", err.message);
+    res.status(500).json({ error: "Webhook processing failed" });
+  }
+});
+
 // --- Admin Routes ---
 
 // List all users
@@ -646,6 +790,124 @@ app.delete(
     }
   }
 );
+
+// Get server stats (admin only)
+app.get("/api/admin/stats", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    // Get total users
+    const usersResult = await db.query("SELECT COUNT(*) FROM users");
+    const totalUsers = parseInt(usersResult.rows[0].count);
+
+    // Get pending approvals
+    const pendingResult = await db.query(
+      "SELECT COUNT(*) FROM users WHERE is_approved = FALSE"
+    );
+    const pendingApprovals = parseInt(pendingResult.rows[0].count);
+
+    // Get active users (logged in within last 7 days - we don't track this yet, so return 0)
+    const activeUsers = 0;
+
+    // Server uptime
+    const uptime = process.uptime();
+
+    // Memory usage
+    const memoryUsage = process.memoryUsage();
+
+    res.json({
+      totalUsers,
+      pendingApprovals,
+      activeUsers,
+      uptime: Math.floor(uptime),
+      memory: {
+        heapUsed: memoryUsage.heapUsed,
+        heapTotal: memoryUsage.heapTotal,
+        rss: memoryUsage.rss,
+      },
+    });
+  } catch (err) {
+    console.error("Failed to fetch stats:", err);
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
+});
+
+// Get AI usage stats (admin only)
+app.get("/api/admin/ai-usage", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    // Get total tokens and cost
+    const totalResult = await db.query(
+      "SELECT SUM(tokens_used) as total_tokens, SUM(cost_estimate) as total_cost FROM ai_usage_logs"
+    );
+
+    // Get usage by user
+    const byUserResult = await db.query(`
+      SELECT u.username, SUM(a.tokens_used) as tokens, SUM(a.cost_estimate) as cost 
+      FROM ai_usage_logs a 
+      JOIN users u ON a.user_id = u.id 
+      GROUP BY u.username 
+      ORDER BY cost DESC 
+      LIMIT 10
+    `);
+
+    // Get usage by tool
+    const byToolResult = await db.query(`
+      SELECT tool_name, SUM(tokens_used) as tokens, SUM(cost_estimate) as cost 
+      FROM ai_usage_logs 
+      GROUP BY tool_name 
+      ORDER BY cost DESC
+    `);
+
+    // Get usage by model
+    const byModelResult = await db.query(`
+      SELECT model_name, SUM(tokens_used) as tokens, SUM(cost_estimate) as cost 
+      FROM ai_usage_logs 
+      GROUP BY model_name 
+      ORDER BY cost DESC
+    `);
+
+    // Get recent usage (last 30 days, grouped by day)
+    const recentResult = await db.query(`
+      SELECT DATE(created_at) as date, SUM(tokens_used) as tokens, SUM(cost_estimate) as cost 
+      FROM ai_usage_logs 
+      WHERE created_at >= NOW() - INTERVAL '30 days' 
+      GROUP BY DATE(created_at) 
+      ORDER BY date DESC
+    `);
+
+    res.json({
+      total: {
+        tokens: parseInt(totalResult.rows[0]?.total_tokens || 0),
+        cost: parseFloat(totalResult.rows[0]?.total_cost || 0),
+      },
+      byUser: byUserResult.rows,
+      byTool: byToolResult.rows,
+      byModel: byModelResult.rows,
+      recent: recentResult.rows,
+    });
+  } catch (err) {
+    console.error("Failed to fetch AI usage:", err);
+    res.status(500).json({ error: "Failed to fetch AI usage" });
+  }
+});
+
+// Log AI usage (authenticated users only)
+app.post("/api/admin/log-ai-usage", requireAuth, async (req, res) => {
+  const { toolName, modelName, tokensUsed, costEstimate } = req.body;
+
+  if (!toolName || !modelName) {
+    return res.status(400).json({ error: "toolName and modelName required" });
+  }
+
+  try {
+    await db.query(
+      "INSERT INTO ai_usage_logs (user_id, tool_name, model_name, tokens_used, cost_estimate) VALUES ($1, $2, $3, $4, $5)",
+      [req.user.id, toolName, modelName, tokensUsed || 0, costEstimate || 0]
+    );
+    res.json({ message: "Usage logged successfully" });
+  } catch (err) {
+    console.error("Failed to log AI usage:", err);
+    res.status(500).json({ error: "Failed to log usage" });
+  }
+});
 
 // IMPORTANT: Emergency Password Reset (DISABLED FOR SECURITY)
 // Usage: POST /api/admin/reset-password-emergency { "secret_key": "YOUR_SECRET", "username": "stephen", "new_password": "..." }
@@ -1500,7 +1762,14 @@ app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });
 });
 
-// Start server
-app.listen(port, () => {
+// Start server with WebSocket support
+const http = require("http");
+const server = http.createServer(app);
+
+// Initialize WebSocket server
+websocketService.initialize(server);
+
+server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
+  console.log(`WebSocket server ready`);
 });

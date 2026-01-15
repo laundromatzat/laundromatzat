@@ -1,6 +1,6 @@
 import React, { useId } from "react";
-import clsx from "clsx";
 import { Project } from "@/types";
+import { AuraCard } from "./aura";
 
 interface ProjectCardProps {
   project: Project;
@@ -25,18 +25,13 @@ function ProjectCard({ project, onSelect }: ProjectCardProps): React.ReactNode {
 
   return (
     <article className="group relative h-full">
-      <button
-        type="button"
+      <AuraCard
+        variant="interactive"
+        padding="none"
         onClick={handleClick}
-        aria-labelledby={titleId}
-        aria-describedby={descriptionId}
-        className={clsx(
-          "flex h-full w-full flex-col overflow-hidden rounded-radius-md bg-brand-secondary text-left transition duration-300",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/80 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary",
-          "hover:bg-brand-surface-highlight"
-        )}
+        className="h-full flex flex-col overflow-hidden"
       >
-        <div className="relative w-full overflow-hidden bg-brand-primary/50">
+        <div className="relative w-full overflow-hidden bg-aura-accent-light">
           <div className="aspect-[4/3] w-full relative">
             <img
               src={project.imageUrl}
@@ -45,19 +40,22 @@ function ProjectCard({ project, onSelect }: ProjectCardProps): React.ReactNode {
               decoding="async"
               width={1280}
               height={960}
-              className="absolute inset-0 h-full w-full object-cover transition duration-300"
+              className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
             />
           </div>
         </div>
         <div className="flex flex-1 flex-col gap-2 p-4">
-          <h3 id={titleId} className="text-base font-semibold text-brand-text">
+          <h3
+            id={titleId}
+            className="text-base font-semibold text-aura-text-primary"
+          >
             {project.title}
           </h3>
-          <p id={descriptionId} className="text-sm text-brand-text-secondary">
+          <p id={descriptionId} className="text-sm text-aura-text-secondary">
             {project.description}
           </p>
         </div>
-      </button>
+      </AuraCard>
     </article>
   );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import PageMetadata from "@/components/PageMetadata";
 import Container from "@/components/Container";
+import { AuraCard, AuraBadge } from "@/components/aura";
 
 const TOOL_LINKS = [
   {
@@ -84,14 +85,6 @@ const TOOL_LINKS = [
     imageUrl: "/assets/tools/media-insight.png",
     badge: "AI powered",
   },
-  {
-    to: "/tools/dev-task-manager",
-    title: "Dev Task Manager",
-    description:
-      "Mobile-friendly task manager for tracking site features, bugs, and fixes with AI agent integration.",
-    imageUrl: "/assets/tools/dev-task-manager.svg",
-    badge: "New service",
-  },
 ];
 
 function ToolsPage(): React.ReactNode {
@@ -109,33 +102,39 @@ function ToolsPage(): React.ReactNode {
         aria-label="Featured tools"
       >
         {TOOL_LINKS.map((tool) => (
-          <Link
-            key={tool.to}
-            to={tool.to}
-            className="group relative overflow-hidden rounded-2xl bg-zinc-100 aspect-[4/3]"
-          >
-            <img
-              src={tool.imageUrl}
-              alt={tool.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              loading="lazy"
-            />
+          <Link key={tool.to} to={tool.to} className="group block h-full">
+            <AuraCard
+              variant="interactive"
+              padding="none"
+              className="h-full overflow-hidden aspect-[4/3] flex flex-col justify-end relative"
+            >
+              <img
+                src={tool.imageUrl}
+                alt={tool.title}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
+              />
 
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:via-black/40 transition-colors duration-500" />
 
-            <div className="absolute inset-0 p-8 flex flex-col justify-end">
-              {tool.badge && (
-                <span className="text-xs font-semibold uppercase tracking-widest text-white/80 mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  {tool.badge}
-                </span>
-              )}
-              <h3 className="text-2xl font-serif text-white mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                {tool.title}
-              </h3>
-              <p className="text-white/90 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 line-clamp-2">
-                {tool.description}
-              </p>
-            </div>
+              <div className="relative z-10 p-6 flex flex-col items-start gap-2">
+                {tool.badge && (
+                  <AuraBadge
+                    variant="neutral"
+                    size="sm"
+                    className="bg-white/20 text-white backdrop-blur-md border-white/20"
+                  >
+                    {tool.badge}
+                  </AuraBadge>
+                )}
+                <h3 className="text-2xl font-serif text-white translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                  {tool.title}
+                </h3>
+                <p className="text-white/90 text-sm leading-relaxed opacity-0 group-hover:opacity-100 transition-all duration-500 delay-75 line-clamp-2 translate-y-4 group-hover:translate-y-0">
+                  {tool.description}
+                </p>
+              </div>
+            </AuraCard>
           </Link>
         ))}
       </section>

@@ -23,7 +23,7 @@ import RegisterPage from "@/pages/core/RegisterPage";
 import ProfilePage from "@/pages/core/ProfilePage";
 import RegistrationPendingPage from "@/pages/core/RegistrationPendingPage";
 import AdminMailingListPage from "@/pages/core/AdminMailingListPage";
-import AdminDashboard from "@/pages/core/AdminDashboard";
+import MissionControl from "@/pages/core/MissionControl";
 
 // Pages - Portfolio
 import VideosPage from "@/pages/portfolio/VideosPage";
@@ -45,7 +45,6 @@ import NylonFabricDesignerPage from "@/pages/tools/NylonFabricDesignerPage";
 import WoodCarvingVisualizerPage from "@/pages/tools/WoodCarvingVisualizerPage";
 import IntelligentIdeasBoardPage from "@/pages/tools/IntelligentIdeasBoardPage";
 import MediaInsightPage from "@/pages/tools/MediaInsightPage";
-import DevTaskManager from "@/pages/core/DevTaskManager";
 
 const router = createBrowserRouter([
   {
@@ -192,14 +191,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "tools/dev-task-manager",
-        element: (
-          <ProtectedRoute>
-            <DevTaskManager />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: "login",
         element: <LoginPage />,
       },
@@ -219,7 +210,7 @@ const router = createBrowserRouter([
         path: "admin",
         element: (
           <ProtectedRoute>
-            <AdminDashboard />
+            <MissionControl />
           </ProtectedRoute>
         ),
       },

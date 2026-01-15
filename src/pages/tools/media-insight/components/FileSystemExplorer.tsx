@@ -81,9 +81,9 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full mi-glass border-r-2 border-purple-200/50 rounded-l-2xl overflow-hidden shadow-lg">
-      <div className="p-5 border-b border-purple-200/50 bg-gradient-to-br from-purple-50 to-pink-50">
-        <h3 className="font-bold text-lg mi-gradient-text flex items-center mb-2">
+    <div className="flex flex-col h-full bg-aura-surface/80 backdrop-blur-sm border-r border-aura-border rounded-l-2xl overflow-hidden shadow-lg">
+      <div className="p-5 border-b border-aura-border bg-gradient-to-br from-aura-bg to-aura-surface">
+        <h3 className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 flex items-center mb-2">
           <FolderOpen size={20} className="mr-2 text-purple-600" />
           Workspace Files
         </h3>
@@ -100,10 +100,10 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 mi-scrollbar">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent">
         {files.length === 0 && (
-          <div className="p-8 text-center text-aura-text-secondary mi-animate-fadeIn">
-            <div className="mi-animate-float">
+          <div className="p-8 text-center text-aura-text-secondary animate-in fade-in">
+            <div className="animate-bounce-slow">
               <FolderOpen size={56} className="mx-auto mb-4 text-purple-300" />
             </div>
             <p className="text-sm font-semibold mb-2 text-purple-600">
@@ -190,9 +190,9 @@ const FileSystemExplorer: React.FC<FileSystemExplorerProps> = ({
       </div>
 
       {files.some((f) => f.status === "done") && (
-        <div className="p-4 border-t border-purple-200/50 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="p-4 border-t border-aura-border bg-gradient-to-r from-purple-50 to-pink-50">
           <p className="text-xs text-center text-purple-600 font-medium flex items-center justify-center gap-1">
-            <Sparkles size={14} className="mi-animate-pulse" />
+            <Sparkles size={14} className="animate-pulse" />
             Select a file to see actions
           </p>
         </div>

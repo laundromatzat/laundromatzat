@@ -6,6 +6,7 @@ import {
   TaskCategory,
   TaskPriority,
   TaskStatus,
+  AgentExecution,
 } from "../../types/devTaskTypes";
 import {
   fetchDevTasks,
@@ -20,18 +21,27 @@ import {
   loadTasks,
   deleteTask as deleteTaskFromStorage,
 } from "../../services/devTasksStorage";
+import {
+  submitTaskToAgent,
+  setAuthToken as setAgentAuthToken,
+} from "../../services/aiAgentApiService";
+import { websocketService } from "../../services/websocketService";
 import QuickAddTask from "../../../components/dev-tasks/QuickAddTask";
 import TaskList from "../../../components/dev-tasks/TaskList";
+import { AuraCard } from "@/components/aura";
 import TaskDetailModal from "../../../components/dev-tasks/TaskDetailModal";
-import Hero from "@/components/Hero";
+
 import Container from "@/components/Container";
 
 const DevTaskManager = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [tasks, setTasks] = useState<DevTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<DevTask | null>(null);
+  const [agentExecutions, setAgentExecutions] = useState<
+    Map<number, AgentExecution>
+  >(new Map());
   const [filter, setFilter] = useState<{
     status?: TaskStatus;
     priority?: TaskPriority;
@@ -69,11 +79,33 @@ const DevTaskManager = () => {
   useEffect(() => {
     if (token) {
       setAuthToken(token);
+      setAgentAuthToken(token);
       loadTasksFromServer();
+
+      // Connect to WebSocket if user is available
+      if (user?.id) {
+        websocketService.connect(user.id);
+
+        // Subscribe to agent updates
+        const unsubscribe = websocketService.onAny((message) => {
+          // Reload tasks on agent completion to get updated status
+          if (
+            message.type === "agent:completed" ||
+            message.type === "agent:error"
+          ) {
+            loadTasksFromServer();
+          }
+        });
+
+        return () => {
+          unsubscribe();
+          websocketService.disconnect();
+        };
+      }
     } else {
       loadTasksFromCache();
     }
-  }, [token, loadTasksFromServer]);
+  }, [token, user, loadTasksFromServer]);
 
   const handleCreateTask = async (taskData: CreateDevTaskRequest) => {
     try {
@@ -119,6 +151,19 @@ const DevTaskManager = () => {
     return generateAIPrompt(task);
   };
 
+  const handleSubmitToAgent = async (task: DevTask) => {
+    try {
+      const execution = await submitTaskToAgent(task.id);
+      setAgentExecutions(new Map(agentExecutions.set(task.id, execution)));
+
+      // Update task status to in_progress
+      await handleUpdateTask(task.id, { status: "in_progress" });
+    } catch (err) {
+      console.error("Failed to submit task to agent:", err);
+      throw err;
+    }
+  };
+
   const filteredTasks = tasks.filter((task) => {
     if (filter.status && task.status !== filter.status) return false;
     if (filter.priority && task.priority !== filter.priority) return false;
@@ -136,10 +181,14 @@ const DevTaskManager = () => {
 
   return (
     <Container>
-      <Hero
-        title="Dev Task Manager"
-        subtitle="Track features, bugs, and enhancements for your site"
-      />
+      <div className="mb-8">
+        <h1 className="text-4xl font-serif text-aura-text-primary mb-2">
+          Dev Task Manager
+        </h1>
+        <p className="text-aura-text-secondary text-lg">
+          Track features, bugs, and enhancements for your site
+        </p>
+      </div>
 
       {error && (
         <div className="mb-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-200 rounded-lg">
@@ -150,26 +199,46 @@ const DevTaskManager = () => {
       <QuickAddTask onCreate={handleCreateTask} />
 
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 rounded-lg shadow-sm">
+        <AuraCard
+          variant="elevated"
+          padding="sm"
+          className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-none shadow-lg"
+        >
           <div className="text-2xl font-bold">{taskCounts.total}</div>
           <div className="text-sm opacity-90">Total Tasks</div>
-        </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-4 rounded-lg shadow-sm">
+        </AuraCard>
+        <AuraCard
+          variant="elevated"
+          padding="sm"
+          className="bg-gradient-to-br from-green-500 to-green-600 text-white border-none shadow-lg"
+        >
           <div className="text-2xl font-bold">{taskCounts.new}</div>
           <div className="text-sm opacity-90">New</div>
-        </div>
-        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-4 rounded-lg shadow-sm">
+        </AuraCard>
+        <AuraCard
+          variant="elevated"
+          padding="sm"
+          className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white border-none shadow-lg"
+        >
           <div className="text-2xl font-bold">{taskCounts.in_progress}</div>
           <div className="text-sm opacity-90">In Progress</div>
-        </div>
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-lg shadow-sm">
+        </AuraCard>
+        <AuraCard
+          variant="elevated"
+          padding="sm"
+          className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-none shadow-lg"
+        >
           <div className="text-2xl font-bold">{taskCounts.completed}</div>
           <div className="text-sm opacity-90">Completed</div>
-        </div>
-        <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-4 rounded-lg shadow-sm">
+        </AuraCard>
+        <AuraCard
+          variant="elevated"
+          padding="sm"
+          className="bg-gradient-to-br from-red-500 to-red-600 text-white border-none shadow-lg"
+        >
           <div className="text-2xl font-bold">{taskCounts.urgent}</div>
           <div className="text-sm opacity-90">Urgent</div>
-        </div>
+        </AuraCard>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -181,7 +250,7 @@ const DevTaskManager = () => {
               status: (e.target.value as TaskStatus) || undefined,
             })
           }
-          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+          className="px-4 py-2 border border-aura-border rounded-xl bg-aura-surface text-aura-text-primary text-sm focus:ring-2 focus:ring-aura-accent outline-none appearance-none min-w-[150px]"
         >
           <option value="">All Status</option>
           <option value="new">New</option>
@@ -199,7 +268,7 @@ const DevTaskManager = () => {
               priority: (e.target.value as TaskPriority) || undefined,
             })
           }
-          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+          className="px-4 py-2 border border-aura-border rounded-xl bg-aura-surface text-aura-text-primary text-sm focus:ring-2 focus:ring-aura-accent outline-none appearance-none min-w-[150px]"
         >
           <option value="">All Priorities</option>
           <option value="low">Low</option>
@@ -216,7 +285,7 @@ const DevTaskManager = () => {
               category: (e.target.value as TaskCategory) || undefined,
             })
           }
-          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+          className="px-4 py-2 border border-aura-border rounded-xl bg-aura-surface text-aura-text-primary text-sm focus:ring-2 focus:ring-aura-accent outline-none appearance-none min-w-[150px]"
         >
           <option value="">All Categories</option>
           <option value="feature">Feature</option>
@@ -252,6 +321,8 @@ const DevTaskManager = () => {
           onUpdateTask={handleUpdateTask}
           onDeleteTask={handleDeleteTask}
           onGeneratePrompt={handleGeneratePrompt}
+          onSubmitToAgent={handleSubmitToAgent}
+          agentExecutions={agentExecutions}
         />
       )}
 

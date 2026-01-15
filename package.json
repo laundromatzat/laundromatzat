@@ -8,7 +8,7 @@
     "dev": "concurrently \"vite\" \"npm run server\"",
     "server": "cd server && npm start",
     "build": "vite build && cp dist/index.html dist/404.html",
-    "preview": "vite preview",
+    "backup": "cd server && npm run backup",
     "electron:dev": "NODE_ENV=development electron .",
     "electron:dev:full": "concurrently \"vite\" \"wait-on http://localhost:5173 && npm run electron:dev\"",
     "electron:dev:all": "concurrently \"vite\" \"npm run server\" \"wait-on -t 30000 http://localhost:5173 http://localhost:4000 && npm run electron:dev\"",
@@ -50,6 +50,7 @@
     "react-router-dom": "^7.12.0",
     "tailwind-merge": "^3.4.0",
     "uuid": "^13.0.0",
+    "ws": "^8.19.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

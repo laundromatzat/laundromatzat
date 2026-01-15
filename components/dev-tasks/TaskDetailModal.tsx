@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DevTask,
   TaskCategory,
   TaskPriority,
   TaskStatus,
+  AgentExecution,
 } from "../../types/devTaskTypes";
 import { X, Copy, Check, Sparkles, Edit2, Save } from "lucide-react";
+import AgentExecutionPanel from "./AgentExecutionPanel";
+import {
+  getAgentExecution,
+  cancelAgentExecution,
+} from "../../src/services/aiAgentApiService";
 
 interface TaskDetailModalProps {
   task: DevTask;
@@ -27,8 +33,31 @@ const TaskDetailModal = ({
   const [showPrompt, setShowPrompt] = useState(false);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [agentExecution, setAgentExecution] = useState<AgentExecution | null>(
+    null
+  );
+  const [loadingExecution, setLoadingExecution] = useState(true);
 
   const generatedPrompt = onGeneratePrompt(task);
+
+  // Load agent execution if exists
+  useEffect(() => {
+    loadAgentExecution();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task.id]);
+
+  const loadAgentExecution = async () => {
+    try {
+      setLoadingExecution(true);
+      const execution = await getAgentExecution(task.id);
+      setAgentExecution(execution);
+    } catch {
+      // No execution found is okay
+      setAgentExecution(null);
+    } finally {
+      setLoadingExecution(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -61,6 +90,16 @@ const TaskDetailModal = ({
     if (confirm("Are you sure you want to delete this task?")) {
       await onDelete(task.id);
       onClose();
+    }
+  };
+
+  const handleCancelExecution = async () => {
+    try {
+      await cancelAgentExecution(task.id);
+      await loadAgentExecution(); // Refresh execution status
+    } catch (error) {
+      console.error("Failed to cancel execution:", error);
+      alert("Failed to cancel execution");
     }
   };
 
@@ -367,6 +406,16 @@ const TaskDetailModal = ({
                 </div>
               )}
             </div>
+
+            {/* Agent Execution Section */}
+            {!loadingExecution && agentExecution && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                <AgentExecutionPanel
+                  execution={agentExecution}
+                  onCancel={handleCancelExecution}
+                />
+              </div>
+            )}
           </div>
 
           <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">

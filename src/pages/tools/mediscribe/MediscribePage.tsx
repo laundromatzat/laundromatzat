@@ -6,6 +6,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { getApiUrl } from "@/utils/api";
+import { AuraButton, AuraBadge } from "@/components/aura";
 import {
   UserSettings,
   AppState,
@@ -145,44 +146,38 @@ function MediscribePage() {
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
-          <button
+          <AuraButton
             onClick={() => navigate("generator")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              state.currentView === "generator"
-                ? "bg-aura-accent text-white shadow-md shadow-aura-accent/20"
-                : "text-aura-text-secondary hover:bg-aura-text-primary/5 hover:text-aura-text-primary"
-            }`}
+            variant={state.currentView === "generator" ? "accent" : "ghost"}
+            icon={<Activity size={20} />}
+            className="w-full justify-start"
+            fullWidth
           >
-            <Activity className="w-5 h-5" />
-            <span>Workspace</span>
-          </button>
+            Workspace
+          </AuraButton>
 
-          <button
+          <AuraButton
             onClick={() => navigate("training")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              state.currentView === "training"
-                ? "bg-aura-accent text-white shadow-md shadow-aura-accent/20"
-                : "text-aura-text-secondary hover:bg-aura-text-primary/5 hover:text-aura-text-primary"
-            }`}
+            variant={state.currentView === "training" ? "accent" : "ghost"}
+            icon={<BookOpen size={20} />}
+            className="w-full justify-start"
+            fullWidth
           >
-            <BookOpen className="w-5 h-5" />
             <span className="flex-1 text-left">Style & Memory</span>
-            <span className="bg-aura-text-primary/10 text-xs py-0.5 px-2 rounded-full text-aura-text-primary">
+            <AuraBadge variant="neutral" size="sm" className="ml-2">
               {state.examples.length}
-            </span>
-          </button>
+            </AuraBadge>
+          </AuraButton>
 
-          <button
+          <AuraButton
             onClick={() => navigate("settings")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              state.currentView === "settings"
-                ? "bg-aura-accent text-white shadow-md shadow-aura-accent/20"
-                : "text-aura-text-secondary hover:bg-aura-text-primary/5 hover:text-aura-text-primary"
-            }`}
+            variant={state.currentView === "settings" ? "accent" : "ghost"}
+            icon={<SettingsIcon size={20} />}
+            className="w-full justify-start"
+            fullWidth
           >
-            <SettingsIcon className="w-5 h-5" />
-            <span>Settings</span>
-          </button>
+            Settings
+          </AuraButton>
         </nav>
 
         <div className="p-4 border-t border-aura-text-primary/10">

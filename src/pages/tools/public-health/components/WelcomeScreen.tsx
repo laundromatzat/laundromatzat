@@ -8,6 +8,7 @@ import Spinner from "./Spinner";
 import UploadCloudIcon from "./icons/UploadCloudIcon";
 import TrashIcon from "./icons/TrashIcon";
 import { AnalyzedDocument, SavedDocument } from "@/types";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface WelcomeScreenProps {
   onUpload: () => Promise<void>;
@@ -21,6 +22,7 @@ interface WelcomeScreenProps {
   localLlmUrl: string;
   setLocalLlmUrl: (url: string) => void;
   savedDocuments?: SavedDocument[];
+  isLoadingDocs?: boolean;
   onResumeSession?: (storeName: string, docs: AnalyzedDocument[]) => void;
 }
 
@@ -84,6 +86,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   localLlmUrl,
   setLocalLlmUrl,
   savedDocuments = [],
+  isLoadingDocs = false,
   onResumeSession,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -395,51 +398,70 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           </div>
         </div>
 
-        {savedDocuments && savedDocuments.length > 0 && (
+        {(isLoadingDocs || (savedDocuments && savedDocuments.length > 0)) && (
           <div className="border-t border-gem-mist pt-8 mt-8">
             <h3 className="text-xl font-bold mb-4 text-gem-offwhite">
               Repository Archives
             </h3>
-            <div className="grid gap-4 max-w-2xl mx-auto">
-              {Object.entries(
-                savedDocuments.reduce(
-                  (acc, doc) => {
-                    const store = doc.rag_store_name || "Uncategorized";
-                    if (!acc[store]) acc[store] = [];
-                    acc[store].push(doc);
-                    return acc;
-                  },
-                  {} as Record<string, SavedDocument[]>
-                )
-              ).map(([storeName, docs]) => (
-                <div
-                  key={storeName}
-                  className="bg-gem-slate p-4 rounded-xl border border-gem-mist/40 flex justify-between items-center"
-                >
-                  <div className="text-left">
-                    <h4 className="font-semibold text-gem-blue">
-                      {storeName === "unknown" ? "Restored Session" : storeName}
-                    </h4>
-                    <p className="text-sm text-gem-offwhite/60">
-                      {docs.length} document{docs.length !== 1 ? "s" : ""} •{" "}
-                      {new Date(docs[0].uploaded_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() =>
-                      onResumeSession &&
-                      onResumeSession(
-                        storeName,
-                        docs.map((d) => d.analysis)
-                      )
-                    }
-                    className="px-3 py-1.5 bg-gem-mist/20 hover:bg-gem-mist/40 text-gem-offwhite rounded-lg text-sm transition-colors border border-gem-mist/50"
+            {isLoadingDocs ? (
+              <div className="grid gap-4 max-w-2xl mx-auto">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="bg-gem-slate p-4 rounded-xl border border-gem-mist/40 flex justify-between items-center"
                   >
-                    Resume Intelligence
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-32 bg-gem-mist/20" />
+                      <Skeleton className="h-4 w-24 bg-gem-mist/10" />
+                    </div>
+                    <Skeleton className="h-8 w-24 rounded-lg bg-gem-mist/20" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-4 max-w-2xl mx-auto">
+                {Object.entries(
+                  savedDocuments.reduce(
+                    (acc, doc) => {
+                      const store = doc.rag_store_name || "Uncategorized";
+                      if (!acc[store]) acc[store] = [];
+                      acc[store].push(doc);
+                      return acc;
+                    },
+                    {} as Record<string, SavedDocument[]>
+                  )
+                ).map(([storeName, docs]) => (
+                  <div
+                    key={storeName}
+                    className="bg-gem-slate p-4 rounded-xl border border-gem-mist/40 flex justify-between items-center"
+                  >
+                    <div className="text-left">
+                      <h4 className="font-semibold text-gem-blue">
+                        {storeName === "unknown"
+                          ? "Restored Session"
+                          : storeName}
+                      </h4>
+                      <p className="text-sm text-gem-offwhite/60">
+                        {docs.length} document{docs.length !== 1 ? "s" : ""} •{" "}
+                        {new Date(docs[0].uploaded_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        onResumeSession &&
+                        onResumeSession(
+                          storeName,
+                          docs.map((d) => d.analysis)
+                        )
+                      }
+                      className="px-3 py-1.5 bg-gem-mist/20 hover:bg-gem-mist/40 text-gem-offwhite rounded-lg text-sm transition-colors border border-gem-mist/50"
+                    >
+                      Resume Intelligence
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

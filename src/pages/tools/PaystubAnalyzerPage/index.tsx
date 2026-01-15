@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useEffect, useState } from "react";
 import { ConfirmationModal } from "./components/ConfirmationModal";
@@ -11,7 +10,10 @@ import { DocumentTextIcon } from "./components/icons/DocumentTextIcon";
 import { ViewGridIcon } from "./components/icons/ViewGridIcon";
 import { ViewListIcon } from "./components/icons/ViewListIcon";
 import { TrashIcon } from "./components/icons/TrashIcon";
+
 import { ClockIcon } from "./components/icons/ClockIcon";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { AuraButton, AuraInput } from "@/components/aura";
 // Unused imports removed
 
 import { useAuth } from "@/context/AuthContext";
@@ -146,11 +148,14 @@ const PaystubAnalyzerPage: React.FC = () => {
   const loadData = useCallback(async () => {
     if (!token) return;
     try {
+      setIsLoading(true);
       const data = await fetchPaychecks();
       setPaycheckData(data);
     } catch (e) {
       console.error("Failed to fetch history:", e);
       setError("Failed to load data. Please check connection.");
+    } finally {
+      setIsLoading(false);
     }
   }, [token]);
 
@@ -360,32 +365,32 @@ const PaystubAnalyzerPage: React.FC = () => {
   const ViewToggle = () => (
     <div className="flex justify-end mb-6">
       <div className="inline-flex items-center bg-white/50 p-1 rounded-lg border border-aura-text-primary/10">
-        <button
+        <AuraButton
+          size="sm"
+          variant={viewMode === "card" ? "accent" : "ghost"}
           onClick={() => setViewMode("card")}
-          aria-pressed={viewMode === "card"}
-          className={clsx(
-            "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2",
-            viewMode === "card"
-              ? "bg-aura-accent text-white shadow-lg shadow-aura-accent/30"
-              : "text-aura-text-secondary hover:text-aura-text-primary hover:bg-aura-text-primary/5"
-          )}
+          icon={<ViewListIcon className="w-4 h-4" />}
+          className={
+            viewMode !== "card"
+              ? "text-aura-text-secondary hover:bg-aura-text-primary/5"
+              : ""
+          }
         >
-          <ViewListIcon className="w-4 h-4" />
-          <span>Cards</span>
-        </button>
-        <button
+          Cards
+        </AuraButton>
+        <AuraButton
+          size="sm"
+          variant={viewMode === "spreadsheet" ? "accent" : "ghost"}
           onClick={() => setViewMode("spreadsheet")}
-          aria-pressed={viewMode === "spreadsheet"}
-          className={clsx(
-            "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-2",
-            viewMode === "spreadsheet"
-              ? "bg-aura-accent text-white shadow-lg shadow-aura-accent/30"
-              : "text-aura-text-secondary hover:text-aura-text-primary hover:bg-aura-text-primary/5"
-          )}
+          icon={<ViewGridIcon className="w-4 h-4" />}
+          className={
+            viewMode !== "spreadsheet"
+              ? "text-aura-text-secondary hover:bg-aura-text-primary/5"
+              : ""
+          }
         >
-          <ViewGridIcon className="w-4 h-4" />
-          <span>Table</span>
-        </button>
+          Table
+        </AuraButton>
       </div>
     </div>
   );
@@ -460,6 +465,37 @@ const PaystubAnalyzerPage: React.FC = () => {
         </AnimatePresence>
 
         <div className="space-y-8">
+          {isLoading && paycheckData.length === 0 && (
+            <div className="space-y-4">
+              <div className="flex justify-end mb-6">
+                <Skeleton className="h-9 w-48 rounded-lg" />
+              </div>
+              <div className="bg-white/50 backdrop-blur-sm rounded-2xl border border-aura-text-primary/10 overflow-hidden">
+                <div className="p-4 grid grid-cols-6 gap-4 border-b border-aura-text-primary/5">
+                  {[...Array(6)].map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-4 w-20 bg-aura-text-primary/10"
+                    />
+                  ))}
+                </div>
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="p-4 grid grid-cols-6 gap-4 border-b border-aura-text-primary/5 last:border-0"
+                  >
+                    <Skeleton className="h-4 w-24 bg-aura-text-primary/10" />
+                    <Skeleton className="h-4 w-16 bg-aura-text-primary/10" />
+                    <Skeleton className="h-4 w-16 bg-aura-text-primary/10" />
+                    <Skeleton className="h-4 w-20 bg-aura-text-primary/10" />
+                    <Skeleton className="h-4 w-24 bg-aura-text-primary/10" />
+                    <Skeleton className="h-4 w-12 bg-aura-text-primary/10 ml-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {paycheckData.length === 0 &&
             Object.keys(unmatchedReportedHours).length === 0 &&
             !isLoading && (
@@ -606,10 +642,10 @@ const PaystubAnalyzerPage: React.FC = () => {
                   >
                     Pay Period Start
                   </label>
-                  <input
+                  <AuraInput
                     id="edit-pay-period-start"
                     type="date"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="bg-slate-950 border-slate-700 text-white focus:ring-indigo-500 focus:border-indigo-500"
                     value={editFormData.payPeriodStart}
                     onChange={(e) =>
                       setEditFormData({
@@ -626,10 +662,10 @@ const PaystubAnalyzerPage: React.FC = () => {
                   >
                     Pay Period End
                   </label>
-                  <input
+                  <AuraInput
                     id="edit-pay-period-end"
                     type="date"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="bg-slate-950 border-slate-700 text-white focus:ring-indigo-500 focus:border-indigo-500"
                     value={editFormData.payPeriodEnd}
                     onChange={(e) =>
                       setEditFormData({
@@ -649,9 +685,9 @@ const PaystubAnalyzerPage: React.FC = () => {
                 <div className="space-y-2 bg-slate-900/30 p-4 rounded-lg border border-slate-800">
                   {editFormData.paidHours.map((entry, idx) => (
                     <div key={idx} className="flex gap-2 items-center">
-                      <input
+                      <AuraInput
                         type="text"
-                        className="flex-1 rounded-md bg-slate-950 border-slate-700 text-white text-sm focus:ring-2 focus:ring-indigo-500 px-3 py-2"
+                        className="flex-1 bg-slate-950 border-slate-700 text-white text-sm"
                         value={entry.category}
                         onChange={(e) => {
                           const newHours = [...editFormData.paidHours];
@@ -662,9 +698,9 @@ const PaystubAnalyzerPage: React.FC = () => {
                           });
                         }}
                       />
-                      <input
+                      <AuraInput
                         type="number"
-                        className="w-24 rounded-md bg-slate-950 border-slate-700 text-white text-sm text-right focus:ring-2 focus:ring-indigo-500 px-3 py-2"
+                        className="w-24 bg-slate-950 border-slate-700 text-white text-sm text-right"
                         value={entry.hours}
                         onChange={(e) => {
                           const newHours = [...editFormData.paidHours];
@@ -710,18 +746,16 @@ const PaystubAnalyzerPage: React.FC = () => {
             </div>
 
             <div className="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
-              <button
+              <AuraButton
+                variant="ghost"
                 onClick={() => setEditModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700"
+                className="text-slate-300 hover:bg-slate-800 hover:text-white"
               >
                 Cancel
-              </button>
-              <button
-                onClick={handleEditSave}
-                className="px-4 py-2 text-sm font-medium text-white bg-aura-accent rounded-lg hover:bg-aura-accent/90 shadow-sm"
-              >
+              </AuraButton>
+              <AuraButton variant="accent" onClick={handleEditSave}>
                 Save Changes
-              </button>
+              </AuraButton>
             </div>
           </div>
         </div>

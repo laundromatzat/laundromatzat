@@ -1,5 +1,5 @@
-import { DevTask } from '../../types/devTaskTypes';
-import TaskCard from './TaskCard';
+import { DevTask, AgentExecution } from "../../types/devTaskTypes";
+import TaskCard from "./TaskCard";
 
 interface TaskListProps {
   tasks: DevTask[];
@@ -7,16 +7,24 @@ interface TaskListProps {
   onUpdateTask: (id: number, updates: Partial<DevTask>) => Promise<void>;
   onDeleteTask: (id: number) => Promise<void>;
   onGeneratePrompt: (task: DevTask) => string;
+  onSubmitToAgent?: (task: DevTask) => Promise<void>;
+  agentExecutions?: Map<number, AgentExecution>;
 }
 
-const TaskList = ({ tasks, onTaskClick, onUpdateTask, onDeleteTask, onGeneratePrompt }: TaskListProps) => {
+const TaskList = ({
+  tasks,
+  onTaskClick,
+  onUpdateTask,
+  onDeleteTask,
+  onGeneratePrompt,
+  onSubmitToAgent,
+  agentExecutions,
+}: TaskListProps) => {
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-6xl mb-4">📋</div>
-        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No tasks yet</h3>
+      <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
         <p className="text-gray-500 dark:text-gray-400">
-          Add your first task to start tracking your development work
+          No tasks found. Create your first task to get started!
         </p>
       </div>
     );
@@ -32,6 +40,8 @@ const TaskList = ({ tasks, onTaskClick, onUpdateTask, onDeleteTask, onGeneratePr
           onUpdate={onUpdateTask}
           onDelete={onDeleteTask}
           onGeneratePrompt={onGeneratePrompt}
+          onSubmitToAgent={onSubmitToAgent}
+          agentStatus={agentExecutions?.get(task.id)?.status || null}
         />
       ))}
     </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { DevTask, TaskStatus } from "../../types/devTaskTypes";
-import { Check, Trash2, Sparkles } from "lucide-react";
+import { Check, Trash2, Sparkles, Bot } from "lucide-react";
 
 interface TaskCardProps {
   task: DevTask;
@@ -8,6 +8,8 @@ interface TaskCardProps {
   onUpdate: (id: number, updates: Partial<DevTask>) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
   onGeneratePrompt: (task: DevTask) => string;
+  onSubmitToAgent?: (task: DevTask) => Promise<void>;
+  agentStatus?: "pending" | "running" | "completed" | "failed" | null;
 }
 
 const TaskCard = ({
@@ -16,9 +18,12 @@ const TaskCard = ({
   onUpdate,
   onDelete,
   onGeneratePrompt,
+  onSubmitToAgent,
+  agentStatus,
 }: TaskCardProps) => {
   const [showActions, setShowActions] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const categoryColors: Record<string, string> = {
     feature: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
@@ -55,6 +60,18 @@ const TaskCard = ({
     e.stopPropagation();
     if (confirm("Are you sure you want to delete this task?")) {
       await onDelete(task.id);
+    }
+  };
+
+  const handleSubmitToAgent = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onSubmitToAgent) {
+      setSubmitting(true);
+      try {
+        await onSubmitToAgent(task);
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -126,6 +143,23 @@ const TaskCard = ({
           <div
             className={`flex items-center gap-1 transition-opacity ${showActions ? "opacity-100" : "opacity-0 sm:opacity-100"}`}
           >
+            {onSubmitToAgent && !agentStatus && (
+              <button
+                onClick={handleSubmitToAgent}
+                disabled={submitting}
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
+                title="Submit to AI Agent"
+              >
+                <Bot
+                  className={`w-4 h-4 text-purple-500 ${submitting ? "animate-pulse" : ""}`}
+                />
+              </button>
+            )}
+            {agentStatus && (
+              <span className="text-xs px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                {agentStatus}
+              </span>
+            )}
             <button
               onClick={handleCopyPrompt}
               className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"

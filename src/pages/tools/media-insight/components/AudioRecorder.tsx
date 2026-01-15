@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Mic, Square, AlertCircle } from "lucide-react";
-import Button from "./Button";
+import { AuraButton, AuraCard } from "@/components/aura";
 import { AudioData } from "../types";
 
 interface AudioRecorderProps {
@@ -107,7 +107,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-white/80 backdrop-blur-sm border-2 border-dashed border-brand-secondary/40 rounded-2xl transition-colors duration-300">
+    <AuraCard
+      variant="bordered"
+      padding="lg"
+      className="flex flex-col items-center justify-center border-dashed border-2 bg-white/80 backdrop-blur-sm"
+    >
       <div
         className={`relative flex items-center justify-center w-24 h-24 mb-6 rounded-full transition-all duration-300 ${isRecording ? "bg-red-500/10" : "bg-brand-accent/10"}`}
       >
@@ -155,24 +159,24 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
       )}
 
       {!isRecording ? (
-        <Button
+        <AuraButton
           onClick={startRecording}
           disabled={disabled}
           className="w-full max-w-xs"
         >
           Start Recording
-        </Button>
+        </AuraButton>
       ) : (
-        <Button
+        <AuraButton
           onClick={stopRecording}
           variant="danger"
           icon={<Square size={16} fill="currentColor" />}
           className="w-full max-w-xs"
         >
           Stop Recording
-        </Button>
+        </AuraButton>
       )}
-    </div>
+    </AuraCard>
   );
 };
 

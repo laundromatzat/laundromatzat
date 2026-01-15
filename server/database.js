@@ -104,6 +104,16 @@ const initializeDatabase = async () => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS ai_usage_logs (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          tool_name TEXT NOT NULL,
+          model_name TEXT NOT NULL,
+          tokens_used INTEGER,
+          cost_estimate DECIMAL(10, 6),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // --- Auto-Migration for existing tables ---

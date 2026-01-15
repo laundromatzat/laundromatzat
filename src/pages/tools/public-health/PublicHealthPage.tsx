@@ -58,6 +58,7 @@ const PublicHealthPage: React.FC = () => {
     null
   );
   const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(true);
 
   // Initialization & Auth
   const checkApiKey = useCallback(async () => {
@@ -94,6 +95,7 @@ const PublicHealthPage: React.FC = () => {
   // Load Saved Docs & Initialize Store
   const fetchSavedDocs = useCallback(async () => {
     try {
+      setIsLoadingDocs(true);
       const res = await fetch(getApiUrl("/api/public-health/docs"), {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
@@ -110,6 +112,8 @@ const PublicHealthPage: React.FC = () => {
       }
     } catch (e) {
       console.error("Failed to load saved docs", e);
+    } finally {
+      setIsLoadingDocs(false);
     }
   }, []);
 
@@ -298,6 +302,7 @@ const PublicHealthPage: React.FC = () => {
             localLlmUrl=""
             setLocalLlmUrl={() => {}}
             savedDocuments={savedDocuments}
+            isLoadingDocs={isLoadingDocs}
             onResumeSession={(storeName: string, docs: AnalyzedDocument[]) => {
               // Hydrate state from saved session
               setActiveRagStoreName(storeName);

@@ -9,6 +9,7 @@ import {
   loadDesigns,
   clearDesigns,
 } from "@/services/nylonFabricStorage";
+import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 
 const NylonFabricDesignerPage: React.FC = () => {
   const { setIsLoading: setGlobalLoading } = useLoading();
@@ -125,9 +126,9 @@ const NylonFabricDesignerPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-brand-primary font-sans text-brand-text">
-      <header className="bg-brand-secondary border-b border-brand-surface-highlight shadow-layer-1 p-8 text-center">
-        <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-accent to-brand-accent-strong">
+    <div className="min-h-screen bg-aura-bg font-sans text-aura-text-primary">
+      <header className="bg-aura-surface/50 border-b border-aura-border backdrop-blur-md p-8 text-center sticky top-0 z-10">
+        <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-aura-accent to-purple-400">
           Nylon Fabric Project Designer
         </h1>
         <p className="text-lg text-aura-text-secondary mt-2">
@@ -138,7 +139,7 @@ const NylonFabricDesignerPage: React.FC = () => {
 
       <main className="p-8 max-w-7xl mx-auto">
         {!sanitizedGuideContent && (
-          <div className="bg-brand-secondary border border-brand-surface-highlight rounded-lg shadow-layer-1 p-8">
+          <AuraCard variant="glass" padding="lg">
             <h2 className="text-2xl font-semibold text-aura-text-primary mb-4">
               Describe Your Project
             </h2>
@@ -147,38 +148,45 @@ const NylonFabricDesignerPage: React.FC = () => {
               possible about the item, its purpose, size, and any specific
               features you’d like.
             </p>
-            <textarea
+            <AuraInput
               id="projectDescription"
-              className="w-full min-h-[150px] p-4 border-2 border-brand-surface-highlight bg-brand-primary text-aura-text-primary placeholder:text-aura-text-secondary rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent transition"
+              type="textarea"
               placeholder="Example: I want to make a lightweight stuff sack for camping gear..."
               value={projectDescription}
               onChange={(e) => setProjectDescription(e.target.value)}
+              className="min-h-[150px]"
             />
             <div className="flex gap-4 mt-4 flex-wrap">
               {Object.entries(examples).map(([key, value]) => (
-                <button
+                <AuraButton
                   key={key}
-                  className="bg-brand-accent/10 text-brand-accent px-4 py-2 rounded-full hover:bg-brand-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent transition text-sm"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setProjectDescription(value)}
+                  className="rounded-full text-xs"
                 >
                   {key.charAt(0).toUpperCase() + key.slice(1)}
-                </button>
+                </AuraButton>
               ))}
             </div>
-            <button
-              className="mt-6 w-full bg-gradient-to-r from-brand-accent to-brand-accent-strong text-brand-on-accent font-bold py-3 px-6 rounded-lg hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent transition disabled:opacity-50"
+            <AuraButton
+              fullWidth
+              variant="accent"
+              size="lg"
+              className="mt-6"
               onClick={handleGenerateGuide}
+              isLoading={isLoading}
               disabled={isLoading}
             >
-              {isLoading ? "Generating..." : "Generate Sewing Guide"}
-            </button>
-            {error && <p className="text-status-error-text mt-4">{error}</p>}
-          </div>
+              Generate Sewing Guide
+            </AuraButton>
+            {error && <p className="text-aura-error mt-4">{error}</p>}
+          </AuraCard>
         )}
 
         {isLoading && !sanitizedGuideContent && (
-          <div className="text-center p-12 bg-brand-secondary border border-brand-surface-highlight rounded-lg shadow-layer-1">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-brand-accent mx-auto"></div>
+          <AuraCard variant="glass" padding="lg" className="text-center p-12">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-aura-accent mx-auto"></div>
             <p className="mt-4 text-xl text-aura-text-primary">
               {researchStatus || "Analyzing your project..."}
             </p>
@@ -187,31 +195,33 @@ const NylonFabricDesignerPage: React.FC = () => {
                 ? "Researching best practices and generating your custom guide"
                 : "Please wait..."}
             </p>
-          </div>
+          </AuraCard>
         )}
 
         {sanitizedGuideContent && (
-          <div className="bg-brand-secondary border border-brand-surface-highlight rounded-lg shadow-layer-1 p-8">
-            <div className="flex justify-between items-center border-b border-brand-surface-highlight pb-4 mb-6">
+          <AuraCard variant="elevated" padding="lg">
+            <div className="flex justify-between items-center border-b border-aura-border pb-4 mb-6">
               <h2 className="text-3xl font-bold text-aura-text-primary">
                 Your Custom Sewing Guide
               </h2>
               <div className="flex gap-2">
-                <button
-                  className="bg-brand-surface border border-brand-surface-highlight text-status-error-text font-bold py-2 px-4 rounded-lg hover:bg-status-error-bg hover:border-status-error-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-status-error-text transition"
+                <AuraButton
+                  variant="danger"
+                  size="sm"
                   onClick={handleClearHistory}
                 >
                   Clear History
-                </button>
-                <button
-                  className="bg-brand-accent text-brand-on-accent font-bold py-2 px-4 rounded-lg hover:bg-brand-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent transition"
+                </AuraButton>
+                <AuraButton
+                  variant="primary"
+                  size="sm"
                   onClick={startNewProject}
                 >
                   New Project
-                </button>
+                </AuraButton>
               </div>
             </div>
-            {error && <p className="text-status-error-text mb-4">{error}</p>}
+            {error && <p className="text-aura-error mb-4">{error}</p>}
             <div dangerouslySetInnerHTML={{ __html: sanitizedGuideContent }} />
 
             {visuals && (
@@ -223,14 +233,14 @@ const NylonFabricDesignerPage: React.FC = () => {
                   {visuals.map((visual, index) => (
                     <div
                       key={index}
-                      className="border border-brand-surface-highlight rounded-lg shadow-layer-1 overflow-hidden bg-brand-primary"
+                      className="border border-aura-border rounded-lg shadow-aura-sm overflow-hidden bg-aura-bg"
                     >
                       <div
-                        className="bg-brand-secondary p-4 flex items-center justify-center min-h-[300px]"
+                        className="bg-aura-surface p-4 flex items-center justify-center min-h-[300px]"
                         dangerouslySetInnerHTML={{ __html: visual.svg }}
                       />
-                      <div className="p-4 bg-brand-primary">
-                        <p className="font-bold text-center text-brand-accent">
+                      <div className="p-4 bg-aura-surface-elevated">
+                        <p className="font-bold text-center text-aura-accent">
                           {visual.stage}
                         </p>
                       </div>
@@ -240,14 +250,14 @@ const NylonFabricDesignerPage: React.FC = () => {
               </div>
             )}
             {isLoading && !visuals && (
-              <div className="text-center p-12 bg-brand-secondary border border-brand-surface-highlight rounded-lg shadow-layer-1 mt-8">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-brand-accent mx-auto"></div>
+              <div className="text-center p-12 bg-aura-surface border border-aura-border rounded-lg shadow-aura-sm mt-8">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-aura-accent mx-auto"></div>
                 <p className="mt-4 text-xl text-aura-text-primary">
                   Generating visual diagrams...
                 </p>
               </div>
             )}
-          </div>
+          </AuraCard>
         )}
       </main>
     </div>

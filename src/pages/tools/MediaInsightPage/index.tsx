@@ -8,16 +8,15 @@ import { Link } from "react-router-dom";
 import { Mic, Upload, Sparkles, FolderOpen, Settings2 } from "lucide-react";
 import Container from "@/components/Container";
 import PageMetadata from "@/components/PageMetadata";
+import { AuraButton, AuraCard, AuraBadge } from "@/components/aura";
 import AudioRecorder from "../media-insight/components/AudioRecorder";
 import FileUploader from "../media-insight/components/FileUploader";
 import FileSystemExplorer from "../media-insight/components/FileSystemExplorer";
 import FileActionsPanel from "../media-insight/components/FileActionsPanel";
 import AnalysisDisplay from "../media-insight/components/AnalysisDisplay";
-import Button from "../media-insight/components/Button";
 import SettingsPanel from "../media-insight/components/SettingsPanel";
 import { analyzeMedia } from "../media-insight/services/mediaInsightService";
 import "../media-insight/electron.d.ts";
-import "../media-insight/media-insight-styles.css";
 import {
   AppStatus,
   MediaInput,
@@ -464,7 +463,7 @@ function MediaInsightPage(): React.ReactNode {
         <div className="relative flex items-center gap-4 text-aura-text-secondary">
           <Link
             to="/tools"
-            className="text-brand-accent hover:underline font-medium transition-colors"
+            className="text-aura-accent hover:underline font-medium transition-colors"
           >
             ← back to tools
           </Link>
@@ -475,7 +474,7 @@ function MediaInsightPage(): React.ReactNode {
         </div>
 
         <div className="relative">
-          <h1 className="text-4xl sm:text-5xl font-bold mi-gradient-text mb-2">
+          <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
             MediaInsight Pro
           </h1>
           <div className="h-1 w-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
@@ -523,53 +522,47 @@ function MediaInsightPage(): React.ReactNode {
 
         <main className="flex-1 space-y-6">
           {/* Mode Switcher */}
-          <div className="mi-mode-switcher mi-animate-fadeIn">
-            <button
+          <AuraCard
+            variant="glass"
+            padding="none"
+            className="p-1 flex rounded-xl border border-white/20 shadow-sm relative overflow-hidden"
+          >
+            {/* Indicator background - simplified for now using active state on buttons */}
+
+            <AuraButton
+              variant={mode === "record" ? "primary" : "ghost"}
               onClick={() => {
                 setMode("record");
                 setResult(null);
               }}
-              className={`mi-mode-btn ${mode === "record" ? "active" : ""}`}
+              icon={<Mic size={18} />}
+              className="flex-1 justify-center rounded-lg"
             >
-              <Mic size={18} />
-              <span>Record</span>
-            </button>
-            <button
+              Record
+            </AuraButton>
+            <AuraButton
+              variant={mode === "upload" ? "primary" : "ghost"}
               onClick={() => {
                 setMode("upload");
                 setResult(null);
               }}
-              className={`mi-mode-btn ${mode === "upload" ? "active" : ""}`}
+              icon={<Upload size={18} />}
+              className="flex-1 justify-center rounded-lg"
             >
-              <Upload size={18} />
-              <span>Upload</span>
-            </button>
-            <button
+              Upload
+            </AuraButton>
+            <AuraButton
+              variant={mode === "workspace" ? "primary" : "ghost"}
               onClick={openWorkspace}
-              className={`mi-mode-btn ${mode === "workspace" ? "active" : ""}`}
+              icon={<FolderOpen size={18} />}
+              className="flex-1 justify-center rounded-lg"
             >
-              <FolderOpen size={18} />
-              <span>Workspace</span>
-            </button>
-            {/* Animated indicator */}
-            <div
-              className="mi-mode-indicator"
-              style={{
-                left:
-                  mode === "record"
-                    ? "0.375rem"
-                    : mode === "upload"
-                      ? "calc(33.333% + 0.125rem)"
-                      : "calc(66.666% - 0.125rem)",
-                width: "calc(33.333% - 0.25rem)",
-                height: "calc(100% - 0.75rem)",
-                top: "0.375rem",
-              }}
-            />
-          </div>
+              Workspace
+            </AuraButton>
+          </AuraCard>
 
           {mode !== "workspace" && !result && status !== "processing" && (
-            <div className="mi-card-glass mi-animate-scaleIn p-8">
+            <AuraCard variant="glass" padding="lg" className="animate-scale-in">
               {mode === "record" ? (
                 <AudioRecorder
                   onAudioCaptured={(d) =>
@@ -592,29 +585,34 @@ function MediaInsightPage(): React.ReactNode {
                       className="max-h-64 rounded-xl shadow-lg mb-4 ring-2 ring-purple-200"
                     />
                   )}
-                  <Button
+                  <AuraButton
+                    variant="primary"
                     onClick={handleAnalyze}
                     isLoading={status === "processing"}
                     icon={<Sparkles size={16} />}
                   >
                     Analyze File
-                  </Button>
+                  </AuraButton>
                 </div>
               )}
-            </div>
+            </AuraCard>
           )}
 
           {status === "processing" && (
-            <div className="mi-card-glass p-12 text-center mi-animate-scaleIn">
+            <AuraCard
+              variant="glass"
+              padding="lg"
+              className="text-center animate-scale-in p-12"
+            >
               <div className="relative w-20 h-20 mx-auto mb-6">
                 <div className="absolute inset-0 border-4 border-purple-200 rounded-full" />
                 <div className="absolute inset-0 border-4 border-transparent border-t-purple-600 rounded-full animate-spin" />
                 <Sparkles
-                  className="absolute inset-0 m-auto text-purple-600 mi-animate-pulse"
+                  className="absolute inset-0 m-auto text-purple-600 animate-pulse"
                   size={32}
                 />
               </div>
-              <h3 className="text-2xl font-bold mb-3 mi-gradient-text">
+              <h3 className="text-2xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
                 Analyzing...
               </h3>
               <p className="text-sm text-aura-text-secondary mb-4">
@@ -629,7 +627,7 @@ function MediaInsightPage(): React.ReactNode {
               <p className="text-xs text-purple-600 font-semibold mt-2">
                 {progress}%
               </p>
-            </div>
+            </AuraCard>
           )}
 
           {error && (
@@ -639,28 +637,31 @@ function MediaInsightPage(): React.ReactNode {
           )}
 
           {result && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mi-animate-fadeIn">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
               {/* Analysis Display - Takes 2 columns */}
               <div className="lg:col-span-2 space-y-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex flex-wrap gap-2">
                     {result.tags?.map((tag, idx) => (
-                      <span
+                      <AuraBadge
                         key={tag}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm border-2 transition-all hover:scale-105 ${
+                        variant={
                           idx % 3 === 0
-                            ? "bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 border-purple-300"
+                            ? "info"
                             : idx % 3 === 1
-                              ? "bg-gradient-to-r from-pink-100 to-pink-200 text-pink-700 border-pink-300"
-                              : "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 border-blue-300"
-                        }`}
+                              ? "neutral"
+                              : "success"
+                        }
+                        size="md"
+                        // Custom styling to match original colorful look if needed, but sticking to Aura for consistency
+                        className="shadow-sm"
                       >
                         #{tag}
-                      </span>
+                      </AuraBadge>
                     ))}
                   </div>
                   {mode !== "workspace" && (
-                    <Button
+                    <AuraButton
                       variant="secondary"
                       onClick={() => {
                         setResult(null);
@@ -669,7 +670,7 @@ function MediaInsightPage(): React.ReactNode {
                       }}
                     >
                       New Analysis
-                    </Button>
+                    </AuraButton>
                   )}
                 </div>
                 <AnalysisDisplay data={result} />
