@@ -1641,6 +1641,21 @@ app.post("/api/public-health/docs", requireAuth, async (req, res) => {
   }
 });
 
+app.delete("/api/public-health/docs/:id", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "DELETE FROM public_health_docs WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+    res.json({ message: "Document deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- Neuroaesthetic API Endpoints ---
 
 app.get("/api/neuroaesthetic/preferences", requireAuth, async (req, res) => {
@@ -1722,6 +1737,21 @@ app.post("/api/neuroaesthetic/history", requireAuth, async (req, res) => {
   }
 });
 
+app.delete("/api/neuroaesthetic/history/:id", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "DELETE FROM neuroaesthetic_history WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "History item not found" });
+    }
+    res.json({ message: "History item deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- Pin Pals API Endpoints ---
 
 app.get("/api/pin-pals/gallery", requireAuth, async (req, res) => {
@@ -1752,6 +1782,21 @@ app.post("/api/pin-pals/gallery", requireAuth, async (req, res) => {
       [req.user.id, imageUrl, petType, petCount]
     );
     res.json({ id: result.rows[0].id, message: "Pin saved to gallery" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/pin-pals/gallery/:id", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "DELETE FROM pin_pals_gallery WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Gallery item not found" });
+    }
+    res.json({ message: "Gallery item deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

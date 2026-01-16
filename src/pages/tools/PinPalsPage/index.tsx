@@ -13,7 +13,7 @@ import { Book } from "./components/Book";
 import { useApiKey } from "./components/useApiKey";
 import { ApiKeyDialog } from "./components/ApiKeyDialog";
 import { LoadingFX } from "./components/LoadingFX";
-import { DesignGallery } from "@/components/DesignGallery";
+import { DesignGallery, SortOption } from "@/components/DesignGallery";
 import { ClockIcon } from "@heroicons/react/24/outline";
 
 const MODEL_NAME = "gemini-2.5-flash-image";
@@ -390,9 +390,49 @@ const PinPalsPage: React.FC = () => {
       <DesignGallery
         title="My Pin Collection"
         fetchEndpoint="/api/pin-pals/gallery"
+        deleteEndpoint="/api/pin-pals/gallery"
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
         onLoad={handleLoadGalleryItem}
+        sortOptions={
+          [
+            {
+              label: "Newest First",
+              value: "date-desc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aDate = new Date(
+                  (a as { createdAt?: string }).createdAt || 0
+                ).getTime();
+                const bDate = new Date(
+                  (b as { createdAt?: string }).createdAt || 0
+                ).getTime();
+                return bDate - aDate;
+              },
+            },
+            {
+              label: "Oldest First",
+              value: "date-asc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aDate = new Date(
+                  (a as { createdAt?: string }).createdAt || 0
+                ).getTime();
+                const bDate = new Date(
+                  (b as { createdAt?: string }).createdAt || 0
+                ).getTime();
+                return aDate - bDate;
+              },
+            },
+            {
+              label: "By Pet Type",
+              value: "pet-type",
+              compareFn: (a: unknown, b: unknown) => {
+                const aType = (a as { petType?: string }).petType || "";
+                const bType = (b as { petType?: string }).petType || "";
+                return aType.localeCompare(bType);
+              },
+            },
+          ] as SortOption[]
+        }
         renderItem={(item: {
           imageUrl: string;
           petType: string;

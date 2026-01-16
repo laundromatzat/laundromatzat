@@ -18,7 +18,11 @@ import {
 import * as geminiService from "./services/geminiService";
 import ChatInterface from "./components/ChatInterface";
 import PageMetadata from "@/components/PageMetadata";
-import { DesignGallery } from "@/components/DesignGallery";
+import {
+  DesignGallery,
+  SortOption,
+  FilterConfig,
+} from "@/components/DesignGallery";
 import { ClockIcon } from "@heroicons/react/24/outline";
 
 declare global {
@@ -454,9 +458,64 @@ const PublicHealthPage: React.FC = () => {
       <DesignGallery
         title="Saved Documents Library"
         fetchEndpoint="/api/public-health/docs"
+        deleteEndpoint="/api/public-health/docs"
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
         onLoad={handleLoadGalleryItem}
+        sortOptions={
+          [
+            {
+              label: "Newest First",
+              value: "date-desc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aDate = new Date(
+                  (a as { uploaded_at?: string }).uploaded_at || 0
+                ).getTime();
+                const bDate = new Date(
+                  (b as { uploaded_at?: string }).uploaded_at || 0
+                ).getTime();
+                return bDate - aDate;
+              },
+            },
+            {
+              label: "Oldest First",
+              value: "date-asc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aDate = new Date(
+                  (a as { uploaded_at?: string }).uploaded_at || 0
+                ).getTime();
+                const bDate = new Date(
+                  (b as { uploaded_at?: string }).uploaded_at || 0
+                ).getTime();
+                return aDate - bDate;
+              },
+            },
+            {
+              label: "By Category",
+              value: "category",
+              compareFn: (a: unknown, b: unknown) => {
+                const aCat = (a as { category?: string }).category || "";
+                const bCat = (b as { category?: string }).category || "";
+                return aCat.localeCompare(bCat);
+              },
+            },
+          ] as SortOption[]
+        }
+        filterConfig={
+          [
+            {
+              type: "select",
+              label: "Category",
+              key: "category",
+              options: [
+                { label: "Protocol", value: "protocol" },
+                { label: "Report", value: "report" },
+                { label: "Guideline", value: "guideline" },
+                { label: "General", value: "general" },
+              ],
+            },
+          ] as FilterConfig[]
+        }
         renderItem={(item: {
           id: number;
           filename: string;

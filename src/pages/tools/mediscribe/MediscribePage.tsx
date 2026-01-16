@@ -18,7 +18,7 @@ import { SettingsPanel } from "./components/SettingsPanel";
 import { StyleTrainer } from "./components/StyleTrainer";
 import { NoteGenerator } from "./components/NoteGenerator";
 import PageMetadata from "@/components/PageMetadata";
-import { DesignGallery } from "@/components/DesignGallery";
+import { DesignGallery, SortOption } from "@/components/DesignGallery";
 import { ClockIcon } from "@heroicons/react/24/outline";
 
 function MediscribePage() {
@@ -268,10 +268,33 @@ function MediscribePage() {
       <DesignGallery
         title="Clinical Note History"
         fetchEndpoint="/api/mediscribe/examples"
+        deleteEndpoint="/api/mediscribe/examples"
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
         onLoad={handleLoadGalleryItem}
         emptyMessage="No saved clinical notes found."
+        sortOptions={
+          [
+            {
+              label: "Newest First",
+              value: "date-desc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aId = (a as { id?: number }).id || 0;
+                const bId = (b as { id?: number }).id || 0;
+                return bId - aId;
+              },
+            },
+            {
+              label: "Oldest First",
+              value: "date-asc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aId = (a as { id?: number }).id || 0;
+                const bId = (b as { id?: number }).id || 0;
+                return aId - bId;
+              },
+            },
+          ] as SortOption[]
+        }
         renderItem={(item: {
           id: number;
           original: string;

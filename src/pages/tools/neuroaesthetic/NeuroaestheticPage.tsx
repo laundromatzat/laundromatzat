@@ -4,7 +4,7 @@ import { AppState, AnalysisResult, UserPreferences } from "./types";
 import { AnalysisDisplay } from "./components/AnalysisDisplay";
 import { ComparisonView } from "./components/ComparisonView";
 import { Loader } from "./components/Loader";
-import { DesignGallery } from "@/components/DesignGallery";
+import { DesignGallery, SortOption } from "@/components/DesignGallery";
 import { ClockIcon } from "@heroicons/react/24/outline";
 import {
   analyzeRoom,
@@ -185,9 +185,66 @@ const NeuroaestheticPage: React.FC = () => {
       <DesignGallery
         title="Design History"
         fetchEndpoint="/api/neuroaesthetic/history"
+        deleteEndpoint="/api/neuroaesthetic/history"
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
         onLoad={handleLoadHistoryItem}
+        sortOptions={
+          [
+            {
+              label: "Newest First",
+              value: "date-desc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aDate = new Date(
+                  (a as { timestamp?: string }).timestamp || 0
+                ).getTime();
+                const bDate = new Date(
+                  (b as { timestamp?: string }).timestamp || 0
+                ).getTime();
+                return bDate - aDate;
+              },
+            },
+            {
+              label: "Oldest First",
+              value: "date-asc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aDate = new Date(
+                  (a as { timestamp?: string }).timestamp || 0
+                ).getTime();
+                const bDate = new Date(
+                  (b as { timestamp?: string }).timestamp || 0
+                ).getTime();
+                return aDate - bDate;
+              },
+            },
+            {
+              label: "Highest Biophilia",
+              value: "biophilia-desc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aScore =
+                  (a as { analysis?: { scores?: { biophilia?: number } } })
+                    .analysis?.scores?.biophilia || 0;
+                const bScore =
+                  (b as { analysis?: { scores?: { biophilia?: number } } })
+                    .analysis?.scores?.biophilia || 0;
+                return bScore - aScore;
+              },
+            },
+            {
+              label: "Highest Fractal Fluency",
+              value: "fractal-desc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aScore =
+                  (a as { analysis?: { scores?: { fractalFluency?: number } } })
+                    .analysis?.scores?.fractalFluency || 0;
+                const bScore =
+                  (b as { analysis?: { scores?: { fractalFluency?: number } } })
+                    .analysis?.scores?.fractalFluency || 0;
+                return bScore - aScore;
+              },
+            },
+          ] as SortOption[]
+        }
         renderItem={(item: {
           originalImage?: string;
           generatedImage?: string;
