@@ -13,6 +13,8 @@ import { Book } from "./components/Book";
 import { useApiKey } from "./components/useApiKey";
 import { ApiKeyDialog } from "./components/ApiKeyDialog";
 import { LoadingFX } from "./components/LoadingFX";
+import { DesignGallery } from "@/components/DesignGallery";
+import { ClockIcon } from "@heroicons/react/24/outline";
 
 const MODEL_NAME = "gemini-2.5-flash-image";
 const DETECTION_MODEL = "gemini-2.5-flash";
@@ -43,7 +45,8 @@ const savePinToGallery = async (pin: {
     });
 
     const canvas = document.createElement("canvas");
-    const maxSize = 600; // Reduced from 800 for smaller payload
+    // Limit size for gallery thumbnail/save
+    const maxSize = 600;
     let width = img.width;
     let height = img.height;
 
@@ -79,23 +82,6 @@ const savePinToGallery = async (pin: {
   }
 };
 
-const fetchCheckGallery = async () => {
-  try {
-    const res = await fetch(getApiUrl("/api/pin-pals/gallery"), {
-      method: "GET",
-      headers: getAuthHeaders(),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return data.pins || [];
-    }
-    return [];
-  } catch (e) {
-    console.error("Failed to fetch gallery", e);
-    return [];
-  }
-};
-
 const PinPalsPage: React.FC = () => {
   const { validateApiKey, showApiKeyDialog, handleApiKeyDialogContinue } =
     useApiKey();
@@ -109,22 +95,7 @@ const PinPalsPage: React.FC = () => {
     isDetecting: false,
   });
 
-  interface GalleryItem {
-    id: number;
-    imageUrl: string;
-    petType: string;
-    petCount: number;
-  }
-
-  const [view, setView] = useState<"create" | "gallery">("create");
-  const [gallery, setGallery] = useState<GalleryItem[]>([]);
-
-  // Load gallery when switching view
-  React.useEffect(() => {
-    if (view === "gallery") {
-      fetchCheckGallery().then(setGallery);
-    }
-  }, [view]);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   const handleSaveToGallery = async () => {
     if (state.generatedImage) {
@@ -136,9 +107,25 @@ const PinPalsPage: React.FC = () => {
         });
         alert("Pin saved to gallery!");
       } catch {
-        // Error already handled in savePinToGallery
+        // Error already handled
       }
     }
+  };
+
+  const handleLoadGalleryItem = (item: {
+    imageUrl?: string;
+    petType?: string;
+    petCount?: number;
+  }) => {
+    if (!item.imageUrl) return;
+
+    setState((prev) => ({
+      ...prev,
+      generatedImage: item.imageUrl,
+      petType: item.petType || "DOG",
+      petCount: item.petCount || 1,
+      isLoading: false,
+    }));
   };
 
   const handleImageUpload = async (file: File) => {
@@ -330,24 +317,12 @@ const PinPalsPage: React.FC = () => {
       });
 
       // 4. Calculate dimensions for 4 pins (Staggered Layout)
-      // Canvas is 1800x1200 (6x4" @ 300DPI).
-      // Pin diameter = 600px (2 inches @ 300 DPI).
-      // Vertical Packing: 2 rows staggered to fit with margins.
-
       const pinSize = 600;
       const radius = pinSize / 2;
-      const margin = 20; // 20px margin from edges
+      const margin = 20;
 
-      // Vertical Centers
-      // Top Row: Y = Margin + Radius = 320
-      // Bottom Row: Y = 1200 - Margin - Radius = 880
       const topRowY = margin + radius;
       const botRowY = 1200 - margin - radius;
-
-      // Horizontal Centers (Staggered)
-      // Top Row (Shifted Left): X = 425 & 1075
-      // Bottom Row (Shifted Right): X = 725 & 1375
-      // This ensures >20px margin from all edges and >35px gap between any two pins.
       const tr_x1 = 425;
       const tr_x2 = 1075;
       const br_x1 = 725;
@@ -361,27 +336,22 @@ const PinPalsPage: React.FC = () => {
         ctx.beginPath();
         ctx.arc(xCenter, yCenter, pinSize / 2, 0, Math.PI * 2);
         ctx.closePath();
-        ctx.clip(); // Clip to circle so corners don't overlap neighbors
+        ctx.clip();
         ctx.drawImage(img, x, y, pinSize, pinSize);
         ctx.restore();
 
-        // Cut line
         ctx.beginPath();
         ctx.arc(xCenter, yCenter, pinSize / 2, 0, Math.PI * 2);
         ctx.strokeStyle = "#cccccc";
-        ctx.lineWidth = 1; // Thinner guide for print
+        ctx.lineWidth = 1;
         ctx.stroke();
       };
 
-      // Draw Top Row
       drawPinAt(tr_x1, topRowY);
       drawPinAt(tr_x2, topRowY);
-
-      // Draw Bottom Row
       drawPinAt(br_x1, botRowY);
       drawPinAt(br_x2, botRowY);
 
-      // 5. Download
       const link = document.createElement("a");
       link.download = `pin-pals-print-sheet-${state.petType.toLowerCase()}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -406,7 +376,54 @@ const PinPalsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <div className="absolute top-4 right-4 z-20">
+        <button
+          onClick={() => setIsGalleryOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full shadow-sm border border-slate-200 transition-colors"
+        >
+          <ClockIcon className="w-5 h-5" />
+          <span>Gallery</span>
+        </button>
+      </div>
+
+      <DesignGallery
+        title="My Pin Collection"
+        fetchEndpoint="/api/pin-pals/gallery"
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onLoad={handleLoadGalleryItem}
+        renderItem={(item: {
+          imageUrl: string;
+          petType: string;
+          petCount: number;
+          createdAt: string;
+        }) => (
+          <div className="flex flex-col h-full bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+            <div className="aspect-square relative flex items-center justify-center bg-black/40 p-4">
+              <img
+                src={item.imageUrl}
+                alt={item.petType}
+                className="max-h-full max-w-full drop-shadow-xl object-contain"
+              />
+            </div>
+            <div className="p-4 border-t border-slate-800">
+              <div className="flex justify-between items-start mb-1">
+                <h4 className="font-bold text-slate-100 capitalize">
+                  {item.petType} Pin
+                </h4>
+                <span className="text-xs text-slate-500">
+                  {new Date(item.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                {item.petCount} {item.petCount === 1 ? "Pet" : "Pets"}
+              </p>
+            </div>
+          </div>
+        )}
+      />
+
       {showApiKeyDialog && (
         <ApiKeyDialog onContinue={handleApiKeyDialogContinue} />
       )}
@@ -421,84 +438,43 @@ const PinPalsPage: React.FC = () => {
               Generate harm reduction art featuring your pets
             </p>
           </div>
-          <div className="flex gap-2">
-            <AuraButton
-              onClick={() => setView("create")}
-              variant={view === "create" ? "accent" : "ghost"}
-            >
-              Create
-            </AuraButton>
-            <AuraButton
-              onClick={() => setView("gallery")}
-              variant={view === "gallery" ? "accent" : "ghost"}
-            >
-              My Pins
-            </AuraButton>
-          </div>
         </header>
 
-        {view === "gallery" ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {gallery.map((pin) => (
-              <div
-                key={pin.id}
-                className="bg-white rounded-xl overflow-hidden aspect-square relative group border border-aura-text-primary/10 shadow-sm"
+        {state.isLoading ? (
+          <div className="card h-[400px]">
+            <LoadingFX />
+          </div>
+        ) : state.generatedImage ? (
+          <div className="flex flex-col gap-4">
+            <Book imageUrl={state.generatedImage} onReset={handleReset} />
+            <AuraButton
+              onClick={handleSaveToGallery}
+              variant="primary"
+              className="mx-auto"
+            >
+              Save to Gallery ❤️
+            </AuraButton>
+            <div className="flex justify-center mt-2">
+              <AuraButton
+                onClick={handleDownloadPrintTemplate}
+                variant="ghost"
+                icon={<Download size={16} />}
               >
-                <img
-                  src={pin.imageUrl}
-                  alt={pin.petType}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-x-0 bottom-0 p-2 bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                  {pin.petCount} {pin.petType}
-                </div>
-              </div>
-            ))}
-            {gallery.length === 0 && (
-              <div className="col-span-full text-center text-aura-text-secondary py-10">
-                No saved pins found.
-              </div>
-            )}
+                Download 6x4&quot; Print Sheet (4 copies)
+              </AuraButton>
+            </div>
           </div>
         ) : (
-          <>
-            {state.isLoading ? (
-              <div className="card h-[400px]">
-                <LoadingFX />
-              </div>
-            ) : state.generatedImage ? (
-              <div className="flex flex-col gap-4">
-                <Book imageUrl={state.generatedImage} onReset={handleReset} />
-                <AuraButton
-                  onClick={handleSaveToGallery}
-                  variant="primary"
-                  className="mx-auto"
-                >
-                  Save to Gallery ❤️
-                </AuraButton>
-                <div className="flex justify-center mt-2">
-                  <AuraButton
-                    onClick={handleDownloadPrintTemplate}
-                    variant="ghost"
-                    icon={<Download size={16} />}
-                  >
-                    Download 6x4&quot; Print Sheet (4 copies)
-                  </AuraButton>
-                </div>
-              </div>
-            ) : (
-              <Setup
-                petImage={state.petImage}
-                petType={state.petType}
-                petCount={state.petCount}
-                isDetecting={state.isDetecting}
-                onImageUpload={handleImageUpload}
-                onTypeChange={handleTypeChange}
-                onCountChange={handleCountChange}
-                onGenerate={handleGenerate}
-              />
-            )}
-          </>
+          <Setup
+            petImage={state.petImage}
+            petType={state.petType}
+            petCount={state.petCount}
+            isDetecting={state.isDetecting}
+            onImageUpload={handleImageUpload}
+            onTypeChange={handleTypeChange}
+            onCountChange={handleCountChange}
+            onGenerate={handleGenerate}
+          />
         )}
       </div>
 

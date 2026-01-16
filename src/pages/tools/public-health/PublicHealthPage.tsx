@@ -18,6 +18,8 @@ import {
 import * as geminiService from "./services/geminiService";
 import ChatInterface from "./components/ChatInterface";
 import PageMetadata from "@/components/PageMetadata";
+import { DesignGallery } from "@/components/DesignGallery";
+import { ClockIcon } from "@heroicons/react/24/outline";
 
 declare global {
   interface AIStudio {
@@ -59,6 +61,8 @@ const PublicHealthPage: React.FC = () => {
   );
   const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(true);
+
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   // Initialization & Auth
   const checkApiKey = useCallback(async () => {
@@ -283,6 +287,44 @@ const PublicHealthPage: React.FC = () => {
     setStatus(AppStatus.Chatting);
   };
 
+  const handleLoadGalleryItem = (item: {
+    rag_store_name: string;
+    analysis?: unknown;
+  }) => {
+    // Relate this doc back to other docs in the same store if possible,
+    // or just restore this single context.
+    // For now, let's restore the session with the related store.
+    const storeName = item.rag_store_name;
+
+    // Filter saved docs to find others in this store (session)
+    const sessionDocs = savedDocuments.filter(
+      (d) => d.rag_store_name === storeName
+    );
+    // Convert SavedDocument to AnalyzedDocument compatible format if needed
+    // The API returns 'analysis_result_json' in 'analysis_result_json' column.
+    // We can assume 'item' has the structure of the API response.
+    // Let's assume the API response includes analysis_result_json merged at top level or as property.
+    // Actually fetching from API returns:
+    // { id, filename, rag_store_name, analysis, tags, category, version, timestamp }
+    // where 'analysis' is the JSON object.
+
+    // So we reconstruct the valid docs list
+    const docsToLoad = sessionDocs.length > 0 ? sessionDocs : [item];
+
+    setActiveRagStoreName(storeName);
+    setAnalysisResult({
+      batch_summary: "Restored Session",
+      documents: docsToLoad.map((d: SavedDocument | typeof item) =>
+        "analysis" in d ? d.analysis : d
+      ) as AnalyzedDocument[], // Handle potential shape diffs
+      proposed_hierarchy_changes: "",
+      archive_recommendations: [],
+      notes_for_user: "",
+    });
+    setStatus(AppStatus.Chatting);
+    setIsGalleryOpen(false);
+  };
+
   const renderContent = () => {
     switch (status) {
       case AppStatus.Initializing:
@@ -318,12 +360,7 @@ const PublicHealthPage: React.FC = () => {
           />
         );
 
-      // We need a state for "User selecting files from Dashboard"
-      // Re-using WelcomeScreen or a Modal would be best.
-      // For simplicity, let's use a conditional in Dashboard or a specific status.
-      // Let's add specific status for "SelectingFiles" if needed, or just let WelcomeScreen handle it?
-      // Actually, WelcomeScreen IS the upload screen essentially.
-      case AppStatus.UploadingStateInput: // Custom internal status mapping
+      case AppStatus.UploadingStateInput:
         return (
           <WelcomeScreen
             onUpload={handleUploadAndAnalyze}
@@ -395,12 +432,91 @@ const PublicHealthPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-theme(spacing.20))] bg-aura-bg text-aura-text-primary font-sans rounded-xl overflow-hidden shadow-2xl border border-aura-text-primary/10">
+    <div className="h-[calc(100vh-theme(spacing.20))] bg-aura-bg text-aura-text-primary font-sans rounded-xl overflow-hidden shadow-2xl border border-aura-text-primary/10 relative">
       <PageMetadata
         title="Public Health Organizer"
         description="Unified Knowledge Base for Public Health"
       />
+
+      {/* Absolute Header Button for Gallery */}
+      <div className="absolute top-4 right-6 z-20">
+        <button
+          onClick={() => setIsGalleryOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-white/90 hover:bg-white text-slate-600 hover:text-slate-900 rounded-full shadow-sm border border-slate-200 transition-colors backdrop-blur-sm"
+        >
+          <ClockIcon className="w-5 h-5" />
+          <span>Saved Docs</span>
+        </button>
+      </div>
+
       {renderContent()}
+
+      <DesignGallery
+        title="Saved Documents Library"
+        fetchEndpoint="/api/public-health/docs"
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onLoad={handleLoadGalleryItem}
+        renderItem={(item: {
+          id: number;
+          filename: string;
+          version?: string;
+          category?: string;
+          tags?: string[];
+        }) => (
+          <div className="flex flex-col h-full bg-slate-50 border border-slate-200 rounded-lg p-5 hover:border-blue-300 transition-colors cursor-pointer relative group">
+            <div className="absolute top-0 right-0 p-2 opacity-50 group-hover:opacity-100">
+              <span className="bg-white border border-slate-200 text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider text-slate-500">
+                {item.category || "General"}
+              </span>
+            </div>
+            <div className="mb-3">
+              <div className="w-10 h-10 bg-white rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 mb-2 shadow-sm">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h4
+                className="font-bold text-slate-800 line-clamp-1 text-sm"
+                title={item.filename}
+              >
+                {item.filename}
+              </h4>
+              <p className="text-xs text-slate-400 mt-0.5">
+                v{item.version || "1.0"}
+              </p>
+            </div>
+
+            <div className="flex-1">
+              <div className="flex flex-wrap gap-1 mt-2">
+                {(item.tags || []).slice(0, 3).map((tag: string, i: number) => (
+                  <span
+                    key={i}
+                    className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+                {(item.tags || []).length > 3 && (
+                  <span className="text-[10px] text-slate-400 px-1">
+                    +{(item.tags?.length || 0) - 3}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      />
     </div>
   );
 };

@@ -18,6 +18,8 @@ import { SettingsPanel } from "./components/SettingsPanel";
 import { StyleTrainer } from "./components/StyleTrainer";
 import { NoteGenerator } from "./components/NoteGenerator";
 import PageMetadata from "@/components/PageMetadata";
+import { DesignGallery } from "@/components/DesignGallery";
+import { ClockIcon } from "@heroicons/react/24/outline";
 
 function MediscribePage() {
   // Load initial state
@@ -29,6 +31,12 @@ function MediscribePage() {
       currentView: "generator",
     };
   });
+
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [restoredNote, setRestoredNote] = useState<{
+    shorthand: string;
+    fullNote: string;
+  } | null>(null);
 
   // Load examples from API on mount
   useEffect(() => {
@@ -129,8 +137,22 @@ function MediscribePage() {
     }
   };
 
+  const handleLoadGalleryItem = (item: {
+    original: string;
+    rewritten: string;
+  }) => {
+    // Navigate to generator view
+    navigate("generator");
+    // Set restored note for NoteGenerator to pick up
+    setRestoredNote({
+      shorthand: item.original,
+      fullNote: item.rewritten,
+    });
+    setIsGalleryOpen(false);
+  };
+
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-theme(spacing.20))] bg-aura-bg text-aura-text-primary font-sans rounded-xl overflow-hidden border border-aura-text-primary/10">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-theme(spacing.20))] bg-aura-bg text-aura-text-primary font-sans rounded-xl overflow-hidden border border-aura-text-primary/10 relative">
       <PageMetadata
         title="MediScribe AI"
         description="AI-powered medical documentation assistant with adaptive style learning."
@@ -203,10 +225,19 @@ function MediscribePage() {
             {state.currentView === "training" && "Style Training"}
             {state.currentView === "settings" && "System Configuration"}
           </h2>
-          <div className="text-sm text-aura-text-secondary">
-            {state.examples.length > 0
-              ? "Adaptive Style: Active"
-              : "Adaptive Style: No Data"}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsGalleryOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+            >
+              <ClockIcon className="w-4 h-4" />
+              <span>History</span>
+            </button>
+            <div className="text-sm text-aura-text-secondary">
+              {state.examples.length > 0
+                ? "Adaptive Style: Active"
+                : "Adaptive Style: No Data"}
+            </div>
           </div>
         </header>
 
@@ -216,6 +247,7 @@ function MediscribePage() {
               settings={state.settings}
               examples={state.examples}
               onLearn={addExample}
+              restoredNote={restoredNote}
             />
           )}
 
@@ -232,6 +264,43 @@ function MediscribePage() {
           )}
         </div>
       </main>
+
+      <DesignGallery
+        title="Clinical Note History"
+        fetchEndpoint="/api/mediscribe/examples"
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onLoad={handleLoadGalleryItem}
+        emptyMessage="No saved clinical notes found."
+        renderItem={(item: {
+          id: number;
+          original: string;
+          rewritten: string;
+        }) => (
+          <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg p-4 hover:border-blue-300 transition-colors cursor-pointer group">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Note #{item.id}
+              </span>
+              <span className="text-[10px] text-slate-400">
+                {/* No timestamp in example, use fallback or just omit */}
+                Saved
+              </span>
+            </div>
+            <div className="flex-1 overflow-hidden relative">
+              <div className="h-full text-xs text-slate-600 font-mono line-clamp-6 whitespace-pre-wrap bg-slate-50 p-2 rounded border border-slate-100">
+                {item.original}
+              </div>
+              <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-50 to-transparent pointer-events-none" />
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <div className="text-xs font-medium text-slate-700 truncate">
+                {item.rewritten.substring(0, 40)}...
+              </div>
+            </div>
+          </div>
+        )}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLoading } from "@/context/LoadingContext";
 import {
   generateClinicalNote,
@@ -25,12 +25,14 @@ interface NoteGeneratorProps {
   settings: UserSettings;
   examples: TrainingExample[];
   onLearn: (example: TrainingExample) => void;
+  restoredNote?: { shorthand: string; fullNote: string } | null;
 }
 
 export const NoteGenerator: React.FC<NoteGeneratorProps> = ({
   settings,
   examples,
   onLearn,
+  restoredNote,
 }) => {
   const { setIsLoading: setGlobalLoading } = useLoading();
   const [input, setInput] = useState("");
@@ -44,6 +46,17 @@ export const NoteGenerator: React.FC<NoteGeneratorProps> = ({
 
   // View mode: 'smart' (formatted) or 'raw' (edit)
   const [viewMode, setViewMode] = useState<"smart" | "raw">("smart");
+
+  // Restore state when restoredNote prop changes
+  useEffect(() => {
+    if (restoredNote) {
+      setInput(restoredNote.shorthand || "");
+      setOutput(restoredNote.fullNote || "");
+      setOriginalOutput(restoredNote.fullNote || "");
+      setError(null);
+      setLearningInsight(null);
+    }
+  }, [restoredNote]);
 
   const handleGenerate = async () => {
     if (!input.trim()) return;

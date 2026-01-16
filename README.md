@@ -52,6 +52,7 @@ This project is configured as a single workspace with shared dependencies where 
     - Portfolio: `http://localhost:5173`
     - Fabric Designer: `http://localhost:5173/fabric-designer`
     - Paystub Analyzer: `http://localhost:5173/paystub-analyzer`
+    - Mission Control: `http://localhost:5173/admin` (Admin Dashboard)
 
 ### Running the Paystub Backend
 
@@ -62,12 +63,54 @@ cd server
 npm start
 ```
 
+### 🖥️ Full Desktop Development
+
+To run the complete suite including the Electron app (MediaInsight Pro):
+
+```bash
+npm run electron:dev:all
+```
+
 ## 🤖 AI Architecture
 
 This project uses a **"Grounding-to-Visuals"** pattern to ensure AI accuracy.
 
 - **Research Phase**: Complex requests (like Fabric Design) first go through a research step to gather technical facts.
 - **Generation Phase**: The synthesized facts are used as context for the final creative generation.
+- **AI Agents**: The project now integrates autonomous agents capable of performing dev tasks, managed via **Mission Control**.
+
+## 🛠️ Specialized Tools
+
+### 1. Mission Control 🚀
+
+The central hub for administration and monitoring.
+
+- **User Management**: Approve and manage user access.
+- **Server Health**: Monitor uptime, memory, and active connections.
+- **AI Usage**: Track token consumption and costs across all tools.
+- **Dev Task Manager**: Integrated agentic workflow for development tasks.
+
+### 2. MediaInsight Pro 🎬
+
+A powerful Electron-based desktop application for media analysis.
+
+- **Local AI**: Uses local LLMs (via LM Studio) for privacy-preserving analysis.
+- **FileSystem**: Integrated explorer for managing media assets.
+- **Persistence**: Remembers your settings and analysis history.
+
+### 3. Paystub Analyzer 💰
+
+Now rebuilt with the **Aura** design system.
+
+- Analyzes PDF paystubs to extract and visualize financial data.
+- Securely processes data using local backend services.
+
+### 4. Creative Suite 🎨
+
+- **Nylon Fabric Designer**: AI-assisted textile pattern generation.
+- **Wood Carving Visualizer**: Visualize 3D carving projects.
+- **Intelligent Ideas Board**: Infinite canvas for brainstorming.
+- **Pin Pals**: Collaborative mood boards.
 
 ## 🚀 Deployment & Security
 

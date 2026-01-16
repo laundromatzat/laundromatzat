@@ -18,6 +18,7 @@ import { ChevronDownIcon } from "./icons/ChevronDownIcon";
 import { ClockIcon } from "./icons/ClockIcon";
 import { FileTextIcon } from "./icons/FileTextIcon";
 import { PencilIcon } from "./icons/PencilIcon";
+import { PDFViewer } from "./PDFViewer";
 
 interface PaycheckTableProps {
   paycheckData: PaycheckData[];
@@ -611,11 +612,20 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                           </div>
                                         </div>
 
-                                        {/* Card Body - Two Column Layout */}
-                                        <div className="p-3 grid grid-cols-1 lg:grid-cols-2 gap-3 lg:divide-x lg:divide-aura-text-primary/10">
-                                          {/* Left Column: Source Data */}
-                                          <div className="space-y-6 relative group">
-                                            <div className="bg-aura-accent/5 border border-aura-accent/10 rounded-lg p-2 relative">
+                                        {/* Card Body - Split View Layout */}
+                                        <div className="p-3 grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-4">
+                                          {/* Left Column: PDF Viewer */}
+                                          <div className="order-2 xl:order-1">
+                                            <PDFViewer
+                                              pdfUrl={data.pdfUrl}
+                                              className="h-[600px] xl:h-[700px] sticky top-4"
+                                            />
+                                          </div>
+
+                                          {/* Right Column: Extracted Data */}
+                                          <div className="order-1 xl:order-2 space-y-4">
+                                            {/* Paid Hours Section */}
+                                            <div className="bg-aura-accent/5 border border-aura-accent/10 rounded-lg p-3 relative group">
                                               <SectionHeader
                                                 icon={
                                                   <ClockIcon className="w-4 h-4" />
@@ -626,7 +636,7 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                               />
                                               <button
                                                 onClick={() => onEdit(data)}
-                                                className="absolute top-2 right-2 p-1.5 text-aura-text-secondary hover:text-aura-accent hover:bg-white rounded-md transition-all shadow-sm opacity-0 group-hover:opacity-100"
+                                                className="absolute top-3 right-3 p-1.5 text-aura-text-secondary hover:text-aura-accent hover:bg-white rounded-md transition-all shadow-sm opacity-0 group-hover:opacity-100"
                                                 title="Edit Extracted Hours"
                                               >
                                                 <PencilIcon className="w-4 h-4" />
@@ -643,11 +653,9 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                                 )}
                                               />
                                             </div>
-                                          </div>
 
-                                          {/* Right Column: User Input */}
-                                          <div className="lg:pl-8 space-y-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-aura-text-primary/5 border border-aura-text-primary/10 rounded-lg p-2">
+                                            {/* User Reported Hours Section */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-aura-text-primary/5 border border-aura-text-primary/10 rounded-lg p-3">
                                               <div>
                                                 <h5 className="text-xs font-semibold text-aura-text-secondary uppercase tracking-wider mb-3">
                                                   Week 1
@@ -685,36 +693,36 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                                 />
                                               </div>
                                             </div>
-                                          </div>
-                                        </div>
 
-                                        {/* Footer: Discrepancy Bar */}
-                                        <div className="px-3 pb-3 space-y-2">
-                                          <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-2">
-                                            <SectionHeader
-                                              icon={
-                                                <BankIcon className="w-4 h-4" />
-                                              }
-                                              title="Banked Hours"
-                                              subtitle="Available balance"
-                                              iconClassName="bg-emerald-500/10 text-emerald-600"
-                                            />
-                                            <BankedHoursList
-                                              data={data.bankedHours}
+                                            {/* Banked Hours Section */}
+                                            <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3">
+                                              <SectionHeader
+                                                icon={
+                                                  <BankIcon className="w-4 h-4" />
+                                                }
+                                                title="Banked Hours"
+                                                subtitle="Available balance"
+                                                iconClassName="bg-emerald-500/10 text-emerald-600"
+                                              />
+                                              <BankedHoursList
+                                                data={data.bankedHours}
+                                                userReportedHours={
+                                                  data.userReportedHours
+                                                }
+                                                verificationFlags={
+                                                  verificationFlags
+                                                }
+                                              />
+                                            </div>
+
+                                            {/* Discrepancy Bar */}
+                                            <DiscrepancyBar
+                                              paidHours={data.paidHours}
                                               userReportedHours={
                                                 data.userReportedHours
                                               }
-                                              verificationFlags={
-                                                verificationFlags
-                                              }
                                             />
                                           </div>
-                                          <DiscrepancyBar
-                                            paidHours={data.paidHours}
-                                            userReportedHours={
-                                              data.userReportedHours
-                                            }
-                                          />
                                         </div>
                                       </div>
                                     )

@@ -4,6 +4,8 @@ import { AppState, AnalysisResult, UserPreferences } from "./types";
 import { AnalysisDisplay } from "./components/AnalysisDisplay";
 import { ComparisonView } from "./components/ComparisonView";
 import { Loader } from "./components/Loader";
+import { DesignGallery } from "@/components/DesignGallery";
+import { ClockIcon } from "@heroicons/react/24/outline";
 import {
   analyzeRoom,
   generateNeuroaestheticImage,
@@ -24,6 +26,7 @@ const NeuroaestheticPage: React.FC = () => {
     colorPreferences: "",
     designGoals: "General Well-being",
   });
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,11 +142,94 @@ const NeuroaestheticPage: React.FC = () => {
     });
   };
 
+  const handleLoadHistoryItem = (item: {
+    originalImage?: string;
+    generatedImage?: string;
+    analysis?: unknown;
+  }) => {
+    // Check if we have both original and generated images
+    if (!item.originalImage || !item.generatedImage) {
+      alert("This history item is incomplete.");
+      return;
+    }
+
+    // Restore state
+    setImageSrcs([item.originalImage]);
+    setBase64Images([item.originalImage.split(",")[1] || ""]); // Basic heuristic
+    setAnalysis(item.analysis);
+    setImprovedImageBase64(item.generatedImage);
+    setHistory([item.generatedImage]);
+    setHistoryIndex(0);
+
+    // Jump to comparison
+    setAppState(AppState.COMPARISON);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-slate-900 relative">
       <PageMetadata
         title="Neuroaesthetic Lens"
         description="Reimagine environments using neuroaesthetic principles."
+      />
+
+      <div className="absolute top-4 right-4 z-20">
+        <button
+          onClick={() => setIsGalleryOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-700"
+        >
+          <ClockIcon className="w-5 h-5" />
+          <span>History</span>
+        </button>
+      </div>
+
+      <DesignGallery
+        title="Design History"
+        fetchEndpoint="/api/neuroaesthetic/history"
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onLoad={handleLoadHistoryItem}
+        renderItem={(item: {
+          originalImage?: string;
+          generatedImage?: string;
+          analysis?: {
+            biophilia_score?: number;
+            fractal_fluency_score?: number;
+          };
+          timestamp?: string;
+        }) => (
+          <div className="flex flex-col h-full">
+            <div className="aspect-video relative bg-black/40">
+              <img
+                src={item.generatedImage}
+                alt="Generated Design"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 rounded text-xs text-white">
+                {new Date(item.timestamp).toLocaleDateString()}
+              </div>
+            </div>
+            <div className="p-4 flex-1">
+              <h4 className="font-medium text-white mb-2 line-clamp-1">
+                Neuroaesthetic Analysis
+              </h4>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {item.analysis?.scores?.biophilia > 70 && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+                    High Biophilia
+                  </span>
+                )}
+                {item.analysis?.scores?.fractalFluency > 70 && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400">
+                    High Fractal
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 line-clamp-3">
+                {item.analysis?.summary || "No summary available."}
+              </p>
+            </div>
+          </div>
+        )}
       />
 
       {appState === AppState.UPLOAD && (
