@@ -112,6 +112,15 @@ Now rebuilt with the **Aura** design system.
 - **Intelligent Ideas Board**: Infinite canvas for brainstorming.
 - **Pin Pals**: Collaborative mood boards.
 
+### 5. Visual Design Gallery 🖼️
+
+A unified history management system integrated into key creative tools.
+
+- **Unified Interface**: consistent gallery experience across Neuroaesthetic, Pin Pals, Mediscribe, and Public Health.
+- **Search & Filter**: Find specific designs using keywords, categories, dates, or tags.
+- **Time Travel**: Instantly reload any previous workspace state (images, settings, analysis) to iterate on past ideas.
+- **Management**: Sort, organize, and delete history items to maintain a curated collection.
+
 ## 🚀 Deployment & Security
 
 To deploy this application to production (e.g., laundromatzat.com), follow these critical steps to ensure security and functionality.
