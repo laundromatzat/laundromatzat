@@ -321,8 +321,10 @@ const DevTaskManager = () => {
           onUpdateTask={handleUpdateTask}
           onDeleteTask={handleDeleteTask}
           onGeneratePrompt={handleGeneratePrompt}
-          onSubmitToAgent={handleSubmitToAgent}
-          agentExecutions={agentExecutions}
+          // NOTE: AI Agent feature disabled until backend endpoints are deployed
+          // Uncomment when /api/dev-tasks/:id/submit-to-agent is available in production
+          // onSubmitToAgent={handleSubmitToAgent}
+          // agentExecutions={agentExecutions}
         />
       )}
 
