@@ -1,5 +1,6 @@
 // src/services/websocketService.ts
 import type { WSAgentMessage } from "../../types/devTaskTypes";
+import { API_BASE_URL } from "../utils/api";
 
 type WSEventHandler = (message: WSAgentMessage) => void;
 
@@ -23,10 +24,9 @@ class WebSocketService {
     this.isConnecting = true;
     this.userId = userId;
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.hostname;
-    const port = import.meta.env.VITE_API_PORT || "4000";
-    const wsUrl = `${protocol}//${host}:${port}`;
+    // Construct WebSocket URL from API_BASE_URL
+    // Convert http:// to ws:// and https:// to wss://
+    const wsUrl = API_BASE_URL.replace(/^http/, 'ws');
 
     console.log(`Connecting to WebSocket: ${wsUrl}`);
 

@@ -60,35 +60,47 @@ export default function MissionControl() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<
     "overview" | "users" | "ai-usage" | "tasks"
-  >("overview");
+  >("tasks"); // Default to tasks tab since other endpoints may not exist yet
 
   const fetchData = useCallback(async () => {
     try {
-      const [usersRes, statsRes, aiUsageRes] = await Promise.all([
-        fetch(getApiUrl("/api/admin/users"), {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(getApiUrl("/api/admin/stats"), {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(getApiUrl("/api/admin/ai-usage"), {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+      // Fetch users (required)
+      const usersRes = await fetch(getApiUrl("/api/admin/users"), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      if (!usersRes.ok || !statsRes.ok || !aiUsageRes.ok) {
-        throw new Error("Failed to fetch data");
+      if (!usersRes.ok) {
+        throw new Error("Failed to fetch users");
       }
 
-      const [usersData, statsData, aiUsageData] = await Promise.all([
-        usersRes.json(),
-        statsRes.json(),
-        aiUsageRes.json(),
-      ]);
-
+      const usersData = await usersRes.json();
       setUsers(usersData);
-      setStats(statsData);
-      setAIUsage(aiUsageData);
+
+      // Try to fetch stats (optional - endpoints may not exist yet)
+      try {
+        const statsRes = await fetch(getApiUrl("/api/admin/stats"), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData);
+        }
+      } catch (err) {
+        console.log("Stats endpoint not available yet");
+      }
+
+      // Try to fetch AI usage (optional - endpoint may not exist yet)
+      try {
+        const aiUsageRes = await fetch(getApiUrl("/api/admin/ai-usage"), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (aiUsageRes.ok) {
+          const aiUsageData = await aiUsageRes.json();
+          setAIUsage(aiUsageData);
+        }
+      } catch (err) {
+        console.log("AI usage endpoint not available yet");
+      }
     } catch (err) {
       setError("Failed to load Mission Control data");
       console.error(err);
