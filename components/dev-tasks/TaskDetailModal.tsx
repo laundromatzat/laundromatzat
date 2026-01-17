@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   DevTask,
   TaskCategory,
@@ -38,7 +38,13 @@ const TaskDetailModal = ({
   );
   const [loadingExecution, setLoadingExecution] = useState(true);
 
-  const generatedPrompt = onGeneratePrompt(task);
+  // Dynamically generate prompt based on current task state (fixes bug where prompt doesn't update)
+  const generatedPrompt = useMemo(() => {
+    console.log('[TaskDetailModal] Generating AI prompt for task:', task.id, task.title);
+    const prompt = onGeneratePrompt(task);
+    console.log('[TaskDetailModal] Generated prompt length:', prompt.length);
+    return prompt;
+  }, [task, onGeneratePrompt]);
 
   // Load agent execution if exists
   useEffect(() => {
