@@ -85,7 +85,7 @@ export default function MissionControl() {
           const statsData = await statsRes.json();
           setStats(statsData);
         }
-      } catch (err) {
+      } catch {
         console.log("Stats endpoint not available yet");
       }
 
@@ -98,7 +98,7 @@ export default function MissionControl() {
           const aiUsageData = await aiUsageRes.json();
           setAIUsage(aiUsageData);
         }
-      } catch (err) {
+      } catch {
         console.log("AI usage endpoint not available yet");
       }
     } catch (err) {
