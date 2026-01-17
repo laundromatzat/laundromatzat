@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLoading } from "@/context/LoadingContext";
 import {
   generateSewingGuide,
@@ -66,7 +66,7 @@ const NylonFabricDesignerPage: React.FC = () => {
       const guide = await generateSewingGuide(projectDescription, undefined, {
         onResearchStart: () =>
           setResearchStatus(
-            "Researching technical specifications and materials..."
+            "Researching technical specifications and materials...",
           ),
         onResearchComplete: () =>
           setResearchStatus("Drafting comprehensive hand-sewing guide..."),
@@ -116,7 +116,7 @@ const NylonFabricDesignerPage: React.FC = () => {
   const handleClearHistory = () => {
     if (
       window.confirm(
-        "Are you sure you want to clear all saved designs? This cannot be undone."
+        "Are you sure you want to clear all saved designs? This cannot be undone.",
       )
     ) {
       clearDesigns()

@@ -14,6 +14,7 @@ import { AuthProvider } from "@/context/AuthContext";
 
 import { LoadingProvider } from "@/context/LoadingContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Pages - Core
 import HomePage from "@/pages/core/HomePage";
@@ -106,7 +107,9 @@ const router = createBrowserRouter([
         path: "tools/public-health/*",
         element: (
           <ProtectedRoute>
-            <PublicHealthPage />
+            <ErrorBoundary>
+              <PublicHealthPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         ),
       },
@@ -114,7 +117,9 @@ const router = createBrowserRouter([
         path: "tools/mediscribe",
         element: (
           <ProtectedRoute>
-            <MediscribePage />
+            <ErrorBoundary>
+              <MediscribePage />
+            </ErrorBoundary>
           </ProtectedRoute>
         ),
       },
@@ -122,7 +127,9 @@ const router = createBrowserRouter([
         path: "tools/neuroaesthetic",
         element: (
           <ProtectedRoute>
-            <NeuroaestheticPage />
+            <ErrorBoundary>
+              <NeuroaestheticPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         ),
       },
@@ -130,7 +137,9 @@ const router = createBrowserRouter([
         path: "tools/pin-pals",
         element: (
           <ProtectedRoute>
-            <PinPalsPage />
+            <ErrorBoundary>
+              <PinPalsPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         ),
       },
@@ -162,7 +171,9 @@ const router = createBrowserRouter([
         path: "tools/nylon-fabric-designer",
         element: (
           <ProtectedRoute>
-            <NylonFabricDesignerPage />
+            <ErrorBoundary>
+              <NylonFabricDesignerPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         ),
       },
@@ -231,5 +242,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
       <RouterProvider router={router} />
     </HelmetProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
