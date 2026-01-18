@@ -277,6 +277,29 @@ class AIAgentService {
       `Generated changes for ${fileChanges.length} file(s)`,
     );
 
+    if (fileChanges.length === 0) {
+      await this.addLog(
+        executionId,
+        "warning",
+        "No file changes were generated. The agent may need more information or the task may require manual intervention.",
+      );
+
+      // Notify user of completion without changes
+      websocketService.notifyAgentProgress(userId, executionId, {
+        phase: "completed_no_changes",
+        progress: 100,
+      });
+
+      return {
+        branch: branchName,
+        commitSha: null,
+        commitUrl: null,
+        ciStatus: "skipped",
+        ciUrl: null,
+        filesChanged: 0,
+      };
+    }
+
     // Phase 3: Commit changes
     await this.addLog(
       executionId,
