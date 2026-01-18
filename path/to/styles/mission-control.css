@@ -1,0 +1,402 @@
+/*
+ * mission-control.css - Styles for the Mission Control page
+ * Aligns colors with the site-wide theme and ensures accessibility.
+ */
+
+/*
+ * IMPORTANT ASSUMPTION:
+ * This file assumes a global stylesheet (e.g., _variables.scss or theme.css) is linked
+ * before this file and defines CSS Custom Properties (CSS variables) like:
+ *
+ * :root {
+ *   --brand-primary: #007bff;
+ *   --brand-secondary: #6c757d;
+ *   --brand-success: #28a745;
+ *   --brand-danger: #dc3545;
+ *   --brand-info: #17a2b8;
+ *
+ *   --text-color-dark: #343a40;
+ *   --text-color-light: #ffffff;
+ *   --text-color-muted: #6c757d;
+ *
+ *   --background-color-light: #ffffff;
+ *   --background-color-dark: #343a40;
+ *   --background-color-secondary: #f8f9fa;
+ *
+ *   --border-color: #dee2e6;
+ *
+ *   --button-primary-bg: var(--brand-primary);
+ *   --button-primary-text-color: var(--text-color-light);
+ *   --button-primary-hover-bg: #0056b3; // Darker shade of primary
+ *
+ *   --button-secondary-bg: var(--brand-secondary);
+ *   --button-secondary-text-color: var(--text-color-light);
+ *   --button-secondary-hover-bg: #545b62; // Darker shade of secondary
+ *
+ *   --button-danger-hover-bg: #c82333; // Darker shade of danger
+ *
+ *   --link-color: var(--brand-primary);
+ *   --link-hover-color: #0056b3;
+ *
+ *   --card-background-color: var(--background-color-light);
+ *   --card-border-color: var(--border-color);
+ *
+ *   --focus-outline-color: rgba(0, 123, 255, 0.25);
+ * }
+ *
+ * All hardcoded colors in this file are replaced with these variables.
+ */
+
+
+/* --- General Page Layout & Base Colors --- */
+#mission-control-page {
+    background-color: var(--background-color-secondary); /* Use a slightly off-white for page background */
+    color: var(--text-color-dark);
+    padding: 20px;
+    min-height: calc(100vh - 80px); /* Adjust based on global header/footer height */
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; /* Ensure consistent font */
+}
+
+.page-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.page-header h2 {
+    color: var(--brand-primary); /* Main titles use primary brand color */
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 2em;
+    font-weight: 600;
+}
+
+.description-text {
+    color: var(--text-color-muted); /* Muted text for descriptions */
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.header-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* --- Buttons --- */
+/* Assuming general .btn styles are set globally. Overriding/enhancing here if needed. */
+.btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid transparent; /* Default transparent border */
+    text-decoration: none; /* Ensure buttons don't have underline if used as links */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn:focus {
+    outline: 2px solid var(--focus-outline-color);
+    outline-offset: 2px;
+}
+
+.btn-primary {
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text-color); /* White text on primary blue */
+    border-color: var(--button-primary-bg);
+}
+
+.btn-primary:hover {
+    background-color: var(--button-primary-hover-bg);
+    border-color: var(--button-primary-hover-bg);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.btn-secondary {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-text-color); /* White text on gray */
+    border-color: var(--button-secondary-bg);
+}
+
+.btn-secondary:hover {
+    background-color: var(--button-secondary-hover-bg);
+    border-color: var(--button-secondary-hover-bg);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+}
+
+.btn-danger {
+    background-color: var(--brand-danger);
+    color: var(--text-color-light); /* White text on danger red */
+    border-color: var(--brand-danger);
+}
+.btn-danger:hover {
+    background-color: var(--button-danger-hover-bg);
+    border-color: var(--button-danger-hover-bg);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+}
+
+.btn-info {
+    background-color: var(--brand-info);
+    color: var(--text-color-light);
+    border-color: var(--brand-info);
+}
+.btn-info:hover {
+    /* Assuming --button-info-hover-bg exists or calculate a darker shade */
+    background-color: #117a8b; /* Example darker shade for --brand-info */
+    border-color: #117a8b;
+    box-shadow: 0 4px 8px rgba(23, 162, 184, 0.2);
+}
+
+.btn-small {
+    padding: 7px 12px;
+    font-size: 0.85em;
+    border-radius: 4px;
+}
+
+/* --- Metric Cards/Panels --- */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.card {
+    background-color: var(--card-background-color); /* Consistent card background */
+    border: 1px solid var(--card-border-color); /* Consistent card border */
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Subtle shadow */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+    color: var(--text-color-dark); /* Card titles use dark text */
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.metric-value {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: var(--brand-primary); /* Highlight metric values with brand color */
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
+}
+
+.critical-alert {
+    color: var(--brand-danger); /* Critical alerts use danger color */
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.status-green {
+    background-color: var(--brand-success);
+}
+
+/* --- Recent Events Section --- */
+.recent-events {
+    margin-bottom: 40px;
+}
+
+.recent-events h3 {
+    color: var(--text-color-dark);
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+.event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.event-item {
+    background-color: var(--background-color-light); /* Slightly different background for items */
+    border-radius: 6px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.event-item .event-time {
+    font-weight: 500;
+    color: var(--text-color-muted);
+    flex-shrink: 0;
+    width: 70px;
+    text-align: right;
+    font-size: 0.9em;
+}
+
+.event-item p {
+    flex-grow: 1;
+    margin: 0;
+    color: var(--text-color-dark);
+    line-height: 1.4;
+}
+
+.event-item p strong {
+    color: var(--brand-danger); /* Highlight critical words within event descriptions */
+    font-weight: 600;
+}
+
+.event-item .view-more-link {
+    color: var(--link-color);
+    text-decoration: none;
+    font-size: 0.9em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.event-item .view-more-link:hover {
+    color: var(--link-hover-color);
+    text-decoration: underline;
+}
+
+.event-item.critical {
+    background-color: #ffe6e8; /* Very light red background derived from --brand-danger (e.g., lighten by 45%) */
+    border-left: 5px solid var(--brand-danger);
+    border-color: var(--brand-danger); /* Explicit border color */
+    box-shadow: 0 2px 10px rgba(220, 53, 69, 0.1);
+}
+
+.event-item.critical p {
+    color: var(--text-color-dark); /* Ensure text is dark enough on light red background */
+}
+
+.load-more {
+    margin-top: 25px;
+    display: block;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- Footer --- */
+footer {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--text-color-muted);
+    font-size: 0.85em;
+}
+
+/* --- Global/App-wide elements that might appear on Mission Control --- */
+/* (Assuming these are part of a shared layout and should use global variables) */
+.main-app-header {
+    background-color: var(--background-color-dark); /* Dark header for global consistency */
+    color: var(--text-color-light);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.main-app-header h1 {
+    color: var(--text-color-light);
+    margin: 0;
+    font-size: 1.6em;
+    font-weight: 600;
+}
+
+.main-app-header nav a {
+    color: var(--text-color-light);
+    text-decoration: none;
+    margin-left: 25px;
+    padding: 5px 0;
+    position: relative;
+    opacity: 0.85;
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.main-app-header nav a:hover,
+.main-app-header nav a.active {
+    opacity: 1;
+    color: var(--brand-primary); /* Highlight active/hovered link with brand color */
+}
+
+.main-app-header nav a.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 100%;
+    height: 2px;
+    background-color: var(--brand-primary);
+    border-radius: 1px;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .page-header {
+        align-items: center;
+        text-align: center;
+    }
+    .header-actions {
+        justify-content: center;
+    }
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    .event-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .event-item .event-time {
+        width: auto;
+        text-align: left;
+    }
+    .event-item .view-more-link {
+        align-self: flex-end;
+    }
+    .main-app-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .main-app-header nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .main-app-header nav a {
+        margin: 0 10px;
+    }
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control</title>
+    <!-- Assume global styles (including CSS variables) are linked here first -->
+    <link rel="stylesheet" href="/css/global-theme.css"> <!-- Example path for global styles -->
+    <link rel="stylesheet" href="/css/mission-control.css"> <!-- Updated mission-control specific styles -->
+</head>
+<body>
+    <div id="app-container">
+        <!-- Main header for the whole application - assuming this is a consistent site-wide component -->
+        <header class="main-app-header">
+            <h1>Application Dashboard</h1>
+            <nav>
+                <a href="#">Home</a>
+                <a href="#" class="active">Mission Control</a>
+                <a href="#">Settings</a>
+            </nav>
+        </header>
+
+        <main id="mission-control-page">
+            <div class="page-header">
+                <h2>Mission Control Dashboard</h2>
+                <p class="description-text">Overview of system operations and critical metrics across all active missions and services.</p>
+                <div class="header-actions">
+                    <button class="btn btn-primary">Refresh Data</button>
+                    <button class="btn btn-secondary">View Logs</button>
+                </div>
+            </div>
+
+            <section class="metrics-grid">
+                <div class="card metric-card">
+                    <h3>System Health</h3>
+                    <p class="metric-value">Operational <span class="status-indicator status-green"></span></p>
+                    <button class="btn btn-small btn-info">View Status</button>
+                </div>
+                <div class="card metric-card">
+                    <h3>Active Missions</h3>
+                    <p class="metric-value">7</p>
+                    <button class="btn btn-small btn-info">Manage Missions</button>
+                </div>
+                <div class="card metric-card">
+                    <h3>Critical Alerts</h3>
+                    <p class="metric-value critical-alert">3 Critical</p>
+                    <button class="btn btn-small btn-danger">Resolve Alerts</button>
+                </div>
+                <div class="card metric-card">
+                    <h3>Data Throughput</h3>
+                    <p class="metric-value">1.2 GB/s</p>
+                    <button class="btn btn-small btn-secondary">Monitor Traffic</button>
+                </div>
+            </section>
+
+            <section class="recent-events">
+                <h3>Recent Events</h3>
+                <div class="event-list">
+                    <div class="event-item">
+                        <span class="event-time">14:30</span>
+                        <p class="event-description">System check initiated by Admin user. <a href="#" class="view-more-link">View Report</a></p>
+                    </div>
+                    <div class="event-item">
+                        <span class="event-time">14:25</span>
+                        <p class="event-description">Mission Alpha status updated to "Complete". <a href="#" class="view-more-link">View Mission</a></p>
+                    </div>
+                    <div class="event-item critical">
+                        <span class="event-time">14:15</span>
+                        <p class="event-description"><strong>Critical:</strong> Database server overload detected. <button class="btn btn-danger btn-small">Acknowledge</button></p>
+                    </div>
+                    <div class="event-item">
+                        <span class="event-time">14:10</span>
+                        <p class="event-description">User 'jsmith' logged in from IP 192.168.1.10. <a href="#" class="view-more-link">User Details</a></p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary load-more">Load More Events</button>
+            </section>
+
+            <footer>
+                <p>&copy; 2023 My Application. All rights reserved.</p>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
