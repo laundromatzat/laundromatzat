@@ -23,7 +23,7 @@ class AIAgentService {
     this.geminiModel = process.env.AI_AGENT_MODEL || "gemini-2.5-flash";
 
     // LM Studio fallback
-    this.llmApiUrl = process.env.LM_STUDIO_API_URL || "http://localhost:1234";
+    this.llmApiUrl = process.env.LM_STUDIO_API_URL;
     this.llmModel = process.env.LM_STUDIO_MODEL_NAME || "qwen3-vl-8b-instruct";
 
     // Initialize Gemini if enabled
@@ -47,7 +47,7 @@ class AIAgentService {
       // Get the task details
       const taskResult = await db.query(
         "SELECT * FROM dev_tasks WHERE id = $1 AND user_id = $2",
-        [taskId, userId]
+        [taskId, userId],
       );
 
       if (taskResult.rows.length === 0) {
@@ -59,7 +59,7 @@ class AIAgentService {
       // Check if there's already an active execution for this task
       const existingExecution = await db.query(
         "SELECT * FROM agent_executions WHERE task_id = $1 AND status IN ($2, $3)",
-        [taskId, "pending", "running"]
+        [taskId, "pending", "running"],
       );
 
       if (existingExecution.rows.length > 0) {
@@ -71,7 +71,7 @@ class AIAgentService {
         `INSERT INTO agent_executions (task_id, user_id, status, created_at, updated_at)
          VALUES ($1, $2, $3, NOW(), NOW())
          RETURNING *`,
-        [taskId, userId, "pending"]
+        [taskId, userId, "pending"],
       );
 
       const execution = executionResult.rows[0];
@@ -88,7 +88,7 @@ class AIAgentService {
       await this.addLog(
         execution.id,
         "info",
-        `Task submitted to AI agent: ${task.title}`
+        `Task submitted to AI agent: ${task.title}`,
       );
 
       // Process queue if not already processing
@@ -152,20 +152,20 @@ class AIAgentService {
       await this.addLog(
         executionId,
         "info",
-        `Creating feature branch: ${branchName}`
+        `Creating feature branch: ${branchName}`,
       );
 
       try {
         await githubService.createBranch(branchName);
         await db.query(
           "UPDATE agent_executions SET github_branch = $1 WHERE id = $2",
-          [branchName, executionId]
+          [branchName, executionId],
         );
       } catch (error) {
         await this.addLog(
           executionId,
           "warning",
-          `Failed to create branch, using existing: ${error.message}`
+          `Failed to create branch, using existing: ${error.message}`,
         );
       }
 
@@ -174,7 +174,7 @@ class AIAgentService {
       await this.addLog(
         executionId,
         "info",
-        "Analyzing task and generating implementation plan"
+        "Analyzing task and generating implementation plan",
       );
 
       // Execute AI agent workflow
@@ -183,7 +183,7 @@ class AIAgentService {
         userId,
         task,
         prompt,
-        branchName
+        branchName,
       );
 
       // Mark as completed
@@ -191,18 +191,18 @@ class AIAgentService {
         executionId,
         "completed",
         null,
-        new Date()
+        new Date(),
       );
       await this.addLog(
         executionId,
         "info",
-        "Task execution completed successfully"
+        "Task execution completed successfully",
       );
 
       // Update task status
       await db.query(
         "UPDATE dev_tasks SET status = $1, updated_at = NOW() WHERE id = $2",
-        ["completed", taskId]
+        ["completed", taskId],
       );
 
       // Notify user
@@ -213,13 +213,13 @@ class AIAgentService {
       await this.addLog(
         executionId,
         "error",
-        `Execution failed: ${error.message}`
+        `Execution failed: ${error.message}`,
       );
 
       // Update task status to on_hold
       await db.query(
         "UPDATE dev_tasks SET status = $1, updated_at = NOW() WHERE id = $2",
-        ["on_hold", taskId]
+        ["on_hold", taskId],
       );
 
       websocketService.notifyAgentError(userId, executionId, error);
@@ -241,7 +241,7 @@ class AIAgentService {
     await this.addLog(
       executionId,
       "progress",
-      "Phase 1/4: Analyzing requirements"
+      "Phase 1/4: Analyzing requirements",
     );
     websocketService.notifyAgentProgress(userId, executionId, {
       phase: "analysis",
@@ -249,7 +249,7 @@ class AIAgentService {
     });
 
     const analysis = await this.callLLM(
-      `Analyze this development task and create a detailed implementation plan:\n\n${prompt}\n\nProvide a structured analysis with:\n1. Files that need to be modified\n2. New files to create\n3. Potential challenges\n4. Testing approach`
+      `Analyze this development task and create a detailed implementation plan:\n\n${prompt}\n\nProvide a structured analysis with:\n1. Files that need to be modified\n2. New files to create\n3. Potential challenges\n4. Testing approach`,
     );
 
     await this.addLog(executionId, "info", `Analysis completed:\n${analysis}`);
@@ -258,7 +258,7 @@ class AIAgentService {
     await this.addLog(
       executionId,
       "progress",
-      "Phase 2/4: Implementing changes"
+      "Phase 2/4: Implementing changes",
     );
     websocketService.notifyAgentProgress(userId, executionId, {
       phase: "implementation",
@@ -266,7 +266,7 @@ class AIAgentService {
     });
 
     const implementation = await this.callLLM(
-      `Based on the following task and analysis, generate the code changes needed:\n\nTask: ${prompt}\n\nAnalysis: ${analysis}\n\nProvide the implementation as a JSON array of file changes in this format:\n[{"path": "relative/path/to/file.js", "content": "full file content"}]`
+      `Based on the following task and analysis, generate the code changes needed:\n\nTask: ${prompt}\n\nAnalysis: ${analysis}\n\nProvide the implementation as a JSON array of file changes in this format:\n[{"path": "relative/path/to/file.js", "content": "full file content"}]`,
     );
 
     // Parse file changes from LLM response
@@ -274,14 +274,14 @@ class AIAgentService {
     await this.addLog(
       executionId,
       "info",
-      `Generated changes for ${fileChanges.length} file(s)`
+      `Generated changes for ${fileChanges.length} file(s)`,
     );
 
     // Phase 3: Commit changes
     await this.addLog(
       executionId,
       "progress",
-      "Phase 3/4: Committing changes to GitHub"
+      "Phase 3/4: Committing changes to GitHub",
     );
     websocketService.notifyAgentProgress(userId, executionId, {
       phase: "commit",
@@ -292,25 +292,25 @@ class AIAgentService {
     const commitResult = await githubService.createCommit(
       branchName,
       commitMessage,
-      fileChanges
+      fileChanges,
     );
 
     await db.query(
       "UPDATE agent_executions SET github_commit_sha = $1 WHERE id = $2",
-      [commitResult.sha, executionId]
+      [commitResult.sha, executionId],
     );
 
     await this.addLog(
       executionId,
       "info",
-      `Changes committed: ${commitResult.url}`
+      `Changes committed: ${commitResult.url}`,
     );
 
     // Phase 4: Monitor CI/CD
     await this.addLog(
       executionId,
       "progress",
-      "Phase 4/4: Monitoring GitHub Actions"
+      "Phase 4/4: Monitoring GitHub Actions",
     );
     websocketService.notifyAgentProgress(userId, executionId, {
       phase: "ci_cd",
@@ -323,13 +323,13 @@ class AIAgentService {
     const ciStatus = await this.monitorGitHubActions(
       executionId,
       userId,
-      commitResult.sha
+      commitResult.sha,
     );
 
     await this.addLog(
       executionId,
       "info",
-      `GitHub Actions status: ${ciStatus.status}`
+      `GitHub Actions status: ${ciStatus.status}`,
     );
 
     return {
@@ -442,7 +442,7 @@ class AIAgentService {
     }
 
     parts.push(
-      "\nPlease implement this task following best practices and ensuring all tests pass."
+      "\nPlease implement this task following best practices and ensuring all tests pass.",
     );
 
     return parts.join("\n");
@@ -493,13 +493,13 @@ class AIAgentService {
 
         await db.query(
           "UPDATE agent_executions SET github_actions_status = $1, github_actions_url = $2 WHERE id = $3",
-          [status.status, status.url, executionId]
+          [status.status, status.url, executionId],
         );
 
         websocketService.notifyAgentStatusChange(
           userId,
           executionId,
-          status.status
+          status.status,
         );
 
         if (status.status === "success" || status.status === "failure") {
@@ -525,7 +525,7 @@ class AIAgentService {
     executionId,
     status,
     startedAt = null,
-    completedAt = null
+    completedAt = null,
   ) {
     const updates = ["status = $1", "updated_at = NOW()"];
     const values = [status];
@@ -547,7 +547,7 @@ class AIAgentService {
 
     await db.query(
       `UPDATE agent_executions SET ${updates.join(", ")} WHERE id = $${paramCount}`,
-      values
+      values,
     );
   }
 
@@ -563,13 +563,13 @@ class AIAgentService {
         logType,
         message,
         metadata ? JSON.stringify(metadata) : null,
-      ]
+      ],
     );
 
     // Get user ID for this execution
     const result = await db.query(
       "SELECT user_id FROM agent_executions WHERE id = $1",
-      [executionId]
+      [executionId],
     );
 
     if (result.rows.length > 0) {
@@ -587,7 +587,7 @@ class AIAgentService {
   async cancelExecution(executionId, userId) {
     const result = await db.query(
       "SELECT * FROM agent_executions WHERE id = $1 AND user_id = $2",
-      [executionId, userId]
+      [executionId, userId],
     );
 
     if (result.rows.length === 0) {
@@ -604,7 +604,7 @@ class AIAgentService {
       executionId,
       "cancelled",
       null,
-      new Date()
+      new Date(),
     );
     await this.addLog(executionId, "info", "Execution cancelled by user");
 
@@ -613,7 +613,7 @@ class AIAgentService {
 
     // Remove from queue if pending
     this.taskQueue = this.taskQueue.filter(
-      (item) => item.executionId !== executionId
+      (item) => item.executionId !== executionId,
     );
 
     websocketService.notifyAgentStatusChange(userId, executionId, "cancelled");
@@ -625,7 +625,7 @@ class AIAgentService {
   async getExecution(executionId, userId) {
     const result = await db.query(
       "SELECT * FROM agent_executions WHERE id = $1 AND user_id = $2",
-      [executionId, userId]
+      [executionId, userId],
     );
 
     if (result.rows.length === 0) {
@@ -647,7 +647,7 @@ class AIAgentService {
        WHERE execution_id = $1 
        ORDER BY created_at DESC 
        LIMIT $2 OFFSET $3`,
-      [executionId, limit, offset]
+      [executionId, limit, offset],
     );
 
     return result.rows;
