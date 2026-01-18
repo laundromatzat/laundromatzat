@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { SoundscapeAnalysis } from "@/types";
+import { SoundscapeAnalysis } from "../types";
 
 interface SoundPlayerProps {
   soundscape: SoundscapeAnalysis;
@@ -19,7 +19,7 @@ export const SoundPlayer: React.FC<SoundPlayerProps> = ({ soundscape }) => {
 
   const createNoiseBuffer = (
     ctx: AudioContext,
-    type: "pink" | "white" | "brown"
+    type: "pink" | "white" | "brown",
   ) => {
     const bufferSize = ctx.sampleRate * 2; // 2 seconds buffer
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);

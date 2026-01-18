@@ -17,7 +17,7 @@ const NeuroaestheticPage: React.FC = () => {
   const [base64Images, setBase64Images] = useState<string[]>([]);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [improvedImageBase64, setImprovedImageBase64] = useState<string | null>(
-    null
+    null,
   );
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -69,7 +69,7 @@ const NeuroaestheticPage: React.FC = () => {
       const generatedBase64 = await generateNeuroaestheticImage(
         base64Images[0],
         analysis,
-        preferences
+        preferences,
       );
       setImprovedImageBase64(generatedBase64);
       // Add to history
@@ -115,7 +115,7 @@ const NeuroaestheticPage: React.FC = () => {
       const generatedBase64 = await generateNeuroaestheticImage(
         base64Images[0],
         analysis,
-        preferences
+        preferences,
       );
       setImprovedImageBase64(generatedBase64);
       // Replace current history item
@@ -196,10 +196,10 @@ const NeuroaestheticPage: React.FC = () => {
               value: "date-desc",
               compareFn: (a: unknown, b: unknown) => {
                 const aDate = new Date(
-                  (a as { timestamp?: string }).timestamp || 0
+                  (a as { timestamp?: string }).timestamp || 0,
                 ).getTime();
                 const bDate = new Date(
-                  (b as { timestamp?: string }).timestamp || 0
+                  (b as { timestamp?: string }).timestamp || 0,
                 ).getTime();
                 return bDate - aDate;
               },
@@ -209,10 +209,10 @@ const NeuroaestheticPage: React.FC = () => {
               value: "date-asc",
               compareFn: (a: unknown, b: unknown) => {
                 const aDate = new Date(
-                  (a as { timestamp?: string }).timestamp || 0
+                  (a as { timestamp?: string }).timestamp || 0,
                 ).getTime();
                 const bDate = new Date(
-                  (b as { timestamp?: string }).timestamp || 0
+                  (b as { timestamp?: string }).timestamp || 0,
                 ).getTime();
                 return aDate - bDate;
               },
@@ -245,6 +245,74 @@ const NeuroaestheticPage: React.FC = () => {
             },
           ] as SortOption[]
         }
+        renderPreview={(item: {
+          originalImage?: string;
+          generatedImage?: string;
+          analysis?: {
+            scores?: {
+              biophilia?: number;
+              fractalFluency?: number;
+            };
+            summary?: string;
+          };
+          timestamp?: string;
+        }) => (
+          <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium text-slate-400">
+                  Original
+                </span>
+                <div className="aspect-video relative bg-black/40 rounded-lg overflow-hidden">
+                  <img
+                    src={item.originalImage}
+                    alt="Original Room"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium text-emerald-400">
+                  Generated
+                </span>
+                <div className="aspect-video relative bg-black/40 rounded-lg overflow-hidden">
+                  <img
+                    src={item.generatedImage}
+                    alt="Neuroaesthetic Improvement"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+              <h4 className="text-lg font-medium text-white mb-4">
+                Analysis Summary
+              </h4>
+              <div className="flex gap-4 mb-4">
+                <div className="bg-slate-900 p-3 rounded-lg border border-slate-700 flex-1">
+                  <div className="text-slate-400 text-xs uppercase tracking-wider mb-1">
+                    Biophilia Score
+                  </div>
+                  <div className="text-2xl font-bold text-emerald-400">
+                    {item.analysis?.scores?.biophilia || "N/A"}
+                  </div>
+                </div>
+                <div className="bg-slate-900 p-3 rounded-lg border border-slate-700 flex-1">
+                  <div className="text-slate-400 text-xs uppercase tracking-wider mb-1">
+                    Fractal Fluency
+                  </div>
+                  <div className="text-2xl font-bold text-blue-400">
+                    {item.analysis?.scores?.fractalFluency || "N/A"}
+                  </div>
+                </div>
+              </div>
+              <p className="text-slate-300 leading-relaxed text-sm">
+                {item.analysis?.summary}
+              </p>
+            </div>
+          </div>
+        )}
         renderItem={(item: {
           originalImage?: string;
           generatedImage?: string;

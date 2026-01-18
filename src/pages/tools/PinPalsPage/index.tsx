@@ -274,7 +274,7 @@ const PinPalsPage: React.FC = () => {
       });
 
       const part = response.candidates?.[0]?.content?.parts?.find(
-        (p) => p.inlineData
+        (p) => p.inlineData,
       );
       if (part?.inlineData?.data) {
         const url = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
@@ -401,10 +401,10 @@ const PinPalsPage: React.FC = () => {
               value: "date-desc",
               compareFn: (a: unknown, b: unknown) => {
                 const aDate = new Date(
-                  (a as { createdAt?: string }).createdAt || 0
+                  (a as { createdAt?: string }).createdAt || 0,
                 ).getTime();
                 const bDate = new Date(
-                  (b as { createdAt?: string }).createdAt || 0
+                  (b as { createdAt?: string }).createdAt || 0,
                 ).getTime();
                 return bDate - aDate;
               },
@@ -414,10 +414,10 @@ const PinPalsPage: React.FC = () => {
               value: "date-asc",
               compareFn: (a: unknown, b: unknown) => {
                 const aDate = new Date(
-                  (a as { createdAt?: string }).createdAt || 0
+                  (a as { createdAt?: string }).createdAt || 0,
                 ).getTime();
                 const bDate = new Date(
-                  (b as { createdAt?: string }).createdAt || 0
+                  (b as { createdAt?: string }).createdAt || 0,
                 ).getTime();
                 return aDate - bDate;
               },
@@ -433,6 +433,36 @@ const PinPalsPage: React.FC = () => {
             },
           ] as SortOption[]
         }
+        renderPreview={(item: {
+          imageUrl: string;
+          petType: string;
+          petCount: number;
+          createdAt: string;
+        }) => (
+          <div className="flex flex-col h-full bg-slate-900 rounded-lg overflow-hidden">
+            <div className="flex-1 flex items-center justify-center p-8 bg-black/40">
+              <img
+                src={item.imageUrl}
+                alt={item.petType}
+                className="max-h-[60vh] object-contain drop-shadow-2xl"
+              />
+            </div>
+            <div className="p-6 bg-slate-800 border-t border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-2xl font-bold text-white capitalize">
+                  {item.petType} Pin
+                </h3>
+                <span className="px-3 py-1 bg-slate-700 rounded-full text-sm text-slate-300">
+                  {new Date(item.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <p className="text-slate-400">
+                A custom pin design featuring {item.petCount}{" "}
+                {item.petCount === 1 ? "pet" : "pets"}.
+              </p>
+            </div>
+          </div>
+        )}
         renderItem={(item: {
           imageUrl: string;
           petType: string;

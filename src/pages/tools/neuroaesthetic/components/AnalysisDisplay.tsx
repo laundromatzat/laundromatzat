@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { AnalysisResult } from "@/types";
+import { AnalysisResult } from "../types";
 import { SoundPlayer } from "./SoundPlayer";
 
 interface AnalysisDisplayProps {
@@ -101,7 +101,7 @@ export const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({
                     <button
                       onClick={() =>
                         setActiveAnnotation(
-                          activeAnnotation === ann.id ? null : ann.id
+                          activeAnnotation === ann.id ? null : ann.id,
                         )
                       }
                       className={`relative w-6 h-6 lg:w-8 lg:h-8 rounded-full border-2 shadow-lg transform transition-all duration-300 

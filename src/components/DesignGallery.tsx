@@ -5,6 +5,7 @@ import {
   MagnifyingGlassIcon,
   TrashIcon,
   FunnelIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { getApiUrl } from "@/utils/api";
 
@@ -28,6 +29,7 @@ interface DesignGalleryProps<T> {
   fetchEndpoint: string;
   deleteEndpoint?: string;
   renderItem: (item: T, onDelete?: () => void) => React.ReactNode;
+  renderPreview?: (item: T) => React.ReactNode;
   onLoad: (item: T) => void;
   onDelete?: (id: string | number) => Promise<void>;
   emptyMessage?: string;
@@ -43,6 +45,7 @@ export function DesignGallery<T extends { id: string | number }>({
   fetchEndpoint,
   deleteEndpoint,
   renderItem,
+  renderPreview,
   onLoad,
   onDelete,
   emptyMessage = "No items found in your gallery.",
@@ -54,11 +57,12 @@ export function DesignGallery<T extends { id: string | number }>({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingItemId, setLoadingItemId] = useState<string | number | null>(
-    null
+    null,
   );
   const [deleteConfirmId, setDeleteConfirmId] = useState<
     string | number | null
   >(null);
+  const [previewItem, setPreviewItem] = useState<T | null>(null);
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
@@ -148,6 +152,7 @@ export function DesignGallery<T extends { id: string | number }>({
     setTimeout(() => {
       onLoad(item);
       setLoadingItemId(null);
+      setPreviewItem(null); // Ensure preview is closed
       onClose();
     }, 300);
   };
@@ -388,19 +393,36 @@ export function DesignGallery<T extends { id: string | number }>({
                       </div>
                     )}
 
-                    {/* Delete Button */}
-                    {(deleteEndpoint || onDelete) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteConfirmId(item.id);
-                        }}
-                        className="absolute top-2 right-2 z-10 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Delete"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    )}
+                    {/* Action Buttons Container */}
+                    <div className="absolute top-2 right-2 z-10 flex gap-2">
+                      {/* Preview Button (Eye) */}
+                      {renderPreview && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewItem(item);
+                          }}
+                          className="p-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                          title="Quick Look"
+                        >
+                          <EyeIcon className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {/* Delete Button */}
+                      {(deleteEndpoint || onDelete) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirmId(item.id);
+                          }}
+                          className="p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                          title="Delete"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
 
                     {/* Item Content */}
                     <div
@@ -454,6 +476,37 @@ export function DesignGallery<T extends { id: string | number }>({
           )}
         </div>
       </div>
+
+      {/* Quick Look Preview Modal */}
+      {previewItem && renderPreview && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-5xl h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-white">Quick Look</h3>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleLoadItem(previewItem)}
+                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors shadow-lg shadow-emerald-900/20"
+                >
+                  Load This Version
+                </button>
+                <button
+                  onClick={() => setPreviewItem(null)}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Preview Content */}
+            <div className="flex-1 overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl">
+              {renderPreview(previewItem)}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

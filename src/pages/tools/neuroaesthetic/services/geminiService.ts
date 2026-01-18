@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
-import { AnalysisResult, UserPreferences } from "@/types";
+import { AnalysisResult, UserPreferences } from "../types";
 
 // Helper to remove markdown code blocks if present
 const cleanJsonString = (str: string): string => {
@@ -35,7 +35,7 @@ When analyzing:
 
 export const analyzeRoom = async (
   base64Images: string[],
-  preferences?: UserPreferences
+  preferences?: UserPreferences,
 ): Promise<AnalysisResult> => {
   const apiKey =
     import.meta.env.VITE_GEMINI_API_KEY ||
@@ -290,7 +290,7 @@ export const analyzeRoom = async (
 export const generateNeuroaestheticImage = async (
   base64Image: string,
   analysis: AnalysisResult,
-  preferences?: UserPreferences
+  preferences?: UserPreferences,
 ): Promise<string> => {
   const apiKey =
     import.meta.env.VITE_GEMINI_API_KEY ||
@@ -320,11 +320,11 @@ export const generateNeuroaestheticImage = async (
   ).join(", ");
   const lightingSuggestions = (analysis.lighting?.suggestions || []).join(", ");
   const colorSuggestions = (analysis.colorPalette?.suggestions || []).join(
-    ", "
+    ", ",
   );
   const textureSuggestions = (analysis.texture?.suggestions || []).join(", ");
   const fractalSuggestions = (analysis.fractalPatterns?.suggestions || []).join(
-    ", "
+    ", ",
   );
   const designFixes = (analysis.annotations || [])
     .filter((a) => a.type === "suggestion")

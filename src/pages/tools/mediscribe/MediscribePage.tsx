@@ -61,7 +61,7 @@ function MediscribePage() {
                 shorthand: e.original, // mapped from API response 'original' -> DB 'original_text'
                 fullNote: e.rewritten, // mapped from API response 'rewritten' -> DB 'rewritten_text'
                 timestamp: Date.now(), // or store/retrieve timestamp if added to API
-              })
+              }),
             ),
           }));
         }
@@ -106,7 +106,7 @@ function MediscribePage() {
       setState((prev) => ({
         ...prev,
         examples: prev.examples.map((e) =>
-          e.id === example.id ? { ...e, id: data.id.toString() } : e
+          e.id === example.id ? { ...e, id: data.id.toString() } : e,
         ),
       }));
     } catch (err) {
@@ -295,6 +295,30 @@ function MediscribePage() {
             },
           ] as SortOption[]
         }
+        renderPreview={(item: {
+          id: number;
+          original: string;
+          rewritten: string;
+          tags?: string[];
+        }) => (
+          <div className="flex flex-col h-full gap-6">
+            <div className="flex-1 overflow-y-auto bg-white text-slate-900 rounded-lg p-8 shadow-inner font-mono text-sm leading-relaxed">
+              <span className="block text-xs uppercase tracking-widest text-slate-400 mb-4 border-b border-slate-100 pb-2">
+                Full Clinical Note
+              </span>
+              <div className="whitespace-pre-wrap">{item.rewritten}</div>
+            </div>
+
+            <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+              <span className="block text-xs uppercase tracking-widest text-slate-500 mb-2">
+                Original Shorthand
+              </span>
+              <p className="text-slate-400 text-sm line-clamp-3 italic">
+                &quot;{item.original}&quot;
+              </p>
+            </div>
+          </div>
+        )}
         renderItem={(item: {
           id: number;
           original: string;

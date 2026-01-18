@@ -49,7 +49,7 @@ const PublicHealthPage: React.FC = () => {
 
   // Unified Store State
   const [activeRagStoreName, setActiveRagStoreName] = useState<string | null>(
-    null
+    null,
   );
 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -61,7 +61,7 @@ const PublicHealthPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
-    null
+    null,
   );
   const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(true);
@@ -140,7 +140,7 @@ const PublicHealthPage: React.FC = () => {
   const handleError = (message: string, err: unknown) => {
     console.error(message, err);
     setError(
-      `${message}${err ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`
+      `${message}${err ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`,
     );
     setStatus(AppStatus.Error);
   };
@@ -193,7 +193,7 @@ const PublicHealthPage: React.FC = () => {
 
       const analysis = await geminiService.analyzeDocumentBatch(
         ragStoreName,
-        fileNames
+        fileNames,
       );
       setAnalysisResult(analysis);
       setUploadProgress({
@@ -233,7 +233,7 @@ const PublicHealthPage: React.FC = () => {
           });
           if (!res.ok) throw new Error("Failed to save doc metadata");
           return res.json();
-        })
+        }),
       );
       await fetchSavedDocs();
       setFiles([]);
@@ -302,7 +302,7 @@ const PublicHealthPage: React.FC = () => {
 
     // Filter saved docs to find others in this store (session)
     const sessionDocs = savedDocuments.filter(
-      (d) => d.rag_store_name === storeName
+      (d) => d.rag_store_name === storeName,
     );
     // Convert SavedDocument to AnalyzedDocument compatible format if needed
     // The API returns 'analysis_result_json' in 'analysis_result_json' column.
@@ -319,7 +319,7 @@ const PublicHealthPage: React.FC = () => {
     setAnalysisResult({
       batch_summary: "Restored Session",
       documents: docsToLoad.map((d: SavedDocument | typeof item) =>
-        "analysis" in d ? d.analysis : d
+        "analysis" in d ? d.analysis : d,
       ) as AnalyzedDocument[], // Handle potential shape diffs
       proposed_hierarchy_changes: "",
       archive_recommendations: [],
@@ -469,10 +469,10 @@ const PublicHealthPage: React.FC = () => {
               value: "date-desc",
               compareFn: (a: unknown, b: unknown) => {
                 const aDate = new Date(
-                  (a as { uploaded_at?: string }).uploaded_at || 0
+                  (a as { uploaded_at?: string }).uploaded_at || 0,
                 ).getTime();
                 const bDate = new Date(
-                  (b as { uploaded_at?: string }).uploaded_at || 0
+                  (b as { uploaded_at?: string }).uploaded_at || 0,
                 ).getTime();
                 return bDate - aDate;
               },
@@ -482,10 +482,10 @@ const PublicHealthPage: React.FC = () => {
               value: "date-asc",
               compareFn: (a: unknown, b: unknown) => {
                 const aDate = new Date(
-                  (a as { uploaded_at?: string }).uploaded_at || 0
+                  (a as { uploaded_at?: string }).uploaded_at || 0,
                 ).getTime();
                 const bDate = new Date(
-                  (b as { uploaded_at?: string }).uploaded_at || 0
+                  (b as { uploaded_at?: string }).uploaded_at || 0,
                 ).getTime();
                 return aDate - bDate;
               },
@@ -516,6 +516,62 @@ const PublicHealthPage: React.FC = () => {
             },
           ] as FilterConfig[]
         }
+        renderPreview={(item: {
+          id: number;
+          filename: string;
+          uploaded_at: string;
+          analysis: DocumentAnalysis;
+          category?: string;
+          tags?: string[];
+        }) => (
+          <div className="flex flex-col h-full gap-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+                <span className="block text-xs uppercase tracking-widest text-slate-500 mb-1">
+                  Document Name
+                </span>
+                <p className="font-medium text-white break-all">
+                  {item.filename}
+                </p>
+              </div>
+              <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+                <span className="block text-xs uppercase tracking-widest text-slate-500 mb-1">
+                  Category
+                </span>
+                <p className="font-medium text-white capitalize">
+                  {item.category || "General"}
+                </p>
+              </div>
+            </div>
+
+            {item.analysis && (
+              <div className="flex-1 bg-slate-800 p-6 rounded-lg border border-slate-700 overflow-y-auto">
+                <h4 className="text-lg font-bold text-white mb-4">
+                  Analysis Summary
+                </h4>
+                <p className="text-slate-300 leading-relaxed mb-6">
+                  {item.analysis.summary}
+                </p>
+
+                {item.analysis.keyPoints &&
+                  item.analysis.keyPoints.length > 0 && (
+                    <div>
+                      <h5 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
+                        Key Points
+                      </h5>
+                      <ul className="list-disc list-inside space-y-2 text-slate-300">
+                        {item.analysis.keyPoints.map(
+                          (point: string, i: number) => (
+                            <li key={i}>{point}</li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                  )}
+              </div>
+            )}
+          </div>
+        )}
         renderItem={(item: {
           id: number;
           filename: string;
