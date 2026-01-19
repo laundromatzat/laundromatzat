@@ -1,0 +1,35 @@
+/* components/TaskFilterButtons/TaskFilterButtons.module.css */
+.filterButtonsContainer {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+.filterButton:hover {
+  background-color: #e0e0e0;
+  border-color: #aaa;
+}
+
+.filterButton.active {
+  background-color: #007bff; /* Primary brand color */
+  color: white;
+  border-color: #007bff;
+  font-weight: bold;
+}
+
+.filterButton.active:hover {
+  background-color: #0056b3; /* Darker shade on hover for active */
+  border-color: #0056b3;
+}
