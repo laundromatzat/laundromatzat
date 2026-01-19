@@ -1,0 +1,69 @@
+// Site-wide Color Variables
+// These colors should be used consistently across the entire application,
+// aligning with the established design system.
+
+// Primary Brand Colors
+$primary-color: #1a73e8; // A standard blue, often used for main actions, links, branding
+$primary-color-dark: #1764cb; // Darker shade for hover/active states
+$primary-color-light: #4285f4; // Lighter shade for subtle accents or backgrounds
+$secondary-color: #f79222; // An accent color, e.g., for secondary actions or highlights
+
+// Background Colors
+$background-body: #f8f9fa; // Light gray for the overall page background
+$background-card: #ffffff; // White for cards, panels, modals
+$background-dark: #202124; // Dark background for headers, footers, or specific sections
+$background-light-hover: #e8eaed; // Hover state for light interactive elements
+
+// Text Colors
+$text-dark: #3c4043; // Main dark text color for headings and body text
+$text-medium: #5f6368; // Slightly lighter text, e.g., for secondary information, labels
+$text-light: #80868b; // Even lighter text, e.g., for placeholders, disabled states, captions
+$text-on-dark: #ffffff; // White text for elements with dark backgrounds
+$text-link: $primary-color; // Default link color, usually the primary brand color
+
+// Border Colors
+$border-color-default: #dadce0; // Standard border color for inputs, cards, dividers
+$border-color-light: #e8eaed; // Lighter border color for subtle separation
+$border-color-focus: $primary-color; // Border color for focused interactive elements
+
+// Status/Semantic Colors
+$success-color: #34a853; // Green for success messages, positive indicators
+$error-color: #d93025; // Red for error messages, critical indicators
+$warning-color: #f9ab00; // Yellow/orange for warning messages, caution indicators
+$info-color: #4285f4; // Blue for informational messages, neutral indicators
+
+// Button Colors
+$button-primary-bg: $primary-color;
+$button-primary-text: $text-on-dark;
+$button-primary-hover-bg: $primary-color-dark;
+
+$button-secondary-bg: $background-card;
+$button-secondary-text: $text-dark;
+$button-secondary-border: $border-color-default;
+$button-secondary-hover-bg: $background-light-hover;
+
+// Shadow Colors
+$shadow-color-default: rgba(60, 64, 67, 0.15); // Standard shadow for depth
+$shadow-color-card: rgba(0, 0, 0, 0.1); // Lighter shadow specifically for cards
+
+// Spacing Variables (for consistent layout and padding)
+$spacing-xxs: 4px;
+$spacing-xs: 8px;
+$spacing-sm: 12px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// Font Sizes (for consistent typography)
+$font-size-xs: 0.75rem;   // 12px
+$font-size-sm: 0.875rem;  // 14px
+$font-size-md: 1rem;      // 16px (base font size)
+$font-size-lg: 1.125rem;  // 18px
+$font-size-xl: 1.25rem;   // 20px
+$font-size-h1: 2rem;      // 32px
+$font-size-h2: 1.75rem;   // 28px
+$font-size-h3: 1.5rem;    // 24px
+$font-size-h4: 1.25rem;   // 20px
+$font-size-h5: 1rem;      // 16px
+$font-size-h6: 0.875rem;  // 14px
