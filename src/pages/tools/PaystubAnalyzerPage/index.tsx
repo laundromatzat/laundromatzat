@@ -14,6 +14,8 @@ import { TrashIcon } from "./components/icons/TrashIcon";
 import { ClockIcon } from "./components/icons/ClockIcon";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { AuraButton, AuraInput } from "@/components/aura";
+import { DesignGallery, SortOption } from "@/components/DesignGallery";
+import { ClockIcon as HistoryIcon } from "@heroicons/react/24/outline";
 // Unused imports removed
 
 import { useAuth } from "@/context/AuthContext";
@@ -74,7 +76,7 @@ const PaystubAnalyzerPage: React.FC = () => {
     useState<WeeklyDailyDetails>(() => {
       try {
         const stored = localStorage.getItem(
-          UNMATCHED_DAILY_DETAILS_STORAGE_KEY
+          UNMATCHED_DAILY_DETAILS_STORAGE_KEY,
         );
         return stored ? JSON.parse(stored) : {};
       } catch (error) {
@@ -89,10 +91,10 @@ const PaystubAnalyzerPage: React.FC = () => {
   const [isFutureHoursModalOpen, setIsFutureHoursModalOpen] = useState(false);
   const [isClearDataModalOpen, setIsClearDataModalOpen] = useState(false);
 
-  // Edit State
   const [editModalOpen, setEditModalOpen] = useState(false);
   // const [selectedPaystubForEdit, setSelectedPaystubForEdit] = useState<PaycheckData | null>(null); // Removed unused, using editFormData
   const [editFormData, setEditFormData] = useState<PaycheckData | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   const openEditModal = (paystub: PaycheckData) => {
     // setSelectedPaystubForEdit(paystub); // Unused
@@ -108,8 +110,8 @@ const PaystubAnalyzerPage: React.FC = () => {
         p.payPeriodStart === editFormData.payPeriodStart &&
         p.payPeriodEnd === editFormData.payPeriodEnd
           ? editFormData
-          : p
-      )
+          : p,
+      ),
     );
 
     setEditModalOpen(false);
@@ -127,7 +129,7 @@ const PaystubAnalyzerPage: React.FC = () => {
     try {
       localStorage.setItem(
         UNMATCHED_HOURS_STORAGE_KEY,
-        JSON.stringify(unmatchedReportedHours)
+        JSON.stringify(unmatchedReportedHours),
       );
     } catch (error) {
       console.error("Failed to save unmatched hours to localStorage", error);
@@ -138,7 +140,7 @@ const PaystubAnalyzerPage: React.FC = () => {
     try {
       localStorage.setItem(
         UNMATCHED_DAILY_DETAILS_STORAGE_KEY,
-        JSON.stringify(unmatchedDailyDetails)
+        JSON.stringify(unmatchedDailyDetails),
       );
     } catch (error) {
       console.error("Failed to save daily details to localStorage", error);
@@ -203,7 +205,7 @@ const PaystubAnalyzerPage: React.FC = () => {
         const existingIndex = prevData.findIndex(
           (p) =>
             p.payPeriodStart === finalData.payPeriodStart &&
-            p.payPeriodEnd === finalData.payPeriodEnd
+            p.payPeriodEnd === finalData.payPeriodEnd,
         );
         if (existingIndex !== -1) {
           const updatedData = [...prevData];
@@ -219,17 +221,17 @@ const PaystubAnalyzerPage: React.FC = () => {
           return updatedData.sort(
             (a, b) =>
               new Date(b.payPeriodStart).getTime() -
-              new Date(a.payPeriodStart).getTime()
+              new Date(a.payPeriodStart).getTime(),
           );
         }
         return [...prevData, finalData].sort(
           (a, b) =>
             new Date(b.payPeriodStart).getTime() -
-            new Date(a.payPeriodStart).getTime()
+            new Date(a.payPeriodStart).getTime(),
         );
       });
     },
-    [unmatchedReportedHours]
+    [unmatchedReportedHours],
   );
 
   const { setIsLoading: setGlobalLoading } = useLoading();
@@ -281,7 +283,7 @@ const PaystubAnalyzerPage: React.FC = () => {
   const handleHoursChange = async (
     index: number,
     week: "week1" | "week2",
-    entries: ReportedHourEntry[]
+    entries: ReportedHourEntry[],
   ) => {
     // Optimistic update
     const updatedData = [...paycheckData];
@@ -303,7 +305,7 @@ const PaystubAnalyzerPage: React.FC = () => {
       if (currentData.id) {
         await updatePaycheckReportedHours(
           currentData.id,
-          currentData.userReportedHours
+          currentData.userReportedHours,
         );
       }
     } catch (err) {
@@ -316,7 +318,7 @@ const PaystubAnalyzerPage: React.FC = () => {
     (
       weekStartDate: string,
       entries: ReportedHourEntry[],
-      dailyDetails?: DailyHoursMap
+      dailyDetails?: DailyHoursMap,
     ) => {
       setUnmatchedReportedHours((prev) => ({
         ...prev,
@@ -329,7 +331,7 @@ const PaystubAnalyzerPage: React.FC = () => {
         }));
       }
     },
-    []
+    [],
   );
 
   const handleAddFutureWeek = useCallback(
@@ -346,7 +348,7 @@ const PaystubAnalyzerPage: React.FC = () => {
         }));
       }
     },
-    [unmatchedReportedHours]
+    [unmatchedReportedHours],
   );
 
   const handleRemoveFutureWeek = useCallback((weekStartDate: string) => {
@@ -420,7 +422,13 @@ const PaystubAnalyzerPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Future: Add user profile or settings here */}
+            <button
+              onClick={() => setIsGalleryOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+            >
+              <HistoryIcon className="w-4 h-4" />
+              <span>History</span>
+            </button>
           </div>
         </motion.header>
 
@@ -715,7 +723,7 @@ const PaystubAnalyzerPage: React.FC = () => {
                         className="text-red-400 hover:text-red-600 p-1"
                         onClick={() => {
                           const newHours = editFormData.paidHours.filter(
-                            (_, i) => i !== idx
+                            (_, i) => i !== idx,
                           );
                           setEditFormData({
                             ...editFormData,
@@ -760,6 +768,178 @@ const PaystubAnalyzerPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Paystub History Gallery */}
+      <DesignGallery
+        title="Paystub History"
+        fetchEndpoint="/paychecks"
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onLoad={(item: PaycheckData) => {
+          // Load the selected paystub into view
+          const exists = paycheckData.some(
+            (p) =>
+              p.payPeriodStart === item.payPeriodStart &&
+              p.payPeriodEnd === item.payPeriodEnd,
+          );
+          if (!exists) {
+            setPaycheckData((prev) => [item, ...prev]);
+          }
+          setIsGalleryOpen(false);
+        }}
+        emptyMessage="No paystubs found. Upload a PDF to get started."
+        sortOptions={
+          [
+            {
+              label: "Newest First",
+              value: "date-desc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aDate = new Date(
+                  (a as PaycheckData).payPeriodStart || 0,
+                ).getTime();
+                const bDate = new Date(
+                  (b as PaycheckData).payPeriodStart || 0,
+                ).getTime();
+                return bDate - aDate;
+              },
+            },
+            {
+              label: "Oldest First",
+              value: "date-asc",
+              compareFn: (a: unknown, b: unknown) => {
+                const aDate = new Date(
+                  (a as PaycheckData).payPeriodStart || 0,
+                ).getTime();
+                const bDate = new Date(
+                  (b as PaycheckData).payPeriodStart || 0,
+                ).getTime();
+                return aDate - bDate;
+              },
+            },
+          ] as SortOption[]
+        }
+        renderPreview={(item: PaycheckData) => (
+          <div className="flex flex-col gap-6 h-full">
+            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Pay Period
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm text-slate-400">Start</span>
+                  <p className="text-white font-medium">
+                    {new Date(item.payPeriodStart).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-sm text-slate-400">End</span>
+                  <p className="text-white font-medium">
+                    {new Date(item.payPeriodEnd).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800 flex-1 overflow-y-auto">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Paid Hours
+              </h3>
+              <div className="space-y-2">
+                {item.paidHours.map((entry, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0"
+                  >
+                    <span className="text-slate-300">{entry.category}</span>
+                    <span className="text-white font-mono">
+                      {entry.hours.toFixed(2)} hrs
+                    </span>
+                  </div>
+                ))}
+                {item.paidHours.length === 0 && (
+                  <p className="text-slate-500 text-sm">
+                    No paid hours recorded
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {item.bankedHours && item.bankedHours.length > 0 && (
+              <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Banked Hours
+                </h3>
+                <div className="space-y-2">
+                  {item.bankedHours.map((entry, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0"
+                    >
+                      <span className="text-slate-300">{entry.category}</span>
+                      <span className="text-emerald-400 font-mono">
+                        {entry.hours.toFixed(2)} hrs
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        renderItem={(item: PaycheckData) => (
+          <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors cursor-pointer group">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-slate-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                  Pay Period
+                </span>
+                <DocumentTextIcon className="w-4 h-4 text-blue-500" />
+              </div>
+              <p className="text-sm font-semibold text-slate-900">
+                {new Date(item.payPeriodStart).toLocaleDateString()} -{" "}
+                {new Date(item.payPeriodEnd).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex-1 p-4 bg-white">
+              <div className="space-y-3">
+                <div>
+                  <span className="text-xs text-slate-500 uppercase tracking-wide">
+                    Paid Hours
+                  </span>
+                  <div className="mt-1 space-y-1">
+                    {item.paidHours.slice(0, 3).map((entry, idx) => (
+                      <div key={idx} className="flex justify-between text-sm">
+                        <span className="text-slate-600 truncate">
+                          {entry.category}
+                        </span>
+                        <span className="text-slate-900 font-mono font-medium ml-2">
+                          {entry.hours.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                    {item.paidHours.length > 3 && (
+                      <p className="text-xs text-slate-400">
+                        +{item.paidHours.length - 3} more
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {item.bankedHours && item.bankedHours.length > 0 && (
+                  <div className="pt-2 border-t border-slate-100">
+                    <span className="text-xs text-emerald-600 uppercase tracking-wide font-medium">
+                      Banked:{" "}
+                      {item.bankedHours
+                        .reduce((sum, e) => sum + e.hours, 0)
+                        .toFixed(2)}{" "}
+                      hrs
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      />
     </div>
   );
 };

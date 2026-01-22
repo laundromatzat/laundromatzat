@@ -10,6 +10,7 @@ import {
   analyzeRoom,
   generateNeuroaestheticImage,
 } from "./services/geminiService";
+import { getApiUrl } from "@/utils/api";
 
 const NeuroaestheticPage: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.UPLOAD);
@@ -61,6 +62,34 @@ const NeuroaestheticPage: React.FC = () => {
     }
   };
 
+  const saveToHistory = async (
+    originalImg: string,
+    generatedImg: string,
+    analysisData: AnalysisResult,
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return; // User not logged in, skip save
+
+      await fetch(getApiUrl("/api/neuroaesthetic/history"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          originalImage: originalImg,
+          generatedImage: generatedImg,
+          analysis: analysisData,
+          preferencesSnapshot: preferences,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to save to history:", error);
+      // Don't alert user - this is a background operation
+    }
+  };
+
   const handleVisualize = async () => {
     if (!analysis || base64Images.length === 0) return;
     setAppState(AppState.GENERATING);
@@ -75,6 +104,10 @@ const NeuroaestheticPage: React.FC = () => {
       // Add to history
       setHistory([...history.slice(0, historyIndex + 1), generatedBase64]);
       setHistoryIndex(historyIndex + 1);
+
+      // Auto-save to backend
+      await saveToHistory(imageSrcs[0], generatedBase64, analysis);
+
       setAppState(AppState.COMPARISON);
     } catch (error) {
       console.error("Generation failed:", error);
@@ -125,6 +158,10 @@ const NeuroaestheticPage: React.FC = () => {
       ];
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
+
+      // Auto-save to backend
+      await saveToHistory(imageSrcs[0], generatedBase64, analysis);
+
       setAppState(AppState.COMPARISON);
     } catch (error) {
       console.error("Regeneration failed:", error);

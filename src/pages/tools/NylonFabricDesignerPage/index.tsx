@@ -5,11 +5,13 @@ import {
   generateProjectImages,
 } from "@/services/nylonFabricDesignerService";
 import {
-  persistDesign,
+  saveDesign,
   loadDesigns,
-  clearDesigns,
-} from "@/services/nylonFabricStorage";
+  deleteDesign,
+  type NylonFabricDesign,
+} from "@/services/nylonFabricApi";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
+import ImageZoomModal from "@/components/ImageZoomModal";
 
 const NylonFabricDesignerPage: React.FC = () => {
   const { setIsLoading: setGlobalLoading } = useLoading();
@@ -23,6 +25,11 @@ const NylonFabricDesignerPage: React.FC = () => {
   const [visuals, setVisuals] = useState<
     { stage: string; svg: string }[] | null
   >(null);
+  const [selectedImage, setSelectedImage] = useState<{
+    svg: string;
+    title: string;
+    index: number;
+  } | null>(null);
 
   const examples = {
     stuffsack:
@@ -34,16 +41,21 @@ const NylonFabricDesignerPage: React.FC = () => {
       "I need a work apron for my woodshop with multiple pockets for tools. It should be about 24 inches long with adjustable straps and reinforced pocket corners for durability.",
   };
 
-  // Load history on mount
+  // Load previous designs on mount
   useEffect(() => {
     loadDesigns()
       .then((designs) => {
         if (designs.length > 0) {
-          // Restore the most recent design
           const latest = designs[0];
+          // Parse the visuals JSON if needed
+          const visuals =
+            typeof latest.visuals_json === "string"
+              ? JSON.parse(latest.visuals_json)
+              : latest.visuals_json;
+
           setProjectDescription(latest.description);
-          setSanitizedGuideContent(latest.guideText);
-          setVisuals(latest.visuals);
+          setSanitizedGuideContent(latest.guide_text);
+          setVisuals(visuals);
         }
       })
       .catch(console.error);
@@ -79,14 +91,18 @@ const NylonFabricDesignerPage: React.FC = () => {
         setVisuals(projectVisuals);
 
         // Save automatically after successful generation
-        await persistDesign({
-          id: `design-${Date.now()}`,
-          projectName: projectDescription.slice(0, 30) + "...",
-          description: projectDescription,
-          createdAt: Date.now(),
-          guideText: guide,
-          visuals: projectVisuals,
-        });
+        try {
+          await saveDesign({
+            projectName: projectDescription.slice(0, 100),
+            description: projectDescription,
+            guideText: guide,
+            visuals: projectVisuals,
+          });
+          console.log("Design auto-saved successfully");
+        } catch (saveError) {
+          console.error("Failed to auto-save design:", saveError);
+          // Don't show error to user as this is background operation
+        }
       } catch (err) {
         const message =
           err instanceof Error
@@ -101,6 +117,8 @@ const NylonFabricDesignerPage: React.FC = () => {
           : "An unknown error occurred while generating a sewing guide for your project.";
       setError(message);
       setResearchStatus(null);
+    } finally {
+      setIsLoading(false);
       setGlobalLoading(false);
     }
   };
@@ -119,9 +137,9 @@ const NylonFabricDesignerPage: React.FC = () => {
         "Are you sure you want to clear all saved designs? This cannot be undone.",
       )
     ) {
-      clearDesigns()
-        .then(() => startNewProject())
-        .catch(console.error);
+      // clearDesigns()
+      //   .then(() => startNewProject())
+      //   .catch(console.error);
     }
   };
 
@@ -204,43 +222,102 @@ const NylonFabricDesignerPage: React.FC = () => {
               <h2 className="text-3xl font-bold text-aura-text-primary">
                 Your Custom Sewing Guide
               </h2>
-              <div className="flex gap-2">
-                <AuraButton
-                  variant="danger"
-                  size="sm"
-                  onClick={handleClearHistory}
-                >
-                  Clear History
-                </AuraButton>
-                <AuraButton
-                  variant="primary"
-                  size="sm"
-                  onClick={startNewProject}
-                >
-                  New Project
-                </AuraButton>
-              </div>
+              <AuraButton variant="primary" size="sm" onClick={startNewProject}>
+                New Project
+              </AuraButton>
             </div>
             {error && <p className="text-aura-error mb-4">{error}</p>}
-            <div dangerouslySetInnerHTML={{ __html: sanitizedGuideContent }} />
+
+            {/* Styled Instructions */}
+            <div
+              className="prose prose-invert max-w-none"
+              style={{
+                fontSize: "16px",
+                lineHeight: "1.75",
+              }}
+            >
+              <style>{`
+                .prose h3 {
+                  color: var(--aura-accent);
+                  font-size: 1.5rem;
+                  font-weight: 700;
+                  margin-top: 2rem;
+                  margin-bottom: 1rem;
+                  padding-bottom: 0.5rem;
+                  border-bottom: 2px solid var(--aura-border);
+                }
+                .prose h4 {
+                  color: var(--aura-text-primary);
+                  font-size: 1.25rem;
+                  font-weight: 600;
+                  margin-top: 1.5rem;
+                  margin-bottom: 0.75rem;
+                }
+                .prose p {
+                  color: var(--aura-text-secondary);
+                  margin-bottom: 1rem;
+                }
+                .prose ul, .prose ol {
+                  margin-left: 1.5rem;
+                  margin-bottom: 1.5rem;
+                  color: var(--aura-text-secondary);
+                }
+                .prose li {
+                  margin-bottom: 0.5rem;
+                  line-height: 1.6;
+                }
+                .prose strong {
+                  color: var(--aura-text-primary);
+                  font-weight: 600;
+                }
+                .prose .tip-box {
+                  background: var(--aura-surface-elevated);
+                  border-left: 4px solid var(--aura-accent);
+                  padding: 1rem;
+                  margin: 1.5rem 0;
+                  border-radius: 0.5rem;
+                }
+              `}</style>
+              <div
+                dangerouslySetInnerHTML={{ __html: sanitizedGuideContent }}
+              />
+            </div>
 
             {visuals && (
-              <div className="mt-8">
-                <h3 className="text-2xl font-bold text-aura-text-primary mb-4">
+              <div className="mt-12">
+                <h3 className="text-2xl font-bold text-aura-text-primary mb-6">
                   Visual Blueprints & Renderings
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <p className="text-aura-text-secondary mb-6">
+                  Click on any image to zoom and explore details
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {visuals.map((visual, index) => (
                     <div
                       key={index}
-                      className="border border-aura-border rounded-lg shadow-aura-sm overflow-hidden bg-aura-bg"
+                      className="group border border-aura-border rounded-lg shadow-aura-sm overflow-hidden bg-aura-bg hover:shadow-aura-lg hover:border-aura-accent transition-all cursor-pointer"
+                      onClick={() =>
+                        setSelectedImage({
+                          svg: visual.svg,
+                          title: visual.stage,
+                          index,
+                        })
+                      }
                     >
-                      <div
-                        className="bg-aura-surface p-4 flex items-center justify-center min-h-[300px]"
-                        dangerouslySetInnerHTML={{ __html: visual.svg }}
-                      />
+                      <div className="bg-aura-surface p-4 flex items-center justify-center min-h-[300px] relative overflow-hidden">
+                        <div
+                          className="group-hover:scale-105 transition-transform duration-300"
+                          dangerouslySetInnerHTML={{ __html: visual.svg }}
+                        />
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-aura-accent/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="bg-aura-surface/90 backdrop-blur-sm px-4 py-2 rounded-full text-aura-text-primary font-semibold">
+                            Click to zoom
+                          </div>
+                        </div>
+                      </div>
                       <div className="p-4 bg-aura-surface-elevated">
-                        <p className="font-bold text-center text-aura-accent">
+                        <p className="font-bold text-center text-aura-accent group-hover:text-aura-text-primary transition-colors">
                           {visual.stage}
                         </p>
                       </div>
@@ -260,6 +337,31 @@ const NylonFabricDesignerPage: React.FC = () => {
           </AuraCard>
         )}
       </main>
+
+      {/* Image Zoom Modal */}
+      {selectedImage && visuals && (
+        <ImageZoomModal
+          isOpen={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+          imageSrc={selectedImage.svg}
+          imageTitle={selectedImage.title}
+          images={visuals}
+          currentIndex={selectedImage.index}
+          onNavigate={(direction) => {
+            const newIndex =
+              direction === "prev"
+                ? selectedImage.index - 1
+                : selectedImage.index + 1;
+            if (newIndex >= 0 && newIndex < visuals.length) {
+              setSelectedImage({
+                svg: visuals[newIndex].svg,
+                title: visuals[newIndex].stage,
+                index: newIndex,
+              });
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

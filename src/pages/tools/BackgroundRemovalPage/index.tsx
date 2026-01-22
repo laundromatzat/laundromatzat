@@ -10,10 +10,13 @@ import { removeBackground } from "@imgly/background-removal";
 import PageMetadata from "@/components/PageMetadata";
 import Container from "@/components/Container";
 import {
-  clearBackgroundRemovalJobs,
-  loadBackgroundRemovalJobs,
-  persistBackgroundRemovalJob,
-} from "@/services/backgroundRemovalStorage";
+  saveJob,
+  loadJobs,
+  deleteJob,
+  type BackgroundRemovalJob as ApiJob,
+} from "@/services/backgroundRemovalApi";
+import { DesignGallery, SortOption } from "@/components/DesignGallery";
+import { ClockIcon } from "@heroicons/react/24/outline";
 
 type ProcessingState = "idle" | "loading" | "success" | "error";
 
@@ -51,6 +54,7 @@ const statusToneClasses: Record<StatusMessage["tone"], string> = {
 
 function BackgroundRemovalPage(): React.ReactNode {
   const [jobs, setJobs] = useState<BackgroundRemovalJob[]>([]);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const urlRegistry = useRef<Set<string>>(new Set());
 
   const registerUrl = useCallback((url: string) => {
@@ -75,8 +79,8 @@ function BackgroundRemovalPage(): React.ReactNode {
               prev.map((job) =>
                 job.id === targetJob.id
                   ? { ...job, progressMessage: progressLabel }
-                  : job
-              )
+                  : job,
+              ),
             );
           },
         });
@@ -84,20 +88,17 @@ function BackgroundRemovalPage(): React.ReactNode {
         const resultUrl = URL.createObjectURL(blob);
         registerUrl(resultUrl);
 
-        // Persist both source and result
+        // Save to backend
         try {
-          const sourceBlob = file.slice(0, file.size, file.type);
-          await persistBackgroundRemovalJob({
-            id: targetJob.id,
+          await saveJob({
             fileName: targetJob.fileName,
-            createdAt: targetJob.createdAt,
-            sourceBlob,
-            resultBlob: blob,
+            sourceImageDataUrl: targetJob.sourcePreview,
+            resultImageDataUrl: resultUrl,
           });
         } catch (storageError) {
           console.warn(
             "Failed to persist background removal result",
-            storageError
+            storageError,
           );
         }
 
@@ -114,8 +115,8 @@ function BackgroundRemovalPage(): React.ReactNode {
                   },
                   progressMessage: null,
                 }
-              : job
-          )
+              : job,
+          ),
         );
       } catch (error) {
         console.error("Background removal failed", error);
@@ -132,12 +133,12 @@ function BackgroundRemovalPage(): React.ReactNode {
                   },
                   progressMessage: null,
                 }
-              : job
-          )
+              : job,
+          ),
         );
       }
     },
-    [registerUrl]
+    [registerUrl],
   );
 
   const handleFiles = useCallback(
@@ -171,7 +172,7 @@ function BackgroundRemovalPage(): React.ReactNode {
         void processFile(job, file);
       });
     },
-    [processFile, registerUrl]
+    [processFile, registerUrl],
   );
 
   const handleInputChange = useCallback(
@@ -180,7 +181,7 @@ function BackgroundRemovalPage(): React.ReactNode {
       if (files && files.length > 0) void handleFiles(files);
       event.target.value = "";
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const dropHandlers = useMemo(() => {
@@ -197,69 +198,28 @@ function BackgroundRemovalPage(): React.ReactNode {
   const clearAll = useCallback(() => {
     cleanupAllUrls();
     setJobs([]);
-    void clearBackgroundRemovalJobs().catch((error) => {
-      console.warn("Failed to clear stored background removal jobs", error);
-    });
   }, [cleanupAllUrls]);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    void (async () => {
-      try {
-        const stored = await loadBackgroundRemovalJobs();
-        if (!isMounted || stored.length === 0) return;
-
-        const restored = stored
-          .map((s) => {
-            const sourcePreview = URL.createObjectURL(s.sourceBlob);
-            registerUrl(sourcePreview);
-
-            const resultPreview = s.resultBlob
-              ? URL.createObjectURL(s.resultBlob)
-              : null;
-            if (resultPreview) registerUrl(resultPreview);
-
-            return {
-              id: s.id,
-              fileName: s.fileName,
-              sourcePreview,
-              resultPreview,
-              processingState: resultPreview
-                ? ("success" as ProcessingState)
-                : ("idle" as ProcessingState),
-              statusMessage: resultPreview
-                ? ({
-                    label: "Background removed! Download the PNG below.",
-                    tone: "success",
-                  } as const)
-                : ({
-                    label: "Preparing your photo…",
-                    tone: "default",
-                  } as const),
-              progressMessage: null,
-              createdAt: s.createdAt,
-            } satisfies BackgroundRemovalJob;
-          })
-          .sort((a, b) => a.createdAt - b.createdAt);
-
-        setJobs((prev) => {
-          const existing = new Set(prev.map((j) => j.id));
-          const merged = [
-            ...prev,
-            ...restored.filter((r) => !existing.has(r.id)),
-          ];
-          return merged.sort((a, b) => a.createdAt - b.createdAt);
-        });
-      } catch (e) {
-        console.error("Failed to restore stored background removal jobs", e);
-      }
-    })();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [registerUrl]);
+  const sortOptions: SortOption[] = [
+    {
+      label: "Newest First",
+      value: "date-desc",
+      compareFn: (a: unknown, b: unknown) => {
+        const aDate = new Date((a as ApiJob).created_at).getTime();
+        const bDate = new Date((b as ApiJob).created_at).getTime();
+        return bDate - aDate;
+      },
+    },
+    {
+      label: "Oldest First",
+      value: "date-asc",
+      compareFn: (a: unknown, b: unknown) => {
+        const aDate = new Date((a as ApiJob).created_at).getTime();
+        const bDate = new Date((b as ApiJob).created_at).getTime();
+        return aDate - bDate;
+      },
+    },
+  ];
 
   return (
     <Container className="space-y-10 pt-8">
@@ -270,21 +230,30 @@ function BackgroundRemovalPage(): React.ReactNode {
         type="article"
       />
       <section className="space-y-4">
-        <div className="flex items-center gap-4 text-aura-text-secondary">
-          <Link to="/tools" className="text-brand-accent hover:underline">
-            ← back to tools
-          </Link>
-          <span className="text-sm">
-            remove backgrounds right in the browser.
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 text-aura-text-secondary">
+            <Link to="/tools" className="text-brand-accent hover:underline">
+              ← back to tools
+            </Link>
+            <span className="text-sm">
+              remove backgrounds right in the browser.
+            </span>
+          </div>
+          <button
+            onClick={() => setIsGalleryOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+          >
+            <ClockIcon className="w-4 h-4" />
+            <span>History</span>
+          </button>
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-aura-text-primary">
           background remover
         </h1>
         <p className="text-lg text-aura-text-secondary max-w-2xl">
           Upload one or many photos and our in-browser model will isolate the
-          main subject. You&apos;ll get transparent PNGs you can drop into
-          decks, composites, or anything else that needs a clean cutout.
+          main subject. You&#39;ll get transparent PNGs you can drop into decks,
+          composites, or anything else that needs a clean cutout.
         </p>
       </section>
 
@@ -422,6 +391,79 @@ function BackgroundRemovalPage(): React.ReactNode {
           )}
         </div>
       </section>
+
+      {/* Design Gallery */}
+      <DesignGallery
+        title="Background Removal History"
+        fetchEndpoint="/api/background-removal/jobs"
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onLoad={() => {
+          // Just close gallery - jobs are displayed inline on this page
+          setIsGalleryOpen(false);
+        }}
+        deleteEndpoint="/api/background-removal/jobs"
+        emptyMessage="No background removal jobs found. Upload an image to get started."
+        sortOptions={sortOptions}
+        renderPreview={(item: ApiJob) => (
+          <div className="flex flex-col gap-6 h-full">
+            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Original Image
+              </h3>
+              <img
+                src={item.source_image_data_url}
+                alt={item.file_name}
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
+            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Background Removed
+              </h3>
+              <div className="bg-[linear-gradient(45deg,#808080_25%,transparent_25%,transparent_75%,#808080_75%,#808080),linear-gradient(45deg,#808080_25%,transparent_25%,transparent_75%,#808080_75%,#808080)] bg-[length:20px_20px] bg-[position:0_0,10px_10px] p-4 rounded-lg">
+                <img
+                  src={item.result_image_data_url}
+                  alt={`${item.file_name} - background removed`}
+                  className="w-full h-auto rounded"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        renderItem={(item: ApiJob) => (
+          <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors cursor-pointer group">
+            <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-b border-slate-200">
+              <p className="text-sm font-semibold text-slate-900 truncate">
+                {item.file_name}
+              </p>
+              <p className="text-xs text-slate-500">
+                {new Date(item.created_at).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex-1 p-4 grid grid-cols-2 gap-2">
+              <div>
+                <p className="text-xs text-slate-500 mb-1">Original</p>
+                <img
+                  src={item.source_image_data_url}
+                  alt="Original"
+                  className="w-full h-24 object-cover rounded border border-slate-200"
+                />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 mb-1">Result</p>
+                <div className="bg-[linear-gradient(45deg,#e0e0e0_25%,transparent_25%,transparent_75%,#e0e0e0_75%,#e0e0e0),linear-gradient(45deg,#e0e0e0_25%,transparent_25%,transparent_75%,#e0e0e0_75%,#e0e0e0)] bg-[length:10px_10px] bg-[position:0_0,5px_5px] w-full h-24 rounded border border-slate-200 p-1">
+                  <img
+                    src={item.result_image_data_url}
+                    alt="Removed background"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      />
     </Container>
   );
 }

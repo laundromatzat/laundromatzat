@@ -10,11 +10,15 @@ import { Camera, Check, Ruler, Wand2, Edit, RefreshCw } from "lucide-react";
 import CutCalculator from "./components/CutCalculator";
 import { ImageAnnotator } from "./components/ImageAnnotator";
 import {
-  persistProject,
+  saveProject,
+  updateProject,
   loadProjects,
-  clearProjects,
-} from "@/services/woodCarvingStorage";
+  deleteProject,
+  type WoodCarvingProject,
+} from "@/services/woodCarvingApi";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
+import { DesignGallery, SortOption } from "@/components/DesignGallery";
+import { ClockIcon } from "@heroicons/react/24/outline";
 
 const EXAMPLE_DESCRIPTIONS = [
   "A majestic eagle landing on a branch, realistic style",
@@ -44,34 +48,11 @@ const WoodCarvingVisualizerPage: React.FC = () => {
   // Error Handling
   const [error, setError] = useState<string | null>(null);
 
-  // Storage (history panel UI to be added in follow-up)
-  // const [history, setHistory] = useState<StoredProject[]>([]);
-  // const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  // Project tracking for backend
+  const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
-  // Load history on mount (ready for history panel)
-  useEffect(() => {
-    loadProjects()
-      .then((projects) => {
-        if (projects.length > 0) {
-          // Restore the most recent project
-          const latest = projects[0];
-          setDescription(latest.description);
-          setVariations(latest.variations);
-          setSelectedVariation(latest.selectedVariation);
-          setDesignData(latest.blueprint);
-
-          // Restore phase based on data availability
-          if (latest.blueprint) {
-            setPhase(4);
-          } else if (latest.selectedVariation) {
-            setPhase(2);
-          } else if (latest.variations.length > 0) {
-            setPhase(2);
-          }
-        }
-      })
-      .catch(console.error);
-  }, []);
+  // No longer needed - removed useEffect for loading from IndexedDB
 
   const handleGenerateVariations = async () => {
     if (!description.trim()) return;
@@ -89,7 +70,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to generate variations. Please try again."
+          : "Failed to generate variations. Please try again.",
       );
       setPhase(0);
     }
@@ -114,24 +95,40 @@ const WoodCarvingVisualizerPage: React.FC = () => {
       // Pass full Data URL so service can extract correct MimeType
       const plan = await generateCarvingPlan(
         finalPrompt,
-        selectedVariation.imageUrl
+        selectedVariation.imageUrl,
       );
       setDesignData(plan);
       setPhase(4);
 
-      // Save to storage after successful generation
-      await persistProject({
-        id: `project-${Date.now()}`,
-        description,
-        selectedVariation,
-        blueprint: plan,
-        createdAt: new Date().toISOString(),
-      });
+      // Save or update project in backend
+      try {
+        if (currentProjectId) {
+          // Update existing project
+          await updateProject(currentProjectId, {
+            description,
+            variations,
+            selectedVariation,
+            blueprint: plan,
+          });
+        } else {
+          // Create new project
+          const savedProject = await saveProject({
+            description,
+            variations,
+            selectedVariation,
+            blueprint: plan,
+          });
+          setCurrentProjectId(savedProject.id);
+        }
+      } catch (err) {
+        console.error("Failed to save project:", err);
+        // Don't show error to user - background operation
+      }
     } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to generate blueprint. Please try again."
+          : "Failed to generate blueprint. Please try again.",
       );
       setPhase(2); // Go back to selection
     }
@@ -145,6 +142,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
     setSelectedVariation(null);
     setDesignData(null);
     setIsRefining(false);
+    setCurrentProjectId(null); // Clear project ID on reset
   };
 
   // Refinement Logic
@@ -165,7 +163,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
       // Send annotated image as the reference
       const newPlan = await generateCarvingPlan(
         refinePrompt,
-        annotatedImageBase64
+        annotatedImageBase64,
       );
       setDesignData(newPlan);
       setPhase(4);
@@ -178,6 +176,27 @@ const WoodCarvingVisualizerPage: React.FC = () => {
   const toggleUnit = () => {
     setUnit((prev) => (prev === Unit.INCHES ? Unit.MM : Unit.INCHES));
   };
+
+  const sortOptions: SortOption[] = [
+    {
+      label: "Newest First",
+      value: "date-desc",
+      compareFn: (a: unknown, b: unknown) => {
+        const aDate = new Date((a as WoodCarvingProject).createdAt).getTime();
+        const bDate = new Date((b as WoodCarvingProject).createdAt).getTime();
+        return bDate - aDate;
+      },
+    },
+    {
+      label: "Oldest First",
+      value: "date-asc",
+      compareFn: (a: unknown, b: unknown) => {
+        const aDate = new Date((a as WoodCarvingProject).createdAt).getTime();
+        const bDate = new Date((b as WoodCarvingProject).createdAt).getTime();
+        return aDate - bDate;
+      },
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans selection:bg-brand-accent selection:text-white pb-20">
@@ -195,34 +214,32 @@ const WoodCarvingVisualizerPage: React.FC = () => {
           </div>
 
           {phase > 0 && (
-            <AuraButton
-              variant="secondary"
-              size="sm"
-              onClick={handleReset}
-              icon={<RefreshCw className="w-4 h-4" />}
-            >
-              Start New Project
-            </AuraButton>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsGalleryOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+              >
+                <ClockIcon className="w-4 h-4" />
+                <span>History</span>
+              </button>
+              <AuraButton
+                variant="secondary"
+                size="sm"
+                onClick={handleReset}
+                icon={<RefreshCw className="w-4 h-4" />}
+              >
+                Start New Project
+              </AuraButton>
+            </div>
           )}
           {phase === 0 && (
-            <AuraButton
-              variant="danger"
-              size="sm"
-              onClick={() => {
-                if (
-                  window.confirm(
-                    "Are you sure you want to clear your project history?"
-                  )
-                ) {
-                  clearProjects()
-                    .then(() => handleReset())
-                    .catch(console.error);
-                }
-              }}
-              className="text-xs underline bg-transparent border-none text-red-400 hover:bg-red-500/10"
+            <button
+              onClick={() => setIsGalleryOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
             >
-              Clear History
-            </AuraButton>
+              <ClockIcon className="w-4 h-4" />
+              <span>History</span>
+            </button>
           )}
         </div>
 
@@ -566,7 +583,108 @@ const WoodCarvingVisualizerPage: React.FC = () => {
          
          .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
          @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-      `}</style>
+       `}</style>
+
+      {/* Design Gallery */}
+      <DesignGallery
+        title="Carving Project History"
+        fetchEndpoint="/api/wood-carving/projects"
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onLoad={(item: WoodCarvingProject) => {
+          setDescription(item.description);
+          setVariations(item.variations || []);
+          setSelectedVariation(item.selectedVariation || null);
+          setDesignData(item.blueprint || null);
+          setCurrentProjectId(item.id);
+          if (item.blueprint) setPhase(4);
+          else if (item.selectedVariation) setPhase(2);
+          else if (item.variations && item.variations.length > 0) setPhase(2);
+          else setPhase(0);
+          setIsGalleryOpen(false);
+        }}
+        deleteEndpoint="/api/wood-carving/projects"
+        emptyMessage="No projects found. Start a new project to begin."
+        sortOptions={sortOptions}
+        renderPreview={(item: WoodCarvingProject) => (
+          <div className="flex flex-col gap-6 h-full">
+            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Project Description
+              </h3>
+              <p className="text-slate-300">{item.description}</p>
+            </div>
+            {item.selectedVariation && (
+              <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Selected: {item.selectedVariation.name}
+                </h3>
+                <img
+                  src={item.selectedVariation.imageUrl}
+                  alt={item.selectedVariation.name}
+                  className="w-full h-auto rounded-lg"
+                />
+              </div>
+            )}
+            {item.blueprint && (
+              <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Blueprint
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <img
+                    src={item.blueprint.conceptUrl}
+                    alt="Concept"
+                    className="w-full h-auto rounded-lg"
+                  />
+                  <img
+                    src={item.blueprint.schematicUrl}
+                    alt="Schematic"
+                    className="w-full h-auto rounded-lg"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        renderItem={(item: WoodCarvingProject) => (
+          <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors cursor-pointer group">
+            <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-b border-slate-200">
+              <p className="text-sm font-semibold text-slate-900 line-clamp-2">
+                {item.description}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                {new Date(item.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex-1 p-4">
+              {item.selectedVariation ? (
+                <div>
+                  <img
+                    src={item.selectedVariation.imageUrl}
+                    alt={item.selectedVariation.name}
+                    className="w-full h-32 object-cover rounded border border-slate-200"
+                  />
+                  <p className="text-xs text-slate-600 mt-2 font-medium">
+                    {item.selectedVariation.name}
+                  </p>
+                  {item.blueprint && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ Blueprint ready
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-32 bg-slate-100 rounded border border-slate-200">
+                  <p className="text-xs text-slate-500">
+                    No variation selected
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      />
     </div>
   );
 };

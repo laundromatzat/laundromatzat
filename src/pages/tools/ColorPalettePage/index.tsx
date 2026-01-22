@@ -9,12 +9,15 @@ import { Link } from "react-router-dom";
 import PageMetadata from "@/components/PageMetadata";
 import Container from "@/components/Container";
 import {
-  persistPalette,
+  savePalette,
   loadPalettes,
   deletePalette,
-  clearPalettes,
-  type StoredPalette,
-} from "@/services/colorPaletteStorage";
+  type ColorPalette,
+  type ExtractedColor as ApiExtractedColor,
+} from "@/services/colorPaletteApi";
+import { compressImage } from "@/utils/imageUtils";
+import { DesignGallery, SortOption } from "@/components/DesignGallery";
+import { ClockIcon } from "@heroicons/react/24/outline";
 
 interface ExtractedColor {
   hex: string;
@@ -41,17 +44,17 @@ function rgbToHex([r, g, b]: [number, number, number]): string {
 
 function colorDistance(
   a: [number, number, number],
-  b: [number, number, number]
+  b: [number, number, number],
 ): number {
   return Math.sqrt(
     Math.pow(a[0] - b[0], 2) +
       Math.pow(a[1] - b[1], 2) +
-      Math.pow(a[2] - b[2], 2)
+      Math.pow(a[2] - b[2], 2),
   );
 }
 
 function averageColor(
-  colors: [number, number, number][]
+  colors: [number, number, number][],
 ): [number, number, number] {
   if (colors.length === 0) {
     return [128, 128, 128];
@@ -59,7 +62,7 @@ function averageColor(
 
   const sums = colors.reduce<[number, number, number]>(
     (acc, color) => [acc[0] + color[0], acc[1] + color[1], acc[2] + color[2]],
-    [0, 0, 0]
+    [0, 0, 0],
   );
 
   return [
@@ -71,7 +74,7 @@ function averageColor(
 
 function initializeCentroids(
   pixels: [number, number, number][],
-  k: number
+  k: number,
 ): [number, number, number][] {
   if (pixels.length === 0) {
     return new Array(k).fill(null).map(() => [128, 128, 128]);
@@ -109,7 +112,7 @@ function initializeCentroids(
 
 function kMeans(
   pixels: [number, number, number][],
-  k: number
+  k: number,
 ): [number, number, number][] {
   if (pixels.length === 0) {
     return new Array(k).fill(null).map(() => [128, 128, 128]);
@@ -121,7 +124,7 @@ function kMeans(
   for (let iteration = 0; iteration < 10; iteration += 1) {
     const clusters: [number, number, number][][] = Array.from(
       { length: k },
-      () => []
+      () => [],
     );
 
     pixels.forEach((pixel, index) => {
@@ -152,8 +155,10 @@ const ColorPalettePage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedValue, setCopiedValue] = useState<string | null>(null);
-  const [history, setHistory] = useState<StoredPalette[]>([]);
-  const [currentPaletteId, setCurrentPaletteId] = useState<string | null>(null);
+  const [history, setHistory] = useState<ColorPalette[]>([]);
+  const [currentPaletteId, setCurrentPaletteId] = useState<number | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [currentFileName, setCurrentFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -176,7 +181,7 @@ const ColorPalettePage: React.FC = () => {
 
       return pixels;
     },
-    []
+    [],
   );
 
   const processImage = useCallback(
@@ -194,7 +199,7 @@ const ColorPalettePage: React.FC = () => {
       const scale = Math.min(
         MAX_CANVAS_SIZE / img.width,
         MAX_CANVAS_SIZE / img.height,
-        1
+        1,
       );
       const width = Math.floor(img.width * scale);
       const height = Math.floor(img.height * scale);
@@ -222,28 +227,34 @@ const ColorPalettePage: React.FC = () => {
       });
 
       setPalette(colors);
+      setCurrentFileName(file.name);
 
-      // Save to storage
-      const paletteId = `palette-${Date.now()}`;
-      setCurrentPaletteId(paletteId);
-
+      // Save to backend with image compression
       try {
-        await persistPalette({
-          id: paletteId,
+        const rawDataUrl = canvas.toDataURL();
+        const compressedDataUrl = await compressImage(
+          rawDataUrl,
+          1920,
+          1080,
+          0.85,
+        );
+
+        const savedPalette = await savePalette({
           fileName: file.name,
-          imageBlob: file,
+          imageDataUrl: compressedDataUrl,
           palette: colors,
-          createdAt: Date.now(),
         });
+        setCurrentPaletteId(savedPalette.id);
 
         // Reload history
         const updatedHistory = await loadPalettes();
         setHistory(updatedHistory);
       } catch (err) {
         console.error("Failed to save palette:", err);
+        // Don't show error to user - background operation
       }
     },
-    [sampleColors]
+    [sampleColors],
   );
 
   const handleFileChange: React.ChangeEventHandler<HTMLInputElement> =
@@ -291,7 +302,7 @@ const ColorPalettePage: React.FC = () => {
 
         reader.readAsDataURL(file);
       },
-      [processImage]
+      [processImage],
     );
 
   const handleUploadClick = useCallback(() => {
@@ -312,20 +323,16 @@ const ColorPalettePage: React.FC = () => {
       });
   }, []);
 
-  const loadHistoricalPalette = useCallback(async (stored: StoredPalette) => {
-    setPalette(stored.palette);
+  const loadHistoricalPalette = useCallback((stored: ColorPalette) => {
+    const parsedPalette: ExtractedColor[] = JSON.parse(stored.palette_json);
+    setPalette(parsedPalette);
     setCurrentPaletteId(stored.id);
-
-    // Create preview from blob
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(stored.imageBlob);
+    setCurrentFileName(stored.file_name);
+    setImagePreview(stored.image_data_url);
   }, []);
 
   const handleDeletePalette = useCallback(
-    async (paletteId: string) => {
+    async (paletteId: number) => {
       try {
         await deletePalette(paletteId);
         const updatedHistory = await loadPalettes();
@@ -336,27 +343,35 @@ const ColorPalettePage: React.FC = () => {
           setPalette([]);
           setImagePreview(null);
           setCurrentPaletteId(null);
+          setCurrentFileName("");
         }
       } catch (err) {
         console.error("Failed to delete palette:", err);
       }
     },
-    [currentPaletteId]
+    [currentPaletteId],
   );
 
-  const handleClearHistory = useCallback(async () => {
-    if (!confirm("Are you sure you want to clear all palette history?")) return;
-
-    try {
-      await clearPalettes();
-      setHistory([]);
-      setPalette([]);
-      setImagePreview(null);
-      setCurrentPaletteId(null);
-    } catch (err) {
-      console.error("Failed to clear history:", err);
-    }
-  }, []);
+  const sortOptions: SortOption[] = [
+    {
+      label: "Newest First",
+      value: "date-desc",
+      compareFn: (a: unknown, b: unknown) => {
+        const aDate = new Date((a as ColorPalette).created_at).getTime();
+        const bDate = new Date((b as ColorPalette).created_at).getTime();
+        return bDate - aDate;
+      },
+    },
+    {
+      label: "Oldest First",
+      value: "date-asc",
+      compareFn: (a: unknown, b: unknown) => {
+        const aDate = new Date((a as ColorPalette).created_at).getTime();
+        const bDate = new Date((b as ColorPalette).created_at).getTime();
+        return aDate - bDate;
+      },
+    },
+  ];
 
   const placeholders = useMemo(() => new Array(PALETTE_SIZE).fill(null), []);
 
@@ -369,13 +384,22 @@ const ColorPalettePage: React.FC = () => {
         type="article"
       />
       <section className="space-y-4">
-        <div className="flex items-center gap-4 text-aura-text-secondary">
-          <Link to="/tools" className="text-brand-accent hover:underline">
-            ← back to tools
-          </Link>
-          <span className="text-sm">
-            extract a color palette from an image.
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 text-aura-text-secondary">
+            <Link to="/tools" className="text-brand-accent hover:underline">
+              ← back to tools
+            </Link>
+            <span className="text-sm">
+              extract a color palette from an image.
+            </span>
+          </div>
+          <button
+            onClick={() => setIsGalleryOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+          >
+            <ClockIcon className="w-4 h-4" />
+            <span>History</span>
+          </button>
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-aura-text-primary">
           color palette extractor
@@ -515,7 +539,7 @@ const ColorPalettePage: React.FC = () => {
                         )}
                       </div>
                     );
-                  }
+                  },
                 )}
               </div>
               {copiedValue && (
@@ -530,73 +554,85 @@ const ColorPalettePage: React.FC = () => {
         <canvas ref={canvasRef} className="hidden" />
       </section>
 
-      {/* History Panel */}
-      {history.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-aura-text-primary">
-              Palette History
-            </h2>
-            <button
-              type="button"
-              onClick={handleClearHistory}
-              className="text-sm text-aura-text-secondary hover:text-red-500 transition"
-            >
-              Clear All
-            </button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {history.map((stored) => (
-              <div
-                key={stored.id}
-                className={`rounded-2xl border ${currentPaletteId === stored.id ? "border-brand-accent" : "border-brand-secondary/40"} bg-white/60 p-4 shadow-sm cursor-pointer transition hover:shadow-md`}
-                onClick={() => loadHistoricalPalette(stored)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    loadHistoricalPalette(stored);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`Load palette from ${stored.fileName}`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-aura-text-primary truncate">
-                      {stored.fileName}
-                    </p>
-                    <p className="text-xs text-aura-text-secondary">
-                      {new Date(stored.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePalette(stored.id);
-                    }}
-                    className="ml-2 text-xs text-aura-text-secondary hover:text-red-500 transition"
-                    aria-label="Delete palette"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div className="flex gap-1">
-                  {stored.palette.map((color, idx) => (
+      {/* Design Gallery */}
+      <DesignGallery
+        title="Color Palette History"
+        fetchEndpoint="/api/color-palettes"
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onLoad={(item: ColorPalette) => {
+          loadHistoricalPalette(item);
+          setIsGalleryOpen(false);
+        }}
+        deleteEndpoint="/api/color-palettes"
+        emptyMessage="No palettes found. Upload an image to get started."
+        sortOptions={sortOptions}
+        renderPreview={(item: ColorPalette) => {
+          const parsedPalette: ExtractedColor[] = JSON.parse(item.palette_json);
+          return (
+            <div className="flex flex-col gap-6 h-full">
+              <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+                <img
+                  src={item.image_data_url}
+                  alt={item.file_name}
+                  className="w-full h-auto rounded-lg"
+                />
+              </div>
+              <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Extracted Colors
+                </h3>
+                <div className="space-y-3">
+                  {parsedPalette.map((color, idx) => (
                     <div
                       key={idx}
-                      className="flex-1 h-8 rounded"
+                      className="flex items-center gap-3 p-2 bg-slate-800 rounded-lg"
+                    >
+                      <div
+                        className="w-12 h-12 rounded border border-slate-700"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <div className="flex-1">
+                        <p className="text-white font-mono">{color.hex}</p>
+                        <p className="text-slate-400 text-sm">
+                          rgb({color.rgb[0]}, {color.rgb[1]}, {color.rgb[2]})
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        }}
+        renderItem={(item: ColorPalette) => {
+          const parsedPalette: ExtractedColor[] = JSON.parse(item.palette_json);
+          return (
+            <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors cursor-pointer group">
+              <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-b border-slate-200">
+                <p className="text-sm font-semibold text-slate-900 truncate">
+                  {item.file_name}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {new Date(item.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="flex-1 p-4">
+                <div className="flex gap-1 h-16">
+                  {parsedPalette.map((color, idx) => (
+                    <div
+                      key={idx}
+                      className="flex-1 rounded"
                       style={{ backgroundColor: color.hex }}
                       title={color.hex}
                     />
                   ))}
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+            </div>
+          );
+        }}
+      />
     </Container>
   );
 };

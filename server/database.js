@@ -79,6 +79,34 @@ const initializeDatabase = async () => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS color_palettes (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          file_name TEXT NOT NULL,
+          image_data_url TEXT NOT NULL,
+          palette_json TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS background_removal_jobs (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          file_name TEXT NOT NULL,
+          source_image_data_url TEXT NOT NULL,
+          result_image_data_url TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS wood_carving_projects (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          description TEXT NOT NULL,
+          variations_json TEXT,
+          selected_variation_json TEXT,
+          blueprint_json TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS links (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
