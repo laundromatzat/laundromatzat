@@ -107,6 +107,18 @@ const initializeDatabase = async () => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS nylon_fabric_designs (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          design_name TEXT NOT NULL,
+          instruction_image_url TEXT,
+          nylon_image_url TEXT,
+          prompts JSONB,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_nylon_fabric_user_designs ON nylon_fabric_designs(user_id, created_at DESC);
+
       CREATE TABLE IF NOT EXISTS links (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
