@@ -342,12 +342,27 @@ Return ONLY a JSON array (no markdown, no backticks, no code fences) with this e
 
   const fetchContent = options?.contentFetcher ?? generateContent;
   const responseText = await fetchContent(prompt);
-  const cleanJson = responseText
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+
+  // Robust JSON extraction - handles conversational text
+  function extractJsonArray(text: string): string {
+    // First, try to extract JSON from markdown code fences
+    const codeBlockMatch = text.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
+    if (codeBlockMatch) {
+      return codeBlockMatch[1];
+    }
+
+    // If no code fence, look for a JSON array anywhere in the text
+    const jsonArrayMatch = text.match(/\[[\s\S]*\]/);
+    if (jsonArrayMatch) {
+      return jsonArrayMatch[0];
+    }
+
+    // If still not found, throw error
+    throw new Error("No JSON array found in response");
+  }
 
   try {
+    const cleanJson = extractJsonArray(responseText);
     const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
     const sanitizedVisuals = await Promise.all(
       visuals.map(async (visual) => {
