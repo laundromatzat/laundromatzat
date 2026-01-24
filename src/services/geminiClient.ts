@@ -152,49 +152,46 @@ export async function generateImages(prompts: string[]): Promise<string[]> {
     throw new Error("Image generation is not supported with local AI provider");
   }
 
-  try {
-    const client = getClient();
+  // Gemini image generation not yet available in SDK
+  // Using enhanced SVG placeholders
+  console.warn(
+    "Using SVG placeholders - Gemini image generation not available in current SDK",
+  );
 
-    // Generate images using Gemini 2.0 Flash Experimental's multimodal capabilities
-    const imagePromises = prompts.map(async (prompt) => {
-      const response = await client.models.generateContent({
-        model: "gemini-2.0-flash-exp",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: `Generate a high-quality, photorealistic image based on this description. Return only the image, no text:\n\n${prompt}`,
-              },
-            ],
-          },
-        ],
-        config: {
-          temperature: 1.0,
-          topP: 0.95,
-          topK: 40,
-          responseModalities: ["image"], // Request image output
-        },
-      });
+  return prompts.map((prompt, index) => {
+    const titles = [
+      "Cutting Pattern Layout",
+      "Hand-Sewing Assembly Steps",
+      "Finished Product Photo",
+    ];
+    const title = titles[index] || `Image ${index + 1}`;
+    const colors = [
+      { start: "#667eea", end: "#764ba2" },
+      { start: "#f093fb", end: "#f5576c" },
+      { start: "#4facfe", end: "#00f2fe" },
+    ];
+    const color = colors[index] || colors[0];
 
-      // Extract the image from the response
-      const imagePart = response.candidates?.[0]?.content?.parts?.find((part) =>
-        part.inlineData?.mimeType?.startsWith("image/"),
-      );
+    const svg = `<svg width="800" height="450" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad${index}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:${color.start};stop-opacity:1" />
+          <stop offset="100%" style="stop-color:${color.end};stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="800" height="450" fill="url(#grad${index})"/>
+      <rect x="50" y="50" width="700" height="350" fill="white" opacity="0.15" rx="15"/>
+      <text x="400" y="180" font-family="Arial, sans-serif" font-size="36" fill="white" text-anchor="middle" font-weight="bold">
+        ${title}
+      </text>
+      <text x="400" y="240" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle" opacity="0.9">
+        ${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}
+      </text>
+      <text x="400" y="280" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle" opacity="0.7">
+        (AI image generation coming soon)
+      </text>
+    </svg>`;
 
-      if (imagePart?.inlineData?.data) {
-        const mimeType = imagePart.inlineData.mimeType || "image/png";
-        return `data:${mimeType};base64,${imagePart.inlineData.data}`;
-      }
-
-      throw new Error("No image generated in response");
-    });
-
-    return await Promise.all(imagePromises);
-  } catch (error) {
-    console.error("Gemini 2.0 Flash image generation failure:", error);
-    throw error instanceof Error
-      ? error
-      : new Error("Failed to generate images with Gemini 2.0 Flash.");
-  }
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  });
 }
