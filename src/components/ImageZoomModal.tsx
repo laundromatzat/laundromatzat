@@ -98,15 +98,29 @@ const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
   };
 
   const handleDownload = () => {
-    const blob = new Blob([imageSrc], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${imageTitle.replace(/\s+/g, "_")}.svg`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if (imageSrc.startsWith("data:")) {
+      const a = document.createElement("a");
+      a.href = imageSrc;
+      // Extract file extension from mime type (e.g. data:image/png;base64 -> png)
+      const mimeType = imageSrc.split(";")[0].split(":")[1];
+      const extension = mimeType.split("/")[1] || "png";
+
+      a.download = `${imageTitle.replace(/\s+/g, "_")}.${extension}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      // Fallback for raw SVG string
+      const blob = new Blob([imageSrc], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${imageTitle.replace(/\s+/g, "_")}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   if (!isOpen) return null;
@@ -174,12 +188,21 @@ const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
           onMouseLeave={handleMouseUp}
         >
           <div
-            className="transition-transform"
+            className="transition-transform flex items-center justify-center"
             style={{
               transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
             }}
-            dangerouslySetInnerHTML={{ __html: imageSrc }}
-          />
+          >
+            {imageSrc.startsWith("data:") ? (
+              <img
+                src={imageSrc}
+                alt={imageTitle}
+                className="max-w-full max-h-full object-contain pointer-events-none"
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: imageSrc }} />
+            )}
+          </div>
         </div>
 
         {/* Navigation Arrows */}
