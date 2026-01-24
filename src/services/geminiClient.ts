@@ -152,35 +152,41 @@ export async function generateImages(prompts: string[]): Promise<string[]> {
     throw new Error("Image generation is not supported with local AI provider");
   }
 
-  try {
-    const client = getClient();
-    const imagePromises = prompts.map(async (prompt) => {
-      const response = await client.models.generateImages({
-        model: "imagen-3.0-generate-002", // Nano Banana model
-        prompt,
-        config: {
-          numberOfImages: 1,
-          aspectRatio: "16:9", // Good for technical diagrams/photos
-          safetyFilterLevel: "BLOCK_FEW",
-        },
-      });
+  // Temporary placeholder implementation
+  // Imagen API requires specific setup and may not be available in all regions
+  console.warn(
+    "Using placeholder images. Imagen API setup required for actual image generation.",
+  );
 
-      // Return the first generated image as base64 data URL
-      const image = response.images?.[0];
-      if (!image?.imageBytes) {
-        throw new Error(
-          `No image generated for prompt: ${prompt.slice(0, 50)}...`,
-        );
-      }
+  return prompts.map((prompt, index) => {
+    const titles = [
+      "Cutting Pattern Layout",
+      "Hand-Sewing Assembly",
+      "Finished Product",
+    ];
+    const title = titles[index] || `Image ${index + 1}`;
 
-      return `data:image/png;base64,${image.imageBytes}`;
-    });
+    // Create a simple but informative SVG placeholder
+    const svg = `<svg width="800" height="450" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad${index}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="800" height="450" fill="url(#grad${index})"/>
+      <rect x="50" y="50" width="700" height="350" fill="white" opacity="0.1" rx="10"/>
+      <text x="400" y="200" font-family="Arial, sans-serif" font-size="32" fill="white" text-anchor="middle" font-weight="bold">
+        ${title}
+      </text>
+      <text x="400" y="240" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle" opacity="0.9">
+        ${prompt.slice(0, 60)}${prompt.length > 60 ? "..." : ""}
+      </text>
+      <text x="400" y="280" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle" opacity="0.7">
+        Image generation requires Imagen API setup
+      </text>
+    </svg>`;
 
-    return await Promise.all(imagePromises);
-  } catch (error) {
-    console.error("Gemini image generation failure:", error);
-    throw error instanceof Error
-      ? error
-      : new Error("Failed to generate images with Gemini Imagen.");
-  }
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  });
 }
