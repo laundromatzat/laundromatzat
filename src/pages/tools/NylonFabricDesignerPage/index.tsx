@@ -324,9 +324,10 @@ const NylonFabricDesignerPage: React.FC = () => {
                       }
                     >
                       <div className="bg-aura-surface p-4 flex items-center justify-center min-h-[300px] relative overflow-hidden">
-                        <div
-                          className="group-hover:scale-105 transition-transform duration-300"
-                          dangerouslySetInnerHTML={{ __html: visual.svg }}
+                        <img
+                          src={visual.svg}
+                          alt={visual.stage}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-aura-accent/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

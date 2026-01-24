@@ -1,6 +1,6 @@
-import { GoogleGenAI, type Chat } from '@google/genai';
-import { AI_SYSTEM_PROMPT } from '@/constants';
-import { generateContentLocal, createLocalChatSession } from './localAIClient';
+import { GoogleGenAI, type Chat } from "@google/genai";
+import { AI_SYSTEM_PROMPT } from "@/constants";
+import { generateContentLocal, createLocalChatSession } from "./localAIClient";
 
 const FUNCTION_INSTRUCTIONS = `
 Available function:
@@ -26,11 +26,13 @@ Examples:
 Do not add any other keys, prose, or code‑fences.`;
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const AI_PROVIDER = import.meta.env.VITE_AI_PROVIDER || 'gemini';
+const AI_PROVIDER = import.meta.env.VITE_AI_PROVIDER || "gemini";
 
 function getClient(): GoogleGenAI {
   if (!API_KEY) {
-    throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.');
+    throw new Error(
+      "Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.",
+    );
   }
   return new GoogleGenAI({ apiKey: API_KEY });
 }
@@ -43,26 +45,28 @@ export interface ChatSessionLike {
 export type ClientChatSession = ChatSessionLike;
 
 export async function generateContent(prompt: string): Promise<string> {
-  if (AI_PROVIDER === 'local') {
+  if (AI_PROVIDER === "local") {
     return generateContentLocal(prompt, AI_SYSTEM_PROMPT);
   }
 
   try {
     const client = getClient();
     const response = await client.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         systemInstruction: {
-          role: 'system',
+          role: "system",
           parts: [{ text: AI_SYSTEM_PROMPT }],
         },
       },
     });
-    return response.text ?? '';
+    return response.text ?? "";
   } catch (error) {
-    console.error('Gemini generateContent failure:', error);
-    throw error instanceof Error ? error : new Error('Failed to generate content with Gemini.');
+    console.error("Gemini generateContent failure:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to generate content with Gemini.");
   }
 }
 
@@ -71,8 +75,12 @@ export async function sendMessage(message: string): Promise<string> {
     const session = await createChatSession();
     return await session.sendMessage(message);
   } catch (error) {
-    console.error('Failed to send message:', error);
-    throw error instanceof Error ? error : new Error('Could not connect to the assistant. Please try again later.');
+    console.error("Failed to send message:", error);
+    throw error instanceof Error
+      ? error
+      : new Error(
+          "Could not connect to the assistant. Please try again later.",
+        );
   }
 }
 
@@ -86,10 +94,12 @@ class ClientChatSessionImpl implements ChatSessionLike {
   async sendMessage(message: string): Promise<string> {
     try {
       const response = await this.chat.sendMessage({ message });
-      return response.text ?? '';
+      return response.text ?? "";
     } catch (error) {
-      console.error('Gemini chat failure:', error);
-      throw error instanceof Error ? error : new Error('Failed to send chat message to Gemini.');
+      console.error("Gemini chat failure:", error);
+      throw error instanceof Error
+        ? error
+        : new Error("Failed to send chat message to Gemini.");
     }
   }
 
@@ -103,27 +113,74 @@ class ClientChatSessionImpl implements ChatSessionLike {
         }
       }
     } catch (error) {
-      console.error('Gemini chat stream failure:', error);
-      throw error instanceof Error ? error : new Error('Failed to stream chat message from Gemini.');
+      console.error("Gemini chat stream failure:", error);
+      throw error instanceof Error
+        ? error
+        : new Error("Failed to stream chat message from Gemini.");
     }
   }
 }
 
 export async function createChatSession(): Promise<ChatSessionLike> {
-  if (AI_PROVIDER === 'local') {
-    return createLocalChatSession(`${AI_SYSTEM_PROMPT}\n${FUNCTION_INSTRUCTIONS}`);
+  if (AI_PROVIDER === "local") {
+    return createLocalChatSession(
+      `${AI_SYSTEM_PROMPT}\n${FUNCTION_INSTRUCTIONS}`,
+    );
   }
 
   const client = getClient();
   const chat = client.chats.create({
-    model: 'gemini-2.5-flash',
+    model: "gemini-2.5-flash",
     config: {
       systemInstruction: {
-        role: 'system',
+        role: "system",
         parts: [{ text: `${AI_SYSTEM_PROMPT}\n${FUNCTION_INSTRUCTIONS}` }],
       },
     },
   });
 
   return new ClientChatSessionImpl(chat);
+}
+
+/**
+ * Generate images using Gemini Imagen (nano-banana model)
+ * @param prompts Array of text prompts to generate images from
+ * @returns Array of base64-encoded image data URLs
+ */
+export async function generateImages(prompts: string[]): Promise<string[]> {
+  if (AI_PROVIDER === "local") {
+    throw new Error("Image generation is not supported with local AI provider");
+  }
+
+  try {
+    const client = getClient();
+    const imagePromises = prompts.map(async (prompt) => {
+      const response = await client.models.generateImages({
+        model: "imagen-3.0-generate-002", // Nano Banana model
+        prompt,
+        config: {
+          numberOfImages: 1,
+          aspectRatio: "16:9", // Good for technical diagrams/photos
+          safetyFilterLevel: "BLOCK_FEW",
+        },
+      });
+
+      // Return the first generated image as base64 data URL
+      const image = response.images?.[0];
+      if (!image?.imageBytes) {
+        throw new Error(
+          `No image generated for prompt: ${prompt.slice(0, 50)}...`,
+        );
+      }
+
+      return `data:image/png;base64,${image.imageBytes}`;
+    });
+
+    return await Promise.all(imagePromises);
+  } catch (error) {
+    console.error("Gemini image generation failure:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to generate images with Gemini Imagen.");
+  }
 }
