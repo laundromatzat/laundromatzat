@@ -41,8 +41,15 @@ export const saveDesign = async (
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to save design");
+    if (response.status === 401) {
+      throw new Error("Invalid token - Please log in again");
+    }
+    try {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to save design");
+    } catch {
+      throw new Error(`Failed to save design (${response.status})`);
+    }
   }
 
   return response.json();

@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useLoading } from "@/context/LoadingContext";
+import { useAuth } from "@/context/AuthContext";
+import { marked } from "marked";
 import {
   generateSewingGuide,
   generateProjectImages,
 } from "@/services/nylonFabricDesignerService";
-import {
-  saveDesign,
-  loadDesigns,
-  deleteDesign,
-  type NylonFabricDesign,
-} from "@/services/nylonFabricApi";
+import { saveDesign, loadDesigns } from "@/services/nylonFabricApi";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 import ImageZoomModal from "@/components/ImageZoomModal";
 
+// Configure marked to return HTML strings
+marked.setOptions({
+  breaks: true, // Convert \n to <br>
+  gfm: true, // Use GitHub Flavored Markdown
+});
+
 const NylonFabricDesignerPage: React.FC = () => {
   const { setIsLoading: setGlobalLoading } = useLoading();
+  const { token } = useAuth(); // Get token from auth context
   const [projectDescription, setProjectDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [researchStatus, setResearchStatus] = useState<string | null>(null);
@@ -67,6 +71,11 @@ const NylonFabricDesignerPage: React.FC = () => {
       return;
     }
 
+    if (!token) {
+      setError("Please log in to save your designs");
+      return;
+    }
+
     setIsLoading(true);
     setResearchStatus(null);
     setError(null);
@@ -83,7 +92,14 @@ const NylonFabricDesignerPage: React.FC = () => {
         onResearchComplete: () =>
           setResearchStatus("Drafting comprehensive hand-sewing guide..."),
       });
-      setSanitizedGuideContent(guide);
+
+      // Convert markdown to HTML if needed
+      const htmlContent =
+        guide.includes("<h3>") || guide.includes("<p>")
+          ? guide // Already HTML
+          : await marked(guide); // Convert markdown to HTML
+
+      setSanitizedGuideContent(htmlContent);
       setResearchStatus(null);
 
       try {
@@ -95,13 +111,16 @@ const NylonFabricDesignerPage: React.FC = () => {
           await saveDesign({
             projectName: projectDescription.slice(0, 100),
             description: projectDescription,
-            guideText: guide,
+            guideText: htmlContent,
             visuals: projectVisuals,
           });
           console.log("Design auto-saved successfully");
         } catch (saveError) {
           console.error("Failed to auto-save design:", saveError);
-          // Don't show error to user as this is background operation
+          // Show error to user since this affects functionality
+          setError(
+            `Generated successfully but failed to save: ${saveError instanceof Error ? saveError.message : "Unknown error"}`,
+          );
         }
       } catch (err) {
         const message =

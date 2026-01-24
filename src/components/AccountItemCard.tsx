@@ -114,7 +114,7 @@ export default function AccountItemCard({
             )}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Content */}
       <div className="p-4">

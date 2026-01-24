@@ -6,9 +6,6 @@ import {
   generateCarvingVariations,
   GeneratedDesign,
 } from "@/services/woodCarvingService";
-import { Camera, Check, Ruler, Wand2, Edit, RefreshCw } from "lucide-react";
-import CutCalculator from "./components/CutCalculator";
-import { ImageAnnotator } from "./components/ImageAnnotator";
 import {
   saveProject,
   updateProject,
