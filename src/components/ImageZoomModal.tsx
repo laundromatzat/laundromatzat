@@ -67,7 +67,7 @@ const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onNavigate, images, currentIndex]);
+  }, [isOpen, onNavigate, images, currentIndex, onClose]);
 
   const handleZoomIn = () => {
     setZoom((prev) => Math.min(prev + 0.25, 3));
@@ -129,11 +129,17 @@ const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
     >
       {/* Modal Content */}
       <div
         className="relative w-full h-full flex flex-col"
         onClick={(e) => e.stopPropagation()}
+        role="presentation"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-aura-surface/90 backdrop-blur-md border-b border-aura-border">
@@ -186,6 +192,7 @@ const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          role="presentation"
         >
           <div
             className="transition-transform flex items-center justify-center"

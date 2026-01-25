@@ -2,6 +2,7 @@ import React from "react";
 import { Trash2, Eye } from "lucide-react";
 
 interface AccountItemCardProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   item: any;
   type:
     | "palette"
@@ -28,11 +29,12 @@ export default function AccountItemCard({
         return item.image_data_url;
       case "backgroundRemoval":
         return item.result_image_data_url;
-      case "woodCarving":
+      case "woodCarving": {
         const selected = item.selected_variation_json
           ? JSON.parse(item.selected_variation_json)
           : null;
         return selected?.imageUrl;
+      }
       case "pinPals":
         return item.design_url;
       case "neuroaesthetic":
@@ -126,7 +128,7 @@ export default function AccountItemCard({
           <div className="flex gap-1 mt-3">
             {JSON.parse(item.palette_json)
               .slice(0, 5)
-              .map((color: any, i: number) => (
+              .map((color: { hex: string }, i: number) => (
                 <div
                   key={i}
                   className="w-6 h-6 rounded border border-white/20"
