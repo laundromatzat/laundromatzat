@@ -108,12 +108,15 @@ const NylonFabricDesignerPage: React.FC = () => {
 
         // Save automatically after successful generation
         try {
-          await saveDesign({
-            projectName: projectDescription.slice(0, 100),
-            description: projectDescription,
-            guideText: htmlContent,
-            visuals: projectVisuals,
-          });
+          await saveDesign(
+            {
+              projectName: projectDescription.slice(0, 100),
+              description: projectDescription,
+              guideText: htmlContent,
+              visuals: projectVisuals,
+            },
+            token || undefined,
+          );
           console.log("Design auto-saved successfully");
         } catch (saveError) {
           console.error("Failed to auto-save design:", saveError);
@@ -148,18 +151,6 @@ const NylonFabricDesignerPage: React.FC = () => {
     setVisuals(null);
     setError(null);
     setResearchStatus(null);
-  };
-
-  const handleClearHistory = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to clear all saved designs? This cannot be undone.",
-      )
-    ) {
-      // clearDesigns()
-      //   .then(() => startNewProject())
-      //   .catch(console.error);
-    }
   };
 
   return (
@@ -315,6 +306,8 @@ const NylonFabricDesignerPage: React.FC = () => {
                     <div
                       key={index}
                       className="group border border-aura-border rounded-lg shadow-aura-sm overflow-hidden bg-aura-bg hover:shadow-aura-lg hover:border-aura-accent transition-all cursor-pointer"
+                      role="button"
+                      tabIndex={0}
                       onClick={() =>
                         setSelectedImage({
                           svg: visual.svg,
@@ -322,6 +315,16 @@ const NylonFabricDesignerPage: React.FC = () => {
                           index,
                         })
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setSelectedImage({
+                            svg: visual.svg,
+                            title: visual.stage,
+                            index,
+                          });
+                        }
+                      }}
                     >
                       <div className="bg-aura-surface p-4 flex items-center justify-center min-h-[300px] relative overflow-hidden">
                         <img

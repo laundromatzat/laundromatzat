@@ -22,8 +22,9 @@ export type NylonFabricDesignData = {
  */
 export const saveDesign = async (
   data: NylonFabricDesignData,
+  authToken?: string,
 ): Promise<NylonFabricDesign> => {
-  const token = localStorage.getItem("token");
+  const token = authToken || localStorage.getItem("token");
   if (!token) throw new Error("Authentication required");
 
   const response = await fetch(getApiUrl("/api/nylon-fabric-designs"), {
