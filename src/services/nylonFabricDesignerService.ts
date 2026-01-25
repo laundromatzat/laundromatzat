@@ -1,5 +1,5 @@
 import createDOMPurify from "dompurify";
-import { z } from "zod";
+
 import { generateContent } from "./geminiClient";
 
 type ContentFetcher = (prompt: string) => Promise<string>;
@@ -86,106 +86,10 @@ async function sanitizeGuideContent(html: string): Promise<string> {
   });
 }
 
-async function sanitizeSvg(svgMarkup: string): Promise<string> {
-  if (!svgMarkup) {
-    return "";
-  }
-
-  const domPurify = getDomPurify();
-  if (!domPurify) {
-    return stripExecutableContent(svgMarkup);
-  }
-
-  return domPurify.sanitize(svgMarkup, {
-    FORBID_TAGS: ["script"],
-    FORBID_ATTR: ["onload", "onerror", "onclick", "onmouseover", "onfocus"],
-    USE_PROFILES: { svg: true, svgFilters: true },
-  });
-}
-
-/**
- * Validates SVG markup for common errors and provides warnings
- * Returns the SVG (potentially fixed) or throws an error if critically invalid
- */
-function validateAndFixSvg(svgMarkup: string): string {
-  if (!svgMarkup || !svgMarkup.trim().startsWith("<svg")) {
-    throw new Error("Invalid SVG: Does not start with <svg tag");
-  }
-
-  let fixedSvg = svgMarkup;
-  let fixCount = 0;
-
-  // Auto-fix: Remove font family names from numeric attributes (common AI mistake)
-  // e.g., y='Arial, sans-serif' should be removed or replaced with a default value
-  const fontInNumericPattern =
-    /(?:x|y|x1|y1|x2|y2|cx|cy|r|width|height)=["'](?:[^"']*(?:Arial|sans-serif|serif|monospace|Helvetica|Times|Courier)[^"']*)["']/gi;
-  const fontMatches = fixedSvg.match(fontInNumericPattern);
-
-  if (fontMatches && fontMatches.length > 0) {
-    console.warn(
-      "[SVG Validation] Found font names in numeric attributes. Auto-fixing...",
-    );
-    fontMatches.forEach((match) => {
-      console.warn(`  Removing invalid: ${match}`);
-      // Remove these attributes entirely as they're invalid
-      fixedSvg = fixedSvg.replace(match, "");
-      fixCount++;
-    });
-  }
-
-  // Check for string concatenation in numeric attributes (e.g., y="41.5+13")
-  const invalidNumericPattern =
-    /(?:x|y|x1|y1|x2|y2|cx|cy|r|width|height)=["']([^"']*[+\-*/]|[^"']*\/[^"']*|[^"'0-9.\- ]+[^"']*)["']/gi;
-  const matches = fixedSvg.match(invalidNumericPattern);
-
-  if (matches && matches.length > 0) {
-    console.warn(
-      "[SVG Validation] Found invalid numeric attributes with expressions:",
-    );
-    console.warn("[SVG Validation] This may cause rendering errors.");
-
-    // Log the first few examples
-    matches.slice(0, 3).forEach((match) => {
-      console.warn(`  Example: ${match}`);
-    });
-  }
-
-  // Check for missing xmlns
-  if (!fixedSvg.includes("xmlns=")) {
-    console.warn("[SVG Validation] Missing xmlns attribute, adding default");
-    fixedSvg = fixedSvg.replace(
-      "<svg",
-      '<svg xmlns="http://www.w3.org/2000/svg"',
-    );
-    fixCount++;
-  }
-
-  // Check for viewBox (recommended for responsive SVGs)
-  if (!fixedSvg.includes("viewBox=")) {
-    console.warn(
-      "[SVG Validation] Missing viewBox attribute, SVG may not scale correctly",
-    );
-  }
-
-  if (fixCount > 0) {
-    console.log(`[SVG Validation] Auto-fixed ${fixCount} issue(s)`);
-  }
-
-  return fixedSvg;
-}
-
-const VisualRepresentationSchema = z.object({
-  stage: z.string(),
-  svg: z.string(),
-});
-
-const VisualsResponseSchema = z.array(VisualRepresentationSchema);
-
 import { performResearch } from "./researchService";
 
 export async function generateSewingGuide(
   description: string,
-  _apiKey?: string,
   options?: NylonFabricDesignerServiceOptions,
 ): Promise<string> {
   const fetchContent = options?.contentFetcher ?? generateContent;
@@ -265,16 +169,7 @@ Generate the complete guide now:`;
 // Simplified version using image generation instead of SVG
 import { generateImages } from "./geminiClient";
 
-type NylonFabricDesignerServiceOptions = {
-  onResearchStart?: () => void;
-  onResearchComplete?: (findings: string) => void;
-};
-
-export async function generateProjectImages(
-  description: string,
-  _apiKey?: string,
-  options?: NylonFabricDesignerServiceOptions,
-) {
+export async function generateProjectImages(description: string) {
   // Create three detailed image generation prompts
   const imagePrompts = [
     {

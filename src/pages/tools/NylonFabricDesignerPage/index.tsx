@@ -84,7 +84,7 @@ const NylonFabricDesignerPage: React.FC = () => {
     setGlobalLoading(true);
 
     try {
-      const guide = await generateSewingGuide(projectDescription, undefined, {
+      const guide = await generateSewingGuide(projectDescription, {
         onResearchStart: () =>
           setResearchStatus(
             "Researching technical specifications and materials...",
