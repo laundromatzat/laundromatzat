@@ -1274,9 +1274,9 @@ EXTRACTED TEXT END
       );
 
       // 3. Call LM Studio Vision API
-      console.log(
-        `Sending image payload to LM Studio Vision model (${LM_STUDIO_API})...`,
-      );
+      console.log("Sending image payload to LM Studio Vision model...");
+      console.log(`LM Studio URL: ${LM_STUDIO_API}`);
+      console.log(`Expected Model: ${MODEL_NAME}`);
 
       const apiResponse = await fetch(`${LM_STUDIO_API}/v1/chat/completions`, {
         method: "POST",
@@ -1310,9 +1310,9 @@ EXTRACTED TEXT END
       });
 
       if (!apiResponse.ok) {
-        throw new Error(
-          `LM Studio API error: ${apiResponse.status} ${apiResponse.statusText}`,
-        );
+        const errorMsg = `LM Studio API error: ${apiResponse.status} ${apiResponse.statusText}. Attempted connection to ${LM_STUDIO_API} with model ${MODEL_NAME}`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
       const llmResponse = await apiResponse.json();
@@ -1533,9 +1533,22 @@ EXTRACTED TEXT END
       res.status(201).json(responseData);
     } catch (err) {
       console.error("Analysis failed:", err.message);
-      res
-        .status(500)
-        .json({ error: "Failed to analyze paycheck with the LM Studio API." });
+      console.error("Full error:", err);
+
+      // Build helpful error message with connection details
+      let errorMessage;
+      if (
+        err.message.includes("fetch failed") ||
+        err.message.includes("ECONNREFUSED") ||
+        err.message.includes("connect")
+      ) {
+        const port = new URL(LM_STUDIO_API).port || "1234";
+        errorMessage = `Unable to connect to LM Studio at ${LM_STUDIO_API}.\n\nPlease ensure:\n1. LM Studio is running\n2. Server is started on port ${port}\n3. Model "${MODEL_NAME}" is loaded\n\nOriginal error: ${err.message}`;
+      } else {
+        errorMessage = `Failed to analyze paystub: ${err.message}\n\nLM Studio Configuration:\n- URL: ${LM_STUDIO_API}\n- Expected Model: ${MODEL_NAME}`;
+      }
+
+      res.status(500).json({ error: errorMessage });
     }
   },
 );
