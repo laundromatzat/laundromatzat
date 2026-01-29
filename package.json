@@ -43,6 +43,7 @@
     "framer-motion": "^12.23.25",
     "jspdf": "^4.0.0",
     "lucide-react": "^0.559.0",
+    "marked": "^17.0.1",
     "mime-types": "^3.0.2",
     "onnxruntime-web": "^1.21.0",
     "pdfjs-dist": "^4.3.136",

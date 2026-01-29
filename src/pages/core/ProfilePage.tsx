@@ -553,7 +553,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
                 {/* Gallery Grid */}
-                {data.colorPalettes.filter((p: any) =>
+                {data.colorPalettes.filter((p) =>
                   searchQuery
                     ? p.file_name
                         ?.toLowerCase()
@@ -562,14 +562,14 @@ export default function ProfilePage() {
                 ).length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {data.colorPalettes
-                      .filter((p: any) =>
+                      .filter((p) =>
                         searchQuery
                           ? p.file_name
                               ?.toLowerCase()
                               .includes(searchQuery.toLowerCase())
                           : true,
                       )
-                      .map((palette: any) => (
+                      .map((palette) => (
                         <AccountItemCard
                           key={palette.id}
                           item={palette}
@@ -632,7 +632,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
                 {/* Gallery Grid */}
-                {data.backgroundRemoval.filter((j: any) =>
+                {data.backgroundRemoval.filter((j) =>
                   searchQuery
                     ? j.file_name
                         ?.toLowerCase()
@@ -641,14 +641,14 @@ export default function ProfilePage() {
                 ).length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {data.backgroundRemoval
-                      .filter((j: any) =>
+                      .filter((j) =>
                         searchQuery
                           ? j.file_name
                               ?.toLowerCase()
                               .includes(searchQuery.toLowerCase())
                           : true,
                       )
-                      .map((job: any) => (
+                      .map((job) => (
                         <AccountItemCard
                           key={job.id}
                           item={job}
@@ -711,7 +711,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
                 {/* Gallery Grid */}
-                {data.woodCarving.filter((p: any) =>
+                {data.woodCarving.filter((p) =>
                   searchQuery
                     ? p.description
                         ?.toLowerCase()
@@ -720,14 +720,14 @@ export default function ProfilePage() {
                 ).length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {data.woodCarving
-                      .filter((p: any) =>
+                      .filter((p) =>
                         searchQuery
                           ? p.description
                               ?.toLowerCase()
                               .includes(searchQuery.toLowerCase())
                           : true,
                       )
-                      .map((project: any) => (
+                      .map((project) => (
                         <AccountItemCard
                           key={project.id}
                           item={project}
@@ -790,7 +790,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
                 {/* Gallery Grid */}
-                {data.nylonFabric.filter((d: any) =>
+                {data.nylonFabric.filter((d) =>
                   searchQuery
                     ? d.design_name
                         ?.toLowerCase()
@@ -802,7 +802,7 @@ export default function ProfilePage() {
                 ).length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {data.nylonFabric
-                      .filter((d: any) =>
+                      .filter((d) =>
                         searchQuery
                           ? d.design_name
                               ?.toLowerCase()
@@ -812,7 +812,7 @@ export default function ProfilePage() {
                               .includes(searchQuery.toLowerCase())
                           : true,
                       )
-                      .map((design: any) => (
+                      .map((design) => (
                         <AccountItemCard
                           key={design.id}
                           item={{

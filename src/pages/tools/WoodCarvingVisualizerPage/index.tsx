@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   CarvingVariation,
   Unit,
@@ -6,19 +6,17 @@ import {
   generateCarvingVariations,
   GeneratedDesign,
 } from "@/services/woodCarvingService";
-import { Camera, Check, Ruler, Wand2, Edit, RefreshCw } from "lucide-react";
-import CutCalculator from "./components/CutCalculator";
-import { ImageAnnotator } from "./components/ImageAnnotator";
 import {
   saveProject,
   updateProject,
-  loadProjects,
-  deleteProject,
   type WoodCarvingProject,
 } from "@/services/woodCarvingApi";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 import { DesignGallery, SortOption } from "@/components/DesignGallery";
 import { ClockIcon } from "@heroicons/react/24/outline";
+import { RefreshCw, Wand2, Check, Ruler, Camera, Edit } from "lucide-react";
+import { ImageAnnotator } from "./components/ImageAnnotator";
+import CutCalculator from "./components/CutCalculator";
 
 const EXAMPLE_DESCRIPTIONS = [
   "A majestic eagle landing on a branch, realistic style",

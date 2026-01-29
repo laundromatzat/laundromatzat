@@ -1,5 +1,5 @@
 import createDOMPurify from "dompurify";
-import { z } from "zod";
+
 import { generateContent } from "./geminiClient";
 
 type ContentFetcher = (prompt: string) => Promise<string>;
@@ -86,106 +86,10 @@ async function sanitizeGuideContent(html: string): Promise<string> {
   });
 }
 
-async function sanitizeSvg(svgMarkup: string): Promise<string> {
-  if (!svgMarkup) {
-    return "";
-  }
-
-  const domPurify = getDomPurify();
-  if (!domPurify) {
-    return stripExecutableContent(svgMarkup);
-  }
-
-  return domPurify.sanitize(svgMarkup, {
-    FORBID_TAGS: ["script"],
-    FORBID_ATTR: ["onload", "onerror", "onclick", "onmouseover", "onfocus"],
-    USE_PROFILES: { svg: true, svgFilters: true },
-  });
-}
-
-/**
- * Validates SVG markup for common errors and provides warnings
- * Returns the SVG (potentially fixed) or throws an error if critically invalid
- */
-function validateAndFixSvg(svgMarkup: string): string {
-  if (!svgMarkup || !svgMarkup.trim().startsWith("<svg")) {
-    throw new Error("Invalid SVG: Does not start with <svg tag");
-  }
-
-  let fixedSvg = svgMarkup;
-  let fixCount = 0;
-
-  // Auto-fix: Remove font family names from numeric attributes (common AI mistake)
-  // e.g., y='Arial, sans-serif' should be removed or replaced with a default value
-  const fontInNumericPattern =
-    /(?:x|y|x1|y1|x2|y2|cx|cy|r|width|height)=["'](?:[^"']*(?:Arial|sans-serif|serif|monospace|Helvetica|Times|Courier)[^"']*)["']/gi;
-  const fontMatches = fixedSvg.match(fontInNumericPattern);
-
-  if (fontMatches && fontMatches.length > 0) {
-    console.warn(
-      "[SVG Validation] Found font names in numeric attributes. Auto-fixing...",
-    );
-    fontMatches.forEach((match) => {
-      console.warn(`  Removing invalid: ${match}`);
-      // Remove these attributes entirely as they're invalid
-      fixedSvg = fixedSvg.replace(match, "");
-      fixCount++;
-    });
-  }
-
-  // Check for string concatenation in numeric attributes (e.g., y="41.5+13")
-  const invalidNumericPattern =
-    /(?:x|y|x1|y1|x2|y2|cx|cy|r|width|height)=["']([^"']*[+\-*/]|[^"']*\/[^"']*|[^"'0-9.\- ]+[^"']*)["']/gi;
-  const matches = fixedSvg.match(invalidNumericPattern);
-
-  if (matches && matches.length > 0) {
-    console.warn(
-      "[SVG Validation] Found invalid numeric attributes with expressions:",
-    );
-    console.warn("[SVG Validation] This may cause rendering errors.");
-
-    // Log the first few examples
-    matches.slice(0, 3).forEach((match) => {
-      console.warn(`  Example: ${match}`);
-    });
-  }
-
-  // Check for missing xmlns
-  if (!fixedSvg.includes("xmlns=")) {
-    console.warn("[SVG Validation] Missing xmlns attribute, adding default");
-    fixedSvg = fixedSvg.replace(
-      "<svg",
-      '<svg xmlns="http://www.w3.org/2000/svg"',
-    );
-    fixCount++;
-  }
-
-  // Check for viewBox (recommended for responsive SVGs)
-  if (!fixedSvg.includes("viewBox=")) {
-    console.warn(
-      "[SVG Validation] Missing viewBox attribute, SVG may not scale correctly",
-    );
-  }
-
-  if (fixCount > 0) {
-    console.log(`[SVG Validation] Auto-fixed ${fixCount} issue(s)`);
-  }
-
-  return fixedSvg;
-}
-
-const VisualRepresentationSchema = z.object({
-  stage: z.string(),
-  svg: z.string(),
-});
-
-const VisualsResponseSchema = z.array(VisualRepresentationSchema);
-
 import { performResearch } from "./researchService";
 
 export async function generateSewingGuide(
   description: string,
-  _apiKey?: string,
   options?: NylonFabricDesignerServiceOptions,
 ): Promise<string> {
   const fetchContent = options?.contentFetcher ?? generateContent;
@@ -262,131 +166,78 @@ Generate the complete guide now:`;
   return sanitizeGuideContent(guide);
 }
 
-export async function generateProjectImages(
-  description: string,
-  _apiKey?: string,
-  options?: NylonFabricDesignerServiceOptions,
-) {
-  const prompt = `For this hand-sewn nylon fabric project: "${description}"
+// Simplified version using image generation instead of SVG
+import { generateImages } from "./geminiClient";
 
-Create 3 DETAILED, PROFESSIONAL visual representations using SVG code. Generate complete, valid SVG markup for:
+export async function generateProjectImages(description: string) {
+  // Create three detailed image generation prompts
+  const imagePrompts = [
+    {
+      stage: "Cutting Pattern Layout",
+      prompt: `Professional technical flat-lay photo of sewing pattern pieces laid out on a cutting mat. 
+For project: ${description}
 
-1. CUTTING PATTERN DIAGRAM - A technical flat pattern showing all fabric pieces with precise measurements, grain lines, fold lines, notches, and cutting margins
-2. ASSEMBLY DIAGRAM - A step-by-step assembly guide showing how pieces connect, with numbered steps, stitch types, seam allowances, and directional arrows
-3. FINISHED PRODUCT RENDERING - An isometric or perspective view of the completed item with realistic proportions, showing all features and details
+Show:
+- Multiple fabric pattern pieces precisely cut from ripstop nylon
+- Neatly arranged on a green self-healing cutting mat with grid lines
+- Pattern pieces in different pastel colors (light blue, light pink, light yellow nylon fabric)
+- Rotary cutter, fabric scissors, and measuring tape visible
+- Small weights holding down pattern paper templates
+- Notches and markings clearly visible on fabric edges
+- Professional workshop lighting, top-down view
+- Clean, organized workspace
+- 16:9 aspect ratio, photorealistic style
+- Documentary photography aesthetic`,
+    },
+    {
+      stage: "Hand-Sewing Assembly Steps",
+      prompt: `Professional close-up photo showing hands hand-sewing nylon fabric pieces together.
+For project: ${description}
 
-CRITICAL SVG REQUIREMENTS:
-- ALL numeric attributes (x, y, x1, y1, x2, y2, cx, cy, r, width, height, etc.) MUST be calculated numbers, NOT string expressions
-- WRONG: y="41.5+13" or x="width/2" or y="Arial, sans-serif" or x="sans-serif"
-- CORRECT: y="54.5" or x="200"
-- NEVER put font family names (Arial, sans-serif, Helvetica, etc.) in numeric position attributes
-- Font families belong ONLY in font-family attributes, NOT in x, y, width, height, etc.
-- Use viewBox for responsive scaling: viewBox="0 0 800 600"
-- Include proper xmlns attribute: xmlns="http://www.w3.org/2000/svg"
-- Use semantic grouping with <g> tags
-- Add descriptive <title> and <desc> tags for accessibility
+Show:
+- Hands using a curved needle with waxed thread
+- Nylon fabric pieces being joined with visible backstitch technique
+- Speedy Stitcher sewing awl in background
+- Thread, thimble, and beeswax visible on work surface
+- Natural workshop lighting highlighting the stitching
+- Realistic hand positions and fabric texture
+- Wood or fabric work surface
+- Professional craft photography style
+- 16:9 aspect ratio, warm natural lighting
+- Focus on the sewing technique and craftsmanship`,
+    },
+    {
+      stage: "Finished Product Photo",
+      prompt: `Professional product photography of completed hand-sewn nylon fabric item.
+For project: ${description}
 
-VISUAL DESIGN REQUIREMENTS:
-- Use a clean, professional color palette (similar to technical drawings)
-- Background: white or light gray (#f5f5f5)
-- Pattern pieces: different pastel colors (#FFE5E5, #E5F5FF, #E5FFE5, etc.) with dark borders
-- Measurements: in Arial or sans-serif font, 12-14px, dark color (#333)
-- Fold lines: dashed stroke-dasharray="5,5" in blue (#0066CC)
-- Stitch lines: dashed stroke-dasharray="3,3" in red (#CC0000)
-- Cut lines: solid black lines, stroke-width="2"
-- Arrows: use <marker> elements for professional arrow heads
-- Labels: clear, legible text with background rectangles for contrast
-- Grid or reference lines where appropriate
-
-SPECIFIC DETAILS TO INCLUDE:
-Cutting Pattern:
-- All dimensions clearly labeled with measurement lines and text
-- Grain line arrows
-- "Fold" indicators with fold line symbols
-- Notches marked with small triangles
-- Seam allowance marked (typically 1/4" or 1/2")
-- "Cut 1" or "Cut 2" annotations
-- Pattern piece names
-
-Assembly Diagram:
-- Step numbers in circles
-- Different stitch types illustrated (backstitch, running stitch, whipstitch)
-- Seam allowance width labeled
-- "Right side" and "wrong side" of fabric indicated
-- Arrows showing which direction to sew
-- Cross-sections showing how pieces overlap
-- Annotations for critical assembly points
-
-Finished Product:
-- Realistic 3D perspective or isometric view
-- Show all functional features (pockets, closures, straps, etc.)
-- Shading to show depth and dimension
-- Highlights to show fabric texture
-- Scale reference (e.g., "8 inches" with a dimension line)
-
-Return ONLY a JSON array (no markdown, no backticks, no code fences) with this exact structure:
-[
-  {
-    "stage": "Cutting Pattern",
-    "svg": "<svg viewBox='0 0 800 600' xmlns='http://www.w3.org/2000/svg'><!-- complete calculated SVG code --></svg>"
-  },
-  {
-    "stage": "Assembly Diagram", 
-    "svg": "<svg viewBox='0 0 800 600' xmlns='http://www.w3.org/2000/svg'><!-- complete calculated SVG code --></svg>"
-  },
-  {
-    "stage": "Finished Product",
-    "svg": "<svg viewBox='0 0 800 600' xmlns='http://www.w3.org/2000/svg'><!-- complete calculated SVG code --></svg>"
-  }
-]`;
-
-  const fetchContent = options?.contentFetcher ?? generateContent;
-  const responseText = await fetchContent(prompt);
-  const cleanJson = responseText
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+Show:
+- Finished handmade project in use or beautifully displayed
+- High-quality ripstop nylon with visible texture
+- All functional features clearly visible (pockets, closures, straps, compartments)
+- Realistic lighting showing dimensional depth
+- Clean background (white, grey, or wood surface)
+- Professional e-commerce product photo style
+- Sharp focus with natural depth of field
+- 16:9 aspect ratio
+- Showcase craftsmanship and utility
+- Photorealistic, magazine-quality aesthetic`,
+    },
+  ];
 
   try {
-    const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
-    const sanitizedVisuals = await Promise.all(
-      visuals.map(async (visual) => {
-        try {
-          // Validate the SVG first
-          const validatedSvg = validateAndFixSvg(visual.svg);
-          // Then sanitize it
-          const sanitizedSvg = await sanitizeSvg(validatedSvg);
-          return {
-            stage: visual.stage,
-            svg: sanitizedSvg,
-          };
-        } catch (validationError) {
-          console.error(
-            `[SVG Validation] Failed to validate SVG for "${visual.stage}":`,
-            validationError,
-          );
-          // Return a placeholder SVG on validation failure
-          return {
-            stage: visual.stage,
-            svg: `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-              <rect width="400" height="300" fill="#f5f5f5"/>
-              <text x="200" y="150" text-anchor="middle" font-size="16" fill="#666">
-                Error generating ${visual.stage}
-              </text>
-            </svg>`,
-          };
-        }
-      }),
-    );
-    return sanitizedVisuals;
+    const prompts = imagePrompts.map((p) => p.prompt);
+    const imageDataUrls = await generateImages(prompts);
+
+    // Return images in the expected format (matching the old SVG structure)
+    return imagePrompts.map((item, index) => ({
+      stage: item.stage,
+      svg: imageDataUrls[index], // Using 'svg' field name for compatibility, but it's actually an image data URL
+    }));
   } catch (error) {
-    console.error(
-      "Failed to parse project visuals response:",
-      error,
-      responseText,
-    );
+    console.error("Failed to generate project images:", error);
     throw new Error(
-      "The fabric designer returned an invalid visualization response. Please try again.",
+      "Failed to generate visual images for your project. Please try again.",
     );
   }
 }

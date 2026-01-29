@@ -22,8 +22,9 @@ export type NylonFabricDesignData = {
  */
 export const saveDesign = async (
   data: NylonFabricDesignData,
+  authToken?: string,
 ): Promise<NylonFabricDesign> => {
-  const token = localStorage.getItem("token");
+  const token = authToken || localStorage.getItem("token");
   if (!token) throw new Error("Authentication required");
 
   const response = await fetch(getApiUrl("/api/nylon-fabric-designs"), {
@@ -41,8 +42,15 @@ export const saveDesign = async (
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to save design");
+    if (response.status === 401) {
+      throw new Error("Invalid token - Please log in again");
+    }
+    try {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to save design");
+    } catch {
+      throw new Error(`Failed to save design (${response.status})`);
+    }
   }
 
   return response.json();

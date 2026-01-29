@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useLoading } from "@/context/LoadingContext";
+import { useAuth } from "@/context/AuthContext";
+import { marked } from "marked";
 import {
   generateSewingGuide,
   generateProjectImages,
 } from "@/services/nylonFabricDesignerService";
-import {
-  saveDesign,
-  loadDesigns,
-  deleteDesign,
-  type NylonFabricDesign,
-} from "@/services/nylonFabricApi";
+import { saveDesign, loadDesigns } from "@/services/nylonFabricApi";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 import ImageZoomModal from "@/components/ImageZoomModal";
 
+// Configure marked to return HTML strings
+marked.setOptions({
+  breaks: true, // Convert \n to <br>
+  gfm: true, // Use GitHub Flavored Markdown
+});
+
 const NylonFabricDesignerPage: React.FC = () => {
   const { setIsLoading: setGlobalLoading } = useLoading();
+  const { token } = useAuth(); // Get token from auth context
   const [projectDescription, setProjectDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [researchStatus, setResearchStatus] = useState<string | null>(null);
@@ -67,6 +71,11 @@ const NylonFabricDesignerPage: React.FC = () => {
       return;
     }
 
+    if (!token) {
+      setError("Please log in to save your designs");
+      return;
+    }
+
     setIsLoading(true);
     setResearchStatus(null);
     setError(null);
@@ -75,7 +84,7 @@ const NylonFabricDesignerPage: React.FC = () => {
     setGlobalLoading(true);
 
     try {
-      const guide = await generateSewingGuide(projectDescription, undefined, {
+      const guide = await generateSewingGuide(projectDescription, {
         onResearchStart: () =>
           setResearchStatus(
             "Researching technical specifications and materials...",
@@ -83,7 +92,14 @@ const NylonFabricDesignerPage: React.FC = () => {
         onResearchComplete: () =>
           setResearchStatus("Drafting comprehensive hand-sewing guide..."),
       });
-      setSanitizedGuideContent(guide);
+
+      // Convert markdown to HTML if needed
+      const htmlContent =
+        guide.includes("<h3>") || guide.includes("<p>")
+          ? guide // Already HTML
+          : await marked(guide); // Convert markdown to HTML
+
+      setSanitizedGuideContent(htmlContent);
       setResearchStatus(null);
 
       try {
@@ -92,16 +108,22 @@ const NylonFabricDesignerPage: React.FC = () => {
 
         // Save automatically after successful generation
         try {
-          await saveDesign({
-            projectName: projectDescription.slice(0, 100),
-            description: projectDescription,
-            guideText: guide,
-            visuals: projectVisuals,
-          });
+          await saveDesign(
+            {
+              projectName: projectDescription.slice(0, 100),
+              description: projectDescription,
+              guideText: htmlContent,
+              visuals: projectVisuals,
+            },
+            token || undefined,
+          );
           console.log("Design auto-saved successfully");
         } catch (saveError) {
           console.error("Failed to auto-save design:", saveError);
-          // Don't show error to user as this is background operation
+          // Show error to user since this affects functionality
+          setError(
+            `Generated successfully but failed to save: ${saveError instanceof Error ? saveError.message : "Unknown error"}`,
+          );
         }
       } catch (err) {
         const message =
@@ -129,18 +151,6 @@ const NylonFabricDesignerPage: React.FC = () => {
     setVisuals(null);
     setError(null);
     setResearchStatus(null);
-  };
-
-  const handleClearHistory = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to clear all saved designs? This cannot be undone.",
-      )
-    ) {
-      // clearDesigns()
-      //   .then(() => startNewProject())
-      //   .catch(console.error);
-    }
   };
 
   return (
@@ -296,6 +306,8 @@ const NylonFabricDesignerPage: React.FC = () => {
                     <div
                       key={index}
                       className="group border border-aura-border rounded-lg shadow-aura-sm overflow-hidden bg-aura-bg hover:shadow-aura-lg hover:border-aura-accent transition-all cursor-pointer"
+                      role="button"
+                      tabIndex={0}
                       onClick={() =>
                         setSelectedImage({
                           svg: visual.svg,
@@ -303,11 +315,22 @@ const NylonFabricDesignerPage: React.FC = () => {
                           index,
                         })
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setSelectedImage({
+                            svg: visual.svg,
+                            title: visual.stage,
+                            index,
+                          });
+                        }
+                      }}
                     >
                       <div className="bg-aura-surface p-4 flex items-center justify-center min-h-[300px] relative overflow-hidden">
-                        <div
-                          className="group-hover:scale-105 transition-transform duration-300"
-                          dangerouslySetInnerHTML={{ __html: visual.svg }}
+                        <img
+                          src={visual.svg}
+                          alt={visual.stage}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-aura-accent/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

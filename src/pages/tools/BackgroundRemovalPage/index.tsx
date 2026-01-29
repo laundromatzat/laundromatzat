@@ -11,8 +11,6 @@ import PageMetadata from "@/components/PageMetadata";
 import Container from "@/components/Container";
 import {
   saveJob,
-  loadJobs,
-  deleteJob,
   type BackgroundRemovalJob as ApiJob,
 } from "@/services/backgroundRemovalApi";
 import { DesignGallery, SortOption } from "@/components/DesignGallery";

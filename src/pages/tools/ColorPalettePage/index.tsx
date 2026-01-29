@@ -1,20 +1,8 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import PageMetadata from "@/components/PageMetadata";
 import Container from "@/components/Container";
-import {
-  savePalette,
-  loadPalettes,
-  deletePalette,
-  type ColorPalette,
-  type ExtractedColor as ApiExtractedColor,
-} from "@/services/colorPaletteApi";
+import { savePalette, type ColorPalette } from "@/services/colorPaletteApi";
 import { compressImage } from "@/utils/imageUtils";
 import { DesignGallery, SortOption } from "@/components/DesignGallery";
 import { ClockIcon } from "@heroicons/react/24/outline";
@@ -155,17 +143,9 @@ const ColorPalettePage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedValue, setCopiedValue] = useState<string | null>(null);
-  const [history, setHistory] = useState<ColorPalette[]>([]);
-  const [currentPaletteId, setCurrentPaletteId] = useState<number | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [currentFileName, setCurrentFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // Load history on mount
-  useEffect(() => {
-    loadPalettes().then(setHistory).catch(console.error);
-  }, []);
 
   const sampleColors = useCallback(
     (context: CanvasRenderingContext2D, width: number, height: number) => {
@@ -227,7 +207,6 @@ const ColorPalettePage: React.FC = () => {
       });
 
       setPalette(colors);
-      setCurrentFileName(file.name);
 
       // Save to backend with image compression
       try {
@@ -239,16 +218,11 @@ const ColorPalettePage: React.FC = () => {
           0.85,
         );
 
-        const savedPalette = await savePalette({
+        await savePalette({
           fileName: file.name,
           imageDataUrl: compressedDataUrl,
           palette: colors,
         });
-        setCurrentPaletteId(savedPalette.id);
-
-        // Reload history
-        const updatedHistory = await loadPalettes();
-        setHistory(updatedHistory);
       } catch (err) {
         console.error("Failed to save palette:", err);
         // Don't show error to user - background operation
@@ -326,31 +300,8 @@ const ColorPalettePage: React.FC = () => {
   const loadHistoricalPalette = useCallback((stored: ColorPalette) => {
     const parsedPalette: ExtractedColor[] = JSON.parse(stored.palette_json);
     setPalette(parsedPalette);
-    setCurrentPaletteId(stored.id);
-    setCurrentFileName(stored.file_name);
     setImagePreview(stored.image_data_url);
   }, []);
-
-  const handleDeletePalette = useCallback(
-    async (paletteId: number) => {
-      try {
-        await deletePalette(paletteId);
-        const updatedHistory = await loadPalettes();
-        setHistory(updatedHistory);
-
-        // Clear current if deleted
-        if (currentPaletteId === paletteId) {
-          setPalette([]);
-          setImagePreview(null);
-          setCurrentPaletteId(null);
-          setCurrentFileName("");
-        }
-      } catch (err) {
-        console.error("Failed to delete palette:", err);
-      }
-    },
-    [currentPaletteId],
-  );
 
   const sortOptions: SortOption[] = [
     {

@@ -27,6 +27,11 @@ export const analyzePaycheckPdf = async (file: File): Promise<PaycheckData> => {
 
   if (!response.ok) {
     if (response.status === 401) throw new Error("Unauthorized");
+    if (response.status === 429) {
+      throw new Error(
+        "Rate limit exceeded. Please wait a few minutes before uploading more files.",
+      );
+    }
     const errorData = await response
       .json()
       .catch(() => ({ error: "Unknown error" }));
@@ -53,7 +58,7 @@ export const fetchPaychecks = async (): Promise<PaycheckData[]> => {
 
 export const updatePaycheckReportedHours = async (
   id: number | string,
-  userReportedHours: { [key: string]: unknown[] }
+  userReportedHours: { [key: string]: unknown[] },
 ): Promise<void> => {
   const response = await fetch(getApiUrl(`/paychecks/${id}`), {
     method: "PUT",
@@ -70,7 +75,7 @@ export const updatePaycheckReportedHours = async (
       .json()
       .catch(() => ({ error: "Failed to update reported hours." }));
     throw new Error(
-      errorData.error || "An unknown error occurred during update."
+      errorData.error || "An unknown error occurred during update.",
     );
   }
 };
