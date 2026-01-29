@@ -1072,34 +1072,7 @@ app.post(
       fs.writeFileSync(filePath, req.file.buffer);
       console.log(`Saved PDF to: ${filePath}`);
 
-      // 1. Convert PDF to Image (First page only)
-      console.log("Converting PDF to image...");
-      console.log("File details:", {
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        bufferType: req.file.buffer
-          ? req.file.buffer.constructor.name
-          : "undefined",
-        bufferLength: req.file.buffer ? req.file.buffer.length : 0,
-      });
-
-      let outputImages;
-      try {
-        // Use custom renderer
-        outputImages = await convertPdfToImages(req.file.buffer, {
-          page_numbers: [1],
-        });
-      } catch (conversionErr) {
-        console.error("PDF Conversion Failed:", conversionErr);
-        throw new Error(`PDF Conversion Failed: ${conversionErr.message}`);
-      }
-
-      if (!outputImages || outputImages.length === 0) {
-        throw new Error("Failed to convert PDF to image: No images returned.");
-      }
-
-      // --- PATH A: DETERMINISTIC PARSING (Digital PDFs) ---
+      // --- PATH A: DETERMINISTIC PARSING (Digital PDFs) - Try this FIRST ---
       console.log("Attempting deterministic parsing...");
       const { parsePdfDeterministically } = require("./deterministic_parser");
       const deterministicData = await parsePdfDeterministically(
@@ -1107,7 +1080,9 @@ app.post(
       );
 
       if (deterministicData) {
-        console.log("Deterministic parsing successful! Skipping LLM.");
+        console.log(
+          "Deterministic parsing successful! Skipping LLM and image conversion.",
+        );
 
         // Save to database directly
         const result = await db.query(
@@ -1143,6 +1118,34 @@ app.post(
         "Deterministic parsing failed or not applicable. Falling back to Vision LLM...",
       );
 
+      // --- PATH B: VISION LLM (Scanned PDFs or parser failure) ---
+      // 1. Convert PDF to Image (First page only)
+      console.log("Converting PDF to image...");
+      console.log("File details:", {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        bufferType: req.file.buffer
+          ? req.file.buffer.constructor.name
+          : "undefined",
+        bufferLength: req.file.buffer ? req.file.buffer.length : 0,
+      });
+
+      let outputImages;
+      try {
+        // Use custom renderer
+        outputImages = await convertPdfToImages(req.file.buffer, {
+          page_numbers: [1],
+        });
+      } catch (conversionErr) {
+        console.error("PDF Conversion Failed:", conversionErr);
+        throw new Error(`PDF Conversion Failed: ${conversionErr.message}`);
+      }
+
+      if (!outputImages || outputImages.length === 0) {
+        throw new Error("Failed to convert PDF to image: No images returned.");
+      }
+
       // --- RESEARCH PHASE: Extract Raw Text for Grounding ---
       let extractedTextContext = "";
       try {
@@ -1155,7 +1158,6 @@ app.post(
           textErr.message,
         );
       }
-      // --- END PATH A ---
 
       // DEBUG: Save the raw PDF to disk for layout analysis
       fs.writeFileSync("debug_last.pdf", req.file.buffer);
