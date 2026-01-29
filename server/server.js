@@ -177,7 +177,7 @@ const requireAuth = (req, res, next) => {
 // Rate limiter for file uploads to prevent DoS
 const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each user to 10 uploads per 15 minutes
+  max: 30, // Limit each user to 30 uploads per 15 minutes
   message: "Too many file uploads from this IP, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
