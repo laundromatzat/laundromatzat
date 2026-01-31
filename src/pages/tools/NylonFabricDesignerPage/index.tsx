@@ -50,16 +50,10 @@ const NylonFabricDesignerPage: React.FC = () => {
     loadDesigns()
       .then((designs) => {
         if (designs.length > 0) {
-          const latest = designs[0];
-          // Parse the visuals JSON if needed
-          const visuals =
-            typeof latest.visuals_json === "string"
-              ? JSON.parse(latest.visuals_json)
-              : latest.visuals_json;
-
-          setProjectDescription(latest.description);
-          setSanitizedGuideContent(latest.guide_text);
-          setVisuals(visuals);
+          // Note: With new schema, we don't automatically load
+          // old designs since the data structure has changed
+          // Users can manually recreate them if needed
+          console.log("Previous designs available:", designs.length);
         }
       })
       .catch(console.error);
@@ -108,12 +102,29 @@ const NylonFabricDesignerPage: React.FC = () => {
 
         // Save automatically after successful generation
         try {
+          // Note: With the new schema, we're saving the images as URLs
+          // The generateProjectImages should return base64 data URLs that we save
+          const instructionImageUrl =
+            projectVisuals.find((v) =>
+              v.stage.toLowerCase().includes("instruction"),
+            )?.svg || projectVisuals[0]?.svg;
+          const nylonImageUrl =
+            projectVisuals.find(
+              (v) =>
+                v.stage.toLowerCase().includes("nylon") ||
+                v.stage.toLowerCase().includes("final"),
+            )?.svg || projectVisuals[1]?.svg;
+
           await saveDesign(
             {
-              projectName: projectDescription.slice(0, 100),
-              description: projectDescription,
-              guideText: htmlContent,
-              visuals: projectVisuals,
+              designName: projectDescription.slice(0, 100),
+              instructionImageUrl: instructionImageUrl,
+              nylonImageUrl: nylonImageUrl,
+              prompts: {
+                description: projectDescription,
+                guideText: htmlContent,
+                generatedStages: projectVisuals.map((v) => v.stage),
+              },
             },
             token || undefined,
           );

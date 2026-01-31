@@ -2012,10 +2012,19 @@ app.delete("/api/wood-carving/projects/:id", requireAuth, async (req, res) => {
 app.get("/api/nylon-fabric-designs", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
-      "SELECT id, project_name, description, guide_text, visuals_json, created_at FROM nylon_fabric_designs WHERE user_id = $1 ORDER BY created_at DESC",
+      "SELECT id, design_name, instruction_image_url, nylon_image_url, prompts, created_at FROM nylon_fabric_designs WHERE user_id = $1 ORDER BY created_at DESC",
       [req.user.id],
     );
-    res.json({ designs: result.rows });
+    // Transform database format to frontend format
+    const designs = result.rows.map((row) => ({
+      id: row.id,
+      design_name: row.design_name,
+      instruction_image_url: row.instruction_image_url,
+      nylon_image_url: row.nylon_image_url,
+      prompts: row.prompts,
+      created_at: row.created_at,
+    }));
+    res.json({ designs });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -2023,15 +2032,16 @@ app.get("/api/nylon-fabric-designs", requireAuth, async (req, res) => {
 
 app.post("/api/nylon-fabric-designs", requireAuth, async (req, res) => {
   try {
-    const { projectName, description, guideText, visuals } = req.body;
+    const { designName, instructionImageUrl, nylonImageUrl, prompts } =
+      req.body;
     const result = await db.query(
-      "INSERT INTO nylon_fabric_designs (user_id, project_name, description, guide_text, visuals_json) VALUES ($1, $2, $3, $4, $5) RETURNING id, project_name, description, guide_text, visuals_json, created_at",
+      "INSERT INTO nylon_fabric_designs (user_id, design_name, instruction_image_url, nylon_image_url, prompts) VALUES ($1, $2, $3, $4, $5) RETURNING id, design_name, instruction_image_url, nylon_image_url, prompts, created_at",
       [
         req.user.id,
-        projectName,
-        description,
-        guideText,
-        JSON.stringify(visuals),
+        designName,
+        instructionImageUrl,
+        nylonImageUrl,
+        prompts ? JSON.stringify(prompts) : null,
       ],
     );
     res.json(result.rows[0]);
