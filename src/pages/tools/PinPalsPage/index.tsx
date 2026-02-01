@@ -380,10 +380,10 @@ const PinPalsPage: React.FC = () => {
       <div className="absolute top-4 right-4 z-20">
         <button
           onClick={() => setIsGalleryOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full shadow-sm border border-slate-200 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-aura-sm hover:shadow-aura-md aura-transition"
         >
           <ClockIcon className="w-5 h-5" />
-          <span>Gallery</span>
+          <span className="font-medium">Gallery</span>
         </button>
       </div>
 

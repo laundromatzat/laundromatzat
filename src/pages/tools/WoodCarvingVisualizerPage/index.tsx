@@ -197,15 +197,15 @@ const WoodCarvingVisualizerPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans selection:bg-brand-accent selection:text-white pb-20">
+    <div className="min-h-screen bg-aura-bg text-aura-text-primary font-sans selection:bg-aura-accent selection:text-white pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-serif font-light text-white mb-2">
-              Wood Carving <span className="text-brand-accent">Visualizer</span>
+            <h1 className="text-4xl md:text-5xl font-serif font-light text-aura-text-primary mb-2">
+              Wood Carving <span className="text-aura-accent">Visualizer</span>
             </h1>
-            <p className="text-zinc-400 text-lg font-light max-w-2xl">
+            <p className="text-aura-text-secondary text-lg font-light max-w-2xl">
               From concept to cut list. Generate styles, select your favorite,
               and get a technical blueprint.
             </p>
@@ -215,10 +215,10 @@ const WoodCarvingVisualizerPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsGalleryOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-aura-sm hover:shadow-aura-md aura-transition"
               >
-                <ClockIcon className="w-4 h-4" />
-                <span>History</span>
+                <ClockIcon className="w-5 h-5" />
+                <span className="font-medium">History</span>
               </button>
               <AuraButton
                 variant="secondary"
@@ -233,10 +233,10 @@ const WoodCarvingVisualizerPage: React.FC = () => {
           {phase === 0 && (
             <button
               onClick={() => setIsGalleryOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-aura-sm hover:shadow-aura-md aura-transition"
             >
-              <ClockIcon className="w-4 h-4" />
-              <span>History</span>
+              <ClockIcon className="w-5 h-5" />
+              <span className="font-medium">History</span>
             </button>
           )}
         </div>

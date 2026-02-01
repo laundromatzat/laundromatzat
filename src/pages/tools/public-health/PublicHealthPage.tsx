@@ -446,10 +446,10 @@ const PublicHealthPage: React.FC = () => {
       <div className="absolute top-4 right-6 z-20">
         <button
           onClick={() => setIsGalleryOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-white/90 hover:bg-white text-slate-600 hover:text-slate-900 rounded-full shadow-sm border border-slate-200 transition-colors backdrop-blur-sm"
+          className="flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-aura-sm hover:shadow-aura-md aura-transition"
         >
           <ClockIcon className="w-5 h-5" />
-          <span>Saved Docs</span>
+          <span className="font-medium">Saved Docs</span>
         </button>
       </div>
 

@@ -346,14 +346,14 @@ const ColorPalettePage: React.FC = () => {
           </div>
           <button
             onClick={() => setIsGalleryOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-aura-sm hover:shadow-aura-md aura-transition"
           >
-            <ClockIcon className="w-4 h-4" />
-            <span>History</span>
+            <ClockIcon className="w-5 h-5" />
+            <span className="font-medium">History</span>
           </button>
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-aura-text-primary">
-          color palette extractor
+          Color Palette Extractor
         </h1>
         <p className="text-lg text-aura-text-secondary max-w-2xl">
           Upload an image and instantly generate a five-color palette with
@@ -366,7 +366,7 @@ const ColorPalettePage: React.FC = () => {
           <div className="lg:w-1/2">
             <div className="flex flex-col gap-2">
               <h2 className="text-2xl font-semibold text-aura-text-primary">
-                extract a color palette
+                Extract a Color Palette
               </h2>
               <p className="text-aura-text-secondary">
                 Upload an image and instantly generate a five-color palette with
@@ -378,9 +378,9 @@ const ColorPalettePage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleUploadClick}
-                className="inline-flex items-center justify-center rounded-xl bg-brand-accent px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-brand-accent/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                className="inline-flex items-center justify-center rounded-xl bg-aura-text-primary px-5 py-2.5 text-sm font-semibold text-white shadow-aura-sm hover:shadow-aura-md aura-transition hover:bg-aura-text-primary/90"
               >
-                choose image
+                Choose Image
               </button>
               <input
                 ref={fileInputRef}

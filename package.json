@@ -11,7 +11,7 @@
     "backup": "cd server && npm run backup",
     "electron:dev": "NODE_ENV=development electron .",
     "electron:dev:full": "concurrently \"vite\" \"wait-on http://localhost:5173 && npm run electron:dev\"",
-    "electron:dev:all": "concurrently \"vite\" \"npm run server\" \"wait-on -t 30000 http://localhost:5173 http://localhost:4000 && npm run electron:dev\"",
+    "electron:dev:all": "npm install && cd server && npm install && cd .. && concurrently \"vite\" \"npm run server\" \"wait-on -t 30000 http://localhost:5173 http://localhost:4000 && npm run electron:dev\"",
     "electron:build": "vite build && electron-builder",
     "electron:build:mac": "vite build && electron-builder --mac",
     "test": "vitest run",
