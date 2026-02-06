@@ -40,7 +40,7 @@ export const AuraButton = React.forwardRef<HTMLButtonElement, AuraButtonProps>(
       disabled,
       ...props
     },
-    ref
+    ref,
   ) => {
     const baseStyles = clsx(
       // Layout
@@ -60,7 +60,7 @@ export const AuraButton = React.forwardRef<HTMLButtonElement, AuraButtonProps>(
       "hover:scale-[1.02]",
 
       // Full width
-      fullWidth && "w-full"
+      fullWidth && "w-full",
     );
 
     const sizeStyles = {
@@ -75,32 +75,35 @@ export const AuraButton = React.forwardRef<HTMLButtonElement, AuraButtonProps>(
         "hover:bg-aura-text-secondary hover:border-aura-text-secondary",
         "focus:ring-aura-text-primary",
         "shadow-aura-md hover:shadow-aura-lg",
+        // Premium gold glow on hover (cookbook: sharp accents)
+        "hover:shadow-[0_0_30px_rgba(201,169,98,0.2)]",
         // Gradient overlay on hover
         "before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/0 before:via-white/10 before:to-white/0",
-        "before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
+        "before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
       ),
       secondary: clsx(
         "bg-aura-surface text-aura-text-primary border-aura-border",
         "hover:bg-aura-surface-elevated hover:border-aura-accent",
         "focus:ring-aura-accent",
-        "shadow-aura-sm hover:shadow-aura-md"
+        "shadow-aura-sm hover:shadow-aura-md",
       ),
       accent: clsx(
         "bg-aura-accent text-aura-text-primary border-aura-accent",
         "hover:bg-aura-accent-hover hover:border-aura-accent-hover",
         "focus:ring-aura-accent",
-        "shadow-aura-md hover:shadow-aura-lg hover:shadow-aura-glow"
+        // Premium gold glow effect (cookbook: high-impact moments)
+        "shadow-aura-md hover:shadow-[0_0_25px_rgba(201,169,98,0.25)]",
       ),
       ghost: clsx(
         "bg-transparent text-aura-text-secondary border-transparent",
         "hover:bg-aura-accent-light hover:text-aura-text-primary",
-        "focus:ring-aura-accent"
+        "focus:ring-aura-accent",
       ),
       danger: clsx(
         "bg-aura-error text-white border-aura-error",
         "hover:bg-timber-700 hover:border-timber-700",
         "focus:ring-aura-error",
-        "shadow-aura-md hover:shadow-aura-lg"
+        "shadow-aura-md hover:shadow-aura-lg",
       ),
     };
 
@@ -148,7 +151,7 @@ export const AuraButton = React.forwardRef<HTMLButtonElement, AuraButtonProps>(
           baseStyles,
           sizeStyles[size],
           variantStyles[variant],
-          className
+          className,
         )}
         disabled={isLoading || disabled}
         {...props}
@@ -156,7 +159,7 @@ export const AuraButton = React.forwardRef<HTMLButtonElement, AuraButtonProps>(
         {content}
       </button>
     );
-  }
+  },
 );
 
 AuraButton.displayName = "AuraButton";

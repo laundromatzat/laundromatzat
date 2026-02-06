@@ -13,7 +13,6 @@ const NAV_ITEMS = [
   { to: "/vids", label: "Videos" },
   { to: "/cinemagraphs", label: "Cinemagraphs" },
   { to: "/tools", label: "Tools" },
-  { to: "/ai-apps", label: "AI Apps" },
   { to: "/links", label: "Links" },
 ];
 
@@ -33,7 +32,7 @@ function Header(): React.ReactNode {
     <>
       <header
         className={clsx(
-          "fixed top-0 left-0 right-0 z-[2001] transition-all duration-700 ease-in-out bg-aura-bg/90 backdrop-blur-md py-4 shadow-sm"
+          "fixed top-0 left-0 right-0 z-[2001] transition-all duration-700 ease-in-out bg-aura-bg/90 backdrop-blur-md py-4 shadow-sm",
         )}
       >
         <nav
@@ -44,8 +43,8 @@ function Header(): React.ReactNode {
           <NavLink
             to="/"
             className={clsx(
-              "text-2xl sm:text-3xl font-serif font-medium tracking-tight z-50 relative transition-colors duration-500",
-              textColorClass
+              "text-2xl sm:text-3xl font-display font-medium tracking-tight z-50 relative transition-colors duration-500",
+              textColorClass,
             )}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
@@ -56,7 +55,7 @@ function Header(): React.ReactNode {
           <div
             className={clsx(
               "hidden md:flex items-center gap-2 text-sm font-medium tracking-wide transition-colors duration-500",
-              textColorClass
+              textColorClass,
             )}
           >
             {NAV_ITEMS.map((item) => (
@@ -68,7 +67,7 @@ function Header(): React.ReactNode {
                     "px-4 py-2 rounded-full transition-all duration-300",
                     isActive
                       ? "bg-aura-text-primary text-aura-bg hover:opacity-90 font-semibold"
-                      : "hover:bg-aura-text-primary/10 hover:text-aura-text-primary"
+                      : "hover:bg-aura-text-primary/10 hover:text-aura-text-primary",
                   )
                 }
               >
@@ -81,7 +80,7 @@ function Header(): React.ReactNode {
           <div
             className={clsx(
               "flex items-center gap-6 z-50 relative transition-colors duration-500",
-              textColorClass
+              textColorClass,
             )}
           >
             {user ? (
@@ -169,7 +168,7 @@ function Header(): React.ReactNode {
           "fixed inset-0 bg-[#F5F2EB] z-[2000] flex flex-col justify-center items-center transition-all duration-500 ease-in-out",
           isMenuOpen
             ? "opacity-100 translate-y-0 pointer-events-auto visible"
-            : "opacity-0 -translate-y-10 pointer-events-none invisible"
+            : "opacity-0 -translate-y-10 pointer-events-none invisible",
         )}
       >
         <div className="flex flex-col items-center space-y-8 text-xl font-serif font-medium text-aura-text-primary">

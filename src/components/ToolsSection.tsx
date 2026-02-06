@@ -27,32 +27,35 @@ const TOOLS = [
 
 const ToolsSection: React.FC = () => {
   return (
-    <section className="py-24 bg-white">
-      <div className="container px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-white relative overflow-hidden">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-aura-bg/30 pointer-events-none" />
+
+      <div className="container px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-          <div className="max-w-xl">
+          <div className="max-w-xl animate-reveal reveal-stagger-1">
             <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-4 block">
               The Lab
             </span>
-            <h2 className="text-4xl md:text-5xl font-serif text-zinc-900 leading-tight">
+            <h2 className="text-4xl md:text-5xl text-zinc-900 leading-tight">
               Experimental Tools & <br />{" "}
               <span className="italic text-zinc-500">Creative Utilities.</span>
             </h2>
           </div>
           <Link
             to="/tools"
-            className="text-sm font-semibold uppercase tracking-widest border-b border-zinc-900 pb-1 hover:text-zinc-600 hover:border-zinc-600 transition-colors"
+            className="text-sm font-semibold uppercase tracking-widest border-b border-zinc-900 pb-1 hover:text-zinc-600 hover:border-zinc-600 transition-colors animate-reveal reveal-stagger-2"
           >
             View All Tools
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {TOOLS.map((tool) => (
+          {TOOLS.map((tool, index) => (
             <Link
               key={tool.id}
               to={tool.path}
-              className="group relative overflow-hidden rounded-2xl bg-zinc-100 aspect-[4/3] md:aspect-auto md:h-[400px]"
+              className={`group relative overflow-hidden rounded-2xl bg-zinc-100 aspect-[4/3] md:aspect-auto md:h-[400px] hover-glow animate-reveal reveal-stagger-${index + 3}`}
             >
               <img
                 src={tool.imageUrl}
@@ -64,7 +67,7 @@ const ToolsSection: React.FC = () => {
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
 
               <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <h3 className="text-2xl font-serif text-white mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                <h3 className="text-2xl text-white mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                   {tool.title}
                 </h3>
                 <p className="text-white/90 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">

@@ -52,7 +52,7 @@ export async function generateContent(prompt: string): Promise<string> {
   try {
     const client = getClient();
     const response = await client.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-pro",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         systemInstruction: {
@@ -130,7 +130,7 @@ export async function createChatSession(): Promise<ChatSessionLike> {
 
   const client = getClient();
   const chat = client.chats.create({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-pro",
     config: {
       systemInstruction: {
         role: "system",
