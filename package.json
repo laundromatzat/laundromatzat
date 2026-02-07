@@ -115,6 +115,7 @@
     "directories": {
       "buildResources": "build",
       "output": "release"
-    }
+    },
+    "npmRebuild": false
   }
 }
