@@ -93,9 +93,10 @@
   },
   "build": {
     "appId": "com.laundromatzat.mediainsight",
-    "productName": "MediaInsight Pro",
+    "productName": "laundromatzat.com",
     "mac": {
       "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
       "target": [
         "dmg",
         "zip"

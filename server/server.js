@@ -100,7 +100,8 @@ app.use(
     ],
   }),
 );
-app.use(express.json({ limit: "10mb" })); // Increased from default 100kb to handle compressed images
+app.use(express.json({ limit: "50mb" })); // Increased to 50mb for high-res images
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Multer setup for in-memory file storage
 // Multer setup for in-memory file storage (for PDF processing)

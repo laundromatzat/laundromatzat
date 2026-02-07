@@ -378,7 +378,7 @@ export const generateCarvingPlan = async (
 
   try {
     // 1. Generate Text Guide
-    const textModel = "gemini-2.0-pro";
+    const textModel = "gemini-2.5-flash";
     const textPrompt = `You're a weathered master carver—decades of shavings under your bench—sharing hard-won wisdom with an eager apprentice. Speak plainly, like you're standing beside them at the bench.
 
 SUBJECT: "${promptText}"
