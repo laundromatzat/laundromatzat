@@ -128,7 +128,10 @@ const DesignBriefForm: React.FC<DesignBriefFormProps> = ({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-aura-text-primary mb-2">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-aura-text-primary mb-2"
+          >
             Project Description <span className="text-aura-error">*</span>
           </label>
           <AuraInput
@@ -143,12 +146,17 @@ const DesignBriefForm: React.FC<DesignBriefFormProps> = ({
 
         {/* Size Inputs */}
         <div>
-          <label className="block text-sm font-medium text-aura-text-primary mb-3">
+          <div className="block text-sm font-medium text-aura-text-primary mb-3">
             Approximate Dimensions <span className="text-aura-error">*</span>
-          </label>
+          </div>
           <div className="grid grid-cols-4 gap-4">
             <div>
-              <label className="text-xs text-aura-text-secondary">Height</label>
+              <label
+                htmlFor="height"
+                className="text-xs text-aura-text-secondary"
+              >
+                Height
+              </label>
               <AuraInput
                 id="height"
                 type="number"
@@ -163,7 +171,12 @@ const DesignBriefForm: React.FC<DesignBriefFormProps> = ({
               />
             </div>
             <div>
-              <label className="text-xs text-aura-text-secondary">Width</label>
+              <label
+                htmlFor="width"
+                className="text-xs text-aura-text-secondary"
+              >
+                Width
+              </label>
               <AuraInput
                 id="width"
                 type="number"
@@ -178,7 +191,10 @@ const DesignBriefForm: React.FC<DesignBriefFormProps> = ({
               />
             </div>
             <div>
-              <label className="text-xs text-aura-text-secondary">
+              <label
+                htmlFor="depth"
+                className="text-xs text-aura-text-secondary"
+              >
                 Depth <span className="text-aura-text-secondary">(opt)</span>
               </label>
               <AuraInput
@@ -198,7 +214,7 @@ const DesignBriefForm: React.FC<DesignBriefFormProps> = ({
               />
             </div>
             <div>
-              <label className="text-xs text-aura-text-secondary">Unit</label>
+              <span className="text-xs text-aura-text-secondary">Unit</span>
               <div className="flex rounded-lg overflow-hidden border border-aura-border">
                 <button
                   type="button"
@@ -233,9 +249,9 @@ const DesignBriefForm: React.FC<DesignBriefFormProps> = ({
 
         {/* Closure Type */}
         <div>
-          <label className="block text-sm font-medium text-aura-text-primary mb-3">
+          <span className="block text-sm font-medium text-aura-text-primary mb-3">
             Closure Type
-          </label>
+          </span>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {CLOSURE_OPTIONS.map((opt) => (
               <button
@@ -265,9 +281,9 @@ const DesignBriefForm: React.FC<DesignBriefFormProps> = ({
 
         {/* Features */}
         <div>
-          <label className="block text-sm font-medium text-aura-text-primary mb-3">
+          <span className="block text-sm font-medium text-aura-text-primary mb-3">
             Features (select all that apply)
-          </label>
+          </span>
           <div className="flex flex-wrap gap-2">
             {FEATURE_OPTIONS.map((feat) => (
               <button

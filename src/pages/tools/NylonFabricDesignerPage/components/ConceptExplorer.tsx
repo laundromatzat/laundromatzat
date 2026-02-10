@@ -185,7 +185,7 @@ const ConceptExplorer: React.FC<ConceptExplorerProps> = ({
           </div>
 
           <p className="text-sm text-aura-text-secondary mt-3">
-            Describe any changes you'd like: color, pockets, straps, etc.
+            Describe any changes you&apos;d like: color, pockets, straps, etc.
           </p>
         </AuraCard>
       )}

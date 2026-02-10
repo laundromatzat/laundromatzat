@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { AuraButton, AuraCard } from "@/components/aura";
 import {
   ArrowLeft,
@@ -64,14 +64,12 @@ const BlueprintViewer: React.FC<BlueprintViewerProps> = ({
   onRefinementNoteChange,
   onRegenerateDesign,
   onCompleteStep,
-  onGoToStep,
 }) => {
   const progressPercent =
     carvingSteps.length > 0
       ? Math.round((completedSteps.length / carvingSteps.length) * 100)
       : 0;
 
-  const activeStepData = carvingSteps.find((s) => s.number === currentStep);
   const allComplete =
     completedSteps.length === carvingSteps.length && carvingSteps.length > 0;
 

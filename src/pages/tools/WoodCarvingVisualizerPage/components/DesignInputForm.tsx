@@ -44,7 +44,7 @@ const DesignInputForm: React.FC<DesignInputFormProps> = ({
             What would you like to carve?
           </h2>
           <p className="text-aura-text-secondary">
-            Describe your vision and we'll generate style variations
+            Describe your vision and we&apos;ll generate style variations
           </p>
         </div>
 

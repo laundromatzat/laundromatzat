@@ -26,7 +26,7 @@ const StepByStepGuide: React.FC<StepByStepGuideProps> = ({
     steps.length > 0
       ? Math.round((completedSteps.length / steps.length) * 100)
       : 0;
-  const isLastStep = currentStep >= steps.length;
+
   const allComplete =
     completedSteps.length === steps.length && steps.length > 0;
 
@@ -194,8 +194,8 @@ const StepByStepGuide: React.FC<StepByStepGuideProps> = ({
             Project Complete!
           </h2>
           <p className="text-aura-text-secondary mb-8 max-w-md mx-auto">
-            Congratulations! You've completed all {steps.length} steps. Your
-            handmade nylon project is ready to use.
+            Congratulations! You&apos;ve completed all {steps.length} steps.
+            Your handmade nylon project is ready to use.
           </p>
           <div className="flex justify-center gap-4">
             <AuraButton variant="secondary" onClick={onBack}>

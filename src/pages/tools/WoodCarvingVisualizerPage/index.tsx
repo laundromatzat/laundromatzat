@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Unit,
   generateCarvingPlan,
   generateCarvingVariations,
 } from "@/services/woodCarvingService";
@@ -54,7 +53,6 @@ const WoodCarvingVisualizerPage: React.FC = () => {
     setVariations,
     selectVariation,
     setDesignData,
-    setCarvingSteps,
     setActiveTab,
     toggleUnit,
     setIsRefining,
@@ -63,7 +61,6 @@ const WoodCarvingVisualizerPage: React.FC = () => {
     goToStep,
     setProjectId,
     resetProject,
-    setIsLoading,
     setError,
   } = useWoodCarvingProject();
 
@@ -330,7 +327,8 @@ ${designData.guideText}
               Imagining Possibilities...
             </h3>
             <p className="text-zinc-500">
-              Our AI is sketching 4 distinct variations of "{description}"
+              Our AI is sketching 4 distinct variations of &quot;{description}
+              &quot;
             </p>
           </div>
         )}
