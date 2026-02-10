@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
-import { Wand2, Plus, X, Image as ImageIcon } from "lucide-react";
+import { Wand2, X, Image as ImageIcon } from "lucide-react";
 
 interface DesignInputFormProps {
   description: string;
