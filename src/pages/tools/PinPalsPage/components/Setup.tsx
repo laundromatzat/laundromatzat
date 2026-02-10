@@ -4,26 +4,28 @@
  */
 
 import React, { useState } from "react";
-import { Plus, Minus, Settings, Loader2 } from "lucide-react";
+import { Plus, Minus, Settings, Loader2, X } from "lucide-react";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 
 interface SetupProps {
-  petImage: string | null;
+  petImages: string[];
   petType: string;
   petCount: number;
   isDetecting: boolean;
-  onImageUpload: (file: File) => void;
+  onImageUpload: (files: File[]) => void;
+  onRemoveImage: (index: number) => void;
   onTypeChange: (val: string) => void;
   onCountChange: (count: number) => void;
   onGenerate: () => void;
 }
 
 export const Setup: React.FC<SetupProps> = ({
-  petImage,
+  petImages,
   petType,
   petCount,
   isDetecting,
   onImageUpload,
+  onRemoveImage,
   onTypeChange,
   onCountChange,
   onGenerate,
@@ -34,6 +36,8 @@ export const Setup: React.FC<SetupProps> = ({
   const isCat = petType === "CAT" || petType === "CATS";
   const isCustom = !isDog && !isCat;
 
+  const hasImages = petImages.length > 0;
+
   return (
     <div className="animate-in-up">
       <div className="flex flex-col md:flex-row gap-8">
@@ -43,43 +47,76 @@ export const Setup: React.FC<SetupProps> = ({
             htmlFor="pet-image-upload"
             className="text-sm font-medium text-aura-text-secondary block mb-2"
           >
-            Source Image
+            Source Image{petImages.length > 1 ? "s" : ""}
           </label>
-          <div
-            className={`
-            relative h-72 rounded-xl border-2 border-dashed transition-all duration-300
-            flex flex-col items-center justify-center p-6 cursor-pointer group overflow-hidden
-            ${
-              petImage
-                ? "border-aura-border bg-aura-surface-elevated"
-                : "border-aura-border bg-aura-bg/30 hover:bg-aura-bg hover:border-aura-accent"
-            }
-          `}
-          >
-            <input
-              id="pet-image-upload"
-              type="file"
-              accept="image/*"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              onChange={(e) =>
-                e.target.files?.[0] && onImageUpload(e.target.files[0])
-              }
-            />
 
-            {petImage ? (
-              <>
-                <img
-                  src={`data:image/jpeg;base64,${petImage}`}
-                  alt="Pet Preview"
-                  className="w-full h-full object-cover rounded-lg opacity-80 group-hover:opacity-40 transition-opacity"
-                />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                  <span className="bg-black/70 text-white text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10">
-                    Change Photo
-                  </span>
-                </div>
-              </>
-            ) : (
+          {hasImages ? (
+            <div className="space-y-3">
+              {/* Thumbnail grid */}
+              <div className="grid grid-cols-3 gap-2">
+                {petImages.map((img, idx) => (
+                  <div
+                    key={idx}
+                    className="relative aspect-square rounded-lg overflow-hidden border border-aura-border bg-aura-surface-elevated group"
+                  >
+                    <img
+                      src={`data:image/jpeg;base64,${img}`}
+                      alt={`Pet ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      onClick={() => onRemoveImage(idx)}
+                      className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-600"
+                      aria-label={`Remove photo ${idx + 1}`}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+
+                {/* Add more button */}
+                <label
+                  htmlFor="pet-image-upload"
+                  className="aspect-square rounded-lg border-2 border-dashed border-aura-border bg-aura-bg/30 hover:bg-aura-bg hover:border-aura-accent flex items-center justify-center cursor-pointer transition-all duration-300"
+                >
+                  <Plus className="w-6 h-6 text-aura-text-tertiary" />
+                  <input
+                    id="pet-image-upload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files?.length) {
+                        onImageUpload(Array.from(e.target.files));
+                      }
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          ) : (
+            <div
+              className={`
+              relative h-72 rounded-xl border-2 border-dashed transition-all duration-300
+              flex flex-col items-center justify-center p-6 cursor-pointer group overflow-hidden
+              border-aura-border bg-aura-bg/30 hover:bg-aura-bg hover:border-aura-accent
+            `}
+            >
+              <input
+                id="pet-image-upload"
+                type="file"
+                accept="image/*"
+                multiple
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                onChange={(e) => {
+                  if (e.target.files?.length) {
+                    onImageUpload(Array.from(e.target.files));
+                  }
+                  e.target.value = "";
+                }}
+              />
               <div className="text-center text-aura-text-tertiary space-y-3 pointer-events-none">
                 <div className="w-12 h-12 bg-aura-border-light rounded-full flex items-center justify-center mx-auto text-aura-text-secondary group-hover:text-aura-primary transition-colors">
                   <svg
@@ -99,15 +136,15 @@ export const Setup: React.FC<SetupProps> = ({
                 </div>
                 <div>
                   <span className="block text-sm font-medium text-aura-text-primary">
-                    Upload Photo
+                    Upload Photos
                   </span>
                   <span className="block text-xs mt-1 text-aura-text-tertiary">
-                    JPG, PNG up to 5MB
+                    One or more pet photos • JPG, PNG up to 5MB each
                   </span>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Right: Controls */}
@@ -258,7 +295,7 @@ export const Setup: React.FC<SetupProps> = ({
 
           <AuraButton
             onClick={onGenerate}
-            disabled={!petImage || isDetecting}
+            disabled={!hasImages || isDetecting}
             variant="primary"
             className="w-full mt-8"
             size="lg"

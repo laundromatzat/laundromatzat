@@ -22,6 +22,7 @@ export interface WoodCarvingProjectState {
   // Input
   description: string;
   userNotes: string;
+  referenceImages: string[]; // Base64 user-uploaded reference photos
 
   // Variations
   variations: CarvingVariation[];
@@ -55,6 +56,7 @@ export interface WoodCarvingProjectState {
 const defaultState: WoodCarvingProjectState = {
   description: "",
   userNotes: "",
+  referenceImages: [],
   variations: [],
   selectedVariation: null,
   designData: null,
@@ -96,6 +98,17 @@ export function useWoodCarvingProject(
 
   const setUserNotes = useCallback((userNotes: string) => {
     setState((prev) => ({ ...prev, userNotes }));
+  }, []);
+
+  const setReferenceImages = useCallback((referenceImages: string[]) => {
+    setState((prev) => ({ ...prev, referenceImages }));
+  }, []);
+
+  const removeReferenceImage = useCallback((index: number) => {
+    setState((prev) => ({
+      ...prev,
+      referenceImages: prev.referenceImages.filter((_, i) => i !== index),
+    }));
   }, []);
 
   // Variation handling
@@ -186,6 +199,8 @@ export function useWoodCarvingProject(
 
     // Input
     setDescription,
+    setReferenceImages,
+    removeReferenceImage,
     setUserNotes,
 
     // Variations

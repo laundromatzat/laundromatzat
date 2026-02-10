@@ -98,7 +98,7 @@ function ToolsPage(): React.ReactNode {
       />
 
       <section
-        className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
         aria-label="Featured tools"
       >
         {TOOL_LINKS.map((tool) => (
@@ -106,7 +106,7 @@ function ToolsPage(): React.ReactNode {
             <AuraCard
               variant="interactive"
               padding="none"
-              className="h-full overflow-hidden aspect-[4/3] flex flex-col justify-end relative"
+              className="h-full overflow-hidden aspect-[3/2] sm:aspect-[4/3] flex flex-col justify-end relative"
             >
               <img
                 src={tool.imageUrl}
@@ -117,20 +117,20 @@ function ToolsPage(): React.ReactNode {
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:via-black/40 transition-colors duration-500" />
 
-              <div className="relative z-10 p-6 flex flex-col items-start gap-2">
+              <div className="relative z-10 p-4 sm:p-6 flex flex-col items-start gap-1 sm:gap-2">
                 {tool.badge && (
                   <AuraBadge
                     variant="neutral"
                     size="sm"
-                    className="bg-white/20 text-white backdrop-blur-md border-white/20"
+                    className="bg-white/20 text-white backdrop-blur-md border-white/20 text-[10px] sm:text-xs"
                   >
                     {tool.badge}
                   </AuraBadge>
                 )}
-                <h3 className="text-2xl font-serif text-white translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                <h3 className="text-base sm:text-2xl font-serif text-white translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                   {tool.title}
                 </h3>
-                <p className="text-white/90 text-sm leading-relaxed opacity-0 group-hover:opacity-100 transition-all duration-500 delay-75 line-clamp-2 translate-y-4 group-hover:translate-y-0">
+                <p className="text-white/80 text-xs sm:text-sm leading-snug sm:leading-relaxed sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-4 sm:group-hover:translate-y-0 transition-all duration-500 delay-75 line-clamp-2">
                   {tool.description}
                 </p>
               </div>

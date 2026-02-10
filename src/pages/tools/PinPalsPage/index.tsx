@@ -82,12 +82,42 @@ const savePinToGallery = async (pin: {
   }
 };
 
+/** Derive the label from a list of distinct species and a total count. */
+const deriveLabel = (speciesList: string[], totalCount: number): string => {
+  const unique = [...new Set(speciesList.map((s) => s.toUpperCase()))];
+  if (unique.length === 0) return "DOG";
+  if (unique.length === 1) {
+    const base = unique[0];
+    return totalCount > 1 ? pluralise(base) : base;
+  }
+  // Multiple distinct species → generic label
+  return totalCount > 1 ? "PETS" : "PET";
+};
+
+/** Naive English pluralisation for animal labels. */
+const pluralise = (word: string): string => {
+  const upper = word.toUpperCase();
+  if (upper.endsWith("S")) return upper;
+  if (upper.endsWith("Y") && !upper.endsWith("EY")) {
+    return upper.slice(0, -1) + "IES";
+  }
+  return upper + "S";
+};
+
+const getApiKey = () =>
+  import.meta.env.VITE_GEMINI_API_KEY ||
+  import.meta.env.VITE_GOOGLE_GENAI_API_KEY ||
+  import.meta.env.VITE_API_KEY ||
+  localStorage.getItem("gemini_api_key") ||
+  "";
+
 const PinPalsPage: React.FC = () => {
   const { validateApiKey, showApiKeyDialog, handleApiKeyDialogContinue } =
     useApiKey();
 
   const [state, setState] = useState<PinState>({
-    petImage: null,
+    petImages: [],
+    speciesList: [],
     petType: "DOG",
     petCount: 1,
     generatedImage: null,
@@ -128,72 +158,119 @@ const PinPalsPage: React.FC = () => {
     }));
   };
 
-  const handleImageUpload = async (file: File) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = (reader.result as string).split(",")[1];
-
-      setState((prev) => ({
-        ...prev,
-        petImage: base64,
-        generatedImage: null,
-        isDetecting: true,
-      }));
-
-      const hasKey = await validateApiKey();
-      if (!hasKey) {
-        setState((prev) => ({ ...prev, isDetecting: false }));
-        return;
-      }
-
-      try {
-        const apiKey =
-          import.meta.env.VITE_GEMINI_API_KEY ||
-          import.meta.env.VITE_GOOGLE_GENAI_API_KEY ||
-          import.meta.env.VITE_API_KEY ||
-          localStorage.getItem("gemini_api_key") ||
-          "";
-        const ai = new GoogleGenAI({ apiKey });
-        const response = await ai.models.generateContent({
-          model: DETECTION_MODEL,
-          contents: {
-            parts: [
-              {
-                text: "Analyze the image and identify the main animal subject(s). Return a JSON object with: 1. 'species': the singular type of animal (e.g., DOG, CAT, RABBIT). 2. 'count': the integer number of these animals visible. 3. 'label': a short uppercase label for the pin text (e.g., 'DOG' for 1, 'DOGS' for 2). If unsure, default to count 1.",
-              },
-              { inlineData: { mimeType: "image/jpeg", data: base64 } },
-            ],
+  /** Detect species for a single base64 image and return result. */
+  const detectSpecies = async (
+    base64: string,
+  ): Promise<{ species: string; count: number }> => {
+    const apiKey = getApiKey();
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: DETECTION_MODEL,
+      contents: {
+        parts: [
+          {
+            text: "Analyze the image and identify the main animal subject(s). Return a JSON object with: 1. 'species': the singular type of animal in uppercase (e.g., DOG, CAT, RABBIT, HAMSTER, BIRD, FISH). 2. 'count': the integer number of these animals visible. If unsure, default to DOG count 1.",
           },
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                species: { type: Type.STRING },
-                count: { type: Type.INTEGER },
-                label: { type: Type.STRING },
-              },
-            },
+          { inlineData: { mimeType: "image/jpeg", data: base64 } },
+        ],
+      },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            species: { type: Type.STRING },
+            count: { type: Type.INTEGER },
           },
-        });
+        },
+      },
+    });
 
-        const result = JSON.parse(response.text || "{}");
-        if (result.label) {
-          setState((prev) => ({
-            ...prev,
-            petType: result.label,
-            petCount: result.count || 1,
-            isDetecting: false,
-          }));
-        } else {
-          setState((prev) => ({ ...prev, isDetecting: false }));
-        }
-      } catch (e) {
-        console.error("Detection failed:", e);
-        setState((prev) => ({ ...prev, isDetecting: false }));
-      }
+    const result = JSON.parse(response.text || "{}");
+    return {
+      species: (result.species || "DOG").toUpperCase(),
+      count: result.count || 1,
     };
-    reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = async (files: File[]) => {
+    const hasKey = await validateApiKey();
+    if (!hasKey) return;
+
+    setState((prev) => ({ ...prev, isDetecting: true, generatedImage: null }));
+
+    try {
+      // Read all files to base64
+      const newImages: string[] = await Promise.all(
+        files.map(
+          (file) =>
+            new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = (reader.result as string).split(",")[1];
+                resolve(base64);
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            }),
+        ),
+      );
+
+      // Run detection on each new image
+      const detections = await Promise.all(newImages.map(detectSpecies));
+
+      setState((prev) => {
+        const allImages = [...prev.petImages, ...newImages];
+        const allSpecies = [
+          ...prev.speciesList,
+          ...detections.map((d) => d.species),
+        ];
+        const totalCount =
+          prev.petCount -
+          (prev.petImages.length > 0 ? 0 : 1) +
+          detections.reduce((sum, d) => sum + d.count, 0);
+        const adjustedCount = Math.max(1, totalCount);
+        const label = deriveLabel(allSpecies, adjustedCount);
+
+        return {
+          ...prev,
+          petImages: allImages,
+          speciesList: allSpecies,
+          petType: label,
+          petCount: adjustedCount,
+          isDetecting: false,
+        };
+      });
+    } catch (e) {
+      console.error("Upload/detection failed:", e);
+      setState((prev) => ({ ...prev, isDetecting: false }));
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setState((prev) => {
+      const petImages = prev.petImages.filter((_, i) => i !== index);
+      const speciesList = prev.speciesList.filter((_, i) => i !== index);
+      if (petImages.length === 0) {
+        return {
+          ...prev,
+          petImages: [],
+          speciesList: [],
+          petType: "DOG",
+          petCount: 1,
+          generatedImage: null,
+        };
+      }
+      const totalCount = Math.max(1, petImages.length);
+      const label = deriveLabel(speciesList, totalCount);
+      return {
+        ...prev,
+        petImages,
+        speciesList,
+        petType: label,
+        petCount: totalCount,
+      };
+    });
   };
 
   const handleTypeChange = (type: string) => {
@@ -208,7 +285,7 @@ const PinPalsPage: React.FC = () => {
     const hasKey = await validateApiKey();
     if (!hasKey) return;
 
-    if (!state.petImage) {
+    if (state.petImages.length === 0) {
       alert("Please upload a picture of your pet first!");
       return;
     }
@@ -216,32 +293,30 @@ const PinPalsPage: React.FC = () => {
     setState((prev) => ({ ...prev, isLoading: true, generatedImage: null }));
 
     try {
-      const apiKey =
-        import.meta.env.VITE_GEMINI_API_KEY ||
-        import.meta.env.VITE_GOOGLE_GENAI_API_KEY ||
-        import.meta.env.VITE_API_KEY ||
-        localStorage.getItem("gemini_api_key") ||
-        "";
+      const apiKey = getApiKey();
       const ai = new GoogleGenAI({ apiKey });
+
+      const subjectText =
+        state.petCount > 1 ? `${state.petCount} pets` : "the pet";
 
       const prompt = `
         Create a circular pin button design on a plain white background.
         
         REFERENCE IMAGE INSTRUCTION:
-        Use the provided pet photo as the source. You must create a high-fidelity vector illustration of the ${state.petCount} specific subject${state.petCount > 1 ? "s" : ""} in the photo, capturing breed, fur markings, and expression accurately.
+        I have provided ${state.petImages.length} reference photo${state.petImages.length > 1 ? "s" : ""} of ${subjectText}. Study every reference photo carefully. You must create a stylised illustration of ALL ${state.petCount} subject${state.petCount > 1 ? "s" : ""} shown across the reference photos, capturing each animal's breed, fur markings, and expression.
 
         ART STYLE TARGET:
-        - **Highly detailed semi-realistic vector illustration**.
-        - This should NOT look like a simple flat cartoon or clip art.
-        - **Fur Rendering:** Use detailed, sharp vector strokes to depict fur texture.
-        - **Eyes:** Deep, glossy, and expressive with distinct highlights.
-        - **Line Work:** Clean, refined edges, resembling high-end digital sticker art.
-        - **Color:** Naturalistic but vibrant.
+        - **Polished cartoon / modern animated-movie style** — think Pixar character poster or high-end vinyl sticker art.
+        - Bold, clean outlines with slight line-weight variation.
+        - Slightly exaggerated proportions: large, glossy, expressive eyes; oversized heads relative to body.
+        - Vibrant, saturated cel-shaded colors with soft highlights and ambient-occlusion shading.
+        - Smooth gradients on fur and skin — NOT flat clip-art, but NOT photorealistic either.
+        - Overall look: charming, approachable, and premium quality.
 
         COMPOSITION & LAYOUT:
         - **Shape:** A perfect circle.
         - **Background:** A soft, pleasant gradient (e.g., pale blue, mint, or lavender).
-        - **Subject:** The vector illustration of the pet${state.petCount > 1 ? "s" : ""} should be large and prominent, filling the majority of the circle. The bottom of the pet${state.petCount > 1 ? "s" : ""} (chest/paws) should extend towards the bottom edge.
+        - **Subject:** The cartoon illustration of the ${subjectText} should be large and prominent, filling the majority of the circle. The bottom of the ${subjectText} (chest/paws) should extend towards the bottom edge.
 
         TEXT & GRAPHIC OVERLAYS (CRITICAL):
         - **Top Text:** "ASK ME ABOUT MY ${state.petType.toUpperCase()}..." arched along the top inner edge in bold, black, handwritten-style marker font.
@@ -260,14 +335,17 @@ const PinPalsPage: React.FC = () => {
         The final output should be a single square image containing the circular pin design on a white background.
       `;
 
+      // Build parts array: prompt text + all reference images
+      const parts: Array<
+        { text: string } | { inlineData: { mimeType: string; data: string } }
+      > = [{ text: prompt }];
+      for (const img of state.petImages) {
+        parts.push({ inlineData: { mimeType: "image/jpeg", data: img } });
+      }
+
       const response = await ai.models.generateContent({
         model: MODEL_NAME,
-        contents: {
-          parts: [
-            { text: prompt },
-            { inlineData: { mimeType: "image/jpeg", data: state.petImage } },
-          ],
-        },
+        contents: { parts },
         config: {
           imageConfig: { aspectRatio: "1:1" },
         },
@@ -366,7 +444,8 @@ const PinPalsPage: React.FC = () => {
 
   const handleReset = () => {
     setState({
-      petImage: null,
+      petImages: [],
+      speciesList: [],
       petType: "DOG",
       petCount: 1,
       generatedImage: null,
@@ -536,11 +615,12 @@ const PinPalsPage: React.FC = () => {
           </div>
         ) : (
           <Setup
-            petImage={state.petImage}
+            petImages={state.petImages}
             petType={state.petType}
             petCount={state.petCount}
             isDetecting={state.isDetecting}
             onImageUpload={handleImageUpload}
+            onRemoveImage={handleRemoveImage}
             onTypeChange={handleTypeChange}
             onCountChange={handleCountChange}
             onGenerate={handleGenerate}

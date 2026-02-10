@@ -31,6 +31,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
   const {
     description,
     userNotes,
+    referenceImages,
     variations,
     selectedVariation,
     designData,
@@ -47,6 +48,8 @@ const WoodCarvingVisualizerPage: React.FC = () => {
     error,
     setPhase,
     setDescription,
+    setReferenceImages,
+    removeReferenceImage,
     setUserNotes,
     setVariations,
     selectVariation,
@@ -66,6 +69,28 @@ const WoodCarvingVisualizerPage: React.FC = () => {
 
   const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
 
+  // Read uploaded files to base64 and append to state
+  const handleImagesChange = React.useCallback(
+    async (files: File[]) => {
+      const newImages = await Promise.all(
+        files.map(
+          (file) =>
+            new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = (reader.result as string).split(",")[1];
+                resolve(base64);
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            }),
+        ),
+      );
+      setReferenceImages([...referenceImages, ...newImages].slice(0, 6));
+    },
+    [referenceImages, setReferenceImages],
+  );
+
   // Generate variations
   const handleGenerateVariations = async () => {
     if (!description.trim()) return;
@@ -75,7 +100,10 @@ const WoodCarvingVisualizerPage: React.FC = () => {
     setVariations([]);
 
     try {
-      const results = await generateCarvingVariations(description);
+      const results = await generateCarvingVariations(
+        description,
+        referenceImages.length > 0 ? referenceImages : undefined,
+      );
       setVariations(results);
       setPhase(2);
     } catch (err: unknown) {
@@ -103,6 +131,7 @@ const WoodCarvingVisualizerPage: React.FC = () => {
       const plan = await generateCarvingPlan(
         finalPrompt,
         selectedVariation.imageUrl,
+        referenceImages.length > 0 ? referenceImages : undefined,
       );
       setDesignData(plan);
       setPhase(4);
@@ -278,7 +307,10 @@ ${designData.guideText}
         {phase === 0 && (
           <DesignInputForm
             description={description}
+            referenceImages={referenceImages}
             onDescriptionChange={setDescription}
+            onImagesChange={handleImagesChange}
+            onRemoveImage={removeReferenceImage}
             onSubmit={handleGenerateVariations}
             isLoading={isLoading}
             exampleDescriptions={EXAMPLE_DESCRIPTIONS}

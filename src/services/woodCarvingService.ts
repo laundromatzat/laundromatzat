@@ -143,6 +143,7 @@ export interface MeasurementState {
 
 export async function generateCarvingVariations(
   description: string,
+  referenceImages?: string[],
 ): Promise<CarvingVariation[]> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
@@ -191,19 +192,33 @@ export async function generateCarvingVariations(
       Abstract: "channeling mid-century organic modernism",
     };
 
-    const prompt = `A museum-quality ${style.name.toLowerCase()} wood carving of ${description}, ${tradition[style.name as keyof typeof tradition]}. 
+    const hasRefs = referenceImages && referenceImages.length > 0;
+    const refContext = hasRefs
+      ? " Use the provided reference photos as inspiration for the subject, artistic style, or wood-block shape."
+      : "";
+
+    const prompt = `A museum-quality ${style.name.toLowerCase()} wood carving of ${description}, ${tradition[style.name as keyof typeof tradition]}.${refContext}
 
 MATERIAL: ${woodDetails[style.name as keyof typeof woodDetails]}.
 
 PHOTOGRAPHY: Shot on medium format film, soft directional lighting from upper left, visible wood grain and subtle tool marks that show the hand of the maker. Isolated on seamless grey paper backdrop. The kind of image you'd see in American Craft magazine or a Wendell Castle retrospective.`;
 
     try {
+      // Build parts: reference images first, then text prompt
+      const parts: Part[] = [];
+      if (hasRefs) {
+        for (const img of referenceImages) {
+          parts.push({ inlineData: { mimeType: "image/jpeg", data: img } });
+        }
+      }
+      parts.push({ text: prompt });
+
       const result = await ai.models.generateContent({
         model: "gemini-2.5-flash-image",
         contents: [
           {
             role: "user",
-            parts: [{ text: prompt }],
+            parts,
           },
         ],
         config: {
@@ -363,6 +378,7 @@ function parseDataUrl(
 export const generateCarvingPlan = async (
   promptText: string,
   referenceImageUrl?: string,
+  referenceImages?: string[],
 ): Promise<GeneratedDesign> => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
@@ -399,8 +415,16 @@ STYLE:
 
 Format: Clean Markdown, scannable headers. No fluff.`;
 
-    // Incorporate image into text prompt if provided (multimodal)
+    // Incorporate images into text prompt (multimodal)
     const textContents: { parts: Part[] } = { parts: [] };
+    // Add user-uploaded reference photos first
+    if (referenceImages && referenceImages.length > 0) {
+      for (const img of referenceImages) {
+        textContents.parts.push({
+          inlineData: { mimeType: "image/jpeg", data: img },
+        });
+      }
+    }
     if (parsedImage) {
       textContents.parts.push({
         inlineData: {
@@ -409,7 +433,11 @@ Format: Clean Markdown, scannable headers. No fluff.`;
         },
       });
       textContents.parts.push({
-        text: "Analyze this reference image. " + textPrompt,
+        text: "Analyze these reference images. " + textPrompt,
+      });
+    } else if (referenceImages && referenceImages.length > 0) {
+      textContents.parts.push({
+        text: "Use the provided reference photos as inspiration. " + textPrompt,
       });
     } else {
       textContents.parts.push({ text: textPrompt });
@@ -427,9 +455,16 @@ Format: Clean Markdown, scannable headers. No fluff.`;
 
     const conceptParts: Part[] = [];
 
+    // Add user-uploaded reference photos
+    if (referenceImages && referenceImages.length > 0) {
+      for (const img of referenceImages) {
+        conceptParts.push({
+          inlineData: { mimeType: "image/jpeg", data: img },
+        });
+      }
+    }
+
     if (parsedImage) {
-      // NOTE: gemini-2.5-flash-image might support image input for variations.
-      // If not, it might ignore it, but we MUST pass correct binary data.
       conceptParts.push({
         inlineData: {
           mimeType: parsedImage.mimeType,
@@ -437,7 +472,11 @@ Format: Clean Markdown, scannable headers. No fluff.`;
         },
       });
       conceptParts.push({
-        text: `Transform this reference image into a finished, polished wood carving of ${promptText}. Photorealistic, studio lighting, masterpiece, detailed texture of wood grain. Isolated on a neutral background.`,
+        text: `Transform these reference images into a finished, polished wood carving of ${promptText}. Photorealistic, studio lighting, masterpiece, detailed texture of wood grain. Isolated on a neutral background.`,
+      });
+    } else if (referenceImages && referenceImages.length > 0) {
+      conceptParts.push({
+        text: `Using these reference photos as inspiration, create a finished, polished wood carving of ${promptText}. Photorealistic, studio lighting, masterpiece, detailed texture of wood grain. Isolated on a neutral background.`,
       });
     } else {
       conceptParts.push({

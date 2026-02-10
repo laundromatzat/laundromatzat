@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
-import { Wand2 } from "lucide-react";
+import { Wand2, Plus, X, Image as ImageIcon } from "lucide-react";
 
 interface DesignInputFormProps {
   description: string;
+  referenceImages: string[];
   onDescriptionChange: (value: string) => void;
+  onImagesChange: (files: File[]) => void;
+  onRemoveImage: (index: number) => void;
   onSubmit: () => void;
   isLoading: boolean;
   exampleDescriptions: string[];
@@ -13,12 +16,25 @@ interface DesignInputFormProps {
 
 const DesignInputForm: React.FC<DesignInputFormProps> = ({
   description,
+  referenceImages,
   onDescriptionChange,
+  onImagesChange,
+  onRemoveImage,
   onSubmit,
   isLoading,
   exampleDescriptions,
   onOpenGallery,
 }) => {
+  const handleFileDrop = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files?.length) {
+        onImagesChange(Array.from(e.target.files));
+      }
+      e.target.value = "";
+    },
+    [onImagesChange],
+  );
+
   return (
     <AuraCard variant="glass" padding="lg" className="max-w-3xl mx-auto">
       <div className="space-y-6">
@@ -55,6 +71,56 @@ const DesignInputForm: React.FC<DesignInputFormProps> = ({
             }}
             className="text-lg bg-black/40 border-white/10 text-white placeholder:text-zinc-500"
           />
+        </div>
+
+        {/* Reference Photos */}
+        <div>
+          <label className="block text-sm font-medium text-aura-accent mb-2 uppercase tracking-wider">
+            Reference Photos{" "}
+            <span className="text-aura-text-tertiary font-normal normal-case tracking-normal">
+              (optional)
+            </span>
+          </label>
+          <p className="text-xs text-aura-text-tertiary mb-3">
+            Upload photos for style inspiration, subject reference, or to show
+            the starting wood block.
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            {referenceImages.map((img, idx) => (
+              <div
+                key={idx}
+                className="relative w-20 h-20 rounded-lg overflow-hidden border border-white/10 group"
+              >
+                <img
+                  src={`data:image/jpeg;base64,${img}`}
+                  alt={`Ref ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  onClick={() => onRemoveImage(idx)}
+                  className="absolute top-0.5 right-0.5 w-5 h-5 flex items-center justify-center rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  aria-label={`Remove reference ${idx + 1}`}
+                >
+                  <X size={10} />
+                </button>
+              </div>
+            ))}
+
+            {referenceImages.length < 6 && (
+              <label className="w-20 h-20 rounded-lg border-2 border-dashed border-white/10 hover:border-aura-accent flex flex-col items-center justify-center cursor-pointer transition-colors bg-white/5 hover:bg-white/10">
+                <ImageIcon size={16} className="text-aura-text-tertiary mb-1" />
+                <span className="text-[10px] text-aura-text-tertiary">Add</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileDrop}
+                />
+              </label>
+            )}
+          </div>
         </div>
 
         {/* Example Prompts */}

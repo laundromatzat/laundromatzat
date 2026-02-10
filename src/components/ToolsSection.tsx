@@ -55,7 +55,7 @@ const ToolsSection: React.FC = () => {
             <Link
               key={tool.id}
               to={tool.path}
-              className={`group relative overflow-hidden rounded-2xl bg-zinc-100 aspect-[4/3] md:aspect-auto md:h-[400px] hover-glow animate-reveal reveal-stagger-${index + 3}`}
+              className={`group relative overflow-hidden rounded-2xl bg-zinc-100 aspect-[3/2] sm:aspect-[4/3] md:aspect-auto md:h-[400px] hover-glow animate-reveal reveal-stagger-${index + 3}`}
             >
               <img
                 src={tool.imageUrl}
@@ -66,11 +66,11 @@ const ToolsSection: React.FC = () => {
 
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
 
-              <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <h3 className="text-2xl text-white mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+              <div className="absolute inset-0 p-4 sm:p-8 flex flex-col justify-end">
+                <h3 className="text-base sm:text-2xl text-white mb-1 sm:mb-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                   {tool.title}
                 </h3>
-                <p className="text-white/90 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                <p className="text-white/80 text-xs sm:text-base leading-snug sm:leading-relaxed sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-500 delay-100 line-clamp-2">
                   {tool.description}
                 </p>
               </div>
