@@ -238,9 +238,8 @@ PHOTOGRAPHY: Shot on medium format film, soft directional lighting from upper le
       // Check for candidates on result directly (common in some SDK versions) OR result.response
       const candidates =
         result.candidates || result?.response?.candidates || [];
-      const parts = candidates?.[0]?.content?.parts || [];
-
-      for (const part of parts) {
+      const responseParts = candidates?.[0]?.content?.parts || [];
+      for (const part of responseParts) {
         if (part.inlineData) {
           imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
           break;
