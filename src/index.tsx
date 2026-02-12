@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import {
   createBrowserRouter,
+  createHashRouter,
   RouterProvider,
   Navigate,
 } from "react-router-dom";
@@ -60,7 +61,16 @@ const queryClient = new QueryClient({
   },
 });
 
-const router = createBrowserRouter([
+// Detect if running in Electron (file:// protocol doesn't work with BrowserRouter)
+const isElectron =
+  typeof window !== "undefined" &&
+  (window.location.protocol === "file:" ||
+    navigator.userAgent.toLowerCase().includes("electron"));
+
+// Use HashRouter for Electron, BrowserRouter for web
+const createRouter = isElectron ? createHashRouter : createBrowserRouter;
+
+const router = createRouter([
   {
     path: "/",
     element: (

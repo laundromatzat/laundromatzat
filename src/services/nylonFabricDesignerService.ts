@@ -108,59 +108,44 @@ export async function generateSewingGuide(
   if (options?.onResearchComplete) options.onResearchComplete(researchContext);
 
   // 2. Main Generation Step with Grounding
-  const prompt = `You are an expert in hand-sewing nylon fabric and crafting. Analyze the following project description and create a comprehensive hand-sewing guide.
+  const prompt = `You are a seasoned craftsperson writing for Make: Magazine or a premium MYOG (Make Your Own Gear) blog. Your tone is warm, encouraging, and precise—like a skilled mentor sharing hard-won knowledge.
 
-RESEARCH CONTEXT (Verified Facts):
+GROUNDING CONTEXT (Use these verified facts):
 ${researchContext}
 
-CRITICAL REQUIREMENTS:
-- ALL instructions must be for HAND SEWING ONLY - NO sewing machines
-- Use handheld needle and thread exclusively
-- Can recommend Speedy Stitcher sewing awl tool for heavy-duty seams
-- Reference techniques from MYOG (Make Your Own Gear) hand-sewing guides
-- Focus on hand-sewing stitches: running stitch, backstitch, whipstitch, saddle stitch, etc.
+STYLE GUIDE:
+- Write like a craftsperson, not a textbook. Use phrases like "you'll want to..." not "one should..."
+- Be specific about why each step matters ("backstitching here prevents blowout under load")
+- Avoid generic phrases: "ensure proper alignment", "for best results", "carefully measure"
+- Include personal touches: warnings from experience, satisfying moments, common mistakes you've seen
+- Use sensory details: how the thread should feel, what tight stitches look like, the sound of needle through nylon
 
-Research and reference techniques from:
-- MYOG (Make Your Own Gear) hand-sewing guides
-- Bushcraft and camping gear repair techniques
-- Leather working hand-sewing methods (applicable to heavy nylon)
-- Traditional sailmaking hand-sewing techniques
-- DIY ultralight backpacking hand-sewing guides
+CRITICAL CONSTRAINTS:
+- HAND SEWING ONLY - no sewing machines exist in this guide
+- Two primary tools: handheld needle with waxed thread AND Speedy Stitcher sewing awl
+- Use needle for lighter fabrics and precise work; Speedy Stitcher for heavy-duty seams and thick layers
+- Reference real techniques: sailmaker's backstitch, whipstitch, saddle stitch, awl stitching
 
-Format your response with clear HTML structure using these tags:
-- <h3> for major sections
+FORMAT (Clean HTML):
+- <h3> for major sections (Materials, Cutting, Assembly, Finishing)
 - <h4> for subsections
-- <p> for paragraphs
-- <ul> and <ol> for lists
-- <strong> for emphasis
-- <div class="tip-box"> for tips and notes
+- <div class="tip-box"> for pro tips and warnings
+- <strong> for critical steps that could cause failure if skipped
+- Short paragraphs, scannable structure
 
-Include these sections:
-1. Project Overview & Analysis
-2. Materials Needed (specific nylon types, waxed thread, bonded nylon thread, notions)
-3. Tools Required (needles, Speedy Stitcher if needed, awl, scissors, pins, clips)
-4. Fabric Cutting Guide (with measurements and diagram descriptions)
-5. Step-by-Step Hand-Sewing Assembly Instructions
-   - Where to place folds
-   - Where to hand-stitch (backstitch, running stitch, whipstitch, saddle stitch, etc.)
-   - When to use Speedy Stitcher for heavy-duty seams
-   - Hem instructions (hand-rolled, whipstitch, etc.)
-   - How to connect pieces by hand
-6. Hand-Sewing Finishing Techniques
-7. Pro Tips & Common Mistakes to Avoid
+INCLUDE:
+1. Project Overview (what you're making, difficulty level, time estimate)
+2. Materials (specific nylon weights, thread types, notions with alternatives)
+3. Tools (needles, thimble, clips—explain WHY each tool)
+4. Cutting Guide (measurements, grain direction, mark placement)
+5. Step-by-Step Assembly (numbered, with clear checkpoints)
+6. Finishing (edge treatments, reinforcement, quality checks)
+7. Troubleshooting (3-4 common mistakes and fixes)
 
-Use professional hand-sewing terminology and explain techniques like:
-- Hand-stitch types and when to use them (backstitch for strength, running stitch for basting, whipstitch for edges)
-- Proper seam allowances for hand-sewn nylon
-- How to lock stitches at beginning and end
-- Edge finishing methods by hand
-- Tips for working with slippery nylon fabric when hand-sewing
-- When to use Speedy Stitcher awl for thick seams or heavy-duty work
-
-PROJECT DESCRIPTION:
+PROJECT TO DOCUMENT:
 ${description}
 
-Generate the complete guide now:`;
+Write the complete guide now, maintaining the voice of an experienced maker sharing their craft:`;
 
   const guide = await fetchContent(prompt);
   return sanitizeGuideContent(guide);
@@ -170,58 +155,61 @@ Generate the complete guide now:`;
 import { generateImages } from "./geminiClient";
 
 export async function generateProjectImages(description: string) {
-  // Create three detailed image generation prompts
+  // Image 1: Finished product specific to the user's description
+  // Images 2-3: Two critical process steps demonstrating key techniques for THIS specific project
+
   const imagePrompts = [
     {
-      stage: "Cutting Pattern Layout",
-      prompt: `Professional technical flat-lay photo of sewing pattern pieces laid out on a cutting mat. 
-For project: ${description}
+      stage: "Finished Product",
+      prompt: `Hero product shot of a completed, handmade ${description}.
 
-Show:
-- Multiple fabric pattern pieces precisely cut from ripstop nylon
-- Neatly arranged on a green self-healing cutting mat with grid lines
-- Pattern pieces in different pastel colors (light blue, light pink, light yellow nylon fabric)
-- Rotary cutter, fabric scissors, and measuring tape visible
-- Small weights holding down pattern paper templates
-- Notches and markings clearly visible on fabric edges
-- Professional workshop lighting, top-down view
-- Clean, organized workspace
-- 16:9 aspect ratio, photorealistic style
-- Documentary photography aesthetic`,
+VISUAL STYLE: Patagonia Worn Wear campaign. Authentic, purposeful, built to last.
+
+Show this SPECIFIC item: ${description}
+- The finished ${description} in use or positioned for use (not floating on white)
+- High-quality ripstop nylon with intentional color blocking and visible craftsmanship
+- All functional features of a ${description} clearly visible: reinforced stress points, clean hand-sewn seams, quality hardware
+- Natural outdoor setting appropriate for this gear: granite rock, fallen log, trail, or camp
+- Golden hour side lighting showing texture and dimensional depth
+- Environmental context that tells the story of how this ${description} will be used
+- Sharp focus with cinematic depth
+- 16:9, warm earth tones, slightly desaturated`,
     },
     {
-      stage: "Hand-Sewing Assembly Steps",
-      prompt: `Professional close-up photo showing hands hand-sewing nylon fabric pieces together.
-For project: ${description}
+      stage: "Critical Step: Cutting & Layout",
+      prompt: `Documentary photograph: Hands cutting pattern pieces for a ${description}.
 
-Show:
-- Hands using a curved needle with waxed thread
-- Nylon fabric pieces being joined with visible backstitch technique
-- Speedy Stitcher sewing awl in background
-- Thread, thimble, and beeswax visible on work surface
-- Natural workshop lighting highlighting the stitching
-- Realistic hand positions and fabric texture
-- Wood or fabric work surface
-- Professional craft photography style
-- 16:9 aspect ratio, warm natural lighting
-- Focus on the sewing technique and craftsmanship`,
+VISUAL STYLE: Kinfolk magazine meets gear-making workshop. Clean, aspirational, real craft.
+
+Show the process of cutting fabric for this SPECIFIC project: ${description}
+- Ripstop nylon pattern pieces being cut or laid out, specifically shaped for a ${description}
+- Maker's hands using rotary cutter or fabric scissors with visible wear
+- Pattern templates with hand-written notes visible ("front panel", "pocket", etc.)
+- Cutting mat with grid lines, steel ruler for straight cuts
+- Waxed thread spool and curved needles ready nearby
+- Weathered wood workbench with character
+- Natural north-facing window light, soft shadows
+- Top-down or 3/4 perspective showing the work surface
+- 16:9, warm but not yellow color grade
+- This should clearly be preparations for making a ${description}`,
     },
     {
-      stage: "Finished Product Photo",
-      prompt: `Professional product photography of completed hand-sewn nylon fabric item.
-For project: ${description}
+      stage: "Critical Step: Hand-Stitching Assembly",
+      prompt: `Intimate close-up: Skilled hands stitching components of a ${description} together.
 
-Show:
-- Finished handmade project in use or beautifully displayed
-- High-quality ripstop nylon with visible texture
-- All functional features clearly visible (pockets, closures, straps, compartments)
-- Realistic lighting showing dimensional depth
-- Clean background (white, grey, or wood surface)
-- Professional e-commerce product photo style
-- Sharp focus with natural depth of field
-- 16:9 aspect ratio
-- Showcase craftsmanship and utility
-- Photorealistic, magazine-quality aesthetic`,
+VISUAL STYLE: The Prepared blog aesthetic. Honest, competent, focused craftsmanship.
+
+Show hand-sewing THIS specific project: ${description}
+- Two pieces of the ${description} being joined by hand—show a seam that would exist on this specific item
+- One image should show EITHER: curved needle with waxed thread OR Speedy Stitcher sewing awl in use
+- Visible stitch pattern (backstitch or awl stitch) showing expertise and even spacing
+- Leather thimble on finger, showing use and wear
+- The partially assembled ${description} recognizable on the work surface
+- Warm workshop lighting from adjustable desk lamp
+- Shallow depth of field, sharp focus on the stitch point and hands
+- Canvas or denim work apron visible at frame edge
+- Wood grain surface with tool marks and thread snippets
+- 16:9, documentary photography feel, authentic moment captured`,
     },
   ];
 

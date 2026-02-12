@@ -424,10 +424,10 @@ const PaystubAnalyzerPage: React.FC = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsGalleryOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-full border border-slate-200 transition-colors shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-aura-sm hover:shadow-aura-md aura-transition"
             >
-              <HistoryIcon className="w-4 h-4" />
-              <span>History</span>
+              <HistoryIcon className="w-5 h-5" />
+              <span className="font-medium">History</span>
             </button>
           </div>
         </motion.header>

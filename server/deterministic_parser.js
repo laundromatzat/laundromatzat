@@ -1,4 +1,4 @@
-const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
+const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
 
 /**
  * Parses a CCSF paystub PDF deterministically using text coordinates.
@@ -17,7 +17,7 @@ async function parsePdfDeterministically(pdfBuffer) {
 
     if (!textContent || textContent.items.length === 0) {
       console.log(
-        "Deterministic Parser: No text found (likely scanned image)."
+        "Deterministic Parser: No text found (likely scanned image).",
       );
       return null;
     }
@@ -133,23 +133,23 @@ async function parsePdfDeterministically(pdfBuffer) {
       if (inHoursSection) {
         // Check if this row is the header row for the main section (Description at left)
         const descriptionHeader = row.items.find(
-          (i) => i.text === "Description" && i.x < 50
+          (i) => i.text === "Description" && i.x < 50,
         );
 
         if (descriptionHeader) {
           // Look for "Current" or "Hours" to the right of Description
           const potentialHeaders = row.items.filter(
-            (i) => i.x > descriptionHeader.x
+            (i) => i.x > descriptionHeader.x,
           );
           const targetHeader = potentialHeaders.find(
-            (i) => i.text === "Current" || i.text === "Hours"
+            (i) => i.text === "Current" || i.text === "Hours",
           );
 
           if (targetHeader) {
             ZONES.CURRENT_HOURS_MIN = targetHeader.x - 20;
             ZONES.CURRENT_HOURS_MAX = targetHeader.x + 40;
             console.log(
-              `Deterministic Parser: Calibrated CURRENT_HOURS zone to ${ZONES.CURRENT_HOURS_MIN}-${ZONES.CURRENT_HOURS_MAX} based on header "${targetHeader.text}" at X=${targetHeader.x}`
+              `Deterministic Parser: Calibrated CURRENT_HOURS zone to ${ZONES.CURRENT_HOURS_MIN}-${ZONES.CURRENT_HOURS_MAX} based on header "${targetHeader.text}" at X=${targetHeader.x}`,
             );
           }
         }
@@ -160,7 +160,7 @@ async function parsePdfDeterministically(pdfBuffer) {
           ZONES.BANKED_BALANCE_MIN = balanceHeader.x - 30; // Widened tolerance
           ZONES.BANKED_BALANCE_MAX = balanceHeader.x + 50;
           console.log(
-            `Deterministic Parser: Calibrated BANKED_BALANCE zone to ${ZONES.BANKED_BALANCE_MIN}-${ZONES.BANKED_BALANCE_MAX}`
+            `Deterministic Parser: Calibrated BANKED_BALANCE zone to ${ZONES.BANKED_BALANCE_MIN}-${ZONES.BANKED_BALANCE_MAX}`,
           );
         }
       }
@@ -186,7 +186,7 @@ async function parsePdfDeterministically(pdfBuffer) {
           const currentVal = getValAtX(
             row,
             ZONES.CURRENT_HOURS_MIN,
-            ZONES.CURRENT_HOURS_MAX
+            ZONES.CURRENT_HOURS_MAX,
           );
 
           // CRITICAL: Only add if there is a value in the CURRENT zone.
@@ -214,17 +214,17 @@ async function parsePdfDeterministically(pdfBuffer) {
           const balanceVal = getValAtX(
             row,
             ZONES.BANKED_BALANCE_MIN,
-            ZONES.BANKED_BALANCE_MAX
+            ZONES.BANKED_BALANCE_MAX,
           );
 
           // DEBUG LOGGING
           if (category.includes("Sick")) {
             console.log(
               `DEBUG: Found Sick category "${category}". Row items:`,
-              JSON.stringify(row.items)
+              JSON.stringify(row.items),
             );
             console.log(
-              `DEBUG: Extracted balance value: "${balanceVal}" from zone ${ZONES.BANKED_BALANCE_MIN}-${ZONES.BANKED_BALANCE_MAX}`
+              `DEBUG: Extracted balance value: "${balanceVal}" from zone ${ZONES.BANKED_BALANCE_MIN}-${ZONES.BANKED_BALANCE_MAX}`,
             );
           }
 
@@ -245,7 +245,7 @@ async function parsePdfDeterministically(pdfBuffer) {
       result.paidHours.length === 0
     ) {
       console.log(
-        "Deterministic Parser: Incomplete data extracted. Falling back to LLM."
+        "Deterministic Parser: Incomplete data extracted. Falling back to LLM.",
       );
       return null;
     }

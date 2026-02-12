@@ -142,7 +142,8 @@ export interface MeasurementState {
 // --- Existing Variation Logic ---
 
 export async function generateCarvingVariations(
-  description: string
+  description: string,
+  referenceImages?: string[],
 ): Promise<CarvingVariation[]> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
@@ -172,29 +173,64 @@ export async function generateCarvingVariations(
   ];
 
   const generateVariation = async (style: (typeof styles)[0]) => {
-    // Exact prompt structure from carvecraft/services/geminiService.ts
-    // We inject the style name minimally to ensure variety without breaking the "masterpiece" phrasing
-    const prompt = `A finished, polished ${style.name} style wood carving of ${description}. Photorealistic, studio lighting, masterpiece, detailed texture of wood grain. Isolated on a neutral background.`;
+    // Enhanced prompt with specific wood species, traditions, and finish details
+    const woodDetails = {
+      Realistic:
+        "hand-rubbed walnut with Danish oil finish, visible tool facets from #7 gouge",
+      Geometric:
+        "crisp basswood with milk paint accent, precision knife-cut edges",
+      Relief:
+        "deep-carved butternut with natural amber patina, dramatic shadows",
+      Abstract:
+        "bleached maple with sculptural negative space, wax-sealed surface",
+    };
+
+    const tradition = {
+      Realistic: "in the tradition of Scandinavian figure carving",
+      Geometric: "inspired by Pacific Northwest formline design",
+      Relief: "echoing Baroque ecclesiastical relief panels",
+      Abstract: "channeling mid-century organic modernism",
+    };
+
+    const hasRefs = referenceImages && referenceImages.length > 0;
+    const refContext = hasRefs
+      ? " Use the provided reference photos as inspiration for the subject, artistic style, or wood-block shape."
+      : "";
+
+    const prompt = `A museum-quality ${style.name.toLowerCase()} wood carving of ${description}, ${tradition[style.name as keyof typeof tradition]}.${refContext}
+
+MATERIAL: ${woodDetails[style.name as keyof typeof woodDetails]}.
+
+PHOTOGRAPHY: Shot on medium format film, soft directional lighting from upper left, visible wood grain and subtle tool marks that show the hand of the maker. Isolated on seamless grey paper backdrop. The kind of image you'd see in American Craft magazine or a Wendell Castle retrospective.`;
 
     try {
+      // Build parts: reference images first, then text prompt
+      const parts: Part[] = [];
+      if (hasRefs) {
+        for (const img of referenceImages) {
+          parts.push({ inlineData: { mimeType: "image/jpeg", data: img } });
+        }
+      }
+      parts.push({ text: prompt });
+
       const result = await ai.models.generateContent({
-        model: "gemini-3-pro-image-preview",
+        model: "gemini-2.5-flash-image",
         contents: [
           {
-            parts: [{ text: prompt }],
+            role: "user",
+            parts,
           },
         ],
         config: {
-          imageConfig: {
-            aspectRatio: "1:1",
-            imageSize: "1K",
-          },
+          temperature: 1.0,
+          topP: 0.95,
+          topK: 40,
         },
       });
 
       console.log(
         `[DEBUG] Raw API Result for ${style.name}:`,
-        JSON.stringify(result, null, 2)
+        JSON.stringify(result, null, 2),
       );
 
       let imageUrl = "";
@@ -202,9 +238,8 @@ export async function generateCarvingVariations(
       // Check for candidates on result directly (common in some SDK versions) OR result.response
       const candidates =
         result.candidates || result?.response?.candidates || [];
-      const parts = candidates?.[0]?.content?.parts || [];
-
-      for (const part of parts) {
+      const responseParts = candidates?.[0]?.content?.parts || [];
+      for (const part of responseParts) {
         if (part.inlineData) {
           imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
           break;
@@ -214,7 +249,7 @@ export async function generateCarvingVariations(
       if (!imageUrl) {
         console.warn(
           `Failed to generate image for ${style.name}: `,
-          result?.response?.text ? result.response.text() : "No image data"
+          result?.response?.text ? result.response.text() : "No image data",
         );
         return null;
       }
@@ -235,7 +270,7 @@ export async function generateCarvingVariations(
 
   if (validResults.length === 0) {
     throw new Error(
-      "Failed to generate any image variations. Please check your API key/Model access."
+      "Failed to generate any image variations. Please check your API key/Model access.",
     );
   }
 
@@ -247,7 +282,7 @@ export async function generateDetailedImages(
   selectedVariation: CarvingVariation,
   userNotes?: string,
   _apiKey?: string,
-  options?: WoodCarvingServiceOptions
+  options?: WoodCarvingServiceOptions,
 ): Promise<DetailedImage[]> {
   // Legacy function placeholder - can be implemented or removed in future cleanup.
 
@@ -302,23 +337,23 @@ Make these detailed renderings with:
 
   try {
     const detailedImages = DetailedImagesResponseSchema.parse(
-      JSON.parse(cleanJson)
+      JSON.parse(cleanJson),
     );
     const sanitizedImages = await Promise.all(
       detailedImages.map(async (image) => ({
         view: image.view,
         svg: await sanitizeSvg(image.svg),
-      }))
+      })),
     );
     return sanitizedImages;
   } catch (error) {
     console.error(
       "Failed to parse detailed images response:",
       error,
-      responseText
+      responseText,
     );
     throw new Error(
-      "The carving visualizer returned an invalid detailed images response. Please try again."
+      "The carving visualizer returned an invalid detailed images response. Please try again.",
     );
   }
 }
@@ -326,7 +361,7 @@ Make these detailed renderings with:
 // --- New CarveCraft Logic ---
 
 function parseDataUrl(
-  dataUrl: string
+  dataUrl: string,
 ): { mimeType: string; data: string } | null {
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!match) return null;
@@ -341,7 +376,8 @@ function parseDataUrl(
  */
 export const generateCarvingPlan = async (
   promptText: string,
-  referenceImageUrl?: string
+  referenceImageUrl?: string,
+  referenceImages?: string[],
 ): Promise<GeneratedDesign> => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
@@ -357,22 +393,37 @@ export const generateCarvingPlan = async (
 
   try {
     // 1. Generate Text Guide
-    // Use gemini-2.0-flash-exp for text generation
-    const textModel = "gemini-2.0-flash-exp";
-    const textPrompt = `
-      You are a master woodcarver teaching a student.
-      Subject: "${promptText}".
-      Provide a concise "Step-by-Step Carving Strategy".
-      Include:
-      1. Grain direction warnings.
-      2. Order of operations (roughing out -> detailing).
-      3. Specific tools recommended.
-      Keep it practical and under 200 words.
-      Format as clean Markdown.
-    `;
+    const textModel = "gemini-2.5-flash";
+    const textPrompt = `You're a weathered master carver—decades of shavings under your bench—sharing hard-won wisdom with an eager apprentice. Speak plainly, like you're standing beside them at the bench.
 
-    // Incorporate image into text prompt if provided (multimodal)
+SUBJECT: "${promptText}"
+
+Give them your "Carving Strategy" in under 200 words. The kind of advice you'd hear in a woodworking guild, not a textbook.
+
+MUST INCLUDE:
+1. **Grain reading** — Where to find the trouble spots, which direction to approach
+2. **Sequence** — What to remove first (think big to small: basting out → shaping → detailing)
+3. **Tools** — Which gouges/knives for which cuts (be specific: "#5 sweep 20mm for the hollows")
+4. **One hard-won tip** — Something that takes years to learn, given freely
+
+STYLE:
+- Start with "Alright, here's how I'd approach this..."
+- Use craft vernacular: "hog off the waste", "chase the grain", "undercut the shadows"
+- Include one warning: "Don't..." or "Watch out for..."
+- End with encouragement
+
+Format: Clean Markdown, scannable headers. No fluff.`;
+
+    // Incorporate images into text prompt (multimodal)
     const textContents: { parts: Part[] } = { parts: [] };
+    // Add user-uploaded reference photos first
+    if (referenceImages && referenceImages.length > 0) {
+      for (const img of referenceImages) {
+        textContents.parts.push({
+          inlineData: { mimeType: "image/jpeg", data: img },
+        });
+      }
+    }
     if (parsedImage) {
       textContents.parts.push({
         inlineData: {
@@ -381,7 +432,11 @@ export const generateCarvingPlan = async (
         },
       });
       textContents.parts.push({
-        text: "Analyze this reference image. " + textPrompt,
+        text: "Analyze these reference images. " + textPrompt,
+      });
+    } else if (referenceImages && referenceImages.length > 0) {
+      textContents.parts.push({
+        text: "Use the provided reference photos as inspiration. " + textPrompt,
       });
     } else {
       textContents.parts.push({ text: textPrompt });
@@ -395,13 +450,20 @@ export const generateCarvingPlan = async (
 
     // 2. Generate Concept Art
     // Must use an image generation model.
-    const imageModel = "gemini-3-pro-image-preview";
+    const imageModel = "gemini-2.5-flash-image";
 
     const conceptParts: Part[] = [];
 
+    // Add user-uploaded reference photos
+    if (referenceImages && referenceImages.length > 0) {
+      for (const img of referenceImages) {
+        conceptParts.push({
+          inlineData: { mimeType: "image/jpeg", data: img },
+        });
+      }
+    }
+
     if (parsedImage) {
-      // NOTE: gemini-3-pro-image-preview might support image input for variations.
-      // If not, it might ignore it, but we MUST pass correct binary data.
       conceptParts.push({
         inlineData: {
           mimeType: parsedImage.mimeType,
@@ -409,7 +471,11 @@ export const generateCarvingPlan = async (
         },
       });
       conceptParts.push({
-        text: `Transform this reference image into a finished, polished wood carving of ${promptText}. Photorealistic, studio lighting, masterpiece, detailed texture of wood grain. Isolated on a neutral background.`,
+        text: `Transform these reference images into a finished, polished wood carving of ${promptText}. Photorealistic, studio lighting, masterpiece, detailed texture of wood grain. Isolated on a neutral background.`,
+      });
+    } else if (referenceImages && referenceImages.length > 0) {
+      conceptParts.push({
+        text: `Using these reference photos as inspiration, create a finished, polished wood carving of ${promptText}. Photorealistic, studio lighting, masterpiece, detailed texture of wood grain. Isolated on a neutral background.`,
       });
     } else {
       conceptParts.push({
@@ -419,12 +485,11 @@ export const generateCarvingPlan = async (
 
     const conceptResponse = await ai.models.generateContent({
       model: imageModel,
-      contents: { parts: conceptParts },
+      contents: [{ role: "user", parts: conceptParts }],
       config: {
-        imageConfig: {
-          aspectRatio: "1:1",
-          imageSize: "1K",
-        },
+        temperature: 1.0,
+        topP: 0.95,
+        topK: 40,
       },
     });
 
@@ -467,13 +532,12 @@ export const generateCarvingPlan = async (
     }
 
     const schematicResponse = await ai.models.generateContent({
-      model: "gemini-3-pro-image-preview",
-      contents: { parts: schematicParts },
+      model: "gemini-2.5-flash-image",
+      contents: [{ role: "user", parts: schematicParts }],
       config: {
-        imageConfig: {
-          aspectRatio: "1:1",
-          imageSize: "1K",
-        },
+        temperature: 1.0,
+        topP: 0.95,
+        topK: 40,
       },
     });
 

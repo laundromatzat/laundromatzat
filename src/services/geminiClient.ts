@@ -130,7 +130,7 @@ export async function createChatSession(): Promise<ChatSessionLike> {
 
   const client = getClient();
   const chat = client.chats.create({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-pro",
     config: {
       systemInstruction: {
         role: "system",

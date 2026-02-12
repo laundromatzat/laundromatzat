@@ -2,19 +2,19 @@ import { getApiUrl } from "@/utils/api";
 
 export type NylonFabricDesign = {
   id: number;
-  project_name: string;
-  description: string;
-  guide_text: string;
-  visuals_json: string;
+  design_name: string;
+  instruction_image_url: string | null;
+  nylon_image_url: string | null;
+  prompts: Record<string, unknown> | null;
   created_at: string;
 };
 
 export type NylonFabricDesignData = {
   id?: number;
-  projectName: string;
-  description: string;
-  guideText: string;
-  visuals: { stage: string; svg: string }[];
+  designName: string;
+  instructionImageUrl?: string;
+  nylonImageUrl?: string;
+  prompts?: Record<string, unknown>;
 };
 
 /**
@@ -34,10 +34,10 @@ export const saveDesign = async (
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      projectName: data.projectName,
-      description: data.description,
-      guideText: data.guideText,
-      visuals: data.visuals,
+      designName: data.designName,
+      instructionImageUrl: data.instructionImageUrl,
+      nylonImageUrl: data.nylonImageUrl,
+      prompts: data.prompts,
     }),
   });
 

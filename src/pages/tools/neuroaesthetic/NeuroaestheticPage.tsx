@@ -203,7 +203,7 @@ const NeuroaestheticPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 relative">
+    <div className="min-h-screen bg-aura-bg relative">
       <PageMetadata
         title="Neuroaesthetic Lens"
         description="Reimagine environments using neuroaesthetic principles."
@@ -212,10 +212,10 @@ const NeuroaestheticPage: React.FC = () => {
       <div className="absolute top-4 right-4 z-20">
         <button
           onClick={() => setIsGalleryOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-700"
+          className="flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-aura-sm hover:shadow-aura-md aura-transition"
         >
           <ClockIcon className="w-5 h-5" />
-          <span>History</span>
+          <span className="font-medium">History</span>
         </button>
       </div>
 
@@ -397,21 +397,21 @@ const NeuroaestheticPage: React.FC = () => {
       {appState === AppState.UPLOAD && (
         <div className="container mx-auto px-4 py-16 max-w-4xl">
           <div className="text-center mb-12">
-            <h1 className="text-5xl font-serif text-white mb-4">
+            <h1 className="text-5xl font-serif text-aura-text-primary mb-4">
               Neuroaesthetic Lens
             </h1>
-            <p className="text-slate-300 text-lg max-w-2xl mx-auto mb-2">
+            <p className="text-aura-text-secondary text-lg max-w-2xl mx-auto mb-2">
               Analyze and transform spaces based on how the brain perceives
               beauty and environment.
             </p>
-            <p className="text-slate-500 text-sm max-w-xl mx-auto">
+            <p className="text-aura-text-secondary/70 text-sm max-w-xl mx-auto">
               Upload 1-3 images of a room for comprehensive analysis using
               principles of biophilia, prospect-refuge, and fractal fluency.
             </p>
           </div>
 
           <div
-            className="border-2 border-dashed border-slate-700 rounded-2xl p-16 text-center hover:border-emerald-500/50 hover:bg-slate-800/30 transition-all cursor-pointer"
+            className="border-2 border-dashed border-aura-border rounded-2xl p-16 text-center hover:border-aura-accent hover:bg-white/50 transition-all cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -424,7 +424,7 @@ const NeuroaestheticPage: React.FC = () => {
             aria-label="Upload room photos"
           >
             <svg
-              className="w-16 h-16 text-slate-600 mx-auto mb-4"
+              className="w-16 h-16 text-aura-text-secondary mx-auto mb-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -436,10 +436,10 @@ const NeuroaestheticPage: React.FC = () => {
                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <p className="text-slate-300 font-medium mb-2">
+            <p className="text-aura-text-primary font-medium mb-2">
               Click to upload room photos
             </p>
-            <p className="text-slate-500 text-sm">
+            <p className="text-aura-text-secondary text-sm">
               Supports JPEG, PNG • Up to 3 images
             </p>
             <input

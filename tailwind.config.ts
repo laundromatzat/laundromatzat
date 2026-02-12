@@ -88,13 +88,12 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: [
-          '"Inter Variable"',
-          "Inter",
-          "Segoe UI",
-          "system-ui",
-          "sans-serif",
-        ],
+        // Primary sans font - Source Sans 3 (technical, refined)
+        sans: ['"Source Sans 3"', "system-ui", "-apple-system", "sans-serif"],
+        // Serif font for headings - Crimson Pro (editorial, elegant)
+        serif: ['"Crimson Pro"', "Georgia", "Cambria", "serif"],
+        // Display font for large hero text
+        display: ['"Crimson Pro"', "Georgia", "serif"],
       },
       spacing: {
         "space-1": "4px",
@@ -119,6 +118,10 @@ const config: Config = {
         "smooth-in": "smooth-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both",
         "scale-in": "scale-in 0.2s cubic-bezier(0.4, 0, 0.2, 1) both",
         "glow-pulse": "glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        // Orchestrated reveal animations (cookbook: staggered page-load reveals)
+        reveal: "reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "reveal-blur": "reveal-blur 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
+        float: "float 6s ease-in-out infinite",
       },
       keyframes: {
         "fade-in": {
@@ -140,6 +143,29 @@ const config: Config = {
         "glow-pulse": {
           "0%, 100%": { boxShadow: "0 0 20px rgba(214, 209, 199, 0.3)" },
           "50%": { boxShadow: "0 0 30px rgba(214, 209, 199, 0.5)" },
+        },
+        // Premium reveal with translate (cookbook: high-impact page-load moments)
+        reveal: {
+          "0%": { opacity: "0", transform: "translateY(30px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        // Blur reveal for hero elements
+        "reveal-blur": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px)",
+            filter: "blur(10px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+            filter: "blur(0)",
+          },
+        },
+        // Subtle floating animation for atmospheric elements
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
         },
       },
       boxShadow: {

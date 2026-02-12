@@ -100,7 +100,8 @@ app.use(
     ],
   }),
 );
-app.use(express.json({ limit: "10mb" })); // Increased from default 100kb to handle compressed images
+app.use(express.json({ limit: "50mb" })); // Increased to 50mb for high-res images
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Multer setup for in-memory file storage
 // Multer setup for in-memory file storage (for PDF processing)
@@ -177,7 +178,7 @@ const requireAuth = (req, res, next) => {
 // Rate limiter for file uploads to prevent DoS
 const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each user to 10 uploads per 15 minutes
+  max: 30, // Limit each user to 30 uploads per 15 minutes
   message: "Too many file uploads from this IP, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
@@ -1072,34 +1073,7 @@ app.post(
       fs.writeFileSync(filePath, req.file.buffer);
       console.log(`Saved PDF to: ${filePath}`);
 
-      // 1. Convert PDF to Image (First page only)
-      console.log("Converting PDF to image...");
-      console.log("File details:", {
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        bufferType: req.file.buffer
-          ? req.file.buffer.constructor.name
-          : "undefined",
-        bufferLength: req.file.buffer ? req.file.buffer.length : 0,
-      });
-
-      let outputImages;
-      try {
-        // Use custom renderer
-        outputImages = await convertPdfToImages(req.file.buffer, {
-          page_numbers: [1],
-        });
-      } catch (conversionErr) {
-        console.error("PDF Conversion Failed:", conversionErr);
-        throw new Error(`PDF Conversion Failed: ${conversionErr.message}`);
-      }
-
-      if (!outputImages || outputImages.length === 0) {
-        throw new Error("Failed to convert PDF to image: No images returned.");
-      }
-
-      // --- PATH A: DETERMINISTIC PARSING (Digital PDFs) ---
+      // --- PATH A: DETERMINISTIC PARSING (Digital PDFs) - Try this FIRST ---
       console.log("Attempting deterministic parsing...");
       const { parsePdfDeterministically } = require("./deterministic_parser");
       const deterministicData = await parsePdfDeterministically(
@@ -1107,7 +1081,9 @@ app.post(
       );
 
       if (deterministicData) {
-        console.log("Deterministic parsing successful! Skipping LLM.");
+        console.log(
+          "Deterministic parsing successful! Skipping LLM and image conversion.",
+        );
 
         // Save to database directly
         const result = await db.query(
@@ -1143,6 +1119,34 @@ app.post(
         "Deterministic parsing failed or not applicable. Falling back to Vision LLM...",
       );
 
+      // --- PATH B: VISION LLM (Scanned PDFs or parser failure) ---
+      // 1. Convert PDF to Image (First page only)
+      console.log("Converting PDF to image...");
+      console.log("File details:", {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        bufferType: req.file.buffer
+          ? req.file.buffer.constructor.name
+          : "undefined",
+        bufferLength: req.file.buffer ? req.file.buffer.length : 0,
+      });
+
+      let outputImages;
+      try {
+        // Use custom renderer
+        outputImages = await convertPdfToImages(req.file.buffer, {
+          page_numbers: [1],
+        });
+      } catch (conversionErr) {
+        console.error("PDF Conversion Failed:", conversionErr);
+        throw new Error(`PDF Conversion Failed: ${conversionErr.message}`);
+      }
+
+      if (!outputImages || outputImages.length === 0) {
+        throw new Error("Failed to convert PDF to image: No images returned.");
+      }
+
       // --- RESEARCH PHASE: Extract Raw Text for Grounding ---
       let extractedTextContext = "";
       try {
@@ -1155,7 +1159,6 @@ app.post(
           textErr.message,
         );
       }
-      // --- END PATH A ---
 
       // DEBUG: Save the raw PDF to disk for layout analysis
       fs.writeFileSync("debug_last.pdf", req.file.buffer);
@@ -1274,9 +1277,9 @@ EXTRACTED TEXT END
       );
 
       // 3. Call LM Studio Vision API
-      console.log(
-        `Sending image payload to LM Studio Vision model (${LM_STUDIO_API})...`,
-      );
+      console.log("Sending image payload to LM Studio Vision model...");
+      console.log(`LM Studio URL: ${LM_STUDIO_API}`);
+      console.log(`Expected Model: ${MODEL_NAME}`);
 
       const apiResponse = await fetch(`${LM_STUDIO_API}/v1/chat/completions`, {
         method: "POST",
@@ -1310,9 +1313,9 @@ EXTRACTED TEXT END
       });
 
       if (!apiResponse.ok) {
-        throw new Error(
-          `LM Studio API error: ${apiResponse.status} ${apiResponse.statusText}`,
-        );
+        const errorMsg = `LM Studio API error: ${apiResponse.status} ${apiResponse.statusText}. Attempted connection to ${LM_STUDIO_API} with model ${MODEL_NAME}`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
       const llmResponse = await apiResponse.json();
@@ -1533,9 +1536,22 @@ EXTRACTED TEXT END
       res.status(201).json(responseData);
     } catch (err) {
       console.error("Analysis failed:", err.message);
-      res
-        .status(500)
-        .json({ error: "Failed to analyze paycheck with the LM Studio API." });
+      console.error("Full error:", err);
+
+      // Build helpful error message with connection details
+      let errorMessage;
+      if (
+        err.message.includes("fetch failed") ||
+        err.message.includes("ECONNREFUSED") ||
+        err.message.includes("connect")
+      ) {
+        const port = new URL(LM_STUDIO_API).port || "1234";
+        errorMessage = `Unable to connect to LM Studio at ${LM_STUDIO_API}.\n\nPlease ensure:\n1. LM Studio is running\n2. Server is started on port ${port}\n3. Model "${MODEL_NAME}" is loaded\n\nOriginal error: ${err.message}`;
+      } else {
+        errorMessage = `Failed to analyze paystub: ${err.message}\n\nLM Studio Configuration:\n- URL: ${LM_STUDIO_API}\n- Expected Model: ${MODEL_NAME}`;
+      }
+
+      res.status(500).json({ error: errorMessage });
     }
   },
 );
@@ -1997,10 +2013,19 @@ app.delete("/api/wood-carving/projects/:id", requireAuth, async (req, res) => {
 app.get("/api/nylon-fabric-designs", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
-      "SELECT id, project_name, description, guide_text, visuals_json, created_at FROM nylon_fabric_designs WHERE user_id = $1 ORDER BY created_at DESC",
+      "SELECT id, design_name, instruction_image_url, nylon_image_url, prompts, created_at FROM nylon_fabric_designs WHERE user_id = $1 ORDER BY created_at DESC",
       [req.user.id],
     );
-    res.json({ designs: result.rows });
+    // Transform database format to frontend format
+    const designs = result.rows.map((row) => ({
+      id: row.id,
+      design_name: row.design_name,
+      instruction_image_url: row.instruction_image_url,
+      nylon_image_url: row.nylon_image_url,
+      prompts: row.prompts,
+      created_at: row.created_at,
+    }));
+    res.json({ designs });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -2008,15 +2033,16 @@ app.get("/api/nylon-fabric-designs", requireAuth, async (req, res) => {
 
 app.post("/api/nylon-fabric-designs", requireAuth, async (req, res) => {
   try {
-    const { projectName, description, guideText, visuals } = req.body;
+    const { designName, instructionImageUrl, nylonImageUrl, prompts } =
+      req.body;
     const result = await db.query(
-      "INSERT INTO nylon_fabric_designs (user_id, project_name, description, guide_text, visuals_json) VALUES ($1, $2, $3, $4, $5) RETURNING id, project_name, description, guide_text, visuals_json, created_at",
+      "INSERT INTO nylon_fabric_designs (user_id, design_name, instruction_image_url, nylon_image_url, prompts) VALUES ($1, $2, $3, $4, $5) RETURNING id, design_name, instruction_image_url, nylon_image_url, prompts, created_at",
       [
         req.user.id,
-        projectName,
-        description,
-        guideText,
-        JSON.stringify(visuals),
+        designName,
+        instructionImageUrl,
+        nylonImageUrl,
+        prompts ? JSON.stringify(prompts) : null,
       ],
     );
     res.json(result.rows[0]);

@@ -6,6 +6,13 @@
   body {
     @apply bg-aura-bg text-aura-text-primary font-sans selection:bg-aura-accent selection:text-aura-text-primary;
   }
+
+  /* Premium serif headings */
+  h1,
+  h2,
+  h3 {
+    @apply font-serif;
+  }
 }
 
 /* ============================================
@@ -37,5 +44,100 @@
 
   .aura-transition-fast {
     @apply transition-all duration-150 ease-out;
+  }
+
+  /* ============================================
+     ATMOSPHERIC BACKGROUNDS (Cookbook: depth vs solid colors)
+     ============================================ */
+  .aura-bg-atmospheric {
+    background:
+      radial-gradient(
+        ellipse 80% 50% at 50% -20%,
+        rgba(214, 209, 199, 0.3) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 60% 40% at 100% 0%,
+        rgba(168, 129, 96, 0.08) 0%,
+        transparent 40%
+      ),
+      linear-gradient(to bottom, #f5f2eb, #faf9f6);
+  }
+
+  .aura-bg-hero {
+    background:
+      radial-gradient(
+        ellipse 100% 80% at 50% 100%,
+        rgba(44, 42, 38, 0.03) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 80% 60% at 0% 50%,
+        rgba(214, 209, 199, 0.2) 0%,
+        transparent 50%
+      ),
+      #f5f2eb;
+  }
+
+  /* Subtle noise texture overlay */
+  .aura-noise::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.02;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+
+  /* ============================================
+     STAGGERED REVEAL ANIMATIONS (Cookbook: orchestrated page-load)
+     ============================================ */
+  .reveal-stagger-1 {
+    animation-delay: 0ms;
+  }
+  .reveal-stagger-2 {
+    animation-delay: 100ms;
+  }
+  .reveal-stagger-3 {
+    animation-delay: 200ms;
+  }
+  .reveal-stagger-4 {
+    animation-delay: 300ms;
+  }
+  .reveal-stagger-5 {
+    animation-delay: 400ms;
+  }
+  .reveal-stagger-6 {
+    animation-delay: 500ms;
+  }
+
+  /* Reveal container */
+  .reveal-on-load {
+    @apply animate-reveal;
+  }
+
+  .reveal-blur-on-load {
+    @apply animate-reveal-blur;
+  }
+
+  /* ============================================
+     PREMIUM ACCENT COLORS (Cookbook: sharp accents)
+     ============================================ */
+  .accent-gold {
+    color: #c9a962;
+  }
+
+  .accent-gold-bg {
+    background: linear-gradient(135deg, #c9a962 0%, #a88547 100%);
+  }
+
+  /* Micro-interaction hover glow */
+  .hover-glow {
+    @apply transition-shadow duration-300;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 30px rgba(201, 169, 98, 0.15);
   }
 }

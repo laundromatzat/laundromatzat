@@ -18,19 +18,19 @@ const HomePage: React.FC = () => {
   const handleNextProject = () => {
     if (selectedProjectIndex === null) return;
     setSelectedProjectIndex((prev) =>
-      prev === null || prev === projects.length - 1 ? 0 : prev + 1
+      prev === null || prev === projects.length - 1 ? 0 : prev + 1,
     );
   };
 
   const handlePrevProject = () => {
     if (selectedProjectIndex === null) return;
     setSelectedProjectIndex((prev) =>
-      prev === null || prev === 0 ? projects.length - 1 : prev - 1
+      prev === null || prev === 0 ? projects.length - 1 : prev - 1,
     );
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 aura-bg-atmospheric min-h-screen">
       <PageMetadata
         title="Home"
         description="Welcome to Laundromatzat - A Digital Atelier."
@@ -46,8 +46,8 @@ const HomePage: React.FC = () => {
       {/* Main Grid */}
       <Container className="pb-24">
         <div className="flex items-end justify-between mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-serif font-light text-zinc-900 mb-4">
+          <div className="animate-reveal reveal-stagger-1">
+            <h2 className="text-3xl md:text-4xl font-light text-zinc-900 mb-4">
               Selected Works
             </h2>
             <p className="text-zinc-600 max-w-xl text-lg font-light">

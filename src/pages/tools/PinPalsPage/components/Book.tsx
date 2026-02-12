@@ -28,11 +28,11 @@ export const Book: React.FC<BookProps> = ({ imageUrl, onReset }) => {
       padding="lg"
       className="w-full max-w-lg mx-auto flex flex-col items-center animate-scale-in"
     >
-      <div className="mb-8 w-full aspect-square relative rounded-full overflow-hidden border border-aura-border bg-black shadow-2xl shadow-black/50">
+      <div className="mb-8 w-full aspect-square relative rounded-full overflow-hidden border border-aura-border bg-transparent shadow-2xl shadow-black/50">
         <img
           src={imageUrl}
           alt="Generated Pin"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
         />
       </div>
 
