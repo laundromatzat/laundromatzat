@@ -56,7 +56,7 @@ app.use(
       },
     },
     crossOriginEmbedderPolicy: false, // Often causes issues with images/PDFs
-  })
+  }),
 );
 
 // Rate Limiting
@@ -98,9 +98,10 @@ app.use(
       "X-Requested-With",
       "Accept",
     ],
-  })
+  }),
 );
-app.use(express.json({ limit: "10mb" })); // Increased from default 100kb to handle compressed images
+app.use(express.json({ limit: "50mb" })); // Increased to 50mb for high-res images
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Multer setup for in-memory file storage
 // Multer setup for in-memory file storage (for PDF processing)
@@ -144,7 +145,7 @@ app.use(
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     next();
   },
-  express.static(path.join(__dirname, "uploads"))
+  express.static(path.join(__dirname, "uploads")),
 );
 
 // LM Studio API configuration
@@ -177,7 +178,7 @@ const requireAuth = (req, res, next) => {
 // Rate limiter for file uploads to prevent DoS
 const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each user to 10 uploads per 15 minutes
+  max: 30, // Limit each user to 30 uploads per 15 minutes
   message: "Too many file uploads from this IP, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
@@ -199,7 +200,7 @@ app.post("/api/auth/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await db.query(
       "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id",
-      [username, hashedPassword]
+      [username, hashedPassword],
     );
     const newUserId = result.rows[0].id;
     // New users are NOT approved by default and have role 'user'
@@ -212,7 +213,7 @@ app.post("/api/auth/register", async (req, res) => {
     // Send Admin Notification (Async - fire and forget)
     const { sendAdminNotification } = require("./utils/email");
     sendAdminNotification({ id: newUserId, username }).catch((err) =>
-      console.error("Email trigger failed:", err)
+      console.error("Email trigger failed:", err),
     );
   } catch (err) {
     if (err.message.includes("unique constraint") || err.code === "23505") {
@@ -254,7 +255,7 @@ app.post("/api/auth/login", async (req, res) => {
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "24h" },
     );
     res.json({
       token,
@@ -277,7 +278,7 @@ app.get("/api/auth/me", async (req, res) => {
     // Fetch latest user data from DB to get profile picture
     const userQuery = await db.query(
       "SELECT id, username, profile_picture, role, is_approved FROM users WHERE id = $1",
-      [decoded.id]
+      [decoded.id],
     );
     const user = userQuery.rows[0];
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -301,7 +302,7 @@ app.put("/api/auth/me", requireAuth, async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       await db.query(
         "UPDATE users SET username = $1, password = $2 WHERE id = $3",
-        [username, hashedPassword, userId]
+        [username, hashedPassword, userId],
       );
     } else {
       await db.query("UPDATE users SET username = $1 WHERE id = $2", [
@@ -313,7 +314,7 @@ app.put("/api/auth/me", requireAuth, async (req, res) => {
     // Fetch updated user
     const result = await db.query(
       "SELECT id, username, profile_picture FROM users WHERE id = $1",
-      [userId]
+      [userId],
     );
     const user = result.rows[0];
     res.json({ user, message: "Profile updated successfully" });
@@ -353,7 +354,7 @@ app.post(
       console.error("Avatar DB update failed:", err);
       res.status(500).json({ error: "Failed to update profile picture" });
     }
-  }
+  },
 );
 
 // --- Links API Endpoints ---
@@ -366,7 +367,7 @@ app.get("/api/links", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM links WHERE user_id = $1 ORDER BY created_at DESC",
-      [req.user.id]
+      [req.user.id],
     );
     const links = result.rows.map((row) => ({
       ...row,
@@ -396,7 +397,7 @@ app.post("/api/links", requireAuth, async (req, res) => {
         description || "",
         JSON.stringify(tags || []),
         image_url || "",
-      ]
+      ],
     );
     res.status(201).json({
       id: result.rows[0].id,
@@ -429,7 +430,7 @@ app.put("/api/links/:id", requireAuth, async (req, res) => {
         image_url || "",
         id,
         req.user.id,
-      ]
+      ],
     );
 
     if (result.rowCount === 0) {
@@ -450,7 +451,7 @@ app.delete("/api/links/:id", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "DELETE FROM links WHERE id = $1 AND user_id = $2",
-      [id, req.user.id]
+      [id, req.user.id],
     );
 
     if (result.rowCount === 0) {
@@ -471,7 +472,7 @@ app.get("/api/dev-tasks", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM dev_tasks WHERE user_id = $1 ORDER BY created_at DESC",
-      [req.user.id]
+      [req.user.id],
     );
     res.json(result.rows);
   } catch (err) {
@@ -511,7 +512,7 @@ app.post("/api/dev-tasks", requireAuth, async (req, res) => {
         tags || null,
         ai_prompt || null,
         notes || null,
-      ]
+      ],
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -559,7 +560,7 @@ app.put("/api/dev-tasks/:id", requireAuth, async (req, res) => {
         notes,
         id,
         req.user.id,
-      ]
+      ],
     );
 
     if (result.rowCount === 0) {
@@ -582,7 +583,7 @@ app.delete("/api/dev-tasks/:id", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "DELETE FROM dev_tasks WHERE id = $1 AND user_id = $2",
-      [id, req.user.id]
+      [id, req.user.id],
     );
 
     if (result.rowCount === 0) {
@@ -610,14 +611,14 @@ app.post(
     try {
       const execution = await aiAgentService.submitTask(
         parseInt(id),
-        req.user.id
+        req.user.id,
       );
       res.status(201).json(execution);
     } catch (err) {
       console.error("Failed to submit task to agent:", err.message);
       res.status(500).json({ error: err.message });
     }
-  }
+  },
 );
 
 // Get agent execution details for a task
@@ -630,7 +631,7 @@ app.get("/api/dev-tasks/:id/agent-execution", requireAuth, async (req, res) => {
        WHERE task_id = $1 AND user_id = $2 
        ORDER BY created_at DESC 
        LIMIT 1`,
-      [id, req.user.id]
+      [id, req.user.id],
     );
 
     if (result.rows.length === 0) {
@@ -660,7 +661,7 @@ app.post(
        WHERE task_id = $1 AND user_id = $2 AND status IN ('pending', 'running')
        ORDER BY created_at DESC 
        LIMIT 1`,
-        [id, req.user.id]
+        [id, req.user.id],
       );
 
       if (result.rows.length === 0) {
@@ -673,7 +674,7 @@ app.post(
       console.error("Failed to cancel execution:", err.message);
       res.status(500).json({ error: err.message });
     }
-  }
+  },
 );
 
 // Get execution logs
@@ -687,7 +688,7 @@ app.get("/api/agent-executions/:id/logs", requireAuth, async (req, res) => {
       parseInt(id),
       req.user.id,
       limit,
-      offset
+      offset,
     );
     res.json(logs);
   } catch (err) {
@@ -713,20 +714,20 @@ app.post("/api/github/webhook", async (req, res) => {
         `UPDATE agent_executions 
          SET github_actions_status = $1, github_actions_url = $2, updated_at = NOW()
          WHERE github_commit_sha = $3`,
-        [status, workflow_run.html_url, commitSha]
+        [status, workflow_run.html_url, commitSha],
       );
 
       // Notify users via WebSocket
       const executions = await db.query(
         "SELECT id, user_id FROM agent_executions WHERE github_commit_sha = $1",
-        [commitSha]
+        [commitSha],
       );
 
       executions.rows.forEach((execution) => {
         websocketService.notifyAgentStatusChange(
           execution.user_id,
           execution.id,
-          status
+          status,
         );
       });
     }
@@ -744,7 +745,7 @@ app.post("/api/github/webhook", async (req, res) => {
 app.get("/api/admin/users", requireAuth, requireAdmin, async (req, res) => {
   try {
     const result = await db.query(
-      "SELECT id, username, role, is_approved, created_at FROM users ORDER BY created_at DESC"
+      "SELECT id, username, role, is_approved, created_at FROM users ORDER BY created_at DESC",
     );
     res.json(result.rows);
   } catch (err) {
@@ -767,7 +768,7 @@ app.patch(
       console.error(err);
       res.status(500).json({ error: "Failed to approve user" });
     }
-  }
+  },
 );
 
 // Delete/Reject user
@@ -788,7 +789,7 @@ app.delete(
       console.error(err);
       res.status(500).json({ error: "Failed to delete user" });
     }
-  }
+  },
 );
 
 // Get server stats (admin only)
@@ -800,7 +801,7 @@ app.get("/api/admin/stats", requireAuth, requireAdmin, async (req, res) => {
 
     // Get pending approvals
     const pendingResult = await db.query(
-      "SELECT COUNT(*) FROM users WHERE is_approved = FALSE"
+      "SELECT COUNT(*) FROM users WHERE is_approved = FALSE",
     );
     const pendingApprovals = parseInt(pendingResult.rows[0].count);
 
@@ -835,7 +836,7 @@ app.get("/api/admin/ai-usage", requireAuth, requireAdmin, async (req, res) => {
   try {
     // Get total tokens and cost
     const totalResult = await db.query(
-      "SELECT SUM(tokens_used) as total_tokens, SUM(cost_estimate) as total_cost FROM ai_usage_logs"
+      "SELECT SUM(tokens_used) as total_tokens, SUM(cost_estimate) as total_cost FROM ai_usage_logs",
     );
 
     // Get usage by user
@@ -900,7 +901,7 @@ app.post("/api/admin/log-ai-usage", requireAuth, async (req, res) => {
   try {
     await db.query(
       "INSERT INTO ai_usage_logs (user_id, tool_name, model_name, tokens_used, cost_estimate) VALUES ($1, $2, $3, $4, $5)",
-      [req.user.id, toolName, modelName, tokensUsed || 0, costEstimate || 0]
+      [req.user.id, toolName, modelName, tokensUsed || 0, costEstimate || 0],
     );
     res.json({ message: "Usage logged successfully" });
   } catch (err) {
@@ -984,7 +985,7 @@ app.get("/paychecks", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM paychecks WHERE user_id = $1 ORDER BY payPeriodStart DESC",
-      [req.user.id]
+      [req.user.id],
     );
     const paychecks = result.rows.map((row) => ({
       ...row,
@@ -1019,7 +1020,7 @@ app.put("/paychecks/:id", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "UPDATE paychecks SET userReportedHours = $1 WHERE id = $2 AND user_id = $3",
-      [JSON.stringify(userReportedHours), id, req.user.id]
+      [JSON.stringify(userReportedHours), id, req.user.id],
     );
 
     if (result.rowCount === 0) {
@@ -1072,6 +1073,53 @@ app.post(
       fs.writeFileSync(filePath, req.file.buffer);
       console.log(`Saved PDF to: ${filePath}`);
 
+      // --- PATH A: DETERMINISTIC PARSING (Digital PDFs) - Try this FIRST ---
+      console.log("Attempting deterministic parsing...");
+      const { parsePdfDeterministically } = require("./deterministic_parser");
+      const deterministicData = await parsePdfDeterministically(
+        req.file.buffer,
+      );
+
+      if (deterministicData) {
+        console.log(
+          "Deterministic parsing successful! Skipping LLM and image conversion.",
+        );
+
+        // Save to database directly
+        const result = await db.query(
+          `INSERT INTO paychecks (user_id, payPeriodStart, payPeriodEnd, paidHours, bankedHours, userReportedHours)
+          VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+          [
+            req.user.id,
+            deterministicData.payPeriodStart,
+            deterministicData.payPeriodEnd,
+            JSON.stringify(deterministicData.paidHours),
+            JSON.stringify(deterministicData.bankedHours),
+            JSON.stringify({}),
+          ],
+        );
+
+        const responseData = {
+          id: result.rows[0].id,
+          payPeriodStart: deterministicData.payPeriodStart,
+          payPeriodEnd: deterministicData.payPeriodEnd,
+          paidHours: deterministicData.paidHours,
+          bankedHours: deterministicData.bankedHours,
+          userReportedHours: {},
+        };
+
+        console.log(
+          "DEBUG: Final response data (Deterministic) sent to frontend:",
+          JSON.stringify(responseData, null, 2),
+        );
+        return res.status(201).json(responseData);
+      }
+
+      console.log(
+        "Deterministic parsing failed or not applicable. Falling back to Vision LLM...",
+      );
+
+      // --- PATH B: VISION LLM (Scanned PDFs or parser failure) ---
       // 1. Convert PDF to Image (First page only)
       console.log("Converting PDF to image...");
       console.log("File details:", {
@@ -1099,50 +1147,6 @@ app.post(
         throw new Error("Failed to convert PDF to image: No images returned.");
       }
 
-      // --- PATH A: DETERMINISTIC PARSING (Digital PDFs) ---
-      console.log("Attempting deterministic parsing...");
-      const { parsePdfDeterministically } = require("./deterministic_parser");
-      const deterministicData = await parsePdfDeterministically(
-        req.file.buffer
-      );
-
-      if (deterministicData) {
-        console.log("Deterministic parsing successful! Skipping LLM.");
-
-        // Save to database directly
-        const result = await db.query(
-          `INSERT INTO paychecks (user_id, payPeriodStart, payPeriodEnd, paidHours, bankedHours, userReportedHours)
-          VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-          [
-            req.user.id,
-            deterministicData.payPeriodStart,
-            deterministicData.payPeriodEnd,
-            JSON.stringify(deterministicData.paidHours),
-            JSON.stringify(deterministicData.bankedHours),
-            JSON.stringify({}),
-          ]
-        );
-
-        const responseData = {
-          id: result.rows[0].id,
-          payPeriodStart: deterministicData.payPeriodStart,
-          payPeriodEnd: deterministicData.payPeriodEnd,
-          paidHours: deterministicData.paidHours,
-          bankedHours: deterministicData.bankedHours,
-          userReportedHours: {},
-        };
-
-        console.log(
-          "DEBUG: Final response data (Deterministic) sent to frontend:",
-          JSON.stringify(responseData, null, 2)
-        );
-        return res.status(201).json(responseData);
-      }
-
-      console.log(
-        "Deterministic parsing failed or not applicable. Falling back to Vision LLM..."
-      );
-
       // --- RESEARCH PHASE: Extract Raw Text for Grounding ---
       let extractedTextContext = "";
       try {
@@ -1152,10 +1156,9 @@ app.post(
       } catch (textErr) {
         console.warn(
           "Failed to extract raw text for grounding:",
-          textErr.message
+          textErr.message,
         );
       }
-      // --- END PATH A ---
 
       // DEBUG: Save the raw PDF to disk for layout analysis
       fs.writeFileSync("debug_last.pdf", req.file.buffer);
@@ -1164,7 +1167,7 @@ app.post(
       // DEBUG: Attempt to extract text coordinates (to see if we can use deterministic parsing)
       try {
         const pdfDoc = await pdfjsLib.getDocument(
-          new Uint8Array(req.file.buffer)
+          new Uint8Array(req.file.buffer),
         ).promise;
         const page = await pdfDoc.getPage(1);
         const textContent = await page.getTextContent();
@@ -1183,7 +1186,7 @@ app.post(
 
         fs.writeFileSync("debug_text_layout.txt", layoutLog);
         console.log(
-          "DEBUG: Saved debug_text_layout.txt with text coordinates."
+          "DEBUG: Saved debug_text_layout.txt with text coordinates.",
         );
       } catch (e) {
         console.error("DEBUG: Failed to extract text layout:", e);
@@ -1192,7 +1195,7 @@ app.post(
       const base64Image = outputImages[0];
       console.log(
         "PDF converted to image successfully. Image length:",
-        base64Image.length
+        base64Image.length,
       );
 
       // 2. Create the prompt for the Vision LLM
@@ -1270,13 +1273,13 @@ EXTRACTED TEXT END
       const base64Data = base64Image.replace(/^data:image\/png;base64,/, "");
       fs.writeFileSync("debug_last_capture.png", base64Data, "base64");
       console.log(
-        "DEBUG: Saved debug_last_capture.png to check image quality."
+        "DEBUG: Saved debug_last_capture.png to check image quality.",
       );
 
       // 3. Call LM Studio Vision API
-      console.log(
-        `Sending image payload to LM Studio Vision model (${LM_STUDIO_API})...`
-      );
+      console.log("Sending image payload to LM Studio Vision model...");
+      console.log(`LM Studio URL: ${LM_STUDIO_API}`);
+      console.log(`Expected Model: ${MODEL_NAME}`);
 
       const apiResponse = await fetch(`${LM_STUDIO_API}/v1/chat/completions`, {
         method: "POST",
@@ -1310,9 +1313,9 @@ EXTRACTED TEXT END
       });
 
       if (!apiResponse.ok) {
-        throw new Error(
-          `LM Studio API error: ${apiResponse.status} ${apiResponse.statusText}`
-        );
+        const errorMsg = `LM Studio API error: ${apiResponse.status} ${apiResponse.statusText}. Attempted connection to ${LM_STUDIO_API} with model ${MODEL_NAME}`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
       const llmResponse = await apiResponse.json();
@@ -1362,7 +1365,7 @@ EXTRACTED TEXT END
               jsonString = jsonString.substring(0, arrayEndIndex + 1) + "\n}";
             }
             console.log(
-              "DEBUG: Repaired JSON string by truncating after banked_hours."
+              "DEBUG: Repaired JSON string by truncating after banked_hours.",
             );
           }
         }
@@ -1478,16 +1481,16 @@ EXTRACTED TEXT END
 
       // Map snake_case to camelCase if needed
       const payPeriodStart = normalizeDate(
-        parsedData.payPeriodStart || parsedData.pay_period_start
+        parsedData.payPeriodStart || parsedData.pay_period_start,
       );
       const payPeriodEnd = normalizeDate(
-        parsedData.payPeriodEnd || parsedData.pay_period_end
+        parsedData.payPeriodEnd || parsedData.pay_period_end,
       );
 
       // Clean up the hours data using the new logic
       const paidHours = cleanHoursPaid(parsedData);
       const bankedHours = cleanGenericHours(
-        parsedData.bankedHours || parsedData.banked_hours || []
+        parsedData.bankedHours || parsedData.banked_hours || [],
       );
 
       // 4. Save to database
@@ -1495,7 +1498,7 @@ EXTRACTED TEXT END
       // Ensure we have valid dates before inserting
       if (!payPeriodStart || !payPeriodEnd) {
         throw new Error(
-          `Invalid date format received from LLM. Start: ${parsedData.payPeriodStart}, End: ${parsedData.payPeriodEnd}`
+          `Invalid date format received from LLM. Start: ${parsedData.payPeriodStart}, End: ${parsedData.payPeriodEnd}`,
         );
       }
 
@@ -1509,7 +1512,7 @@ EXTRACTED TEXT END
           JSON.stringify(paidHours),
           JSON.stringify(bankedHours),
           JSON.stringify({}), // Default empty user hours
-        ]
+        ],
       );
 
       // 5. Return the new data to the frontend
@@ -1525,7 +1528,7 @@ EXTRACTED TEXT END
 
       console.log(
         "DEBUG: Final response data sent to frontend:",
-        JSON.stringify(responseData, null, 2)
+        JSON.stringify(responseData, null, 2),
       );
 
       // Removed debug_pdf_text.txt writing as we no longer have text extraction
@@ -1533,11 +1536,24 @@ EXTRACTED TEXT END
       res.status(201).json(responseData);
     } catch (err) {
       console.error("Analysis failed:", err.message);
-      res
-        .status(500)
-        .json({ error: "Failed to analyze paycheck with the LM Studio API." });
+      console.error("Full error:", err);
+
+      // Build helpful error message with connection details
+      let errorMessage;
+      if (
+        err.message.includes("fetch failed") ||
+        err.message.includes("ECONNREFUSED") ||
+        err.message.includes("connect")
+      ) {
+        const port = new URL(LM_STUDIO_API).port || "1234";
+        errorMessage = `Unable to connect to LM Studio at ${LM_STUDIO_API}.\n\nPlease ensure:\n1. LM Studio is running\n2. Server is started on port ${port}\n3. Model "${MODEL_NAME}" is loaded\n\nOriginal error: ${err.message}`;
+      } else {
+        errorMessage = `Failed to analyze paystub: ${err.message}\n\nLM Studio Configuration:\n- URL: ${LM_STUDIO_API}\n- Expected Model: ${MODEL_NAME}`;
+      }
+
+      res.status(500).json({ error: errorMessage });
     }
-  }
+  },
 );
 // --- Mediscribe API Endpoints ---
 
@@ -1545,7 +1561,7 @@ app.get("/api/mediscribe/examples", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM mediscribe_examples WHERE user_id = $1 ORDER BY created_at DESC",
-      [req.user.id]
+      [req.user.id],
     );
     res.json({
       examples: result.rows.map((r) => ({
@@ -1565,7 +1581,7 @@ app.post("/api/mediscribe/examples", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "INSERT INTO mediscribe_examples (user_id, original_text, rewritten_text, style_tags) VALUES ($1, $2, $3, $4) RETURNING id",
-      [req.user.id, original, rewritten, JSON.stringify(tags || [])]
+      [req.user.id, original, rewritten, JSON.stringify(tags || [])],
     );
     res.json({ id: result.rows[0].id, message: "Example saved" });
   } catch (err) {
@@ -1577,7 +1593,7 @@ app.delete("/api/mediscribe/examples/:id", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "DELETE FROM mediscribe_examples WHERE id = $1 AND user_id = $2",
-      [req.params.id, req.user.id]
+      [req.params.id, req.user.id],
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ error: "Example not found" });
@@ -1594,7 +1610,7 @@ app.get("/api/public-health/docs", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM public_health_docs WHERE user_id = $1 ORDER BY uploaded_at DESC",
-      [req.user.id]
+      [req.user.id],
     );
     res.json({
       docs: result.rows.map((r) => ({
@@ -1633,7 +1649,7 @@ app.post("/api/public-health/docs", requireAuth, async (req, res) => {
         JSON.stringify(tags || []),
         category || null,
         version || null,
-      ]
+      ],
     );
     res.json({ id: result.rows[0].id, message: "Document saved" });
   } catch (err) {
@@ -1645,7 +1661,7 @@ app.delete("/api/public-health/docs/:id", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "DELETE FROM public_health_docs WHERE id = $1 AND user_id = $2",
-      [req.params.id, req.user.id]
+      [req.params.id, req.user.id],
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ error: "Document not found" });
@@ -1662,7 +1678,7 @@ app.get("/api/neuroaesthetic/preferences", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT sensitivities, colorPreferences, designGoals FROM neuroaesthetic_preferences WHERE user_id = $1",
-      [req.user.id]
+      [req.user.id],
     );
     const row = result.rows[0];
     if (!row) {
@@ -1689,7 +1705,7 @@ app.put("/api/neuroaesthetic/preferences", requireAuth, async (req, res) => {
        VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
        ON CONFLICT (user_id) 
        DO UPDATE SET sensitivities = $2, colorPreferences = $3, designGoals = $4, updated_at = CURRENT_TIMESTAMP`,
-      [req.user.id, sensitivities, colorPreferences, designGoals]
+      [req.user.id, sensitivities, colorPreferences, designGoals],
     );
     res.json({ message: "Preferences saved" });
   } catch (err) {
@@ -1701,7 +1717,7 @@ app.get("/api/neuroaesthetic/history", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM neuroaesthetic_history WHERE user_id = $1 ORDER BY created_at DESC",
-      [req.user.id]
+      [req.user.id],
     );
     res.json({
       history: result.rows.map((r) => ({
@@ -1729,7 +1745,7 @@ app.post("/api/neuroaesthetic/history", requireAuth, async (req, res) => {
         generatedImage,
         JSON.stringify(analysis),
         JSON.stringify(preferencesSnapshot),
-      ]
+      ],
     );
     res.json({ id: result.rows[0].id, message: "History saved" });
   } catch (err) {
@@ -1741,7 +1757,7 @@ app.delete("/api/neuroaesthetic/history/:id", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "DELETE FROM neuroaesthetic_history WHERE id = $1 AND user_id = $2",
-      [req.params.id, req.user.id]
+      [req.params.id, req.user.id],
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ error: "History item not found" });
@@ -1758,7 +1774,7 @@ app.get("/api/pin-pals/gallery", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "SELECT * FROM pin_pals_gallery WHERE user_id = $1 ORDER BY created_at DESC",
-      [req.user.id]
+      [req.user.id],
     );
     res.json({
       pins: result.rows.map((r) => ({
@@ -1779,7 +1795,7 @@ app.post("/api/pin-pals/gallery", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "INSERT INTO pin_pals_gallery (user_id, image_url, pet_type, pet_count) VALUES ($1, $2, $3, $4) RETURNING id",
-      [req.user.id, imageUrl, petType, petCount]
+      [req.user.id, imageUrl, petType, petCount],
     );
     res.json({ id: result.rows[0].id, message: "Pin saved to gallery" });
   } catch (err) {
@@ -1791,12 +1807,260 @@ app.delete("/api/pin-pals/gallery/:id", requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       "DELETE FROM pin_pals_gallery WHERE id = $1 AND user_id = $2",
-      [req.params.id, req.user.id]
+      [req.params.id, req.user.id],
     );
     if (result.rowCount === 0) {
       return res.status(404).json({ error: "Gallery item not found" });
     }
     res.json({ message: "Gallery item deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========================================
+// PHASE 2 TOOLS: Color Palette, Background Removal, Wood Carving
+// ========================================
+
+// --- Color Palette Generator ---
+app.get("/api/color-palettes", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT id, file_name, image_data_url, palette_json, created_at FROM color_palettes WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id],
+    );
+    res.json({ palettes: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/color-palettes", requireAuth, async (req, res) => {
+  try {
+    const { fileName, imageDataUrl, palette } = req.body;
+    const result = await db.query(
+      "INSERT INTO color_palettes (user_id, file_name, image_data_url, palette_json) VALUES ($1, $2, $3, $4) RETURNING id, file_name, image_data_url, palette_json, created_at",
+      [req.user.id, fileName, imageDataUrl, JSON.stringify(palette)],
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/color-palettes/:id", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "DELETE FROM color_palettes WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id],
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Palette not found" });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Background Removal ---
+app.get("/api/background-removal/jobs", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT id, file_name, source_image_data_url, result_image_data_url, created_at FROM background_removal_jobs WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id],
+    );
+    res.json({ jobs: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/background-removal/jobs", requireAuth, async (req, res) => {
+  try {
+    const { fileName, sourceImageDataUrl, resultImageDataUrl } = req.body;
+    const result = await db.query(
+      "INSERT INTO background_removal_jobs (user_id, file_name, source_image_data_url, result_image_data_url) VALUES ($1, $2, $3, $4) RETURNING id, file_name, source_image_data_url, result_image_data_url, created_at",
+      [req.user.id, fileName, sourceImageDataUrl, resultImageDataUrl],
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete(
+  "/api/background-removal/jobs/:id",
+  requireAuth,
+  async (req, res) => {
+    try {
+      const result = await db.query(
+        "DELETE FROM background_removal_jobs WHERE id = $1 AND user_id = $2",
+        [req.params.id, req.user.id],
+      );
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
+
+// --- Wood Carving Visualizer ---
+app.get("/api/wood-carving/projects", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT id, description, variations_json, selected_variation_json, blueprint_json, created_at FROM wood_carving_projects WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id],
+    );
+    // Parse JSON fields for each project
+    const projects = result.rows.map((row) => ({
+      id: row.id,
+      description: row.description,
+      variations: row.variations_json ? JSON.parse(row.variations_json) : [],
+      selectedVariation: row.selected_variation_json
+        ? JSON.parse(row.selected_variation_json)
+        : null,
+      blueprint: row.blueprint_json ? JSON.parse(row.blueprint_json) : null,
+      createdAt: row.created_at,
+    }));
+    res.json({ projects });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/wood-carving/projects", requireAuth, async (req, res) => {
+  try {
+    const { description, variations, selectedVariation, blueprint } = req.body;
+    const result = await db.query(
+      "INSERT INTO wood_carving_projects (user_id, description, variations_json, selected_variation_json, blueprint_json) VALUES ($1, $2, $3, $4, $5) RETURNING id, description, variations_json, selected_variation_json, blueprint_json, created_at",
+      [
+        req.user.id,
+        description,
+        variations ? JSON.stringify(variations) : null,
+        selectedVariation ? JSON.stringify(selectedVariation) : null,
+        blueprint ? JSON.stringify(blueprint) : null,
+      ],
+    );
+    const row = result.rows[0];
+    res.json({
+      id: row.id,
+      description: row.description,
+      variations: row.variations_json ? JSON.parse(row.variations_json) : [],
+      selectedVariation: row.selected_variation_json
+        ? JSON.parse(row.selected_variation_json)
+        : null,
+      blueprint: row.blueprint_json ? JSON.parse(row.blueprint_json) : null,
+      createdAt: row.created_at,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/wood-carving/projects/:id", requireAuth, async (req, res) => {
+  try {
+    const { description, variations, selectedVariation, blueprint } = req.body;
+    const result = await db.query(
+      "UPDATE wood_carving_projects SET description = $1, variations_json = $2, selected_variation_json = $3, blueprint_json = $4 WHERE id = $5 AND user_id = $6 RETURNING id, description, variations_json, selected_variation_json, blueprint_json, created_at",
+      [
+        description,
+        variations ? JSON.stringify(variations) : null,
+        selectedVariation ? JSON.stringify(selectedVariation) : null,
+        blueprint ? JSON.stringify(blueprint) : null,
+        req.params.id,
+        req.user.id,
+      ],
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    const row = result.rows[0];
+    res.json({
+      id: row.id,
+      description: row.description,
+      variations: row.variations_json ? JSON.parse(row.variations_json) : [],
+      selectedVariation: row.selected_variation_json
+        ? JSON.parse(row.selected_variation_json)
+        : null,
+      blueprint: row.blueprint_json ? JSON.parse(row.blueprint_json) : null,
+      createdAt: row.created_at,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/wood-carving/projects/:id", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "DELETE FROM wood_carving_projects WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id],
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Nylon Fabric Designer ---
+app.get("/api/nylon-fabric-designs", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT id, design_name, instruction_image_url, nylon_image_url, prompts, created_at FROM nylon_fabric_designs WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.user.id],
+    );
+    // Transform database format to frontend format
+    const designs = result.rows.map((row) => ({
+      id: row.id,
+      design_name: row.design_name,
+      instruction_image_url: row.instruction_image_url,
+      nylon_image_url: row.nylon_image_url,
+      prompts: row.prompts,
+      created_at: row.created_at,
+    }));
+    res.json({ designs });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/nylon-fabric-designs", requireAuth, async (req, res) => {
+  try {
+    const { designName, instructionImageUrl, nylonImageUrl, prompts } =
+      req.body;
+    const result = await db.query(
+      "INSERT INTO nylon_fabric_designs (user_id, design_name, instruction_image_url, nylon_image_url, prompts) VALUES ($1, $2, $3, $4, $5) RETURNING id, design_name, instruction_image_url, nylon_image_url, prompts, created_at",
+      [
+        req.user.id,
+        designName,
+        instructionImageUrl,
+        nylonImageUrl,
+        prompts ? JSON.stringify(prompts) : null,
+      ],
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/nylon-fabric-designs/:id", requireAuth, async (req, res) => {
+  try {
+    const result = await db.query(
+      "DELETE FROM nylon_fabric_designs WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id],
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Design not found" });
+    }
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -11,7 +11,7 @@
     "backup": "cd server && npm run backup",
     "electron:dev": "NODE_ENV=development electron .",
     "electron:dev:full": "concurrently \"vite\" \"wait-on http://localhost:5173 && npm run electron:dev\"",
-    "electron:dev:all": "concurrently \"vite\" \"npm run server\" \"wait-on -t 30000 http://localhost:5173 http://localhost:4000 && npm run electron:dev\"",
+    "electron:dev:all": "npm install && cd server && npm install && cd .. && concurrently \"vite\" \"npm run server\" \"wait-on -t 30000 http://localhost:5173 http://localhost:4000 && npm run electron:dev\"",
     "electron:build": "vite build && electron-builder",
     "electron:build:mac": "vite build && electron-builder --mac",
     "test": "vitest run",
@@ -34,6 +34,7 @@
     "@google/genai": "^1.30.0",
     "@heroicons/react": "^2.2.0",
     "@imgly/background-removal": "^1.7.0",
+    "@tanstack/react-query": "^5.90.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dompurify": "^3.2.7",
@@ -42,9 +43,10 @@
     "framer-motion": "^12.23.25",
     "jspdf": "^4.0.0",
     "lucide-react": "^0.559.0",
+    "marked": "^17.0.1",
     "mime-types": "^3.0.2",
     "onnxruntime-web": "^1.21.0",
-    "pdfjs-dist": "^4.3.136",
+    "pdfjs-dist": "^4.10.38",
     "pg": "^8.16.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -69,7 +71,7 @@
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.1",
     "electron": "^39.2.7",
-    "electron-builder": "^26.4.0",
+    "electron-builder": "^26.7.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -91,14 +93,16 @@
   },
   "build": {
     "appId": "com.laundromatzat.mediainsight",
-    "productName": "MediaInsight Pro",
+    "productName": "laundromatzat.com",
     "mac": {
       "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
       "target": [
         "dmg",
         "zip"
       ],
       "hardenedRuntime": true,
+      "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist"
     },
@@ -112,6 +116,7 @@
     "directories": {
       "buildResources": "build",
       "output": "release"
-    }
+    },
+    "npmRebuild": false
   }
 }

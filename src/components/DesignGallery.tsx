@@ -75,12 +75,6 @@ export function DesignGallery<T extends { id: string | number }>({
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadItems();
-    }
-  }, [isOpen, loadItems]);
-
   const loadItems = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -120,6 +114,12 @@ export function DesignGallery<T extends { id: string | number }>({
       setLoading(false);
     }
   }, [fetchEndpoint]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadItems();
+    }
+  }, [isOpen, loadItems]);
 
   const handleDelete = async (id: string | number) => {
     if (!deleteEndpoint && !onDelete) return;

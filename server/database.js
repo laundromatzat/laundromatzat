@@ -79,6 +79,46 @@ const initializeDatabase = async () => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS color_palettes (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          file_name TEXT NOT NULL,
+          image_data_url TEXT NOT NULL,
+          palette_json TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS background_removal_jobs (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          file_name TEXT NOT NULL,
+          source_image_data_url TEXT NOT NULL,
+          result_image_data_url TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS wood_carving_projects (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          description TEXT NOT NULL,
+          variations_json TEXT,
+          selected_variation_json TEXT,
+          blueprint_json TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS nylon_fabric_designs (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          design_name TEXT NOT NULL,
+          instruction_image_url TEXT,
+          nylon_image_url TEXT,
+          prompts JSONB,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_nylon_fabric_user_designs ON nylon_fabric_designs(user_id, created_at DESC);
+
       CREATE TABLE IF NOT EXISTS links (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),

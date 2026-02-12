@@ -1,5 +1,5 @@
 import createDOMPurify from "dompurify";
-import { z } from "zod";
+
 import { generateContent } from "./geminiClient";
 
 type ContentFetcher = (prompt: string) => Promise<string>;
@@ -86,36 +86,11 @@ async function sanitizeGuideContent(html: string): Promise<string> {
   });
 }
 
-async function sanitizeSvg(svgMarkup: string): Promise<string> {
-  if (!svgMarkup) {
-    return "";
-  }
-
-  const domPurify = getDomPurify();
-  if (!domPurify) {
-    return stripExecutableContent(svgMarkup);
-  }
-
-  return domPurify.sanitize(svgMarkup, {
-    FORBID_TAGS: ["script"],
-    FORBID_ATTR: ["onload", "onerror", "onclick", "onmouseover", "onfocus"],
-    USE_PROFILES: { svg: true, svgFilters: true },
-  });
-}
-
-const VisualRepresentationSchema = z.object({
-  stage: z.string(),
-  svg: z.string(),
-});
-
-const VisualsResponseSchema = z.array(VisualRepresentationSchema);
-
 import { performResearch } from "./researchService";
 
 export async function generateSewingGuide(
   description: string,
-  _apiKey?: string,
-  options?: NylonFabricDesignerServiceOptions
+  options?: NylonFabricDesignerServiceOptions,
 ): Promise<string> {
   const fetchContent = options?.contentFetcher ?? generateContent;
 
@@ -127,131 +102,130 @@ export async function generateSewingGuide(
   const researchTopic = `Technical requirements, materials, and stitch techniques for: ${description}`;
   researchContext = await performResearch(
     researchTopic,
-    "Technical Sewing & Softgoods Manufacturing"
+    "Technical Sewing & Softgoods Manufacturing",
   );
 
   if (options?.onResearchComplete) options.onResearchComplete(researchContext);
 
   // 2. Main Generation Step with Grounding
-  const prompt = `You are an expert in hand-sewing nylon fabric and crafting. Analyze the following project description and create a comprehensive hand-sewing guide.
+  const prompt = `You are a seasoned craftsperson writing for Make: Magazine or a premium MYOG (Make Your Own Gear) blog. Your tone is warm, encouraging, and precise—like a skilled mentor sharing hard-won knowledge.
 
-RESEARCH CONTEXT (Verified Facts):
+GROUNDING CONTEXT (Use these verified facts):
 ${researchContext}
 
-CRITICAL REQUIREMENTS:
-- ALL instructions must be for HAND SEWING ONLY - NO sewing machines
-- Use handheld needle and thread exclusively
-- Can recommend Speedy Stitcher sewing awl tool for heavy-duty seams
-- Reference techniques from MYOG (Make Your Own Gear) hand-sewing guides
-- Focus on hand-sewing stitches: running stitch, backstitch, whipstitch, saddle stitch, etc.
+STYLE GUIDE:
+- Write like a craftsperson, not a textbook. Use phrases like "you'll want to..." not "one should..."
+- Be specific about why each step matters ("backstitching here prevents blowout under load")
+- Avoid generic phrases: "ensure proper alignment", "for best results", "carefully measure"
+- Include personal touches: warnings from experience, satisfying moments, common mistakes you've seen
+- Use sensory details: how the thread should feel, what tight stitches look like, the sound of needle through nylon
 
-Research and reference techniques from:
-- MYOG (Make Your Own Gear) hand-sewing guides
-- Bushcraft and camping gear repair techniques
-- Leather working hand-sewing methods (applicable to heavy nylon)
-- Traditional sailmaking hand-sewing techniques
-- DIY ultralight backpacking hand-sewing guides
+CRITICAL CONSTRAINTS:
+- HAND SEWING ONLY - no sewing machines exist in this guide
+- Two primary tools: handheld needle with waxed thread AND Speedy Stitcher sewing awl
+- Use needle for lighter fabrics and precise work; Speedy Stitcher for heavy-duty seams and thick layers
+- Reference real techniques: sailmaker's backstitch, whipstitch, saddle stitch, awl stitching
 
-Format your response with clear HTML structure using these tags:
-- <h3> for major sections
+FORMAT (Clean HTML):
+- <h3> for major sections (Materials, Cutting, Assembly, Finishing)
 - <h4> for subsections
-- <p> for paragraphs
-- <ul> and <ol> for lists
-- <strong> for emphasis
-- <div class="tip-box"> for tips and notes
+- <div class="tip-box"> for pro tips and warnings
+- <strong> for critical steps that could cause failure if skipped
+- Short paragraphs, scannable structure
 
-Include these sections:
-1. Project Overview & Analysis
-2. Materials Needed (specific nylon types, waxed thread, bonded nylon thread, notions)
-3. Tools Required (needles, Speedy Stitcher if needed, awl, scissors, pins, clips)
-4. Fabric Cutting Guide (with measurements and diagram descriptions)
-5. Step-by-Step Hand-Sewing Assembly Instructions
-   - Where to place folds
-   - Where to hand-stitch (backstitch, running stitch, whipstitch, saddle stitch, etc.)
-   - When to use Speedy Stitcher for heavy-duty seams
-   - Hem instructions (hand-rolled, whipstitch, etc.)
-   - How to connect pieces by hand
-6. Hand-Sewing Finishing Techniques
-7. Pro Tips & Common Mistakes to Avoid
+INCLUDE:
+1. Project Overview (what you're making, difficulty level, time estimate)
+2. Materials (specific nylon weights, thread types, notions with alternatives)
+3. Tools (needles, thimble, clips—explain WHY each tool)
+4. Cutting Guide (measurements, grain direction, mark placement)
+5. Step-by-Step Assembly (numbered, with clear checkpoints)
+6. Finishing (edge treatments, reinforcement, quality checks)
+7. Troubleshooting (3-4 common mistakes and fixes)
 
-Use professional hand-sewing terminology and explain techniques like:
-- Hand-stitch types and when to use them (backstitch for strength, running stitch for basting, whipstitch for edges)
-- Proper seam allowances for hand-sewn nylon
-- How to lock stitches at beginning and end
-- Edge finishing methods by hand
-- Tips for working with slippery nylon fabric when hand-sewing
-- When to use Speedy Stitcher awl for thick seams or heavy-duty work
-
-PROJECT DESCRIPTION:
+PROJECT TO DOCUMENT:
 ${description}
 
-Generate the complete guide now:`;
+Write the complete guide now, maintaining the voice of an experienced maker sharing their craft:`;
 
   const guide = await fetchContent(prompt);
   return sanitizeGuideContent(guide);
 }
 
-export async function generateProjectImages(
-  description: string,
-  _apiKey?: string,
-  options?: NylonFabricDesignerServiceOptions
-) {
-  const prompt = `For this hand-sewn nylon fabric project: "${description}"
+// Simplified version using image generation instead of SVG
+import { generateImages } from "./geminiClient";
 
-Create 3 visual representations using SVG code. Generate complete, valid SVG markup for:
+export async function generateProjectImages(description: string) {
+  // Image 1: Finished product specific to the user's description
+  // Images 2-3: Two critical process steps demonstrating key techniques for THIS specific project
 
-1. CUTTING PATTERN DIAGRAM - Show the pattern pieces laid out with measurements, fold lines, and cutting instructions
-2. ASSEMBLY DIAGRAM - Show how pieces connect with stitch lines, seam allowances, and assembly order
-3. FINISHED PRODUCT RENDERING - Show an isometric or 3D-style view of the completed item
+  const imagePrompts = [
+    {
+      stage: "Finished Product",
+      prompt: `Hero product shot of a completed, handmade ${description}.
 
-Return ONLY a JSON array (no markdown, no backticks) with this structure:
-[
-  {
-    "stage": "Cutting Pattern",
-    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
-  },
-  {
-    "stage": "Assembly Diagram",
-    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
-  },
-  {
-    "stage": "Finished Product",
-    "svg": "<svg width='400' height='300' xmlns='http://www.w3.org/2000/svg'><!-- complete SVG code here --></svg>"
-  }
-]
+VISUAL STYLE: Patagonia Worn Wear campaign. Authentic, purposeful, built to last.
 
-Make the SVGs detailed, technical, and professional looking with:
-- Clear labels and measurements
-- Different colors for different pattern pieces
-- Dotted lines for fold lines
-- Dashed lines for stitch lines
-- Arrows showing assembly direction
-- Realistic proportions`;
+Show this SPECIFIC item: ${description}
+- The finished ${description} in use or positioned for use (not floating on white)
+- High-quality ripstop nylon with intentional color blocking and visible craftsmanship
+- All functional features of a ${description} clearly visible: reinforced stress points, clean hand-sewn seams, quality hardware
+- Natural outdoor setting appropriate for this gear: granite rock, fallen log, trail, or camp
+- Golden hour side lighting showing texture and dimensional depth
+- Environmental context that tells the story of how this ${description} will be used
+- Sharp focus with cinematic depth
+- 16:9, warm earth tones, slightly desaturated`,
+    },
+    {
+      stage: "Critical Step: Cutting & Layout",
+      prompt: `Documentary photograph: Hands cutting pattern pieces for a ${description}.
 
-  const fetchContent = options?.contentFetcher ?? generateContent;
-  const responseText = await fetchContent(prompt);
-  const cleanJson = responseText
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+VISUAL STYLE: Kinfolk magazine meets gear-making workshop. Clean, aspirational, real craft.
+
+Show the process of cutting fabric for this SPECIFIC project: ${description}
+- Ripstop nylon pattern pieces being cut or laid out, specifically shaped for a ${description}
+- Maker's hands using rotary cutter or fabric scissors with visible wear
+- Pattern templates with hand-written notes visible ("front panel", "pocket", etc.)
+- Cutting mat with grid lines, steel ruler for straight cuts
+- Waxed thread spool and curved needles ready nearby
+- Weathered wood workbench with character
+- Natural north-facing window light, soft shadows
+- Top-down or 3/4 perspective showing the work surface
+- 16:9, warm but not yellow color grade
+- This should clearly be preparations for making a ${description}`,
+    },
+    {
+      stage: "Critical Step: Hand-Stitching Assembly",
+      prompt: `Intimate close-up: Skilled hands stitching components of a ${description} together.
+
+VISUAL STYLE: The Prepared blog aesthetic. Honest, competent, focused craftsmanship.
+
+Show hand-sewing THIS specific project: ${description}
+- Two pieces of the ${description} being joined by hand—show a seam that would exist on this specific item
+- One image should show EITHER: curved needle with waxed thread OR Speedy Stitcher sewing awl in use
+- Visible stitch pattern (backstitch or awl stitch) showing expertise and even spacing
+- Leather thimble on finger, showing use and wear
+- The partially assembled ${description} recognizable on the work surface
+- Warm workshop lighting from adjustable desk lamp
+- Shallow depth of field, sharp focus on the stitch point and hands
+- Canvas or denim work apron visible at frame edge
+- Wood grain surface with tool marks and thread snippets
+- 16:9, documentary photography feel, authentic moment captured`,
+    },
+  ];
 
   try {
-    const visuals = VisualsResponseSchema.parse(JSON.parse(cleanJson));
-    const sanitizedVisuals = await Promise.all(
-      visuals.map(async (visual) => ({
-        stage: visual.stage,
-        svg: await sanitizeSvg(visual.svg),
-      }))
-    );
-    return sanitizedVisuals;
+    const prompts = imagePrompts.map((p) => p.prompt);
+    const imageDataUrls = await generateImages(prompts);
+
+    // Return images in the expected format (matching the old SVG structure)
+    return imagePrompts.map((item, index) => ({
+      stage: item.stage,
+      svg: imageDataUrls[index], // Using 'svg' field name for compatibility, but it's actually an image data URL
+    }));
   } catch (error) {
-    console.error(
-      "Failed to parse project visuals response:",
-      error,
-      responseText
-    );
+    console.error("Failed to generate project images:", error);
     throw new Error(
-      "The fabric designer returned an invalid visualization response. Please try again."
+      "Failed to generate visual images for your project. Please try again.",
     );
   }
 }

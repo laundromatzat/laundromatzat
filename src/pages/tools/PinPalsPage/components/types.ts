@@ -1,12 +1,11 @@
-
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 
 export interface PinState {
-  petImage: string | null; // Base64
+  petImages: string[]; // Base64 strings
+  speciesList: string[]; // Distinct species detected across uploads
   petType: string;
   petCount: number;
   generatedImage: string | null; // URL

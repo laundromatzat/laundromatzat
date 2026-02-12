@@ -16,14 +16,18 @@ import { CheckIcon } from "@/components/icons/CheckIcon";
 import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon";
 import { ChevronUpIcon } from "@/components/icons/ChevronUpIcon";
 import { SettingsIcon } from "@/components/icons/SettingsIcon";
-import { loadBoards, clearBoards } from "@/services/intelligentIdeasStorage";
+import {
+  loadBoards,
+  clearBoards,
+  persistBoard,
+} from "@/services/intelligentIdeasStorage";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
 
 const IntelligentIdeasBoardPage = () => {
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [organizedData, setOrganizedData] = useState<OrganizedData | null>(
-    null
+    null,
   );
   const [allInputs, setAllInputs] = useState<string[]>([]);
   const [inputMode, setInputMode] = useState("content");
@@ -54,7 +58,7 @@ const IntelligentIdeasBoardPage = () => {
     if (inputMode === "instruction") {
       if (!organizedData) {
         alert(
-          "Please add some content first before giving organizational instructions."
+          "Please add some content first before giving organizational instructions.",
         );
         setIsProcessing(false);
         return;
@@ -65,14 +69,14 @@ const IntelligentIdeasBoardPage = () => {
         const reorganized = await reorganizeWithInstruction(
           inputText,
           organizedData,
-          allInputs
+          allInputs,
         );
         setOrganizedData(reorganized);
         setInputText("");
       } catch (error) {
         console.error("Error applying instruction:", error);
         alert(
-          "Sorry, there was an error applying your instruction. Please try again."
+          "Sorry, there was an error applying your instruction. Please try again.",
         );
       } finally {
         setIsProcessing(false);
@@ -100,7 +104,7 @@ const IntelligentIdeasBoardPage = () => {
     } catch (error) {
       console.error("Error processing input:", error);
       alert(
-        "Sorry, there was an error organizing your thoughts. Please try again."
+        "Sorry, there was an error organizing your thoughts. Please try again.",
       );
     } finally {
       setIsProcessing(false);
@@ -111,7 +115,7 @@ const IntelligentIdeasBoardPage = () => {
   const clearAll = () => {
     if (
       window.confirm(
-        "Are you sure you want to clear everything? This cannot be undone."
+        "Are you sure you want to clear everything? This cannot be undone.",
       )
     ) {
       setAllInputs([]);
@@ -151,7 +155,7 @@ const IntelligentIdeasBoardPage = () => {
               items: cat.items.map((item) =>
                 item.id === itemId
                   ? { ...item, completed: !item.completed }
-                  : item
+                  : item,
               ),
             };
           }

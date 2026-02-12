@@ -29,10 +29,10 @@ function createWindow() {
     mainWindow.loadURL("http://localhost:5173/tools/media-insight");
     mainWindow.webContents.openDevTools();
   } else {
-    // In production, load from built files
-    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"), {
-      hash: "/tools/media-insight",
-    });
+    // In production, load from built files with hash router
+    // HashRouter uses #/path format, so we load index.html and add the hash
+    const indexPath = path.join(__dirname, "../dist/index.html");
+    mainWindow.loadURL(`file://${indexPath}#/tools/media-insight`);
   }
 
   mainWindow.on("closed", () => {

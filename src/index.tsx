@@ -2,10 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import {
   createBrowserRouter,
+  createHashRouter,
   RouterProvider,
   Navigate,
 } from "react-router-dom";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./index.css";
 
@@ -47,7 +49,28 @@ import WoodCarvingVisualizerPage from "@/pages/tools/WoodCarvingVisualizerPage";
 import IntelligentIdeasBoardPage from "@/pages/tools/IntelligentIdeasBoardPage";
 import MediaInsightPage from "@/pages/tools/MediaInsightPage";
 
-const router = createBrowserRouter([
+// Create a client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Detect if running in Electron (file:// protocol doesn't work with BrowserRouter)
+const isElectron =
+  typeof window !== "undefined" &&
+  (window.location.protocol === "file:" ||
+    navigator.userAgent.toLowerCase().includes("electron"));
+
+// Use HashRouter for Electron, BrowserRouter for web
+const createRouter = isElectron ? createHashRouter : createBrowserRouter;
+
+const router = createRouter([
   {
     path: "/",
     element: (
@@ -240,7 +263,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <HelmetProvider>
-      <RouterProvider router={router} />
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
     </HelmetProvider>
   </React.StrictMode>,
 );
