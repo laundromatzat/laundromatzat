@@ -1,0 +1,150 @@
+@import '../../styles/variables'; // Import the centralized color and spacing variables
+
+.mission-control-page {
+    background-color: $background-body; // Align with site's general page background
+    padding: $spacing-lg;
+    font-family: Arial, sans-serif; // Assuming a standard font
+    color: $text-dark; // Default text color for the page content
+
+    h1 {
+        color: $text-dark;
+        margin-bottom: $spacing-lg;
+        font-size: $font-size-h1;
+    }
+
+    .mission-control-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: $background-dark; // Align with site's dark header/footer background
+        color: $text-on-dark; // White text for contrast on dark background
+        padding: $spacing-md $spacing-lg;
+        margin-bottom: $spacing-xl;
+        border-radius: $spacing-xs;
+        box-shadow: 0 2px 4px $shadow-color-default;
+
+        .header-title {
+            font-size: $font-size-h2;
+            margin: 0;
+        }
+
+        .action-button {
+            background-color: $button-primary-bg;
+            color: $button-primary-text;
+            border: none;
+            padding: $spacing-sm $spacing-md;
+            border-radius: $spacing-xxs;
+            cursor: pointer;
+            font-size: $font-size-md;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background-color: $button-primary-hover-bg;
+            }
+        }
+    }
+
+    .mission-control-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: $spacing-lg;
+        margin-bottom: $spacing-xl;
+    }
+
+    .mission-control-card {
+        background-color: $background-card; // Align with site's card background
+        border: 1px solid $border-color-default; // Align with site's default border color
+        border-radius: $spacing-xs;
+        padding: $spacing-lg;
+        box-shadow: 0 1px 3px $shadow-color-card; // Subtle shadow for cards
+
+        h3 {
+            color: $text-dark;
+            margin-top: 0;
+            margin-bottom: $spacing-sm;
+        }
+
+        p {
+            color: $text-medium;
+            font-size: $font-size-sm;
+            line-height: 1.5;
+        }
+
+        .card-status {
+            display: inline-block;
+            padding: $spacing-xxs $spacing-xs;
+            border-radius: $spacing-xxs;
+            font-size: $font-size-sm;
+            font-weight: bold;
+            margin-top: $spacing-sm;
+
+            // Using lighten/darken functions for derived status colors based on semantic palette
+            &.status-active {
+                background-color: lighten($success-color, 30%);
+                color: darken($success-color, 10%);
+            }
+
+            &.status-inactive {
+                background-color: lighten($text-light, 30%);
+                color: darken($text-light, 10%);
+            }
+
+            &.status-warning {
+                background-color: lighten($warning-color, 30%);
+                color: darken($warning-color, 10%);
+            }
+
+            &.status-error {
+                background-color: lighten($error-color, 30%);
+                color: darken($error-color, 10%);
+            }
+
+            &.status-info {
+                background-color: lighten($info-color, 30%);
+                color: darken($info-color, 10%);
+            }
+        }
+    }
+
+    .mission-control-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: $background-card; // Table background same as cards
+        border: 1px solid $border-color-default;
+        border-radius: $spacing-xs;
+        overflow: hidden; // Ensures rounded corners apply to content
+
+        th, td {
+            text-align: left;
+            padding: $spacing-md;
+            border-bottom: 1px solid $border-color-light; // Lighter border for table rows
+            color: $text-dark;
+        }
+
+        th {
+            background-color: $background-body; // Slightly different header background for distinction
+            color: $text-dark;
+            font-weight: bold;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-action-link {
+            color: $text-link; // Using primary color for links
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .mission-control-footer {
+        text-align: center;
+        margin-top: $spacing-xl;
+        color: $text-light;
+        font-size: $font-size-sm;
+    }
+}
