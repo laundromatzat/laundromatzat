@@ -1,0 +1,85 @@
+/* src/components/TaskModal/TaskModal.module.css */
+
+.taskModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw; /* Use vw/vh for full viewport coverage */
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Dimmed background */
+    display: flex; /* Fix: Use flexbox for centering */
+    align-items: center; /* Fix: Center vertically */
+    justify-content: center; /* Fix: Center horizontally */
+    z-index: 1000; /* Ensure it's above other page content */
+    opacity: 0; /* Start with hidden for smooth transition */
+    transition: opacity 0.2s ease-out;
+}
+
+.taskModalOverlay.isVisible {
+    opacity: 1; /* Fade in */
+}
+
+.taskModalContainer {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    max-width: 90vw; /* Fix: Max width to ensure responsiveness */
+    max-height: 90vh; /* Fix: Max height for responsiveness */
+    overflow: auto; /* Fix: Allow scrolling if content overflows */
+    position: relative; /* Needed for any absolutely positioned elements within (e.g., close button) */
+    /* Flexbox on overlay takes care of centering, so no need for transform: translate(-50%, -50%) here */
+    transform: translateY(-20px); /* Start slightly above for subtle entrance animation */
+    opacity: 0;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.taskModalOverlay.isVisible .taskModalContainer {
+    opacity: 1;
+    transform: translateY(0); /* Slide into place */
+}
+
+.taskModalContent {
+    /* Basic padding or layout if needed for internal content */
+    padding-top: 10px; /* Add some space if close button is absolutely positioned at top */
+    padding-bottom: 10px;
+}
+
+.taskModalContent button {
+    /* Fix: Styles for buttons within the modal content to prevent text cut-off */
+    padding: 10px 20px; /* Increase padding for better visibility */
+    font-size: 1em; /* Ensure readable font size */
+    white-space: nowrap; /* Prevent text from wrapping prematurely */
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin: 5px; /* Add some margin if multiple buttons are next to each other */
+}
+
+.taskModalContent button:hover {
+    background-color: #e0e0e0;
+}
+
+.modalCloseButton {
+    /* Fix: Style for the explicit close button */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5em; /* Larger 'X' */
+    line-height: 1;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+    border-radius: 50%; /* Make it circular */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modalCloseButton:hover {
+    background-color: #eee;
+    color: #333;
+}
