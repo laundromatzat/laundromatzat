@@ -18,20 +18,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Detect if running in Electron - auto-authenticate for desktop app
-    const isElectron =
-      typeof window !== "undefined" &&
-      (window.location.protocol === "file:" ||
-        navigator.userAgent.toLowerCase().includes("electron"));
-
-    if (isElectron) {
-      // Auto-authenticate for Electron desktop app
-      setUser({ id: 1, username: "Desktop User" });
-      setToken("electron-local-token");
-      setLoading(false);
-      return;
-    }
-
     // Check for stored token on mount
     const storedToken = localStorage.getItem("token");
     if (storedToken) {

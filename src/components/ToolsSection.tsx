@@ -7,21 +7,21 @@ const TOOLS = [
     title: "Pin Pals",
     description: "A collaborative map for pinning your favorite spots.",
     path: "/tools/pin-pals",
-    imageUrl: "/assets/tools/pin-pals.png",
+    imageUrl: "assets/tools/pin-pals.png",
   },
   {
     id: "bg-remover",
     title: "Background Remover",
     description: "Instant, in-browser background removal for your photos.",
     path: "/tools/background-removal",
-    imageUrl: "/assets/tools/bg-remover.png",
+    imageUrl: "assets/tools/bg-remover.png",
   },
   {
     id: "fabric-designer",
     title: "Nylon Fabric Designer",
     description: "Design and visualize nylon fabric projects with AI.",
     path: "/tools/nylon-fabric-designer",
-    imageUrl: "/assets/tools/fabric-designer.png",
+    imageUrl: "assets/tools/fabric-designer.png",
   },
 ];
 

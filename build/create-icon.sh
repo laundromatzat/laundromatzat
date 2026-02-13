@@ -4,8 +4,9 @@
 cd /Users/stephenmatzat/Projects/laundromatzat
 
 # First, convert the PNG to a compatible format using ImageMagick
-echo "Converting PNG to compatible format..."
-magick public/laundromatzat-icon.png -resize 1024x1024 /tmp/icon_1024.png
+echo "Converting PNG to compatible format with transparency..."
+# Make white background transparent with 10% fuzz to catch off-whites
+magick public/laundromatzat-icon.png -fuzz 10% -transparent white -resize 1024x1024 /tmp/icon_1024.png
 
 # Create iconset directory
 rm -rf build/icon.iconset

@@ -9,21 +9,21 @@ const TOOL_LINKS = [
     to: "/tools/background-removal",
     title: "Background Remover",
     description: "Instant, in-browser background removal for your photos.",
-    imageUrl: "/assets/tools/bg-remover.png",
+    imageUrl: "assets/tools/bg-remover.png",
     badge: "Core tool",
   },
   {
     to: "/tools/color-palette",
     title: "Color Palette",
     description: "Extract a five-color palette from any image instantly.",
-    imageUrl: "/assets/tools/color-palette.png",
+    imageUrl: "assets/tools/color-palette.png",
     badge: "Core tool",
   },
   {
     to: "/tools/nylon-fabric-designer",
     title: "Nylon Fabric Designer",
     description: "Design and visualize nylon fabric projects with AI.",
-    imageUrl: "/assets/tools/fabric-designer.png",
+    imageUrl: "assets/tools/fabric-designer.png",
     badge: "New service",
   },
   {
@@ -31,28 +31,28 @@ const TOOL_LINKS = [
     title: "Wood Carving Visualizer",
     description:
       "Generate multiple design variations and create detailed carving renderings.",
-    imageUrl: "/assets/tools/wood-carving.png",
+    imageUrl: "assets/tools/wood-carving.png",
     badge: "New service",
   },
   {
     to: "/tools/intelligent-ideas-board",
     title: "Intelligent Ideas",
     description: "Brain-dump thoughts and let AI organize them for you.",
-    imageUrl: "/assets/tools/intelligent-ideas.png",
+    imageUrl: "assets/tools/intelligent-ideas.png",
     badge: "New service",
   },
   {
     to: "/tools/pin-pals",
     title: "Pin Pals",
     description: "A collaborative map for pinning your favorite spots.",
-    imageUrl: "/assets/tools/pin-pals.png",
+    imageUrl: "assets/tools/pin-pals.png",
     badge: "New tool",
   },
   {
     to: "/tools/paystub-analyzer",
     title: "Paystub Analyzer Pro",
     description: "Intelligent payroll tracking and analysis.",
-    imageUrl: "/assets/tools/paystub-analyzer.png",
+    imageUrl: "assets/tools/paystub-analyzer.png",
     badge: "Pro tool",
   },
   {
@@ -60,21 +60,21 @@ const TOOL_LINKS = [
     title: "MediScribe AI",
     description:
       "AI-powered medical documentation with adaptive style learning.",
-    imageUrl: "/assets/tools/mediscribe.png", // I need to generate this or use a placeholder
+    imageUrl: "assets/tools/mediscribe.png", // I need to generate this or use a placeholder
     badge: "Integrated",
   },
   {
     to: "/tools/public-health",
     title: "Public Health Organizer",
     description: "Securely organize and query public health documents.",
-    imageUrl: "/assets/tools/public-health.png",
+    imageUrl: "assets/tools/public-health.png",
     badge: "Integrated",
   },
   {
     to: "/tools/neuroaesthetic",
     title: "Neuroaesthetic Lens",
     description: "Reimagine environments using neuroaesthetic principles.",
-    imageUrl: "/assets/tools/neuroaesthetic.png",
+    imageUrl: "assets/tools/neuroaesthetic.png",
     badge: "Integrated",
   },
   {
@@ -82,7 +82,7 @@ const TOOL_LINKS = [
     title: "MediaInsight Pro",
     description:
       "Analyze audio, video, and images with AI-powered transcription and insights.",
-    imageUrl: "/assets/tools/media-insight.png",
+    imageUrl: "assets/tools/media-insight.png",
     badge: "AI powered",
   },
 ];

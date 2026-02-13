@@ -33,6 +33,8 @@ function createWindow() {
     // HashRouter uses #/path format, so we load index.html and add the hash
     const indexPath = path.join(__dirname, "../dist/index.html");
     mainWindow.loadURL(`file://${indexPath}#/tools/media-insight`);
+    // Open DevTools in production for debugging
+    mainWindow.webContents.openDevTools();
   }
 
   mainWindow.on("closed", () => {

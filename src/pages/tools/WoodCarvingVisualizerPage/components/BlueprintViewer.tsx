@@ -8,6 +8,7 @@ import {
   Palette,
   Ruler,
   BookOpen,
+  X,
 } from "lucide-react";
 import type { GeneratedDesign, Unit } from "@/services/woodCarvingService";
 import type { CarvingStep } from "../hooks/useWoodCarvingProject";
@@ -135,6 +136,16 @@ const BlueprintViewer: React.FC<BlueprintViewerProps> = ({
             icon={<Download className="w-4 h-4" />}
           >
             Download All
+          </AuraButton>
+
+          <AuraButton
+            variant="danger"
+            size="sm"
+            onClick={onExitBlueprint}
+            icon={<X className="w-4 h-4" />}
+            title="Close Blueprint"
+          >
+            Close
           </AuraButton>
         </div>
       </div>
