@@ -8,9 +8,14 @@ import { API_BASE_URL } from "./api";
  * @returns Full avatar URL with cache-busting, or null if no picture
  */
 export function getAvatarUrl(
-  profilePicture: string | null | undefined
+  profilePicture: string | null | undefined,
 ): string | null {
   if (!profilePicture) return null;
+
+  // Already a data URL (base64 from Postgres)
+  if (profilePicture.startsWith("data:")) {
+    return profilePicture;
+  }
 
   // Already absolute URL (e.g., from external provider)
   if (profilePicture.startsWith("http")) {

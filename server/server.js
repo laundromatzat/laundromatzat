@@ -39,7 +39,42 @@ if (!fs.existsSync(avatarsDir)) {
   console.log("Created avatars directory");
 }
 
-// Security Middleware (Helmet)
+// --- CORS Middleware (MUST be before Helmet) ---
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://laundromatzat.com",
+  "https://www.laundromatzat.com",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      console.warn(`Untrusted Origin: ${origin}`);
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Origin",
+    "X-Requested-With",
+    "Accept",
+  ],
+};
+
+// Apply CORS to all routes
+app.use(cors(corsOptions));
+
+// Explicit preflight handler — guarantees OPTIONS gets CORS headers
+app.options("*", cors(corsOptions));
+
+// --- Security Middleware (Helmet — AFTER CORS) ---
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -50,83 +85,35 @@ app.use(
           "https://generativelanguage.googleapis.com",
           process.env.LM_STUDIO_API_URL || "http://localhost:1234",
         ],
-        imgSrc: ["'self'", "data:", "blob:", "https:", "http:"], // Allow images from various sources
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // React/Vite often needs unsafe-inline/eval in dev, try to tighten for prod
+        imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
       },
     },
-    crossOriginEmbedderPolicy: false, // Often causes issues with images/PDFs
+    crossOriginEmbedderPolicy: false,
   }),
 );
 
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-app.use("/api", limiter); // Apply to API routes
+app.use("/api", limiter);
 
-// Middleware
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://laundromatzat.com",
-  "https://www.laundromatzat.com",
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        // Warn but allow (for now) to unblock user if the origin list is slightly off
-        console.warn(`Untrusted Origin: ${origin}`);
-        return callback(null, true);
-        // return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
-      }
-      return callback(null, true);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Origin",
-      "X-Requested-With",
-      "Accept",
-    ],
-  }),
-);
-app.use(express.json({ limit: "50mb" })); // Increased to 50mb for high-res images
+// Body parsers
+app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Multer setup for in-memory file storage
 // Multer setup for in-memory file storage (for PDF processing)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Multer setup for Avatar uploads (Disk Storage)
-// Multer setup for Avatar uploads (Disk Storage)
-const avatarStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, "uploads/avatars");
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    // Unique filename: user-{id}-{timestamp}.ext
-    const ext = path.extname(file.originalname);
-    cb(null, `user-${req.user.id}-${Date.now()}${ext}`);
-  },
-});
-
+// Multer setup for Avatar uploads (Memory Storage — stored as base64 in DB)
 const uploadAvatar = multer({
-  storage: avatarStorage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
@@ -137,8 +124,7 @@ const uploadAvatar = multer({
   },
 });
 
-// Serve uploads directory
-// Serve uploads directory with proper headers for COOP/COEP
+// Serve uploads directory with proper headers for COOP/COEP (legacy support)
 app.use(
   "/uploads",
   (req, res, next) => {
@@ -327,7 +313,7 @@ app.put("/api/auth/me", requireAuth, async (req, res) => {
   }
 });
 
-// Upload Avatar endpoint
+// Upload Avatar endpoint (stores base64 in Postgres — Render-safe)
 app.post(
   "/api/auth/upload-avatar",
   requireAuth,
@@ -337,17 +323,18 @@ app.post(
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    // File path relative to server URL
-    const fileUrl = `/uploads/avatars/${req.file.filename}`;
+    // Convert buffer to base64 data URL for Postgres storage
+    const base64 = req.file.buffer.toString("base64");
+    const dataUrl = `data:${req.file.mimetype};base64,${base64}`;
 
     try {
       await db.query("UPDATE users SET profile_picture = $1 WHERE id = $2", [
-        fileUrl,
+        dataUrl,
         req.user.id,
       ]);
 
       res.json({
-        profile_picture: fileUrl,
+        profile_picture: dataUrl,
         message: "Avatar uploaded successfully",
       });
     } catch (err) {

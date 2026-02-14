@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Lock, User } from "lucide-react";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
+import { getApiUrl } from "@/utils/api";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -18,8 +19,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
+      const res = await fetch(getApiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

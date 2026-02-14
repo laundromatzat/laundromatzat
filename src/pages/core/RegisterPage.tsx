@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 // import { useAuth } from "@/context/AuthContext"; // Unused
 import { Lock, User } from "lucide-react";
 import { AuraButton, AuraCard, AuraInput } from "@/components/aura";
+import { getApiUrl } from "@/utils/api";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -22,8 +23,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
-      const res = await fetch(`${apiUrl}/api/auth/register`, {
+      const res = await fetch(getApiUrl("/api/auth/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
