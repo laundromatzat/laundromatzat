@@ -115,11 +115,19 @@ const MaterialPlanner: React.FC<MaterialPlannerProps> = ({
                         {item.notes}
                       </p>
                     )}
-                    {item.alternatives && item.alternatives.length > 0 && (
-                      <p className="text-xs text-aura-text-secondary mt-1">
-                        Alternatives: {item.alternatives.join(", ")}
-                      </p>
-                    )}
+                    {item.alternatives &&
+                      (Array.isArray(item.alternatives)
+                        ? item.alternatives
+                        : [item.alternatives]
+                      ).length > 0 && (
+                        <p className="text-xs text-aura-text-secondary mt-1">
+                          Alternatives:{" "}
+                          {(Array.isArray(item.alternatives)
+                            ? item.alternatives
+                            : [item.alternatives]
+                          ).join(", ")}
+                        </p>
+                      )}
                   </div>
                 </li>
               ))}

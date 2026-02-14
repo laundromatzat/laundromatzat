@@ -249,7 +249,7 @@ PHOTOGRAPHY: Shot on medium format film, soft directional lighting from upper le
       if (!imageUrl) {
         console.warn(
           `Failed to generate image for ${style.name}: `,
-          result?.response?.text ? result.response.text() : "No image data",
+          "No image data in response",
         );
         return null;
       }
@@ -446,7 +446,13 @@ Format: Clean Markdown, scannable headers. No fluff.`;
       model: textModel,
       contents: textContents,
     });
-    const guideText = textResponse.text || "No guide generated.";
+    const guideText =
+      textResponse.text ??
+      textResponse.candidates?.[0]?.content?.parts
+        ?.map((p: { text?: string }) => p.text)
+        .filter(Boolean)
+        .join("\n") ??
+      "No guide generated.";
 
     // 2. Generate Concept Art
     // Must use an image generation model.

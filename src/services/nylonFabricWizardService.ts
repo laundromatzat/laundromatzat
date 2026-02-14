@@ -130,9 +130,24 @@ RESPOND ONLY WITH VALID JSON, no markdown:`;
 
     const [cutDiagramUrl] = await generateImages([cutDiagramPrompt]);
 
+    const normalizeMaterials = (items: unknown[]): MaterialItem[] =>
+      items.map((item: Record<string, unknown>) => ({
+        name: String(item.name ?? ""),
+        quantity: String(item.quantity ?? ""),
+        notes: item.notes ? String(item.notes) : undefined,
+        alternatives: item.alternatives
+          ? Array.isArray(item.alternatives)
+            ? (item.alternatives as string[])
+            : String(item.alternatives)
+                .split(",")
+                .map((s: string) => s.trim())
+                .filter(Boolean)
+          : undefined,
+      }));
+
     return {
-      materials: parsed.materials as MaterialItem[],
-      tools: parsed.tools as MaterialItem[],
+      materials: normalizeMaterials(parsed.materials || []),
+      tools: normalizeMaterials(parsed.tools || []),
       estimatedTime: parsed.estimatedTime || "2-4 hours",
       difficulty: Math.min(5, Math.max(1, parsed.difficulty || 3)) as
         | 1
