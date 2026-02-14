@@ -15,6 +15,7 @@ import {
   generateMaterialPlan,
   generateAssemblySteps,
 } from "@/services/nylonFabricWizardService";
+import { generateNylonProjectPDF } from "@/utils/nylonPdfGenerator";
 import { saveDesign } from "@/services/nylonFabricApi";
 
 const NylonFabricDesignerPage: React.FC = () => {
@@ -165,6 +166,21 @@ const NylonFabricDesignerPage: React.FC = () => {
     goToPhase(1);
   };
 
+  // Download PDF
+  const handleDownloadPDF = async () => {
+    if (!project.steps.length || !project.materialPlan) {
+      setError("Cannot download PDF: Project is incomplete");
+      return;
+    }
+
+    try {
+      await generateNylonProjectPDF(project);
+    } catch (err) {
+      console.error("PDF Generation failed:", err);
+      setError("Failed to generate PDF. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-aura-bg font-sans text-aura-text-primary">
       {/* Header */}
@@ -274,6 +290,7 @@ const NylonFabricDesignerPage: React.FC = () => {
             onGoToStep={goToStep}
             onBack={() => goToPhase(3)}
             onFinish={handleFinish}
+            onDownload={handleDownloadPDF}
           />
         )}
 

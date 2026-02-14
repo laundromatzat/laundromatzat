@@ -1,6 +1,7 @@
 import React from "react";
 import { AuraButton, AuraCard } from "@/components/aura";
 import { AssemblyStep } from "../hooks/useProjectState";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 
 interface StepByStepGuideProps {
   steps: AssemblyStep[];
@@ -10,6 +11,7 @@ interface StepByStepGuideProps {
   onGoToStep: (stepNumber: number) => void;
   onBack: () => void;
   onFinish: () => void;
+  onDownload: () => void;
 }
 
 const StepByStepGuide: React.FC<StepByStepGuideProps> = ({
@@ -20,6 +22,7 @@ const StepByStepGuide: React.FC<StepByStepGuideProps> = ({
   onGoToStep,
   onBack,
   onFinish,
+  onDownload,
 }) => {
   const activeStep = steps.find((s) => s.number === currentStep) || steps[0];
   const progressPercent =
@@ -45,6 +48,18 @@ const StepByStepGuide: React.FC<StepByStepGuideProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header Actions */}
+      <div className="flex justify-end mb-4">
+        <AuraButton
+          variant="secondary"
+          size="sm"
+          onClick={onDownload}
+          icon={<ArrowDownTrayIcon className="w-4 h-4" />}
+        >
+          Download PDF Guide
+        </AuraButton>
+      </div>
+
       {/* Progress Header */}
       <div className="bg-aura-surface-elevated rounded-xl p-4">
         <div className="flex justify-between items-center mb-2">
@@ -197,9 +212,16 @@ const StepByStepGuide: React.FC<StepByStepGuideProps> = ({
             Congratulations! You&apos;ve completed all {steps.length} steps.
             Your handmade nylon project is ready to use.
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center gap-4 flex-wrap">
             <AuraButton variant="secondary" onClick={onBack}>
               Review Steps
+            </AuraButton>
+            <AuraButton
+              variant="secondary"
+              onClick={onDownload}
+              icon={<ArrowDownTrayIcon className="w-4 h-4" />}
+            >
+              Download PDF
             </AuraButton>
             <AuraButton variant="accent" onClick={onFinish}>
               Start New Project
