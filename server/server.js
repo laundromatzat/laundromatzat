@@ -72,7 +72,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Explicit preflight handler — guarantees OPTIONS gets CORS headers
-app.options("*", cors(corsOptions));
+// Express 5 requires named wildcard params instead of bare "*"
+app.options("{*path}", cors(corsOptions));
 
 // --- Security Middleware (Helmet — AFTER CORS) ---
 app.use(
