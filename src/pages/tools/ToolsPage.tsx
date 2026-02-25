@@ -85,6 +85,14 @@ const TOOL_LINKS = [
     imageUrl: "assets/tools/media-insight.png",
     badge: "AI powered",
   },
+  {
+    to: "/tools/automation-recommender",
+    title: "Automation Recommender",
+    description:
+      "Describe your repetitive tasks and get AI-ranked automation strategies by effort vs. impact.",
+    imageUrl: "assets/tools/automation-recommender.png",
+    badge: "New service",
+  },
 ];
 
 function ToolsPage(): React.ReactNode {
