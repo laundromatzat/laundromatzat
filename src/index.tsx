@@ -48,6 +48,7 @@ import NylonFabricDesignerPage from "@/pages/tools/NylonFabricDesignerPage";
 import WoodCarvingVisualizerPage from "@/pages/tools/WoodCarvingVisualizerPage";
 import IntelligentIdeasBoardPage from "@/pages/tools/IntelligentIdeasBoardPage";
 import MediaInsightPage from "@/pages/tools/MediaInsightPage";
+import AutomationRecommenderPage from "@/pages/tools/AutomationRecommenderPage";
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -221,6 +222,14 @@ const router = createRouter([
         element: (
           <ProtectedRoute>
             <MediaInsightPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "tools/automation-recommender",
+        element: (
+          <ProtectedRoute>
+            <AutomationRecommenderPage />
           </ProtectedRoute>
         ),
       },
