@@ -1,6 +1,7 @@
 import { GoogleGenAI, type Chat } from "@google/genai";
 import { AI_SYSTEM_PROMPT } from "@/constants";
 import { generateContentLocal, createLocalChatSession } from "./localAIClient";
+import { GEMINI_MODELS, parseGeminiError } from "./geminiModelConfig";
 
 const FUNCTION_INSTRUCTIONS = `
 Available function:
@@ -52,7 +53,7 @@ export async function generateContent(prompt: string): Promise<string> {
   try {
     const client = getClient();
     const response = await client.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: GEMINI_MODELS.TEXT_FAST,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         systemInstruction: {
@@ -63,6 +64,8 @@ export async function generateContent(prompt: string): Promise<string> {
     });
     return response.text ?? "";
   } catch (error) {
+    const hint = parseGeminiError(error);
+    if (hint) console.warn(hint);
     console.error("Gemini generateContent failure:", error);
     throw error instanceof Error
       ? error
@@ -130,7 +133,7 @@ export async function createChatSession(): Promise<ChatSessionLike> {
 
   const client = getClient();
   const chat = client.chats.create({
-    model: "gemini-2.0-pro",
+    model: GEMINI_MODELS.TEXT_FAST,
     config: {
       systemInstruction: {
         role: "system",
@@ -155,10 +158,10 @@ export async function generateImages(prompts: string[]): Promise<string[]> {
   try {
     const client = getClient();
 
-    // Use Gemini 2.5 Flash Image model for actual image generation
+    // Use Gemini image generation model for native image output
     const imagePromises = prompts.map(async (prompt) => {
       const response = await client.models.generateContent({
-        model: "gemini-2.5-flash-image", // Stable image generation model
+        model: GEMINI_MODELS.IMAGE_GEN,
         contents: [
           {
             role: "user",
@@ -170,6 +173,7 @@ export async function generateImages(prompts: string[]): Promise<string[]> {
           },
         ],
         config: {
+          responseModalities: ["TEXT", "IMAGE"],
           temperature: 1.0,
           topP: 0.95,
           topK: 40,
@@ -191,7 +195,9 @@ export async function generateImages(prompts: string[]): Promise<string[]> {
 
     return await Promise.all(imagePromises);
   } catch (error) {
-    console.error("Gemini 2.5 Flash Image generation failure:", error);
+    const hint = parseGeminiError(error);
+    if (hint) console.warn(hint);
+    console.error("Gemini image generation failure:", error);
     throw error instanceof Error
       ? error
       : new Error("Failed to generate images with Gemini.");

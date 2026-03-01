@@ -2,6 +2,7 @@ import createDOMPurify from "dompurify";
 import { z } from "zod";
 import { generateContent } from "./geminiClient";
 import { GoogleGenAI, Part } from "@google/genai";
+import { GEMINI_MODELS, parseGeminiError } from "./geminiModelConfig";
 
 type ContentFetcher = (prompt: string) => Promise<string>;
 
@@ -214,7 +215,7 @@ PHOTOGRAPHY: Shot on medium format film, soft directional lighting from upper le
       parts.push({ text: prompt });
 
       const result = await ai.models.generateContent({
-        model: "gemini-2.5-flash-image",
+        model: GEMINI_MODELS.IMAGE_GEN,
         contents: [
           {
             role: "user",
@@ -222,6 +223,7 @@ PHOTOGRAPHY: Shot on medium format film, soft directional lighting from upper le
           },
         ],
         config: {
+          responseModalities: ["TEXT", "IMAGE"],
           temperature: 1.0,
           topP: 0.95,
           topK: 40,
@@ -260,6 +262,8 @@ PHOTOGRAPHY: Shot on medium format film, soft directional lighting from upper le
         imageUrl: imageUrl,
       };
     } catch (e) {
+      const hint = parseGeminiError(e);
+      if (hint) console.warn(hint);
       console.error(`Error generating ${style.name}: `, e);
       return null;
     }
@@ -393,7 +397,7 @@ export const generateCarvingPlan = async (
 
   try {
     // 1. Generate Text Guide
-    const textModel = "gemini-2.5-flash";
+    const textModel = GEMINI_MODELS.TEXT_FAST;
     const textPrompt = `You're a weathered master carver—decades of shavings under your bench—sharing hard-won wisdom with an eager apprentice. Speak plainly, like you're standing beside them at the bench.
 
 SUBJECT: "${promptText}"
@@ -455,8 +459,8 @@ Format: Clean Markdown, scannable headers. No fluff.`;
       "No guide generated.";
 
     // 2. Generate Concept Art
-    // Must use an image generation model.
-    const imageModel = "gemini-2.5-flash-image";
+    // Must use an image generation model with responseModalities: ["TEXT", "IMAGE"].
+    const imageModel = GEMINI_MODELS.IMAGE_GEN;
 
     const conceptParts: Part[] = [];
 
@@ -493,6 +497,7 @@ Format: Clean Markdown, scannable headers. No fluff.`;
       model: imageModel,
       contents: [{ role: "user", parts: conceptParts }],
       config: {
+        responseModalities: ["TEXT", "IMAGE"],
         temperature: 1.0,
         topP: 0.95,
         topK: 40,
@@ -538,9 +543,10 @@ Format: Clean Markdown, scannable headers. No fluff.`;
     }
 
     const schematicResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
+      model: GEMINI_MODELS.IMAGE_GEN,
       contents: [{ role: "user", parts: schematicParts }],
       config: {
+        responseModalities: ["TEXT", "IMAGE"],
         temperature: 1.0,
         topP: 0.95,
         topK: 40,
@@ -566,6 +572,8 @@ Format: Clean Markdown, scannable headers. No fluff.`;
       schematicUrl,
     };
   } catch (error) {
+    const hint = parseGeminiError(error);
+    if (hint) console.warn(hint);
     console.error("GenAI Error:", error);
     throw error;
   }

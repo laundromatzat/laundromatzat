@@ -5,6 +5,7 @@
 
 import React, { useState } from "react";
 import { GoogleGenAI, Type } from "@google/genai";
+import { GEMINI_MODELS, parseGeminiError } from "@/services/geminiModelConfig";
 import { Download } from "lucide-react";
 import { AuraButton } from "@/components/aura";
 import { PinState } from "./components/types";
@@ -16,8 +17,8 @@ import { LoadingFX } from "./components/LoadingFX";
 import { DesignGallery, SortOption } from "@/components/DesignGallery";
 import { ClockIcon } from "@heroicons/react/24/outline";
 
-const MODEL_NAME = "gemini-2.5-flash-image";
-const DETECTION_MODEL = "gemini-2.5-flash";
+const MODEL_NAME = GEMINI_MODELS.IMAGE_GEN;
+const DETECTION_MODEL = GEMINI_MODELS.TEXT_FAST;
 
 // --- API Helpers ---
 import { getApiUrl } from "@/utils/api";
@@ -347,6 +348,7 @@ const PinPalsPage: React.FC = () => {
         model: MODEL_NAME,
         contents: { parts },
         config: {
+          responseModalities: ["TEXT", "IMAGE"],
           imageConfig: { aspectRatio: "1:1" },
         },
       });
@@ -365,6 +367,8 @@ const PinPalsPage: React.FC = () => {
         throw new Error("No image generated");
       }
     } catch (e) {
+      const hint = parseGeminiError(e);
+      if (hint) console.warn(hint);
       console.error(e);
       alert("Something went wrong generating the pin. Please try again.");
       setState((prev) => ({ ...prev, isLoading: false }));
@@ -629,7 +633,7 @@ const PinPalsPage: React.FC = () => {
       </div>
 
       <footer className="mt-12 text-center text-aura-text-secondary text-xs">
-        <p>Powered by Gemini 3 Pro Image Preview</p>
+        <p>Powered by Gemini 2.5 Flash Image</p>
       </footer>
     </div>
   );

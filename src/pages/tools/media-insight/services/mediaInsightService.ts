@@ -4,6 +4,7 @@
  */
 
 import { GoogleGenAI, Type } from "@google/genai";
+import { GEMINI_MODELS } from "@/services/geminiModelConfig";
 import { AnalysisResult, Emotion, MediaType } from "../types";
 
 const parseJson = (text: string) => {
@@ -233,7 +234,7 @@ const analyzeWithGemini = async (
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const modelId = "gemini-2.0-flash-exp";
+  const modelId = GEMINI_MODELS.TEXT_FAST;
 
   let prompt = `Analyze this ${mediaType} file named "${originalName}". 
   Provide a suggested descriptive filename (lowercase, underscores, no spaces, keep extension).

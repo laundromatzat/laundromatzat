@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { GEMINI_MODELS, parseGeminiError } from "@/services/geminiModelConfig";
 import { GenerationRequest, ModelProvider, TrainingExample } from "../types";
 
 // Initialize Gemini Client
@@ -48,11 +49,12 @@ export const generateClinicalNote = async (
   if (request.settings.provider === ModelProvider.GEMINI) {
     try {
       const isThinking = request.settings.useThinkingMode;
-      // Use gemini-3-pro-preview for complex reasoning (Note Generation)
-      // Use gemini-2.5-flash-lite if speed is preferred and thinking is off (though we default to Pro for quality)
+      // Use gemini-2.5-pro for complex reasoning with thinking mode enabled.
+      // Use gemini-2.5-flash-lite for speed when thinking is off.
+      // See GEMINI_MODELS in geminiModelConfig.ts for current model IDs.
       const modelName = isThinking
-        ? "gemini-3-pro-preview"
-        : "gemini-2.5-flash-lite-latest";
+        ? GEMINI_MODELS.TEXT_PRO
+        : GEMINI_MODELS.TEXT_LITE;
 
       const config: {
         systemInstruction: string;
@@ -73,6 +75,8 @@ export const generateClinicalNote = async (
 
       return response.text || "Error: No text generated.";
     } catch (error) {
+      const hint = parseGeminiError(error);
+      if (hint) console.warn(hint);
       console.error("Gemini Generation Error:", error);
       throw new Error(
         `Gemini API Error: ${error instanceof Error ? error.message : String(error)}`
@@ -120,7 +124,7 @@ export const analyzeStyleDiff = async (
   edited: string
 ): Promise<string> => {
   // Use Flash Lite for speed and low latency
-  const modelName = "gemini-2.5-flash-lite-latest";
+  const modelName = GEMINI_MODELS.TEXT_LITE;
 
   const prompt = `
     You are a meticulous style analyzer for a clinical documentation assistant.
