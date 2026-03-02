@@ -20,6 +20,20 @@ import { FileTextIcon } from "./icons/FileTextIcon";
 import { PencilIcon } from "./icons/PencilIcon";
 import { PDFViewer } from "./PDFViewer";
 
+/** Payroll codes that are considered overtime */
+const OT_CODES = new Set(["OST", "CTE"]);
+
+/** True if a paid-hours category name corresponds to an OT payroll code */
+function isOTCategory(category: string): boolean {
+  const lower = category.toLowerCase();
+  return (
+    lower.includes("overtime") ||
+    lower.includes("comp time earned") ||
+    lower.includes("cte") ||
+    lower.includes("ost")
+  );
+}
+
 interface PaycheckTableProps {
   paycheckData: PaycheckData[];
   onHoursChange: (
@@ -76,20 +90,41 @@ const SectionHeader: React.FC<{
 );
 
 const PaidHoursList: React.FC<{ data: HourEntry[] }> = ({ data }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-    {data.map((entry, idx) => (
-      <div
-        key={idx}
-        className="flex justify-between items-center py-0.5 px-1.5 rounded-md bg-white/50 border border-aura-text-primary/10"
-      >
-        <span className="text-sm text-aura-text-secondary font-medium">
-          {entry.category}
-        </span>
-        <span className="font-mono font-semibold text-aura-text-primary text-sm">
-          {(entry.hours || 0).toFixed(2)}
-        </span>
-      </div>
-    ))}
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+    {data.map((entry, idx) => {
+      const isOT = isOTCategory(entry.category);
+      return (
+        <div
+          key={idx}
+          className={clsx(
+            "flex justify-between items-center py-1 px-2 rounded-lg border transition-colors",
+            isOT
+              ? "bg-amber-50 border-amber-200"
+              : "bg-white/60 border-aura-text-primary/10",
+          )}
+        >
+          <span
+            className={clsx(
+              "text-sm font-medium flex items-center gap-1.5",
+              isOT ? "text-amber-800" : "text-aura-text-secondary",
+            )}
+          >
+            {isOT && (
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
+            )}
+            {entry.category}
+          </span>
+          <span
+            className={clsx(
+              "font-mono font-bold text-sm",
+              isOT ? "text-amber-700" : "text-aura-text-primary",
+            )}
+          >
+            {(entry.hours || 0).toFixed(2)}
+          </span>
+        </div>
+      );
+    })}
     {data.length === 0 && (
       <div className="text-aura-text-secondary text-sm italic py-2 col-span-full">
         No paid hours recorded
@@ -233,6 +268,52 @@ const BankedHoursList: React.FC<{
         );
       })}
     </div>
+  );
+};
+
+/** Compact inline badge shown in the card header */
+const DiscrepancyBadge: React.FC<{
+  paidHours: HourEntry[];
+  userReportedHours?: { week1?: ReportedHourEntry[]; week2?: ReportedHourEntry[] };
+}> = ({ paidHours, userReportedHours }) => {
+  const allReported = [
+    ...(userReportedHours?.week1 ?? []),
+    ...(userReportedHours?.week2 ?? []),
+  ];
+  if (allReported.length === 0) return null;
+
+  const totalPaid = paidHours
+    .filter((p) => !getPayrollCode(p.category)?.excludeFromTotal)
+    .reduce((s, p) => s + p.hours, 0);
+
+  const totalReported = allReported
+    .filter((e) => {
+      const info = payrollCodeMap[e.code];
+      return info?.paid && !info?.excludeFromTotal;
+    })
+    .reduce((s, e) => s + e.hours, 0);
+
+  const diff = totalPaid - totalReported;
+  const balanced = Math.abs(diff) < 0.01;
+
+  return (
+    <span
+      className={clsx(
+        "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border",
+        balanced
+          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+          : "bg-amber-50 border-amber-300 text-amber-700",
+      )}
+      title={balanced ? "Hours match" : `Discrepancy: ${diff > 0 ? "+" : ""}${diff.toFixed(2)} hrs`}
+    >
+      <span
+        className={clsx(
+          "w-1.5 h-1.5 rounded-full",
+          balanced ? "bg-emerald-500" : "bg-amber-500 animate-pulse",
+        )}
+      />
+      {balanced ? "Balanced" : `${diff > 0 ? "+" : ""}${diff.toFixed(2)} hrs`}
+    </span>
   );
 };
 
@@ -574,43 +655,60 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                         className="bg-white border border-aura-text-primary/10 rounded-2xl overflow-hidden shadow-xl shadow-black/5"
                                       >
                                         {/* Card Header */}
-                                        <div className="px-3 py-1.5 border-b border-aura-text-primary/5 bg-aura-bg/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                          <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-aura-accent/10 rounded-lg text-aura-accent">
-                                              <CalendarIcon className="w-5 h-5" />
+                                        {(() => {
+                                          // Detect OT in paid hours (from paystub) or reported hours
+                                          const allReported = [
+                                            ...(data.userReportedHours?.week1 ?? []),
+                                            ...(data.userReportedHours?.week2 ?? []),
+                                          ];
+                                          const hasOT =
+                                            data.paidHours.some((h) => isOTCategory(h.category)) ||
+                                            allReported.some((e) => OT_CODES.has(e.code));
+                                          return (
+                                            <div className="px-3 py-2 border-b border-aura-text-primary/5 bg-aura-bg/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                              <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-aura-accent/10 rounded-lg text-aura-accent">
+                                                  <CalendarIcon className="w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                  <p className="text-xs text-aura-text-secondary font-semibold uppercase tracking-wider">
+                                                    Pay Period
+                                                  </p>
+                                                  <p className="text-aura-text-primary font-bold text-base">
+                                                    {formatDate(data.payPeriodStart)}
+                                                    <span className="text-aura-text-secondary mx-1.5 font-normal">—</span>
+                                                    {formatDate(data.payPeriodEnd)}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                              <div className="flex items-center gap-2 flex-wrap">
+                                                {hasOT && (
+                                                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold">
+                                                    ⚡ OT
+                                                  </span>
+                                                )}
+                                                <DiscrepancyBadge
+                                                  paidHours={data.paidHours}
+                                                  userReportedHours={data.userReportedHours}
+                                                />
+                                                <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-semibold border border-emerald-500/20">
+                                                  Analyzed
+                                                </span>
+                                                {data.pdfUrl && (
+                                                  <a
+                                                    href={data.pdfUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="p-1.5 text-aura-text-secondary hover:text-aura-accent hover:bg-aura-accent/10 rounded-lg transition-colors"
+                                                    title="View Original PDF"
+                                                  >
+                                                    <FileTextIcon className="w-4 h-4" />
+                                                  </a>
+                                                )}
+                                              </div>
                                             </div>
-                                            <div>
-                                              <p className="text-sm text-aura-text-secondary font-medium uppercase tracking-wider">
-                                                Pay Period
-                                              </p>
-                                              <p className="text-aura-text-primary font-semibold text-lg">
-                                                {formatDate(
-                                                  data.payPeriodStart
-                                                )}{" "}
-                                                <span className="text-aura-text-secondary mx-1">
-                                                  —
-                                                </span>{" "}
-                                                {formatDate(data.payPeriodEnd)}
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            {data.pdfUrl && (
-                                              <a
-                                                href={data.pdfUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="p-1.5 text-aura-text-secondary hover:text-aura-accent hover:bg-aura-accent/10 rounded-lg transition-colors border border-transparent hover:border-aura-accent/20"
-                                                title="View Original PDF"
-                                              >
-                                                <FileTextIcon className="w-5 h-5" />
-                                              </a>
-                                            )}
-                                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-sm font-medium border border-emerald-500/20">
-                                              Analyzed
-                                            </span>
-                                          </div>
-                                        </div>
+                                          );
+                                        })()}
 
                                         {/* Card Body - Split View Layout */}
                                         <div className="p-3 grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-4">
@@ -655,42 +753,31 @@ export const PaycheckTable: React.FC<PaycheckTableProps> = ({
                                             </div>
 
                                             {/* User Reported Hours Section */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-aura-text-primary/5 border border-aura-text-primary/10 rounded-lg p-3">
-                                              <div>
-                                                <h5 className="text-xs font-semibold text-aura-text-secondary uppercase tracking-wider mb-3">
-                                                  Week 1
+                                            <div className="rounded-xl border border-aura-text-primary/10 overflow-hidden">
+                                              <div className="px-3 py-1.5 bg-aura-text-primary/5 border-b border-aura-text-primary/10">
+                                                <h5 className="text-xs font-bold text-aura-text-secondary uppercase tracking-wider">
+                                                  Reported Hours
                                                 </h5>
-                                                <ReportedHoursInput
-                                                  entries={
-                                                    data.userReportedHours
-                                                      ?.week1 || []
-                                                  }
-                                                  onChange={(entries) =>
-                                                    onHoursChange(
-                                                      originalIndex,
-                                                      "week1",
-                                                      entries
-                                                    )
-                                                  }
-                                                />
                                               </div>
-                                              <div>
-                                                <h5 className="text-xs font-semibold text-aura-text-secondary uppercase tracking-wider mb-3">
-                                                  Week 2
-                                                </h5>
-                                                <ReportedHoursInput
-                                                  entries={
-                                                    data.userReportedHours
-                                                      ?.week2 || []
-                                                  }
-                                                  onChange={(entries) =>
-                                                    onHoursChange(
-                                                      originalIndex,
-                                                      "week2",
-                                                      entries
-                                                    )
-                                                  }
-                                                />
+                                              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-aura-text-primary/10">
+                                                <div className="p-3">
+                                                  <p className="text-[10px] font-semibold text-aura-text-secondary uppercase tracking-wider mb-2">
+                                                    Week 1
+                                                  </p>
+                                                  <ReportedHoursInput
+                                                    entries={data.userReportedHours?.week1 ?? []}
+                                                    onChange={(entries) => onHoursChange(originalIndex, "week1", entries)}
+                                                  />
+                                                </div>
+                                                <div className="p-3">
+                                                  <p className="text-[10px] font-semibold text-aura-text-secondary uppercase tracking-wider mb-2">
+                                                    Week 2
+                                                  </p>
+                                                  <ReportedHoursInput
+                                                    entries={data.userReportedHours?.week2 ?? []}
+                                                    onChange={(entries) => onHoursChange(originalIndex, "week2", entries)}
+                                                  />
+                                                </div>
                                               </div>
                                             </div>
 

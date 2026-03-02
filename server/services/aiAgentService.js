@@ -5,7 +5,12 @@ const websocketService = require("./websocketService");
 const fetch = require("node-fetch");
 const path = require("path");
 const fs = require("fs").promises;
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
+
+// Current Gemini model used by the AI Agent service.
+// To verify model availability: node server/scripts/check-gemini-models.js
+// Model reference: https://ai.google.dev/gemini-api/docs/models
+const AGENT_MODEL = process.env.AI_AGENT_MODEL || "gemini-2.5-flash";
 
 class AIAgentService {
   constructor() {
@@ -20,15 +25,15 @@ class AIAgentService {
     // LLM Configuration - Gemini (default) or LM Studio (fallback)
     this.useGemini = process.env.USE_GEMINI !== "false"; // Default to Gemini
     this.geminiApiKey = process.env.GEMINI_API_KEY;
-    this.geminiModel = process.env.AI_AGENT_MODEL || "gemini-2.5-flash";
+    this.geminiModel = AGENT_MODEL;
 
     // LM Studio fallback
     this.llmApiUrl = process.env.LM_STUDIO_API_URL;
     this.llmModel = process.env.LM_STUDIO_MODEL_NAME || "qwen3-vl-8b-instruct";
 
-    // Initialize Gemini if enabled
+    // Initialize Gemini client using the new @google/genai SDK
     if (this.useGemini && this.geminiApiKey) {
-      this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
+      this.genAI = new GoogleGenAI({ apiKey: this.geminiApiKey });
       console.log(`AI Agent using Gemini: ${this.geminiModel}`);
     } else {
       console.log(`AI Agent using LM Studio: ${this.llmApiUrl}`);
@@ -376,21 +381,37 @@ class AIAgentService {
   }
 
   /**
-   * Call Gemini API
+   * Call Gemini API using @google/genai SDK.
+   * Docs: https://ai.google.dev/gemini-api/docs/models
    */
   async callGemini(prompt) {
     try {
-      const model = this.genAI.getGenerativeModel({
+      const response = await this.genAI.models.generateContent({
         model: this.geminiModel,
-        systemInstruction:
-          "You are an expert software developer AI agent. Analyze tasks carefully and provide detailed, production-ready code implementations.",
+        contents: prompt,
+        config: {
+          systemInstruction:
+            "You are an expert software developer AI agent. Analyze tasks carefully and provide detailed, production-ready code implementations.",
+        },
       });
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return response.text ?? "";
     } catch (error) {
       console.error("Error calling Gemini:", error);
+
+      // Surface deprecation hints
+      const msg = error instanceof Error ? error.message : String(error);
+      if (
+        msg.includes("404") ||
+        msg.includes("deprecated") ||
+        msg.includes("not found") ||
+        msg.includes("no longer available")
+      ) {
+        console.warn(
+          `[Gemini API] Model "${this.geminiModel}" may be deprecated. ` +
+            `Run \`node server/scripts/check-gemini-models.js\` to verify. ` +
+            `Check https://ai.google.dev/gemini-api/docs/models for current models.`,
+        );
+      }
 
       // Fallback to LM Studio if Gemini fails
       if (this.llmApiUrl) {

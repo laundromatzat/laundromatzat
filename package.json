@@ -41,7 +41,7 @@
     "dotenv": "^17.2.3",
     "focus-trap-react": "^11.0.4",
     "framer-motion": "^12.23.25",
-    "jspdf": "^4.1.0",
+    "jspdf": "^4.2.0",
     "lucide-react": "^0.559.0",
     "marked": "^17.0.1",
     "mime-types": "^3.0.2",

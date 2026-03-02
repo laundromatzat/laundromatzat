@@ -1,4 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
+import { GEMINI_MODELS, parseGeminiError } from "@/services/geminiModelConfig";
 import { AnalysisResult, UserPreferences } from "../types";
 
 // Helper to remove markdown code blocks if present
@@ -132,7 +133,7 @@ export const analyzeRoom = async (
 
   try {
     const response: GenerateContentResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: GEMINI_MODELS.TEXT_FAST,
       contents: {
         parts: [...imageParts, { text: prompt }],
       },
@@ -282,6 +283,8 @@ export const analyzeRoom = async (
 
     return result;
   } catch (error) {
+    const hint = parseGeminiError(error);
+    if (hint) console.warn(hint);
     console.error("Analysis failed:", error);
     throw error;
   }
@@ -358,7 +361,7 @@ export const generateNeuroaestheticImage = async (
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
+      model: GEMINI_MODELS.IMAGE_GEN,
       contents: {
         parts: [
           { inlineData: { mimeType: "image/jpeg", data: base64Image } },
@@ -366,7 +369,7 @@ export const generateNeuroaestheticImage = async (
         ],
       },
       config: {
-        // No specific tool needed for basic edit via generateContent on this model
+        responseModalities: ["TEXT", "IMAGE"],
       },
     });
 
@@ -381,6 +384,8 @@ export const generateNeuroaestheticImage = async (
 
     throw new Error("No image generated.");
   } catch (error) {
+    const hint = parseGeminiError(error);
+    if (hint) console.warn(hint);
     console.error("Image generation failed:", error);
     throw error;
   }

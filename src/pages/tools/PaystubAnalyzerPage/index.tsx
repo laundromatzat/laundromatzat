@@ -1,22 +1,20 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useEffect, useState } from "react";
 import { ConfirmationModal } from "./components/ConfirmationModal";
+import { EditPaystubModal } from "./components/EditPaystubModal";
 import { FileUpload } from "./components/FileUpload";
 import { FutureHoursManager } from "./components/FutureHoursManager";
 import { PaycheckSpreadsheet } from "./components/PaycheckSpreadsheet";
 import { PaycheckTable } from "./components/PaycheckTable";
 import { DocumentTextIcon } from "./components/icons/DocumentTextIcon";
-
 import { ViewGridIcon } from "./components/icons/ViewGridIcon";
 import { ViewListIcon } from "./components/icons/ViewListIcon";
 import { TrashIcon } from "./components/icons/TrashIcon";
-
 import { ClockIcon } from "./components/icons/ClockIcon";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { AuraButton, AuraInput } from "@/components/aura";
+import { AuraButton } from "@/components/aura";
 import { DesignGallery, SortOption } from "@/components/DesignGallery";
 import { ClockIcon as HistoryIcon } from "@heroicons/react/24/outline";
-// Unused imports removed
 
 import { useAuth } from "@/context/AuthContext";
 import { useLoading } from "@/context/LoadingContext";
@@ -25,38 +23,43 @@ import {
   fetchPaychecks,
   setAuthToken,
 } from "@/services/paystubApiService";
-import { PaycheckData, ReportedHourEntry } from "./types/paystubTypes";
+import { HourEntry, PaycheckData, ReportedHourEntry } from "./types/paystubTypes";
 
 type ViewMode = "card" | "spreadsheet";
 
-const UNMATCHED_HOURS_STORAGE_KEY = "paystub_unmatched_hours";
-const UNMATCHED_DAILY_DETAILS_STORAGE_KEY = "paystub_unmatched_daily_details";
+const UNMATCHED_HOURS_KEY = "paystub_unmatched_hours";
+const UNMATCHED_DAILY_KEY = "paystub_unmatched_daily_details";
 
-// Type for daily breakdown: { "2023-10-27": [{ code: "WKP", hours: 8 }] }
 export type DailyHoursMap = { [date: string]: ReportedHourEntry[] };
-// Type for week storage: { "2023-10-23": { "2023-10-23": [...], "2023-10-24": [...] } }
 export type WeeklyDailyDetails = { [weekStartDate: string]: DailyHoursMap };
 
-// Helper to ensure YYYY-MM-DD format
 const normalizeDate = (dateStr: string): string => {
   if (!dateStr) return "";
-  // If already YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-
-  // Handle MM/DD/YYYY
   if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
     const [m, d, y] = dateStr.split("/");
     return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
-
-  // Fallback: try parsing
   const d = new Date(dateStr);
-  if (!isNaN(d.getTime())) {
-    return d.toISOString().split("T")[0];
-  }
-
-  return dateStr;
+  return isNaN(d.getTime()) ? dateStr : d.toISOString().split("T")[0];
 };
+
+// ── Stats helpers ─────────────────────────────────────────────────────────────
+
+function calcYTDOT(paychecks: PaycheckData[]): number {
+  const year = new Date().getFullYear();
+  let total = 0;
+  paychecks.forEach((p) => {
+    if (!p.payPeriodStart?.startsWith(String(year))) return;
+    const all = [...(p.userReportedHours?.week1 ?? []), ...(p.userReportedHours?.week2 ?? [])];
+    all.forEach((e) => {
+      if (e.code === "OST" || e.code === "CTE") total += e.hours;
+    });
+  });
+  return total;
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 const PaystubAnalyzerPage: React.FC = () => {
   const [paycheckData, setPaycheckData] = useState<PaycheckData[]>([]);
@@ -64,177 +67,109 @@ const PaystubAnalyzerPage: React.FC = () => {
     [weekStartDate: string]: ReportedHourEntry[];
   }>(() => {
     try {
-      const storedHours = localStorage.getItem(UNMATCHED_HOURS_STORAGE_KEY);
-      return storedHours ? JSON.parse(storedHours) : {};
-    } catch (error) {
-      console.error("Failed to load unmatched hours from localStorage", error);
+      const s = localStorage.getItem(UNMATCHED_HOURS_KEY);
+      return s ? JSON.parse(s) : {};
+    } catch {
+      return {};
+    }
+  });
+  const [unmatchedDailyDetails, setUnmatchedDailyDetails] = useState<WeeklyDailyDetails>(() => {
+    try {
+      const s = localStorage.getItem(UNMATCHED_DAILY_KEY);
+      return s ? JSON.parse(s) : {};
+    } catch {
       return {};
     }
   });
 
-  const [unmatchedDailyDetails, setUnmatchedDailyDetails] =
-    useState<WeeklyDailyDetails>(() => {
-      try {
-        const stored = localStorage.getItem(
-          UNMATCHED_DAILY_DETAILS_STORAGE_KEY,
-        );
-        return stored ? JSON.parse(stored) : {};
-      } catch (error) {
-        console.error("Failed to load daily details from localStorage", error);
-        return {};
-      }
-    });
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("card");
-  const [isFutureHoursModalOpen, setIsFutureHoursModalOpen] = useState(false);
-  const [isClearDataModalOpen, setIsClearDataModalOpen] = useState(false);
 
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  // const [selectedPaystubForEdit, setSelectedPaystubForEdit] = useState<PaycheckData | null>(null); // Removed unused, using editFormData
-  const [editFormData, setEditFormData] = useState<PaycheckData | null>(null);
+  const [showFutureHours, setShowFutureHours] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
-  const openEditModal = (paystub: PaycheckData) => {
-    // setSelectedPaystubForEdit(paystub); // Unused
-    setEditFormData({ ...paystub });
-    setEditModalOpen(true);
-  };
-
-  const handleEditSave = () => {
-    if (!editFormData) return;
-
-    setPaycheckData((prev) =>
-      prev.map((p) =>
-        p.payPeriodStart === editFormData.payPeriodStart &&
-        p.payPeriodEnd === editFormData.payPeriodEnd
-          ? editFormData
-          : p,
-      ),
-    );
-
-    setEditModalOpen(false);
-    setEditModalOpen(false);
-    // setSelectedPaystubForEdit(null); // Unused
-  };
+  const [editData, setEditData] = useState<PaycheckData | null>(null);
 
   const { token } = useAuth();
+  const { setIsLoading: setGlobalLoading } = useLoading();
 
-  useEffect(() => {
-    setAuthToken(token);
-  }, [token]);
+  // Sync auth token
+  useEffect(() => { setAuthToken(token); }, [token]);
 
+  // Persist unmatched hours
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        UNMATCHED_HOURS_STORAGE_KEY,
-        JSON.stringify(unmatchedReportedHours),
-      );
-    } catch (error) {
-      console.error("Failed to save unmatched hours to localStorage", error);
-    }
+    try { localStorage.setItem(UNMATCHED_HOURS_KEY, JSON.stringify(unmatchedReportedHours)); } catch {}
   }, [unmatchedReportedHours]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        UNMATCHED_DAILY_DETAILS_STORAGE_KEY,
-        JSON.stringify(unmatchedDailyDetails),
-      );
-    } catch (error) {
-      console.error("Failed to save daily details to localStorage", error);
-    }
+    try { localStorage.setItem(UNMATCHED_DAILY_KEY, JSON.stringify(unmatchedDailyDetails)); } catch {}
   }, [unmatchedDailyDetails]);
 
+  // Load from server
   const loadData = useCallback(async () => {
     if (!token) return;
     try {
       setIsLoading(true);
-      const data = await fetchPaychecks();
-      setPaycheckData(data);
-    } catch (e) {
-      console.error("Failed to fetch history:", e);
+      setPaycheckData(await fetchPaychecks());
+    } catch {
       setError("Failed to load data. Please check connection.");
     } finally {
       setIsLoading(false);
     }
   }, [token]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useEffect(() => { loadData(); }, [loadData]);
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
   const handleAnalysisComplete = useCallback(
     (data: PaycheckData) => {
-      const formatDateToKey = (date: Date): string =>
-        date.toISOString().split("T")[0];
+      const fmtKey = (d: Date) => d.toISOString().split("T")[0];
+      const w1start = new Date(data.payPeriodStart + "T00:00:00");
+      const w2start = new Date(w1start);
+      w2start.setDate(w1start.getDate() + 7);
+      const w1key = fmtKey(w1start);
+      const w2key = fmtKey(w2start);
 
-      const payPeriodStartDate = new Date(data.payPeriodStart + "T00:00:00");
-      const week1StartDateKey = formatDateToKey(payPeriodStartDate);
+      const newUnmatched = { ...unmatchedReportedHours };
+      const userReportedHours: { week1: ReportedHourEntry[]; week2: ReportedHourEntry[] } = {
+        week1: [],
+        week2: [],
+      };
 
-      const week2StartDate = new Date(payPeriodStartDate);
-      week2StartDate.setDate(payPeriodStartDate.getDate() + 7);
-      const week2StartDateKey = formatDateToKey(week2StartDate);
+      if (newUnmatched[w1key]) { userReportedHours.week1 = newUnmatched[w1key]; delete newUnmatched[w1key]; }
+      if (newUnmatched[w2key]) { userReportedHours.week2 = newUnmatched[w2key]; delete newUnmatched[w2key]; }
 
-      let hoursWereMatched = false;
-      const newUnmatchedHours = { ...unmatchedReportedHours };
-      const userReportedHours: {
-        week1: ReportedHourEntry[];
-        week2: ReportedHourEntry[];
-      } = { week1: [], week2: [] };
-
-      if (newUnmatchedHours[week1StartDateKey]) {
-        userReportedHours.week1 = newUnmatchedHours[week1StartDateKey];
-        delete newUnmatchedHours[week1StartDateKey];
-        hoursWereMatched = true;
-      }
-      if (newUnmatchedHours[week2StartDateKey]) {
-        userReportedHours.week2 = newUnmatchedHours[week2StartDateKey];
-        delete newUnmatchedHours[week2StartDateKey];
-        hoursWereMatched = true;
-      }
-
-      if (hoursWereMatched) {
-        setUnmatchedReportedHours(newUnmatchedHours);
+      if (userReportedHours.week1.length || userReportedHours.week2.length) {
+        setUnmatchedReportedHours(newUnmatched);
       }
 
       const finalData = { ...data, userReportedHours };
 
-      setPaycheckData((prevData) => {
-        const existingIndex = prevData.findIndex(
-          (p) =>
-            p.payPeriodStart === finalData.payPeriodStart &&
-            p.payPeriodEnd === finalData.payPeriodEnd,
+      setPaycheckData((prev) => {
+        const idx = prev.findIndex(
+          (p) => p.payPeriodStart === finalData.payPeriodStart && p.payPeriodEnd === finalData.payPeriodEnd,
         );
-        if (existingIndex !== -1) {
-          const updatedData = [...prevData];
-          const previousHours = updatedData[existingIndex].userReportedHours;
-          updatedData[existingIndex] = {
+        if (idx !== -1) {
+          const next = [...prev];
+          next[idx] = {
             ...finalData,
             userReportedHours:
-              finalData.userReportedHours?.week1?.length ||
-              finalData.userReportedHours?.week2?.length
+              finalData.userReportedHours.week1.length || finalData.userReportedHours.week2.length
                 ? finalData.userReportedHours
-                : previousHours,
+                : prev[idx].userReportedHours,
           };
-          return updatedData.sort(
-            (a, b) =>
-              new Date(b.payPeriodStart).getTime() -
-              new Date(a.payPeriodStart).getTime(),
-          );
+          return next.sort((a, b) => new Date(b.payPeriodStart).getTime() - new Date(a.payPeriodStart).getTime());
         }
-        return [...prevData, finalData].sort(
-          (a, b) =>
-            new Date(b.payPeriodStart).getTime() -
-            new Date(a.payPeriodStart).getTime(),
+        return [...prev, finalData].sort(
+          (a, b) => new Date(b.payPeriodStart).getTime() - new Date(a.payPeriodStart).getTime(),
         );
       });
     },
     [unmatchedReportedHours],
   );
-
-  const { setIsLoading: setGlobalLoading } = useLoading();
 
   const handleFileProcess = async (files: FileList) => {
     setIsLoading(true);
@@ -245,90 +180,47 @@ const PaystubAnalyzerPage: React.FC = () => {
     for (const file of Array.from(files)) {
       try {
         const data = await analyzePaycheckPdf(file);
-        // Normalize data structure if backend returns different keys
-        const normalizedData = {
+        handleAnalysisComplete({
           ...data,
           payPeriodStart: normalizeDate(data.payPeriodStart),
           payPeriodEnd: normalizeDate(data.payPeriodEnd),
-          pdfUrl: URL.createObjectURL(file), // Store blob URL
-          paidHours:
-            data.paidHours ||
-            (data as unknown as { hoursPaid: ReportedHourEntry[] }).hoursPaid ||
-            [],
-          bankedHours:
-            data.bankedHours ||
-            (data as unknown as { bankedHours: ReportedHourEntry[] })
-              .bankedHours ||
-            [],
-        };
-        handleAnalysisComplete(normalizedData);
+          pdfUrl: URL.createObjectURL(file),
+          paidHours: data.paidHours || (data as unknown as { hoursPaid: typeof data.paidHours }).hoursPaid || [],
+          bankedHours: data.bankedHours || [],
+        });
       } catch (e) {
-        const errorMessage =
-          e instanceof Error ? e.message : "An unknown error occurred.";
-        errors.push(`- ${file.name}: ${errorMessage}`);
+        errors.push(`- ${file.name}: ${e instanceof Error ? e.message : "Unknown error"}`);
       }
     }
 
-    if (errors.length > 0) {
-      const plural = files.length > 1;
-      const successCount = files.length - errors.length;
-      const errorHeader = `Completed with ${errors.length} error${errors.length > 1 ? "s" : ""} (processed ${successCount}/${files.length} file${plural ? "s" : ""} successfully).`;
-      setError(`${errorHeader}\n\nDetails:\n${errors.join("\n")}`);
+    if (errors.length) {
+      const successes = files.length - errors.length;
+      setError(`Completed with ${errors.length} error(s) (${successes}/${files.length} succeeded).\n\n${errors.join("\n")}`);
     }
-
     setIsLoading(false);
     setGlobalLoading(false);
   };
 
-  const handleHoursChange = async (
-    index: number,
-    week: "week1" | "week2",
-    entries: ReportedHourEntry[],
-  ) => {
-    // Optimistic update
-    const updatedData = [...paycheckData];
-    const currentData = { ...updatedData[index] };
+  const handleHoursChange = async (index: number, week: "week1" | "week2", entries: ReportedHourEntry[]) => {
+    const updated = [...paycheckData];
+    const cur = { ...updated[index] };
+    cur.userReportedHours = { ...(cur.userReportedHours ?? { week1: [], week2: [] }), [week]: entries };
+    updated[index] = cur;
+    setPaycheckData(updated);
 
-    if (!currentData.userReportedHours) {
-      currentData.userReportedHours = { week1: [], week2: [] };
-    }
-    currentData.userReportedHours[week] = entries;
-    updatedData[index] = currentData;
-
-    setPaycheckData(updatedData);
-
-    // Persist to backend
     try {
-      const { updatePaycheckReportedHours } = await import(
-        "@/services/paystubApiService"
-      );
-      if (currentData.id) {
-        await updatePaycheckReportedHours(
-          currentData.id,
-          currentData.userReportedHours,
-        );
-      }
+      const { updatePaycheckReportedHours } = await import("@/services/paystubApiService");
+      if (cur.id) await updatePaycheckReportedHours(cur.id, cur.userReportedHours);
     } catch (err) {
       console.error("Failed to persist reported hours:", err);
-      // Optionally revert state or show error toast
     }
   };
 
   const handleFutureHoursChange = useCallback(
-    (
-      weekStartDate: string,
-      entries: ReportedHourEntry[],
-      dailyDetails?: DailyHoursMap,
-    ) => {
-      setUnmatchedReportedHours((prev) => ({
-        ...prev,
-        [weekStartDate]: entries,
-      }));
+    (weekStartDate: string, entries: ReportedHourEntry[], dailyDetails?: DailyHoursMap) => {
+      setUnmatchedReportedHours((prev) => ({ ...prev, [weekStartDate]: entries }));
       if (dailyDetails) {
-        setUnmatchedDailyDetails((prev) => ({
-          ...prev,
-          [weekStartDate]: dailyDetails,
-        }));
+        setUnmatchedDailyDetails((prev) => ({ ...prev, [weekStartDate]: dailyDetails }));
       }
     },
     [],
@@ -337,134 +229,110 @@ const PaystubAnalyzerPage: React.FC = () => {
   const handleAddFutureWeek = useCallback(
     (weekStartDate: string) => {
       if (!unmatchedReportedHours[weekStartDate]) {
-        setUnmatchedReportedHours((prev) => ({
-          ...prev,
-          [weekStartDate]: [],
-        }));
-        // Initialize daily details for this week if needed
-        setUnmatchedDailyDetails((prev) => ({
-          ...prev,
-          [weekStartDate]: {},
-        }));
+        setUnmatchedReportedHours((prev) => ({ ...prev, [weekStartDate]: [] }));
+        setUnmatchedDailyDetails((prev) => ({ ...prev, [weekStartDate]: {} }));
       }
     },
     [unmatchedReportedHours],
   );
 
   const handleRemoveFutureWeek = useCallback((weekStartDate: string) => {
-    setUnmatchedReportedHours((prev) => {
-      const next = { ...prev };
-      delete next[weekStartDate];
-      return next;
-    });
-    setUnmatchedDailyDetails((prev) => {
-      const next = { ...prev };
-      delete next[weekStartDate];
-      return next;
-    });
+    setUnmatchedReportedHours((prev) => { const n = { ...prev }; delete n[weekStartDate]; return n; });
+    setUnmatchedDailyDetails((prev) => { const n = { ...prev }; delete n[weekStartDate]; return n; });
   }, []);
 
-  const ViewToggle = () => (
-    <div className="flex justify-end mb-6">
-      <div className="inline-flex items-center bg-white/50 p-1 rounded-lg border border-aura-text-primary/10">
-        <AuraButton
-          size="sm"
-          variant={viewMode === "card" ? "accent" : "ghost"}
-          onClick={() => setViewMode("card")}
-          icon={<ViewListIcon className="w-4 h-4" />}
-          className={
-            viewMode !== "card"
-              ? "text-aura-text-secondary hover:bg-aura-text-primary/5"
-              : ""
-          }
-        >
-          Cards
-        </AuraButton>
-        <AuraButton
-          size="sm"
-          variant={viewMode === "spreadsheet" ? "accent" : "ghost"}
-          onClick={() => setViewMode("spreadsheet")}
-          icon={<ViewGridIcon className="w-4 h-4" />}
-          className={
-            viewMode !== "spreadsheet"
-              ? "text-aura-text-secondary hover:bg-aura-text-primary/5"
-              : ""
-          }
-        >
-          Table
-        </AuraButton>
-      </div>
-    </div>
-  );
+  // ── Stats ────────────────────────────────────────────────────────────────────
+
+  const latestPeriod = paycheckData[0];
+  const ytdOT = calcYTDOT(paycheckData);
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="bg-aura-bg min-h-screen text-base text-aura-text-primary font-sans selection:bg-aura-accent/30 p-4 sm:p-6 lg:p-8">
+    <div className="bg-aura-bg min-h-screen text-base text-aura-text-primary selection:bg-aura-accent/30 p-4 sm:p-6 lg:p-8">
+      {/* Background grid */}
       <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-40 pointer-events-none" />
 
-      <main className="relative container mx-auto p-4 md:p-8 max-w-7xl">
+      <main className="relative container mx-auto max-w-7xl">
+        {/* ── Header ──────────────────────────────────────────────────────── */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8"
         >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-aura-accent/10 rounded-xl border border-aura-accent/20 backdrop-blur-sm">
-              <DocumentTextIcon className="w-8 h-8 text-aura-accent" />
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-aura-accent/10 rounded-xl border border-aura-accent/20">
+              <DocumentTextIcon className="w-7 h-7 text-aura-accent" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-aura-text-primary">
+              <h1 className="text-2xl font-bold tracking-tight text-aura-text-primary">
                 Paystub Analyzer <span className="text-aura-accent">Pro</span>
               </h1>
-              <p className="text-base text-aura-text-secondary">
-                Intelligent Payroll Tracking
-              </p>
+              <p className="text-sm text-aura-text-secondary">Intelligent Payroll Tracking</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsGalleryOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-aura-sm hover:shadow-aura-md aura-transition"
-            >
-              <HistoryIcon className="w-5 h-5" />
-              <span className="font-medium">History</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setIsGalleryOpen(true)}
+            className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 text-sm bg-white hover:bg-aura-surface text-aura-text-secondary hover:text-aura-text-primary rounded-full shadow-sm hover:shadow-md transition-all"
+          >
+            <HistoryIcon className="w-4 h-4" />
+            History
+          </button>
         </motion.header>
 
+        {/* ── Stats bar ─────────────────────────────────────────────────── */}
+        {paycheckData.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-wrap items-center gap-x-6 gap-y-1 mb-6 px-4 py-2.5 bg-white/60 backdrop-blur-sm rounded-xl border border-aura-text-primary/10 text-sm"
+          >
+            <span className="text-aura-text-secondary">
+              <strong className="text-aura-text-primary font-semibold">{paycheckData.length}</strong> paystubs
+            </span>
+            {latestPeriod && (
+              <span className="text-aura-text-secondary">
+                Latest:{" "}
+                <strong className="text-aura-text-primary font-semibold">
+                  {new Date(latestPeriod.payPeriodStart + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {" – "}
+                  {new Date(latestPeriod.payPeriodEnd + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </strong>
+              </span>
+            )}
+            {ytdOT > 0 && (
+              <span className="flex items-center gap-1 text-amber-600 font-semibold">
+                <span>⚡</span>
+                {ytdOT.toFixed(ytdOT % 1 === 0 ? 0 : 2)} hrs YTD OT
+              </span>
+            )}
+          </motion.div>
+        )}
+
+        {/* ── Error banner ─────────────────────────────────────────────── */}
         <AnimatePresence>
           {error && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-8"
+              className="mb-6"
             >
-              <div className="relative bg-red-500/10 p-4 rounded-xl border border-red-500/20 text-red-200 backdrop-blur-sm">
-                <h3 className="font-semibold flex items-center gap-2">
+              <div className="relative bg-red-500/10 p-4 rounded-xl border border-red-500/20 text-red-200">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                   Processing Error
                 </h3>
-                <pre className="whitespace-pre-wrap text-sm mt-2 font-mono bg-black/20 p-3 rounded-lg border border-white/5">
+                <pre className="whitespace-pre-wrap text-xs mt-2 font-mono bg-black/20 p-3 rounded-lg">
                   {error}
                 </pre>
                 <button
                   onClick={() => setError(null)}
-                  className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/10 transition-colors"
-                  aria-label="Dismiss error"
+                  className="absolute top-3 right-3 p-1 rounded-full hover:bg-white/10 text-red-300"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
@@ -472,319 +340,181 @@ const PaystubAnalyzerPage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        <div className="space-y-8">
-          {isLoading && paycheckData.length === 0 && (
-            <div className="space-y-4">
-              <div className="flex justify-end mb-6">
-                <Skeleton className="h-9 w-48 rounded-lg" />
-              </div>
-              <div className="bg-white/50 backdrop-blur-sm rounded-2xl border border-aura-text-primary/10 overflow-hidden">
-                <div className="p-4 grid grid-cols-6 gap-4 border-b border-aura-text-primary/5">
-                  {[...Array(6)].map((_, i) => (
-                    <Skeleton
-                      key={i}
-                      className="h-4 w-20 bg-aura-text-primary/10"
-                    />
-                  ))}
+        {/* ── Loading skeletons ────────────────────────────────────────── */}
+        {isLoading && paycheckData.length === 0 && (
+          <div className="space-y-3">
+            <Skeleton className="h-9 w-48 rounded-lg ml-auto" />
+            <div className="bg-white/50 rounded-2xl border border-aura-text-primary/10 overflow-hidden">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="p-4 grid grid-cols-6 gap-4 border-b border-aura-text-primary/5 last:border-0">
+                  <Skeleton className="h-4 w-24 bg-aura-text-primary/10" />
+                  <Skeleton className="h-4 w-16 bg-aura-text-primary/10" />
+                  <Skeleton className="h-4 w-16 bg-aura-text-primary/10" />
+                  <Skeleton className="h-4 w-20 bg-aura-text-primary/10" />
+                  <Skeleton className="h-4 w-24 bg-aura-text-primary/10" />
+                  <Skeleton className="h-4 w-12 bg-aura-text-primary/10 ml-auto" />
                 </div>
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="p-4 grid grid-cols-6 gap-4 border-b border-aura-text-primary/5 last:border-0"
-                  >
-                    <Skeleton className="h-4 w-24 bg-aura-text-primary/10" />
-                    <Skeleton className="h-4 w-16 bg-aura-text-primary/10" />
-                    <Skeleton className="h-4 w-16 bg-aura-text-primary/10" />
-                    <Skeleton className="h-4 w-20 bg-aura-text-primary/10" />
-                    <Skeleton className="h-4 w-24 bg-aura-text-primary/10" />
-                    <Skeleton className="h-4 w-12 bg-aura-text-primary/10 ml-auto" />
-                  </div>
-                ))}
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Empty state ──────────────────────────────────────────────── */}
+        {paycheckData.length === 0 && Object.keys(unmatchedReportedHours).length === 0 && !isLoading && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16 px-6 rounded-3xl border border-aura-text-primary/10 bg-white/60 backdrop-blur-sm"
+          >
+            <div className="w-16 h-16 mx-auto bg-white rounded-2xl flex items-center justify-center mb-5 ring-1 ring-aura-text-primary/10 shadow-sm">
+              <DocumentTextIcon className="h-8 w-8 text-aura-accent" />
+            </div>
+            <h3 className="text-xl font-semibold text-aura-text-primary mb-2">No paystubs yet</h3>
+            <p className="text-aura-text-secondary max-w-sm mx-auto mb-8 text-sm">
+              Upload your PDF paystubs to extract hours, track earnings, and verify accuracy.
+            </p>
+            {/* Inline file upload in empty state */}
+            <div className="max-w-xs mx-auto">
+              <FileUpload onFileProcess={handleFileProcess} isLoading={isLoading} />
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Loaded data ──────────────────────────────────────────────── */}
+        {paycheckData.length > 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            {/* View toggle */}
+            <div className="flex justify-end mb-5">
+              <div className="inline-flex items-center bg-white/60 p-1 rounded-lg border border-aura-text-primary/10 gap-0.5">
+                <AuraButton
+                  size="sm"
+                  variant={viewMode === "card" ? "accent" : "ghost"}
+                  onClick={() => setViewMode("card")}
+                  icon={<ViewListIcon className="w-4 h-4" />}
+                >
+                  Cards
+                </AuraButton>
+                <AuraButton
+                  size="sm"
+                  variant={viewMode === "spreadsheet" ? "accent" : "ghost"}
+                  onClick={() => setViewMode("spreadsheet")}
+                  icon={<ViewGridIcon className="w-4 h-4" />}
+                >
+                  Table
+                </AuraButton>
               </div>
             </div>
-          )}
 
-          {paycheckData.length === 0 &&
-            Object.keys(unmatchedReportedHours).length === 0 &&
-            !isLoading && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-20 px-6 rounded-3xl border border-aura-text-primary/10 bg-white/50 backdrop-blur-sm"
-              >
-                <div className="w-20 h-20 mx-auto bg-white/80 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-aura-text-primary/10">
-                  <DocumentTextIcon className="h-10 w-10 text-aura-accent" />
-                </div>
-                <h3 className="text-2xl font-semibold text-aura-text-primary mb-2">
-                  No paystubs analyzed yet
-                </h3>
-                <p className="text-aura-text-secondary max-w-md mx-auto mb-8">
-                  Upload your PDF paystubs to automatically extract hours, track
-                  earnings, and verify your paycheck accuracy.
-                </p>
-                <div className="flex justify-center">
-                  {/* The FileUpload component will be the primary call to action */}
-                </div>
-              </motion.div>
+            {viewMode === "card" ? (
+              <PaycheckTable
+                paycheckData={paycheckData}
+                onHoursChange={handleHoursChange}
+                onEdit={(p) => setEditData({ ...p })}
+              />
+            ) : (
+              <PaycheckSpreadsheet
+                paycheckData={paycheckData}
+                onHoursChange={handleHoursChange}
+                onEdit={(p) => setEditData({ ...p })}
+              />
             )}
-
-          {paycheckData.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <ViewToggle />
-              {viewMode === "card" ? (
-                <PaycheckTable
-                  paycheckData={paycheckData}
-                  onHoursChange={handleHoursChange}
-                  onEdit={openEditModal}
-                />
-              ) : (
-                <PaycheckSpreadsheet
-                  paycheckData={paycheckData}
-                  onHoursChange={handleHoursChange}
-                  onEdit={openEditModal}
-                />
-              )}
-            </motion.div>
-          )}
-        </div>
+          </motion.div>
+        )}
       </main>
 
+      {/* ── Floating action bar ──────────────────────────────────────────── */}
+      <motion.div
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 p-2 bg-white/90 backdrop-blur-xl border border-aura-text-primary/10 rounded-2xl shadow-2xl shadow-black/10"
+      >
+        <FileUpload onFileProcess={handleFileProcess} isLoading={isLoading} />
+
+        <div className="w-px h-7 bg-aura-text-primary/10" />
+
+        <button
+          onClick={() => setShowFutureHours(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-aura-accent hover:bg-aura-accent/90 text-white rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-aura-accent/25"
+        >
+          <ClockIcon className="w-4 h-4" />
+          <span className="hidden sm:inline">Manage Hours</span>
+        </button>
+
+        <div className="w-px h-7 bg-aura-text-primary/10" />
+
+        <button
+          onClick={() => setShowClearConfirm(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95 border border-red-500/20"
+          title="Clear All Data"
+        >
+          <TrashIcon className="w-4 h-4" />
+          <span className="hidden sm:inline">Clear</span>
+        </button>
+      </motion.div>
+
+      {/* ── Modals ───────────────────────────────────────────────────────── */}
+
       <ConfirmationModal
-        isOpen={isClearDataModalOpen}
+        isOpen={showClearConfirm}
         title="Clear All Data?"
-        message="Are you sure you want to delete all uploaded paystubs and reported hours? This action cannot be undone."
-        isDestructive={true}
-        onCancel={() => setIsClearDataModalOpen(false)}
+        message="Delete all uploaded paystubs and reported hours? This cannot be undone."
+        isDestructive
+        onCancel={() => setShowClearConfirm(false)}
         onConfirm={async () => {
           try {
-            const { clearAllData } = await import(
-              "@/services/paystubApiService"
-            );
+            const { clearAllData } = await import("@/services/paystubApiService");
             await clearAllData();
             setPaycheckData([]);
             setUnmatchedReportedHours({});
-            setUnmatchedDailyDetails({}); // Clear daily details as well
-            setIsClearDataModalOpen(false);
-          } catch (e) {
-            console.error("Failed to clear data:", e);
+            setUnmatchedDailyDetails({});
+          } catch {
             setError("Failed to clear data.");
-            setIsClearDataModalOpen(false);
+          } finally {
+            setShowClearConfirm(false);
           }
         }}
       />
 
-      {/* Floating Action Bar */}
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 p-2 bg-white/90 backdrop-blur-xl border border-aura-text-primary/10 rounded-2xl shadow-2xl shadow-black/10"
-      >
-        <FileUpload onFileProcess={handleFileProcess} isLoading={isLoading} />
-
-        <div className="w-px h-8 bg-aura-text-primary/10 mx-1" />
-
-        <button
-          onClick={() => setIsFutureHoursModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-3 bg-aura-accent hover:bg-aura-accent/90 text-white rounded-xl font-medium transition-all hover:scale-105 active:scale-95 shadow-lg shadow-aura-accent/25"
-          title="Manage Future Week Hours & Timekeeper"
-        >
-          <ClockIcon className="w-5 h-5" />
-          <span className="hidden sm:inline">Manage Hours</span>
-        </button>
-
-        <div className="w-px h-8 bg-aura-text-primary/10 mx-1" />
-
-        <button
-          onClick={() => setIsClearDataModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-medium transition-all hover:scale-105 active:scale-95 border border-red-500/20"
-          title="Clear All Data"
-        >
-          <TrashIcon className="w-5 h-5" />
-          <span className="hidden sm:inline">Clear Data</span>
-        </button>
-      </motion.div>
-
-      {isFutureHoursModalOpen && (
+      {showFutureHours && (
         <FutureHoursManager
           unmatchedHours={unmatchedReportedHours}
           unmatchedDailyDetails={unmatchedDailyDetails}
           onAddWeek={handleAddFutureWeek}
           onRemoveWeek={handleRemoveFutureWeek}
           onHoursChange={handleFutureHoursChange}
-          onClose={() => setIsFutureHoursModalOpen(false)}
+          onClose={() => setShowFutureHours(false)}
         />
       )}
-      {/* Edit Paystub Modal - Basic Implementation for Speed, consider moving to separate component later */}
-      {editModalOpen && editFormData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-800">
-            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-              <h3 className="text-lg font-semibold text-white">
-                Edit Paystub Data
-              </h3>
-              <button
-                onClick={() => setEditModalOpen(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <span className="sr-only">Close</span>
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
 
-            <div className="p-6 overflow-auto">
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label
-                    htmlFor="edit-pay-period-start"
-                    className="block text-sm font-medium text-slate-300 mb-1"
-                  >
-                    Pay Period Start
-                  </label>
-                  <AuraInput
-                    id="edit-pay-period-start"
-                    type="date"
-                    className="bg-slate-950 border-slate-700 text-white focus:ring-indigo-500 focus:border-indigo-500"
-                    value={editFormData.payPeriodStart}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        payPeriodStart: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="edit-pay-period-end"
-                    className="block text-sm font-medium text-slate-300 mb-1"
-                  >
-                    Pay Period End
-                  </label>
-                  <AuraInput
-                    id="edit-pay-period-end"
-                    type="date"
-                    className="bg-slate-950 border-slate-700 text-white focus:ring-indigo-500 focus:border-indigo-500"
-                    value={editFormData.payPeriodEnd}
-                    onChange={(e) =>
-                      setEditFormData({
-                        ...editFormData,
-                        payPeriodEnd: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
-                  <DocumentTextIcon className="w-4 h-4 text-aura-accent" />{" "}
-                  Extracted Paid Hours
-                </h4>
-                <div className="space-y-2 bg-slate-900/30 p-4 rounded-lg border border-slate-800">
-                  {editFormData.paidHours.map((entry, idx) => (
-                    <div key={idx} className="flex gap-2 items-center">
-                      <AuraInput
-                        type="text"
-                        className="flex-1 bg-slate-950 border-slate-700 text-white text-sm"
-                        value={entry.category}
-                        onChange={(e) => {
-                          const newHours = [...editFormData.paidHours];
-                          newHours[idx].category = e.target.value;
-                          setEditFormData({
-                            ...editFormData,
-                            paidHours: newHours,
-                          });
-                        }}
-                      />
-                      <AuraInput
-                        type="number"
-                        className="w-24 bg-slate-950 border-slate-700 text-white text-sm text-right"
-                        value={entry.hours}
-                        onChange={(e) => {
-                          const newHours = [...editFormData.paidHours];
-                          newHours[idx].hours = parseFloat(e.target.value) || 0;
-                          setEditFormData({
-                            ...editFormData,
-                            paidHours: newHours,
-                          });
-                        }}
-                      />
-                      <button
-                        className="text-red-400 hover:text-red-600 p-1"
-                        onClick={() => {
-                          const newHours = editFormData.paidHours.filter(
-                            (_, i) => i !== idx,
-                          );
-                          setEditFormData({
-                            ...editFormData,
-                            paidHours: newHours,
-                          });
-                        }}
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() =>
-                      setEditFormData({
-                        ...editFormData,
-                        paidHours: [
-                          ...editFormData.paidHours,
-                          { category: "New Category", hours: 0 },
-                        ],
-                      })
-                    }
-                    className="text-xs text-aura-accent font-medium hover:underline mt-2 flex items-center gap-1"
-                  >
-                    + Add Category
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
-              <AuraButton
-                variant="ghost"
-                onClick={() => setEditModalOpen(false)}
-                className="text-slate-300 hover:bg-slate-800 hover:text-white"
-              >
-                Cancel
-              </AuraButton>
-              <AuraButton variant="accent" onClick={handleEditSave}>
-                Save Changes
-              </AuraButton>
-            </div>
-          </div>
-        </div>
+      {editData && (
+        <EditPaystubModal
+          data={editData}
+          onChange={setEditData}
+          onSave={() => {
+            setPaycheckData((prev) =>
+              prev.map((p) =>
+                p.payPeriodStart === editData.payPeriodStart && p.payPeriodEnd === editData.payPeriodEnd
+                  ? editData
+                  : p,
+              ),
+            );
+            setEditData(null);
+          }}
+          onClose={() => setEditData(null)}
+        />
       )}
 
-      {/* Paystub History Gallery */}
-      <DesignGallery
+      {/* ── History gallery ─────────────────────────────────────────────── */}
+      <DesignGallery<PaycheckData & { id: string | number }>
         title="Paystub History"
         fetchEndpoint="/paychecks"
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
-        onLoad={(item: PaycheckData) => {
-          // Load the selected paystub into view
+        onLoad={(item) => {
           const exists = paycheckData.some(
-            (p) =>
-              p.payPeriodStart === item.payPeriodStart &&
-              p.payPeriodEnd === item.payPeriodEnd,
+            (p) => p.payPeriodStart === item.payPeriodStart && p.payPeriodEnd === item.payPeriodEnd,
           );
-          if (!exists) {
-            setPaycheckData((prev) => [item, ...prev]);
-          }
+          if (!exists) setPaycheckData((prev) => [item, ...prev]);
           setIsGalleryOpen(false);
         }}
         emptyMessage="No paystubs found. Upload a PDF to get started."
@@ -793,149 +523,72 @@ const PaystubAnalyzerPage: React.FC = () => {
             {
               label: "Newest First",
               value: "date-desc",
-              compareFn: (a: unknown, b: unknown) => {
-                const aDate = new Date(
-                  (a as PaycheckData).payPeriodStart || 0,
-                ).getTime();
-                const bDate = new Date(
-                  (b as PaycheckData).payPeriodStart || 0,
-                ).getTime();
-                return bDate - aDate;
-              },
+              compareFn: (a: unknown, b: unknown) =>
+                new Date((b as PaycheckData).payPeriodStart || 0).getTime() -
+                new Date((a as PaycheckData).payPeriodStart || 0).getTime(),
             },
             {
               label: "Oldest First",
               value: "date-asc",
-              compareFn: (a: unknown, b: unknown) => {
-                const aDate = new Date(
-                  (a as PaycheckData).payPeriodStart || 0,
-                ).getTime();
-                const bDate = new Date(
-                  (b as PaycheckData).payPeriodStart || 0,
-                ).getTime();
-                return aDate - bDate;
-              },
+              compareFn: (a: unknown, b: unknown) =>
+                new Date((a as PaycheckData).payPeriodStart || 0).getTime() -
+                new Date((b as PaycheckData).payPeriodStart || 0).getTime(),
             },
           ] as SortOption[]
         }
-        renderPreview={(item: PaycheckData) => (
-          <div className="flex flex-col gap-6 h-full">
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Pay Period
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
+        renderPreview={(item) => (
+          <div className="flex flex-col gap-4 h-full">
+            <div className="bg-slate-900 rounded-xl p-5 border border-slate-800">
+              <h3 className="text-base font-semibold text-white mb-3">Pay Period</h3>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="text-sm text-slate-400">Start</span>
-                  <p className="text-white font-medium">
+                  <span className="text-xs text-slate-400">Start</span>
+                  <p className="text-white font-medium text-sm">
                     {new Date(item.payPeriodStart).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
-                  <span className="text-sm text-slate-400">End</span>
-                  <p className="text-white font-medium">
+                  <span className="text-xs text-slate-400">End</span>
+                  <p className="text-white font-medium text-sm">
                     {new Date(item.payPeriodEnd).toLocaleDateString()}
                   </p>
                 </div>
               </div>
             </div>
-
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800 flex-1 overflow-y-auto">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Paid Hours
-              </h3>
-              <div className="space-y-2">
-                {item.paidHours.map((entry, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0"
-                  >
-                    <span className="text-slate-300">{entry.category}</span>
-                    <span className="text-white font-mono">
-                      {entry.hours.toFixed(2)} hrs
-                    </span>
+            <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 flex-1 overflow-y-auto">
+              <h3 className="text-base font-semibold text-white mb-3">Paid Hours</h3>
+              <div className="space-y-1.5">
+                {item.paidHours.map((e: HourEntry, i: number) => (
+                  <div key={i} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0">
+                    <span className="text-slate-300 text-sm">{e.category}</span>
+                    <span className="text-white font-mono text-sm">{e.hours.toFixed(2)} hrs</span>
                   </div>
                 ))}
-                {item.paidHours.length === 0 && (
-                  <p className="text-slate-500 text-sm">
-                    No paid hours recorded
-                  </p>
-                )}
               </div>
             </div>
-
-            {item.bankedHours && item.bankedHours.length > 0 && (
-              <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Banked Hours
-                </h3>
-                <div className="space-y-2">
-                  {item.bankedHours.map((entry, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0"
-                    >
-                      <span className="text-slate-300">{entry.category}</span>
-                      <span className="text-emerald-400 font-mono">
-                        {entry.hours.toFixed(2)} hrs
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
-        renderItem={(item: PaycheckData) => (
-          <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors cursor-pointer group">
-            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-slate-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Pay Period
-                </span>
-                <DocumentTextIcon className="w-4 h-4 text-blue-500" />
+        renderItem={(item) => (
+          <div className="flex flex-col h-full bg-white border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors cursor-pointer">
+            <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-slate-200">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pay Period</span>
+                <DocumentTextIcon className="w-3.5 h-3.5 text-blue-500" />
               </div>
-              <p className="text-sm font-semibold text-slate-900">
-                {new Date(item.payPeriodStart).toLocaleDateString()} -{" "}
-                {new Date(item.payPeriodEnd).toLocaleDateString()}
+              <p className="text-xs font-semibold text-slate-900">
+                {new Date(item.payPeriodStart).toLocaleDateString()} – {new Date(item.payPeriodEnd).toLocaleDateString()}
               </p>
             </div>
-            <div className="flex-1 p-4 bg-white">
-              <div className="space-y-3">
-                <div>
-                  <span className="text-xs text-slate-500 uppercase tracking-wide">
-                    Paid Hours
-                  </span>
-                  <div className="mt-1 space-y-1">
-                    {item.paidHours.slice(0, 3).map((entry, idx) => (
-                      <div key={idx} className="flex justify-between text-sm">
-                        <span className="text-slate-600 truncate">
-                          {entry.category}
-                        </span>
-                        <span className="text-slate-900 font-mono font-medium ml-2">
-                          {entry.hours.toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-                    {item.paidHours.length > 3 && (
-                      <p className="text-xs text-slate-400">
-                        +{item.paidHours.length - 3} more
-                      </p>
-                    )}
-                  </div>
+            <div className="flex-1 p-3 space-y-1">
+              {item.paidHours.slice(0, 3).map((e: HourEntry, i: number) => (
+                <div key={i} className="flex justify-between text-xs">
+                  <span className="text-slate-500 truncate">{e.category}</span>
+                  <span className="text-slate-800 font-mono font-semibold ml-1">{e.hours.toFixed(2)}</span>
                 </div>
-                {item.bankedHours && item.bankedHours.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100">
-                    <span className="text-xs text-emerald-600 uppercase tracking-wide font-medium">
-                      Banked:{" "}
-                      {item.bankedHours
-                        .reduce((sum, e) => sum + e.hours, 0)
-                        .toFixed(2)}{" "}
-                      hrs
-                    </span>
-                  </div>
-                )}
-              </div>
+              ))}
+              {item.paidHours.length > 3 && (
+                <p className="text-[10px] text-slate-400">+{item.paidHours.length - 3} more</p>
+              )}
             </div>
           </div>
         )}
