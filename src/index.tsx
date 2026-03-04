@@ -27,6 +27,7 @@ import ProfilePage from "@/pages/core/ProfilePage";
 import RegistrationPendingPage from "@/pages/core/RegistrationPendingPage";
 import AdminMailingListPage from "@/pages/core/AdminMailingListPage";
 import MissionControl from "@/pages/core/MissionControl";
+import OAuthCallbackPage from "@/pages/core/OAuthCallbackPage";
 
 // Pages - Portfolio
 import VideosPage from "@/pages/portfolio/VideosPage";
@@ -244,6 +245,10 @@ const router = createRouter([
       {
         path: "registration-pending",
         element: <RegistrationPendingPage />,
+      },
+      {
+        path: "auth/callback",
+        element: <OAuthCallbackPage />,
       },
       {
         path: "profile",

@@ -16,6 +16,9 @@ const crypto = require("crypto");
 
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const passport = require("passport");
+const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
+const session = require("express-session");
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -108,6 +111,20 @@ app.use("/api", limiter);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+// Session (used only for OAuth handshake state — app auth stays JWT-based)
+app.use(
+  session({
+    secret: process.env.JWT_SECRET || "dev-secret-key-change-in-prod",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 10 * 60 * 1000 }, // 10 min — just for OAuth redirect
+  }),
+);
+app.use(passport.initialize());
+app.use(passport.session());
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
+
 // Multer setup for in-memory file storage (for PDF processing)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -161,6 +178,130 @@ const requireAuth = (req, res, next) => {
     return res.status(401).json({ error: "Invalid token" });
   }
 };
+
+// --- Google OAuth ---
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      callbackURL:
+        process.env.OAUTH_CALLBACK_URL ||
+        "http://localhost:4000/api/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const googleId = profile.id;
+        const email =
+          profile.emails && profile.emails[0]
+            ? profile.emails[0].value
+            : null;
+        const displayName = profile.displayName || email || "Google User";
+        const photo =
+          profile.photos && profile.photos[0]
+            ? profile.photos[0].value
+            : null;
+
+        // 1. Check if this Google account is already linked
+        const oauthCheck = await db.query(
+          "SELECT user_id FROM oauth_accounts WHERE provider = 'google' AND provider_user_id = $1",
+          [googleId],
+        );
+
+        if (oauthCheck.rows.length > 0) {
+          const userId = oauthCheck.rows[0].user_id;
+          const userResult = await db.query(
+            "SELECT id, username, role, is_approved FROM users WHERE id = $1",
+            [userId],
+          );
+          return done(null, userResult.rows[0]);
+        }
+
+        // 2. Check if a user with matching email exists — auto-link
+        let userId;
+        if (email) {
+          const emailCheck = await db.query(
+            "SELECT id FROM users WHERE email = $1",
+            [email],
+          );
+          if (emailCheck.rows.length > 0) {
+            userId = emailCheck.rows[0].id;
+          }
+        }
+
+        // 3. No existing user — create one (pending approval)
+        if (!userId) {
+          // Generate unique username from display name
+          let baseUsername = displayName.replace(/\s+/g, "").toLowerCase();
+          let username = baseUsername;
+          let suffix = 1;
+          while (true) {
+            const taken = await db.query(
+              "SELECT id FROM users WHERE username = $1",
+              [username],
+            );
+            if (taken.rows.length === 0) break;
+            username = `${baseUsername}${suffix++}`;
+          }
+
+          const newUser = await db.query(
+            `INSERT INTO users (username, email, profile_picture, role, is_approved)
+             VALUES ($1, $2, $3, 'user', FALSE) RETURNING id`,
+            [username, email, photo],
+          );
+          userId = newUser.rows[0].id;
+
+          // Send admin notification for new OAuth registration
+          const { sendAdminNotification } = require("./utils/email");
+          sendAdminNotification({ id: userId, username }).catch((err) =>
+            console.error("OAuth email notification failed:", err),
+          );
+        }
+
+        // 4. Link this Google account to the user
+        await db.query(
+          `INSERT INTO oauth_accounts (user_id, provider, provider_user_id, provider_email)
+           VALUES ($1, 'google', $2, $3) ON CONFLICT (provider, provider_user_id) DO NOTHING`,
+          [userId, googleId, email],
+        );
+
+        const userResult = await db.query(
+          "SELECT id, username, role, is_approved FROM users WHERE id = $1",
+          [userId],
+        );
+        return done(null, userResult.rows[0]);
+      } catch (err) {
+        return done(err);
+      }
+    },
+  ),
+);
+
+app.get(
+  "/api/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] }),
+);
+
+app.get(
+  "/api/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: `${FRONTEND_URL}/login?error=oauth_failed`, session: false }),
+  (req, res) => {
+    const user = req.user;
+
+    if (!user.is_approved) {
+      return res.redirect(`${FRONTEND_URL}/registration-pending`);
+    }
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "24h" },
+    );
+    res.redirect(`${FRONTEND_URL}/auth/callback?token=${token}`);
+  },
+);
 
 // Rate limiter for file uploads to prevent DoS
 const uploadLimiter = rateLimit({

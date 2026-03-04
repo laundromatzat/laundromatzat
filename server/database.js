@@ -13,11 +13,22 @@ const initializeDatabase = async () => {
       CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           username TEXT UNIQUE NOT NULL,
-          password TEXT NOT NULL,
+          password TEXT,
+          email TEXT UNIQUE,
           profile_picture TEXT,
           role VARCHAR(50) DEFAULT 'user',
           is_approved BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS oauth_accounts (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          provider TEXT NOT NULL,
+          provider_user_id TEXT NOT NULL,
+          provider_email TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(provider, provider_user_id)
       );
 
       CREATE TABLE IF NOT EXISTS public_health_docs (
@@ -174,6 +185,31 @@ const initializeDatabase = async () => {
       BEGIN
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='is_approved') THEN
           ALTER TABLE users ADD COLUMN is_approved BOOLEAN DEFAULT FALSE;
+        END IF;
+      END
+      $$;
+    `);
+
+    // Add email column if missing (for OAuth users)
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='email') THEN
+          ALTER TABLE users ADD COLUMN email TEXT UNIQUE;
+        END IF;
+      END
+      $$;
+    `);
+
+    // Make password nullable (OAuth users have no password)
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='users' AND column_name='password' AND is_nullable='NO'
+        ) THEN
+          ALTER TABLE users ALTER COLUMN password DROP NOT NULL;
         END IF;
       END
       $$;
