@@ -385,8 +385,17 @@ app.post("/api/auth/login", async (req, res) => {
       JWT_SECRET,
       { expiresIn: "24h" },
     );
+
+    // Generate refresh token for token refresh flow
+    const refreshToken = jwt.sign(
+      { id: user.id, type: "refresh" },
+      JWT_SECRET,
+      { expiresIn: "7d" },
+    );
+
     res.json({
       token,
+      refreshToken,
       user: { id: user.id, username: user.username, role: user.role },
     });
   } catch (err) {
@@ -416,7 +425,67 @@ app.get("/api/auth/me", async (req, res) => {
 
     res.json({ user });
   } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token expired" });
+    }
     res.status(401).json({ error: "Invalid token" });
+  }
+});
+
+// Token Refresh endpoint - exchange refresh token for new access token
+app.post("/api/auth/refresh", async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ error: "Refresh token required" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_SECRET);
+
+    // Ensure this is actually a refresh token, not an access token
+    if (decoded.type !== "refresh") {
+      return res.status(401).json({ error: "Invalid refresh token" });
+    }
+
+    // Fetch user to ensure they still exist and are approved
+    const userQuery = await db.query(
+      "SELECT id, username, role, is_approved FROM users WHERE id = $1",
+      [decoded.id],
+    );
+    const user = userQuery.rows[0];
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    if (!user.is_approved) {
+      return res.status(403).json({ error: "Account no longer approved" });
+    }
+
+    // Generate new access token
+    const newToken = jwt.sign(
+      { id: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "24h" },
+    );
+
+    // Generate new refresh token (rotation for security)
+    const newRefreshToken = jwt.sign(
+      { id: user.id, type: "refresh" },
+      JWT_SECRET,
+      { expiresIn: "7d" },
+    );
+
+    res.json({
+      token: newToken,
+      refreshToken: newRefreshToken,
+    });
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Refresh token expired" });
+    }
+    res.status(401).json({ error: "Invalid refresh token" });
   }
 });
 
