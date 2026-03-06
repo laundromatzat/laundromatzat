@@ -13,29 +13,32 @@ export default function OAuthCallbackPage() {
     if (handled.current) return;
     handled.current = true;
 
-    const token = searchParams.get("token");
+    const code = searchParams.get("code");
     const error = searchParams.get("error");
 
-    if (error || !token) {
+    if (error || !code) {
       navigate("/login?error=oauth_failed", { replace: true });
       return;
     }
 
-    // Fetch the full user object from /api/auth/me using the new token
-    fetch(getApiUrl("/api/auth/me"), {
-      headers: { Authorization: `Bearer ${token}` },
+    // Exchange the authorization code for tokens (secure, single-use)
+    fetch(getApiUrl("/api/auth/exchange-code"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch user");
+        if (!res.ok) throw new Error("Failed to exchange code");
         return res.json();
       })
-      .then(({ user }) => {
+      .then(({ token, user }) => {
         login(token, user);
         navigate("/", { replace: true, state: { welcome: true } });
       })
       .catch(() => {
         navigate("/login?error=oauth_failed", { replace: true });
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

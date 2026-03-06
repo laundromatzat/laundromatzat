@@ -445,6 +445,157 @@ describe("Integration: Auth Endpoints against Real Server", () => {
     });
   });
 
+  describe("Authorization code exchange endpoint", () => {
+    // Store for auth codes (mimics server-side in-memory store)
+    const authCodeStore = new Map();
+    const crypto = require("crypto");
+
+    beforeAll(() => {
+      // Add exchange-code endpoint to test app
+      app.post("/api/auth/exchange-code", async (req, res) => {
+        const { code } = req.body;
+
+        if (!code) {
+          return res.status(400).json({ error: "Authorization code required" });
+        }
+
+        const codeData = authCodeStore.get(code);
+
+        if (!codeData) {
+          return res.status(401).json({ error: "Invalid or expired authorization code" });
+        }
+
+        // Delete immediately (single-use)
+        authCodeStore.delete(code);
+
+        // Check expiry
+        if (Date.now() > codeData.expiresAt) {
+          return res.status(401).json({ error: "Authorization code expired" });
+        }
+
+        // Fetch user data
+        const userQuery = await db.query(
+          "SELECT id, username, role, is_approved, profile_picture FROM users WHERE id = $1",
+          [codeData.userId]
+        );
+        const user = userQuery.rows[0];
+
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json({
+          token: codeData.token,
+          refreshToken: codeData.refreshToken,
+          user: {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            profile_picture: user.profile_picture,
+          },
+        });
+      });
+    });
+
+    // Helper to create a valid auth code
+    function createAuthCode(userId, token, refreshToken) {
+      const code = crypto.randomBytes(32).toString("hex");
+      authCodeStore.set(code, {
+        token,
+        refreshToken,
+        userId,
+        expiresAt: Date.now() + 60 * 1000, // 1 minute
+      });
+      return code;
+    }
+
+    it("should exchange valid code for tokens", async () => {
+      db.__seedUser({
+        username: "oauthuser",
+        password: "hashed",
+        role: "user",
+        is_approved: true,
+      });
+
+      const code = createAuthCode(1, "test-token", "test-refresh-token");
+
+      const res = await request(app)
+        .post("/api/auth/exchange-code")
+        .send({ code });
+
+      expect(res.status).toBe(200);
+      expect(res.body.token).toBe("test-token");
+      expect(res.body.refreshToken).toBe("test-refresh-token");
+      expect(res.body.user.username).toBe("oauthuser");
+    });
+
+    it("should reject missing code", async () => {
+      const res = await request(app)
+        .post("/api/auth/exchange-code")
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("Authorization code required");
+    });
+
+    it("should reject invalid code", async () => {
+      const res = await request(app)
+        .post("/api/auth/exchange-code")
+        .send({ code: "invalid-code" });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe("Invalid or expired authorization code");
+    });
+
+    it("should only allow code to be used once", async () => {
+      db.__seedUser({
+        username: "singleuseuser",
+        password: "hashed",
+        role: "user",
+        is_approved: true,
+      });
+
+      const code = createAuthCode(1, "single-use-token", "single-use-refresh");
+
+      // First request should succeed
+      const res1 = await request(app)
+        .post("/api/auth/exchange-code")
+        .send({ code });
+      expect(res1.status).toBe(200);
+
+      // Second request with same code should fail
+      const res2 = await request(app)
+        .post("/api/auth/exchange-code")
+        .send({ code });
+      expect(res2.status).toBe(401);
+    });
+
+    it("should reject expired code", async () => {
+      db.__seedUser({
+        username: "expireduser",
+        password: "hashed",
+        role: "user",
+        is_approved: true,
+      });
+
+      // Create an already-expired code
+      const code = crypto.randomBytes(32).toString("hex");
+      authCodeStore.set(code, {
+        token: "expired-token",
+        refreshToken: "expired-refresh",
+        userId: 1,
+        expiresAt: Date.now() - 1000, // Already expired
+      });
+
+      const res = await request(app)
+        .post("/api/auth/exchange-code")
+        .send({ code });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe("Authorization code expired");
+    });
+  });
+
   describe("Existing endpoints that should pass", () => {
     it("should register a new user", async () => {
       const res = await request(app).post("/api/auth/register").send({

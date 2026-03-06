@@ -42,23 +42,40 @@ if (!fs.existsSync(avatarsDir)) {
   console.log("Created avatars directory");
 }
 
+// --- Environment & Security Configuration ---
+const isProduction = process.env.NODE_ENV === "production";
+
+// Security: Require JWT_SECRET in production, allow dev fallback only in development
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && isProduction) {
+  console.error("FATAL: JWT_SECRET environment variable is required in production");
+  process.exit(1);
+}
+const effectiveJwtSecret = JWT_SECRET || "dev-secret-key-change-in-prod";
+
 // --- CORS Middleware (MUST be before Helmet) ---
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://laundromatzat.com",
-  "https://www.laundromatzat.com",
-];
+// Environment-based CORS: only allow localhost in development
+const allowedOrigins = isProduction
+  ? [
+      process.env.FRONTEND_URL,
+      "https://laundromatzat.com",
+      "https://www.laundromatzat.com",
+    ].filter(Boolean)
+  : [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost:4000",
+    ];
 
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      console.warn(`Untrusted Origin: ${origin}`);
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(null, true);
+    console.warn(`CORS blocked origin: ${origin}`);
+    return callback(new Error("Not allowed by CORS"), false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -114,10 +131,10 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Session (used only for OAuth handshake state — app auth stays JWT-based)
 app.use(
   session({
-    secret: process.env.JWT_SECRET || "dev-secret-key-change-in-prod",
+    secret: effectiveJwtSecret,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 10 * 60 * 1000 }, // 10 min — just for OAuth redirect
+    cookie: { secure: isProduction, maxAge: 10 * 60 * 1000 }, // 10 min — just for OAuth redirect
   }),
 );
 app.use(passport.initialize());
@@ -162,8 +179,6 @@ app.get("/", (req, res) => {
 });
 
 // --- Authentication ---
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-prod";
-
 // Auth middleware
 const requireAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -171,7 +186,7 @@ const requireAuth = (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, effectiveJwtSecret);
     req.user = decoded; // Now contains role
     next();
   } catch (err) {
@@ -181,6 +196,21 @@ const requireAuth = (req, res, next) => {
 
 // --- Google OAuth ---
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
+// Temporary store for OAuth authorization codes (single-use, short-lived)
+// In production, consider using Redis for distributed setups
+const authCodeStore = new Map();
+const AUTH_CODE_EXPIRY_MS = 60 * 1000; // 1 minute
+
+// Clean up expired codes periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [code, data] of authCodeStore.entries()) {
+    if (now > data.expiresAt) {
+      authCodeStore.delete(code);
+    }
+  }
+}, 60 * 1000); // Every minute
 
 passport.use(
   new GoogleStrategy(
@@ -294,14 +324,76 @@ app.get(
       return res.redirect(`${FRONTEND_URL}/registration-pending`);
     }
 
+    // Generate tokens
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
-      JWT_SECRET,
+      effectiveJwtSecret,
       { expiresIn: "24h" },
     );
-    res.redirect(`${FRONTEND_URL}/auth/callback?token=${token}`);
+    const refreshToken = jwt.sign(
+      { id: user.id, type: "refresh" },
+      effectiveJwtSecret,
+      { expiresIn: "7d" },
+    );
+
+    // Generate single-use authorization code (don't put tokens in URL)
+    const authCode = crypto.randomBytes(32).toString("hex");
+    authCodeStore.set(authCode, {
+      token,
+      refreshToken,
+      userId: user.id,
+      expiresAt: Date.now() + AUTH_CODE_EXPIRY_MS,
+    });
+
+    // Redirect with only the code (not the actual tokens)
+    res.redirect(`${FRONTEND_URL}/auth/callback?code=${authCode}`);
   },
 );
+
+// Exchange authorization code for tokens (secure, single-use)
+app.post("/api/auth/exchange-code", async (req, res) => {
+  const { code } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ error: "Authorization code required" });
+  }
+
+  const codeData = authCodeStore.get(code);
+
+  if (!codeData) {
+    return res.status(401).json({ error: "Invalid or expired authorization code" });
+  }
+
+  // Delete immediately (single-use)
+  authCodeStore.delete(code);
+
+  // Check expiry
+  if (Date.now() > codeData.expiresAt) {
+    return res.status(401).json({ error: "Authorization code expired" });
+  }
+
+  // Fetch user data
+  const userQuery = await db.query(
+    "SELECT id, username, role, is_approved, profile_picture FROM users WHERE id = $1",
+    [codeData.userId],
+  );
+  const user = userQuery.rows[0];
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  res.json({
+    token: codeData.token,
+    refreshToken: codeData.refreshToken,
+    user: {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      profile_picture: user.profile_picture,
+    },
+  });
+});
 
 // Rate limiter for file uploads to prevent DoS
 const uploadLimiter = rateLimit({
@@ -382,14 +474,14 @@ app.post("/api/auth/login", async (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
-      JWT_SECRET,
+      effectiveJwtSecret,
       { expiresIn: "24h" },
     );
 
     // Generate refresh token for token refresh flow
     const refreshToken = jwt.sign(
       { id: user.id, type: "refresh" },
-      JWT_SECRET,
+      effectiveJwtSecret,
       { expiresIn: "7d" },
     );
 
@@ -411,7 +503,7 @@ app.get("/api/auth/me", async (req, res) => {
 
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, effectiveJwtSecret);
     // Fetch latest user data from DB to get profile picture
     const userQuery = await db.query(
       "SELECT id, username, profile_picture, role, is_approved FROM users WHERE id = $1",
@@ -441,7 +533,7 @@ app.post("/api/auth/refresh", async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, JWT_SECRET);
+    const decoded = jwt.verify(refreshToken, effectiveJwtSecret);
 
     // Ensure this is actually a refresh token, not an access token
     if (decoded.type !== "refresh") {
@@ -466,14 +558,14 @@ app.post("/api/auth/refresh", async (req, res) => {
     // Generate new access token
     const newToken = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
-      JWT_SECRET,
+      effectiveJwtSecret,
       { expiresIn: "24h" },
     );
 
     // Generate new refresh token (rotation for security)
     const newRefreshToken = jwt.sign(
       { id: user.id, type: "refresh" },
-      JWT_SECRET,
+      effectiveJwtSecret,
       { expiresIn: "7d" },
     );
 
