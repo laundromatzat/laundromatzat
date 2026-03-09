@@ -212,11 +212,14 @@ setInterval(() => {
   }
 }, 60 * 1000); // Every minute
 
-passport.use(
+const googleOAuthEnabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+
+if (googleOAuthEnabled) {
+  passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
         process.env.OAUTH_CALLBACK_URL ||
         "http://localhost:4000/api/auth/google/callback",
@@ -308,47 +311,57 @@ passport.use(
     },
   ),
 );
+} // end if (googleOAuthEnabled)
 
-app.get(
-  "/api/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] }),
-);
+if (googleOAuthEnabled) {
+  app.get(
+    "/api/auth/google",
+    passport.authenticate("google", { scope: ["profile", "email"] }),
+  );
 
-app.get(
-  "/api/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: `${FRONTEND_URL}/login?error=oauth_failed`, session: false }),
-  (req, res) => {
-    const user = req.user;
+  app.get(
+    "/api/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: `${FRONTEND_URL}/login?error=oauth_failed`, session: false }),
+    (req, res) => {
+      const user = req.user;
 
-    if (!user.is_approved) {
-      return res.redirect(`${FRONTEND_URL}/registration-pending`);
-    }
+      if (!user.is_approved) {
+        return res.redirect(`${FRONTEND_URL}/registration-pending`);
+      }
 
-    // Generate tokens
-    const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
-      effectiveJwtSecret,
-      { expiresIn: "24h" },
-    );
-    const refreshToken = jwt.sign(
-      { id: user.id, type: "refresh" },
-      effectiveJwtSecret,
-      { expiresIn: "7d" },
-    );
+      // Generate tokens
+      const token = jwt.sign(
+        { id: user.id, username: user.username, role: user.role },
+        effectiveJwtSecret,
+        { expiresIn: "24h" },
+      );
+      const refreshToken = jwt.sign(
+        { id: user.id, type: "refresh" },
+        effectiveJwtSecret,
+        { expiresIn: "7d" },
+      );
 
-    // Generate single-use authorization code (don't put tokens in URL)
-    const authCode = crypto.randomBytes(32).toString("hex");
-    authCodeStore.set(authCode, {
-      token,
-      refreshToken,
-      userId: user.id,
-      expiresAt: Date.now() + AUTH_CODE_EXPIRY_MS,
-    });
+      // Generate single-use authorization code (don't put tokens in URL)
+      const authCode = crypto.randomBytes(32).toString("hex");
+      authCodeStore.set(authCode, {
+        token,
+        refreshToken,
+        userId: user.id,
+        expiresAt: Date.now() + AUTH_CODE_EXPIRY_MS,
+      });
 
-    // Redirect with only the code (not the actual tokens)
-    res.redirect(`${FRONTEND_URL}/auth/callback?code=${authCode}`);
-  },
-);
+      // Redirect with only the code (not the actual tokens)
+      res.redirect(`${FRONTEND_URL}/auth/callback?code=${authCode}`);
+    },
+  );
+} else {
+  app.get("/api/auth/google", (req, res) => {
+    res.status(503).json({ error: "Google OAuth is not configured on this server" });
+  });
+  app.get("/api/auth/google/callback", (req, res) => {
+    res.status(503).json({ error: "Google OAuth is not configured on this server" });
+  });
+}
 
 // Exchange authorization code for tokens (secure, single-use)
 app.post("/api/auth/exchange-code", async (req, res) => {

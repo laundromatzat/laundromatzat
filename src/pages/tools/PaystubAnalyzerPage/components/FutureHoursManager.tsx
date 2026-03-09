@@ -394,10 +394,11 @@ export const FutureHoursManager: React.FC<FutureHoursManagerProps> = ({
           <aside className="w-full lg:w-52 shrink-0 border-r border-slate-800 flex flex-col bg-slate-900/40">
             {/* Add week control */}
             <div className="p-3 border-b border-slate-800 space-y-2">
-              <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              <label htmlFor="add-week-date" className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                 Add a Week
               </label>
               <input
+                id="add-week-date"
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
@@ -574,7 +575,7 @@ export const FutureHoursManager: React.FC<FutureHoursManagerProps> = ({
                 <div className="text-center">
                   <p className="text-base font-semibold text-slate-400">No week selected</p>
                   <p className="text-sm mt-1 text-slate-600">
-                    Pick a date and click "Add / Open Week" to get started.
+                    Pick a date and click &quot;Add / Open Week&quot; to get started.
                   </p>
                 </div>
               </div>
@@ -632,7 +633,7 @@ export const FutureHoursManager: React.FC<FutureHoursManagerProps> = ({
                       {otSummary.hasOT && (
                         <p className="text-[10px] text-amber-400 font-medium flex items-center gap-1.5">
                           <span>⚡</span>
-                          "OT Form attached." added — download the form below.
+                          &quot;OT Form attached.&quot; added — download the form below.
                         </p>
                       )}
                       <button
