@@ -20,10 +20,13 @@ export const EditPaystubModal: React.FC<EditPaystubModalProps> = ({
 }) => (
   <div
     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+    role="presentation"
     onClick={onClose}
+    onKeyDown={(e) => e.key === "Escape" && onClose()}
   >
     <div
       className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[88vh] border border-slate-200"
+      role="presentation"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header */}
@@ -47,20 +50,22 @@ export const EditPaystubModal: React.FC<EditPaystubModalProps> = ({
         {/* Dates */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
+            <label htmlFor="edit-pay-period-start" className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
               Pay Period Start
             </label>
             <AuraInput
+              id="edit-pay-period-start"
               type="date"
               value={data.payPeriodStart}
               onChange={(e) => onChange({ ...data, payPeriodStart: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
+            <label htmlFor="edit-pay-period-end" className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
               Pay Period End
             </label>
             <AuraInput
+              id="edit-pay-period-end"
               type="date"
               value={data.payPeriodEnd}
               onChange={(e) => onChange({ ...data, payPeriodEnd: e.target.value })}
@@ -70,9 +75,9 @@ export const EditPaystubModal: React.FC<EditPaystubModalProps> = ({
 
         {/* Paid hours */}
         <div>
-          <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+          <p className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
             Extracted Paid Hours
-          </label>
+          </p>
           <div className="space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
             {data.paidHours.map((entry: HourEntry, idx: number) => (
               <div key={idx} className="flex items-center gap-2">

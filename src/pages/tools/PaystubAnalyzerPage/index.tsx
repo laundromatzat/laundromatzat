@@ -100,11 +100,11 @@ const PaystubAnalyzerPage: React.FC = () => {
 
   // Persist unmatched hours
   useEffect(() => {
-    try { localStorage.setItem(UNMATCHED_HOURS_KEY, JSON.stringify(unmatchedReportedHours)); } catch {}
+    try { localStorage.setItem(UNMATCHED_HOURS_KEY, JSON.stringify(unmatchedReportedHours)); } catch { /* ignore storage errors */ }
   }, [unmatchedReportedHours]);
 
   useEffect(() => {
-    try { localStorage.setItem(UNMATCHED_DAILY_KEY, JSON.stringify(unmatchedDailyDetails)); } catch {}
+    try { localStorage.setItem(UNMATCHED_DAILY_KEY, JSON.stringify(unmatchedDailyDetails)); } catch { /* ignore storage errors */ }
   }, [unmatchedDailyDetails]);
 
   // Load from server
