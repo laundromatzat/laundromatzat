@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-
-// Use the locally bundled worker to avoid CDN CORS issues
-pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+// Use new URL + import.meta.url so Vite emits an absolute URL at build time,
+// which works correctly regardless of the page's route depth (base: "./").
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url,
+).toString();
 
 interface PDFViewerProps {
   pdfUrl?: string;
