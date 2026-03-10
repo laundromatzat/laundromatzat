@@ -1,0 +1,73 @@
+/*
+ * File: src/styles/components/_mission-control.scss
+ * Description: Styles for the mission control area, including the submit button.
+ *
+ * This file is chosen as a likely candidate based on the analysis for component/feature-specific styling.
+ * If your project uses a different file structure (e.g., global button styles, a dedicated button component CSS module),
+ * you should apply these changes to the most relevant stylesheet for the submit button in mission control.
+ *
+ * The original problematic styling for .mission-control-submit-button is assumed to have low contrast,
+ * for example, 'background-color: #e9ecef; color: #adb5bd;' (light gray on slightly darker light gray).
+ */
+
+.mission-control-container {
+  padding: 20px;
+  background-color: #f8f9fa;
+
+  h1 {
+    color: #343a40;
+  }
+}
+
+.mission-control-submit-button {
+  display: inline-block;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600; /* Added for better readability and emphasis */
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none; /* Ensure no underline if it's an <a> tag styled as a button */
+  white-space: nowrap; /* Prevent text wrapping */
+  user-select: none; /* Prevent text selection */
+
+  /* --- START FIX FOR CONTRAST (WCAG 2.1 AA compliant) --- */
+  background-color: #007bff; /* Primary blue for good visibility */
+  color: #ffffff;            /* White text for high contrast */
+
+  /* Smooth transitions for user interaction */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, outline 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  &:focus {
+    background-color: #0056b3; /* Darker blue on focus */
+    color: #ffffff;
+    outline: 2px solid #007bff; /* Accessible focus indicator */
+    outline-offset: 2px; /* Add space between element and outline */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5); /* Optional: Bootstrap-like focus glow */
+  }
+
+  &:active {
+    background-color: #004085; /* Even darker blue on active state */
+    color: #ffffff;
+    outline: none; /* Active state typically doesn't need an outline */
+    box-shadow: none;
+  }
+
+  &:disabled {
+    background-color: #cccccc; /* Lighter gray for disabled */
+    color: #666666;             /* Darker gray text for disabled contrast (WCAG AA compliant: 4.58:1) */
+    cursor: not-allowed;
+    opacity: 0.7; /* Visually indicate disabled state */
+    pointer-events: none; /* Prevent click events */
+    box-shadow: none;
+    outline: none;
+  }
+  /* --- END FIX FOR CONTRAST --- */
+}
