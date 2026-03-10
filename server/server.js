@@ -22,6 +22,10 @@ const session = require("express-session");
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+// Trust Render's proxy (and any single-hop reverse proxy) so that
+// express-rate-limit can read X-Forwarded-For correctly.
+app.set("trust proxy", 1);
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
 const fs = require("fs");
 

@@ -209,13 +209,21 @@ class GitHubService {
     }
 
     const latestRun = runs[0];
-    return {
-      status:
-        latestRun.status === "completed"
-          ? latestRun.conclusion
-          : latestRun.status,
-      url: latestRun.html_url,
-    };
+
+    // Map GitHub's raw statuses to the values allowed by the DB constraint:
+    // valid_github_status: pending | running | success | failure
+    let status;
+    if (latestRun.status === "completed") {
+      // conclusion: success, failure, cancelled, skipped, timed_out, etc.
+      status = latestRun.conclusion === "success" ? "success" : "failure";
+    } else if (latestRun.status === "in_progress") {
+      status = "running";
+    } else {
+      // queued, waiting, requested, etc.
+      status = "pending";
+    }
+
+    return { status, url: latestRun.html_url };
   }
 
   /**
