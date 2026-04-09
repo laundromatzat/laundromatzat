@@ -1,5 +1,31 @@
 [
   {
+    "id": 35,
+    "type": "video",
+    "title": "Do You Hear the People Sing?",
+    "description": "Vancouver 2026.",
+    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fdo-you-hear-the-people-sing.webp?alt=media&token=6c5b7f8b-de2f-44fb-80c3-68d06a300f45",
+    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fdo-you-hear-the-people-sing.m4v?alt=media&token=d45959aa-ca25-4af3-bea3-8f1acc165d86",
+    "date": "03/2026",
+    "location": "Vancouver",
+    "gpsCoords": "49.280416, -123.11272",
+    "tags": [
+      "Michael",
+      "Emily",
+      "Randi",
+      "Irene",
+      "Vancouver",
+      "Canada",
+      "musical",
+      "Les Mis",
+      "Les Miserables",
+      "video"
+    ],
+    "categories": [
+      "film"
+    ]
+  },
+  {
     "id": 34,
     "type": "video",
     "title": "Sea of Love",
