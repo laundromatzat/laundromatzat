@@ -1,38 +1,29 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## Unreleased — Simplified to a music video repository
 
-## [Unreleased]
+The site was reduced to a single purpose: browsing the music video library.
 
 ### Added
-
-- **Mission Control**: A comprehensive Admin Dashboard for monitoring server health, managing user approvals, and tracking AI usage.
-  - User Management: Approve, delete, and view user roles.
-  - Server Stats: Real-time monitoring of active users, memory usage, and uptime.
-  - AI Usage Tracking: Detailed breakdown of token usage and costs by user, tool, and model.
-  - Dev Task Manager: Integrated task management for development workflows.
-- **MediaInsight Pro**: Significant interactions and UI improvements for the Electron-based media analysis tool.
-  - New "Glassmorphism" design system.
-  - Enhanced file system explorer and analysis display.
-  - Persistence for user settings and analysis history.
-- **New Creative Tools**:
-  - **Intelligent Ideas Board**: A canvas for brainstorming with AI assistance.
-  - **Wood Carving Visualizer**: Tool for visualizing wood carving projects.
-  - **Pin Pals**: A Pinterest-style collaborative board.
-- **Shimmer Loading States**: Standardized loading animations across the application (ProjectGrid, ToolsSection, etc.) for a smoother user experience.
-- **Electron Development Scripts**: Added `npm run electron:dev:all` to run the full stack (Frontend, Backend, Electron) concurrently.
+- `docs/CONNECTIONS.md` documenting the one remaining external connection, the
+  build variable, and the credentials that should now be revoked.
+- Redirects from the previous `/vids`, `/videos`, and `/videos/:slug` paths.
 
 ### Changed
+- The video library is now the home page (`/`). Deep links stay at `/vids/:slug`.
+- `src/data/projects.json` holds videos only (26 entries; 9 photo and
+  cinemagraph entries removed).
+- The header is a title bar; the multi-section nav, login, and profile menu are gone.
+- CSP in `index.html` narrowed to the media host and Google Fonts.
+- CI now runs lint, typecheck, tests, and build, and injects no API keys.
+- Dependencies cut from 33 runtime packages to 5.
 
-- **Paystub Analyzer**: Migrated to use **Aura** design system components for a cohesive look and feel.
-- **LLM Strategy**: Optimized toolchain to primarily use **Google Gemini API** for cost-efficiency and performance, while keeping local LLMs (LM Studio) for specialized privacy-focused tasks (MediaInsight).
-- **ComfyUI Integration**:
-  - Upgraded ComfyUI Manager.
-  - Consolidated ComfyUI models and workflows to external storage.
-  - Improved startup scripts for reliable connection.
-
-### Fixed
-
-- **Backend Persistence**: Resolved issues with profile pictures and session data not persisting correctly in production environments.
-- **Security Vulnerabilities**: Patched dependencies and fixed code-level vulnerabilities (XSS, path traversal) identified by security scans.
-- **Linting**: Cleared extensive linting errors across the codebase to ensure clean CI/CD pipelines.
+### Removed
+- The Express/PostgreSQL backend (`server/`) and all API routes.
+- Accounts, Google OAuth, JWT sessions, admin dashboard, and mailing list.
+- All AI tooling and the Gemini integration.
+- Every tool page (paystub analyzer, mediscribe, neuroaesthetic, public health,
+  pin pals, background removal, color palette, nylon fabric designer, wood
+  carving visualizer, ideas board, media insight, automation recommender).
+- The Images and Cinemagraphs portfolio sections.
+- The Electron desktop app.

@@ -20,9 +20,6 @@
       "Les Mis",
       "Les Miserables",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -39,9 +36,6 @@
       "Michael",
       "Glacier National Park",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -62,9 +56,6 @@
       "Randi",
       "Glacier Bay National Park and Preserve",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -81,9 +72,6 @@
       "Michael",
       "Oregon Coast Range",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -101,9 +89,6 @@
       "Ayush",
       "Puerto Vallarta",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -122,9 +107,6 @@
       "Tom",
       "Big Island",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -141,9 +123,6 @@
       "Michael",
       "Madrid",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -162,139 +141,6 @@
       "Michael",
       "Bear Valley",
       "video"
-    ],
-    "categories": [
-      "film"
-    ]
-  },
-  {
-    "id": 7,
-    "type": "cinemagraph",
-    "title": "Bernal Hill Sunset",
-    "description": "Sun setting from Bernal Hill in the fall",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fbernal-hill-sunset-cinemagraph.webp?alt=media&token=e0751aeb-6a81-4f14-afaa-4abb54d1fdc2",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fbernal-hill-sunset-cinemagraph.m4v?alt=media&token=e3d47bce-80aa-4b5b-b3e2-209c5cc2122b",
-    "date": "10/2023",
-    "location": "Bernal Heights Park",
-    "gpsCoords": "37.743287, -122.414800",
-    "tags": [
-      "Bernal Heights Park",
-      "cinemagraph"
-    ],
-    "categories": [
-      "motion"
-    ]
-  },
-  {
-    "id": 2,
-    "type": "photo",
-    "title": "Bernal Hill Afternoon",
-    "description": "View westward from the eastern side of Bernal Hill",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fbernal-hill-afternoon.webp?alt=media&token=99d81982-8f02-4e00-8cc0-f0494b1caf30",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/images%2Fbernal-hill-afternoon.png?alt=media&token=fb94a173-9056-4e9e-bedd-529530b95a3d",
-    "date": "07/2023",
-    "location": "Bernal Heights Park",
-    "gpsCoords": "37.743061, -122.411891",
-    "tags": [
-      "Bernal Heights Park",
-      "image"
-    ],
-    "categories": [
-      "photography"
-    ]
-  },
-  {
-    "id": 1,
-    "type": "photo",
-    "title": "Alaska Mini Island",
-    "description": "Coastal Alaskan island seen from a boat out of Seward, AK.",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Falaska-mini-island.webp?alt=media&token=895e2a40-b4e4-4b08-b631-0f89319edfe8",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/images%2Falaska-mini-island.png?alt=media&token=1339e348-864b-4a03-9e07-4a3f23f48b0f",
-    "date": "06/2023",
-    "location": "Seward",
-    "gpsCoords": "59.980833, -149.409628",
-    "tags": [
-      "Seward",
-      "image"
-    ],
-    "categories": [
-      "photography"
-    ]
-  },
-  {
-    "id": 3,
-    "type": "cinemagraph",
-    "title": "Fireside Meditation",
-    "description": "#goals to meditate for this long a duration; my back already hurts",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Ffireside-meditation-cinemagraph.webp?alt=media&token=2f21e360-1697-4e1b-be66-55e3ad0e6e99",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ffireside-meditation-cinemagraph.mp4?alt=media&token=cb88ee30-c924-40a6-bc50-3703377abc29",
-    "date": "06/2023",
-    "location": "The Sea Ranch",
-    "gpsCoords": "38.707951, -123.431574",
-    "tags": [
-      "Stephen",
-      "The Sea Ranch",
-      "cinemagraph"
-    ],
-    "categories": [
-      "motion"
-    ]
-  },
-  {
-    "id": 4,
-    "type": "cinemagraph",
-    "title": "The Lost Coast 01",
-    "description": "Two hikers trekking southbound along TLC",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Ftlc01-cinemagraph.webp?alt=media&token=6287bd4a-6b9e-4d89-bc4b-6359d571ec12",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftlc01-cinemagraph.mp4?alt=media&token=7b11684e-d143-449a-b3dd-f96861fb61c2",
-    "date": "06/2023",
-    "location": "Lost Coast Trail",
-    "gpsCoords": "40.121131, -124.155867",
-    "tags": [
-      "Michael",
-      "Lost Coast Trail",
-      "cinemagraph"
-    ],
-    "categories": [
-      "motion"
-    ]
-  },
-  {
-    "id": 5,
-    "type": "cinemagraph",
-    "title": "The Lost Coast 02",
-    "description": "Two hikers trekking southbound along TLC",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Ftlc02-cinemagraph.webp?alt=media&token=d21dbdc6-5068-47f2-b82a-232382cf460e",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftlc02_cinemagraph.mp4?alt=media&token=e55de0bd-a08e-4f40-adff-dbd5a0c6ac1d",
-    "date": "06/2023",
-    "location": "Lost Coast Trail",
-    "gpsCoords": "40.121131, -124.155867",
-    "tags": [
-      "Michael",
-      "Lost Coast Trail",
-      "cinemagraph"
-    ],
-    "categories": [
-      "motion"
-    ]
-  },
-  {
-    "id": 6,
-    "type": "cinemagraph",
-    "title": "The Sea Ranch",
-    "description": "Doesn't get much better than a sunset at TSR",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Ftsr-sunet-cinemagraph.webp?alt=media&token=e9df3041-85ef-4a42-a366-c51ccdd8db37",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Ftsr-sunet-cinemagraph.m4v?alt=media&token=6a01df65-976e-4641-b0f9-f89ddce24274",
-    "date": "06/2023",
-    "location": "The Sea Ranch",
-    "gpsCoords": "38.691668, -123.436504",
-    "tags": [
-      "Michael",
-      "The Sea Ranch",
-      "cinemagraph"
-    ],
-    "categories": [
-      "motion"
     ]
   },
   {
@@ -311,45 +157,6 @@
       "Eli",
       "Denali National Park and Preserve",
       "video"
-    ],
-    "categories": [
-      "film"
-    ]
-  },
-  {
-    "id": 8,
-    "type": "cinemagraph",
-    "title": "Pacifica Coast",
-    "description": "Sun sets behind the best GOBM in the world",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fpacifica-coast-cinemagraph.webp?alt=media&token=6cb3b77e-0ffa-4747-970c-29aca4e7b932",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fpacifica-coast-cinemagraph.mp4?alt=media&token=33ab8ba9-1309-4ec5-a60a-0ca9fcaa29b9",
-    "date": "04/2023",
-    "location": "San Pedro Beach",
-    "gpsCoords": "37.596198, -122.505898",
-    "tags": [
-      "San Pedro Beach",
-      "cinemagraph"
-    ],
-    "categories": [
-      "motion"
-    ]
-  },
-  {
-    "id": 9,
-    "type": "cinemagraph",
-    "title": "Bernal Hill Sunrise",
-    "description": "Sun rises over E bay as viewed from Bernal Hils",
-    "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fbernal-hill-sunrise-cinemagraph.webp?alt=media&token=3f8e827f-a53d-4f2a-a195-8e2c77c8747a",
-    "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/cinemagraphs%2Fbernal-hill-sunrise-cinemagraph.mp4?alt=media&token=f98815bd-4c17-4ef3-9455-7b84cec0ef51",
-    "date": "04/2023",
-    "location": "Bernal Heights Park",
-    "gpsCoords": "37.743287, -122.414800",
-    "tags": [
-      "Bernal Heights Park",
-      "cinemagraph"
-    ],
-    "categories": [
-      "motion"
     ]
   },
   {
@@ -366,9 +173,6 @@
       "Michael",
       "Big Island",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -387,9 +191,6 @@
       "Michael",
       "Maui",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -406,9 +207,6 @@
       "Michael",
       "Channel Islands",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -425,9 +223,6 @@
       "Michael",
       "Seattle and Vancouver",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -444,9 +239,6 @@
       "Michael",
       "New Mexico",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -463,9 +255,6 @@
       "Michael",
       "Grand Teton National Park and Yellowstone National Park",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -482,9 +271,6 @@
       "Michael",
       "Grand Canyon National Park and Sedona",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -501,9 +287,6 @@
       "Janita",
       "Maui",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -521,9 +304,6 @@
       "Michael",
       "Maui",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -540,9 +320,6 @@
       "Stephen",
       "Manhattan",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -561,9 +338,6 @@
       "Michael",
       "Catskill Mountains",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -580,9 +354,6 @@
       "Michael",
       "Banff National Park",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -599,9 +370,6 @@
       "Michael",
       "Iceland",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -618,9 +386,6 @@
       "Stephen",
       "Austria",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -637,9 +402,6 @@
       "Michael",
       "Crater Lake National Park",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -656,9 +418,6 @@
       "Michael",
       "Humboldt Redwoods State Park",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   },
   {
@@ -675,9 +434,6 @@
       "Michael",
       "Oak Creek Apartments | Stanford",
       "video"
-    ],
-    "categories": [
-      "film"
     ]
   }
 ]

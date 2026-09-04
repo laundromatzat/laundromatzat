@@ -3,20 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#F5F2EB" />
-    <!-- Google Fonts: Distinctive typography following Claude cookbook guidelines -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Source+Sans+3:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap"
       rel="stylesheet"
     />
+    <!--
+      Content Security Policy.
+      Thumbnails and video files are served from Firebase Storage, so both
+      img-src and media-src must allow that host. There is no backend and no
+      third-party API, so connect-src only needs 'self'.
+    -->
     <meta
-      content="default-src 'self'; img-src 'self' data: blob: https:; media-src * blob: data:; connect-src 'self' http://localhost:* https://generativelanguage.googleapis.com; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data: blob: https://firebasestorage.googleapis.com; media-src 'self' blob: https://firebasestorage.googleapis.com; connect-src 'self' https://firebasestorage.googleapis.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self';"
     />
     <link rel="icon" type="image/png" href="/laundromatzat-icon.png" />
-    <title>laundromatzat</title>
+    <title>laundromatzat · music videos</title>
   </head>
   <body>
     <div id="root"></div>

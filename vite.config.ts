@@ -4,17 +4,17 @@ import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 export default defineConfig({
-  base: "./",
+  base: "/",
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
       manifest: {
-        name: "Laundromatzat - Digital Atelier",
+        name: "Laundromatzat - Music Videos",
         short_name: "Laundromatzat",
         description:
-          "A collection of digital artifacts, creative tools, and visual experiments.",
+          "A repository of music videos.",
         theme_color: "#F5F2EB",
         background_color: "#F5F2EB",
         display: "standalone",
@@ -38,21 +38,14 @@ export default defineConfig({
         ],
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 30 * 1024 * 1024, // 30MB to accommodate large WASM files
+        // Videos stream from remote storage; never try to precache them.
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
       },
     }),
   ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-    },
-  },
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:4000",
-        changeOrigin: true,
-      },
     },
   },
 });

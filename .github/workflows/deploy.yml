@@ -27,15 +27,17 @@ jobs:
           node-version: "20"
           cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Lint
         run: npm run lint
+      - name: Test
+        run: npm test
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          # The only build-time variable this site uses. It is a public URL,
+          # not a secret, and is only used to build canonical/OG link tags.
           VITE_SITE_URL: https://laundromatzat.com
-          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

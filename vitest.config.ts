@@ -13,7 +13,6 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
     exclude: [...configDefaults.exclude, "tests/e2e/**"],
-    environmentMatchGlobs: [["tests/server/**/*.test.ts", "node"]],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "json"],
