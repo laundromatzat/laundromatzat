@@ -31,4 +31,21 @@ describe("ProjectCard", () => {
 
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
+
+  it("falls back to a placeholder when the video has no thumbnail", () => {
+    renderWithProviders(
+      <ProjectCard project={makeVideo({ imageUrl: undefined })} />,
+    );
+
+    expect(screen.getByTestId("thumbnail-placeholder")).toBeInTheDocument();
+    expect(screen.queryByAltText("Test Video")).not.toBeInTheDocument();
+  });
+
+  it("falls back to a placeholder when the thumbnail fails to load", () => {
+    renderWithProviders(<ProjectCard project={makeVideo()} />);
+
+    fireEvent.error(screen.getByAltText("Test Video"));
+
+    expect(screen.getByTestId("thumbnail-placeholder")).toBeInTheDocument();
+  });
 });

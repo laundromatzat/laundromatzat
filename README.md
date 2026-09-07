@@ -24,11 +24,41 @@ npm run dev      # http://localhost:5173
 | `npm run lint` | ESLint, zero warnings allowed |
 | `npm test` | Vitest unit tests |
 | `npm run test:e2e` | Playwright end-to-end tests |
+| `npm run add-video` | Append a video to `projects.json` from its Firebase download URL |
+| `npm run check-media` | Verify every thumbnail and video still loads |
 
-## Adding or editing a video
+## Adding a video
 
 Everything the site renders comes from **`src/data/projects.json`**. Adding a
-video needs no code change — append an object to that array:
+video needs no code change.
+
+### The easy way
+
+1. Upload the video to `videos/` in Firebase Storage (and, ideally, a matching
+   poster image to `thumbnails/`).
+2. In the Firebase console, click each file and copy its **Download URL** — the
+   long one ending in `?alt=media&token=...`. The token is what lets the site
+   play the file, so the plain object path will not work.
+3. Run:
+
+```bash
+npm run add-video -- \
+  --video "https://firebasestorage.googleapis.com/v0/b/.../o/videos%2Fmy-video.m4v?alt=media&token=..." \
+  --thumb "https://firebasestorage.googleapis.com/v0/b/.../o/thumbnails%2Fmy-video.webp?alt=media&token=..." \
+  --title "My Video" \
+  --date 05/2026 \
+  --description "One line." \
+  --location "Vancouver" \
+  --tags "Michael,Canada"
+```
+
+Only `--video`, `--title`, and `--date` are required. The script checks the URLs
+actually serve bytes before writing, so a revoked token or a disabled billing
+account fails immediately rather than silently shipping a broken tile.
+
+Commit the change and open a PR — the site redeploys on merge to `main`.
+
+### Or edit the JSON directly
 
 ```jsonc
 {
@@ -36,7 +66,7 @@ video needs no code change — append an object to that array:
   "type": "video",                // must be "video"
   "title": "My Video",            // also generates the URL slug: /vids/my-video
   "description": "One line.",
-  "imageUrl": "https://.../thumb.webp",  // poster/thumbnail
+  "imageUrl": "https://.../thumb.webp",  // optional poster; omit for a placeholder tile
   "projectUrl": "https://.../video.m4v", // the video file itself
   "date": "03/2026",              // MM/YYYY — drives sort order (newest first)
   "location": "Vancouver",        // optional
@@ -47,6 +77,17 @@ video needs no code change — append an object to that array:
 
 The list is sorted by `date` descending at render time, so ordering in the file
 does not matter.
+
+### Checking the media still works
+
+```bash
+npm run check-media
+```
+
+Fetches every thumbnail and video and reports anything that no longer serves
+bytes — a revoked token, a deleted object, or a disabled Firebase billing
+account (HTTP 402). These all leave the build passing while the site shows
+nothing, so this is worth running after any Firebase change.
 
 ## Architecture
 
