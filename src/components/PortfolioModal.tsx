@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Project, ProjectType } from "@/types";
+import { Project } from "@/types";
 import { AuraButton } from "./aura";
 import { CloseIcon } from "./icons/CloseIcon";
 import { CopyIcon } from "./icons/CopyIcon";
@@ -21,17 +21,10 @@ function PortfolioModal({
   onNext,
 }: PortfolioModalProps): React.ReactNode {
   const project = projects[currentIndex];
-  const mediaContainerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  const mediaSrc = useMemo(
-    () => project?.projectUrl || project?.imageUrl,
-    [project]
-  );
-  const isVideo =
-    project?.type === ProjectType.Video ||
-    project?.type === ProjectType.Cinemagraph;
+  const videoSrc = useMemo(() => project?.projectUrl, [project]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -68,31 +61,6 @@ function PortfolioModal({
     return null;
   }
 
-  const handleFullscreen = () => {
-    const container = mediaContainerRef.current as
-      | (HTMLDivElement & {
-          webkitRequestFullscreen?: () => Promise<void>;
-          mozRequestFullScreen?: () => Promise<void>;
-          msRequestFullscreen?: () => Promise<void>;
-        })
-      | null;
-
-    const requestFullscreen =
-      container?.requestFullscreen ||
-      container?.webkitRequestFullscreen ||
-      container?.mozRequestFullScreen ||
-      container?.msRequestFullscreen;
-
-    if (requestFullscreen) {
-      requestFullscreen.call(container);
-      return;
-    }
-
-    if (mediaSrc) {
-      window.open(mediaSrc, "_blank", "noopener,noreferrer");
-    }
-  };
-
   const handleCopyUrl = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -127,7 +95,7 @@ function PortfolioModal({
                 size="sm"
                 onClick={handleCopyUrl}
                 className={isCopied ? "text-aura-success" : ""}
-                aria-label="Copy link to project"
+                aria-label="Copy link to this video"
                 icon={
                   isCopied ? (
                     <CheckIcon className="h-5 w-5" />
@@ -146,33 +114,26 @@ function PortfolioModal({
             </div>
           </div>
 
-          <div ref={mediaContainerRef} className="relative bg-black group">
-            {isVideo ? (
-              <video
-                key={project.id}
-                ref={videoRef}
-                className="w-full max-h-[70vh] object-contain bg-black"
-                controls
-                autoPlay
-                poster={project.imageUrl}
-              >
-                {mediaSrc && <source src={mediaSrc} />}
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <img
-                key={project.id}
-                src={mediaSrc}
-                alt={project.title}
-                className="w-full max-h-[70vh] object-contain bg-black"
-              />
-            )}
+          <div className="relative bg-black group">
+            <video
+              key={project.id}
+              ref={videoRef}
+              className="w-full max-h-[70vh] object-contain bg-black"
+              controls
+              autoPlay
+              playsInline
+              preload="metadata"
+              poster={project.imageUrl}
+            >
+              {videoSrc && <source src={videoSrc} />}
+              Your browser does not support the video tag.
+            </video>
 
             <AuraButton
               variant="ghost"
               onClick={onPrev}
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100"
-              aria-label="Previous project"
+              aria-label="Previous video"
             >
               <span className="text-2xl leading-none">&#8249;</span>
             </AuraButton>
@@ -180,20 +141,11 @@ function PortfolioModal({
               variant="ghost"
               onClick={onNext}
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100"
-              aria-label="Next project"
+              aria-label="Next video"
             >
               <span className="text-2xl leading-none">&#8250;</span>
             </AuraButton>
 
-            {!isVideo && (
-              <AuraButton
-                variant="ghost"
-                onClick={handleFullscreen}
-                className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white shadow-lg border border-white/20 hover:bg-black/80 opacity-0 group-hover:opacity-100"
-              >
-                view fullscreen
-              </AuraButton>
-            )}
           </div>
 
           <div className="px-6 py-4 text-aura-text-secondary text-sm sm:text-base">

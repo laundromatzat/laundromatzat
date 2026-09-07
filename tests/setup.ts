@@ -7,16 +7,6 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock environment variables
-vi.mock("import.meta", () => ({
-  env: {
-    VITE_GEMINI_API_KEY: "test-api-key",
-    VITE_AI_PROVIDER: "gemini",
-    VITE_API_URL: "http://localhost:4000/api",
-    VITE_SITE_URL: "http://localhost:5173",
-  },
-}));
-
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {
   writable: true,
@@ -41,7 +31,7 @@ global.IntersectionObserver = class IntersectionObserver {
     return [];
   }
   unobserve() {}
-} as unknown as IntersectionObserver;
+} as unknown as typeof IntersectionObserver;
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -49,7 +39,7 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
   observe() {}
   unobserve() {}
-} as unknown as ResizeObserver;
+} as unknown as typeof ResizeObserver;
 
 // Mock localStorage
 const localStorageMock = (() => {

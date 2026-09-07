@@ -1,28 +1,6 @@
 {
   "name": "Laundromatzat",
-  "description": "An AI-enhanced portfolio site to showcase your personal projects — including images, videos, cinemagraphs, and interactive tools.",
+  "description": "A repository of music videos.",
   "requestFramePermissions": [],
-  "routingRules": [
-    {
-      "path": "/admin/mailing-list",
-      "headers": {
-        "X-Robots-Tag": "noindex, nofollow"
-      },
-      "requireHeaders": [
-        {
-          "name": "x-api-key",
-          "value": ".+"
-        }
-      ]
-    },
-    {
-      "path": "/api/(subscribers|updates)(.*)",
-      "requireHeaders": [
-        {
-          "name": "x-api-key",
-          "value": ".+"
-        }
-      ]
-    }
-  ]
+  "routingRules": []
 }

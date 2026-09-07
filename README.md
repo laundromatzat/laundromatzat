@@ -1,228 +1,68 @@
-# Laundromatzat Digital Atelier (Monorepo)
+# laundromatzat.com — Music Videos
 
-Welcome to the **Laundromatzat** monorepo. This repository houses the main creative portfolio and a suite of specialized tools.
+A static, single-purpose website: a repository of music videos. No backend, no
+database, no accounts, no third-party APIs.
 
-## 🛠️ Quick Start
+Visitors land on a grid of every video, click one to open it in a player, and
+can page through the library with the arrow keys. Each video has a shareable
+permalink at `/vids/<slug>`.
 
-This project is configured as a single workspace with shared dependencies where possible.
-
-### Prerequisites
-
-- Node.js 18+
-- Google Gemini API Key (for Portfolio AI tools).
-- LM Studio (optional, for Paystub Analyzer local LLM).
-
-### Setup
-
-1.  **Install dependencies**
-
-    ```bash
-    npm install
-    ```
-
-    > **Note**: This project installs git hooks via Husky. `lint-staged` will automatically lint your code before every commit.
-
-2.  **Configure Environment**
-    Create `.env.local`:
-
-    ```env
-    VITE_GEMINI_API_KEY=your_key
-    DATABASE_URL=postgresql://localhost/laundromatzat_dev
-    ```
-
-3.  **Set Up Local Database (Development)**
-
-    ```bash
-    # Install PostgreSQL (macOS)
-    brew install postgresql@14
-    brew services start postgresql@14
-
-    # Create development database
-    createdb laundromatzat_dev
-    ```
-
-    > **Note**: The backend will automatically create all required tables on first run.
-
-4.  **Run Development Server**
-
-    ```bash
-    npm run dev
-    ```
-
-    - Portfolio: `http://localhost:5173`
-    - Fabric Designer: `http://localhost:5173/fabric-designer`
-    - Paystub Analyzer: `http://localhost:5173/paystub-analyzer`
-    - Mission Control: `http://localhost:5173/admin` (Admin Dashboard)
-
-### Running the Paystub Backend
-
-To use the Paystub Analyzer, you must also start the local backend:
+## Quick start
 
 ```bash
-cd server
-npm start
+npm install
+npm run dev      # http://localhost:5173
 ```
 
-### 🖥️ Full Desktop Development
+## Scripts
 
-To run the complete suite including the Electron app (MediaInsight Pro):
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server |
+| `npm run build` | Production build to `dist/` (plus a `404.html` copy for SPA routing on GitHub Pages) |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | ESLint, zero warnings allowed |
+| `npm test` | Vitest unit tests |
+| `npm run test:e2e` | Playwright end-to-end tests |
 
-```bash
-npm run electron:dev:all
+## Adding or editing a video
+
+Everything the site renders comes from **`src/data/projects.json`**. Adding a
+video needs no code change — append an object to that array:
+
+```jsonc
+{
+  "id": 36,                       // unique
+  "type": "video",                // must be "video"
+  "title": "My Video",            // also generates the URL slug: /vids/my-video
+  "description": "One line.",
+  "imageUrl": "https://.../thumb.webp",  // poster/thumbnail
+  "projectUrl": "https://.../video.m4v", // the video file itself
+  "date": "03/2026",              // MM/YYYY — drives sort order (newest first)
+  "location": "Vancouver",        // optional
+  "gpsCoords": "49.28, -123.11",  // optional
+  "tags": ["optional", "labels"]
+}
 ```
 
-## 🤖 AI Architecture
+The list is sorted by `date` descending at render time, so ordering in the file
+does not matter.
 
-This project uses a **"Grounding-to-Visuals"** pattern to ensure AI accuracy.
+## Architecture
 
-- **Research Phase**: Complex requests (like Fabric Design) first go through a research step to gather technical facts.
-- **Generation Phase**: The synthesized facts are used as context for the final creative generation.
-- **AI Agents**: The project now integrates autonomous agents capable of performing dev tasks, managed via **Mission Control**.
-
-## 🛠️ Specialized Tools
-
-### 1. Mission Control 🚀
-
-The central hub for administration and monitoring.
-
-- **User Management**: Approve and manage user access.
-- **Server Health**: Monitor uptime, memory, and active connections.
-- **AI Usage**: Track token consumption and costs across all tools.
-- **Dev Task Manager**: Integrated agentic workflow for development tasks.
-
-### 2. MediaInsight Pro 🎬
-
-A powerful Electron-based desktop application for media analysis.
-
-- **Local AI**: Uses local LLMs (via LM Studio) for privacy-preserving analysis.
-- **FileSystem**: Integrated explorer for managing media assets.
-- **Persistence**: Remembers your settings and analysis history.
-
-### 3. Paystub Analyzer 💰
-
-Now rebuilt with the **Aura** design system.
-
-- Analyzes PDF paystubs to extract and visualize financial data.
-- Securely processes data using local backend services.
-
-### 4. Creative Suite 🎨
-
-- **Nylon Fabric Designer**: AI-assisted textile pattern generation.
-- **Wood Carving Visualizer**: Visualize 3D carving projects.
-- **Intelligent Ideas Board**: Infinite canvas for brainstorming.
-- **Pin Pals**: Collaborative mood boards.
-
-### 5. Visual Design Gallery 🖼️
-
-A unified history management system integrated into key creative tools.
-
-- **Unified Interface**: consistent gallery experience across Neuroaesthetic, Pin Pals, Mediscribe, and Public Health.
-- **Search & Filter**: Find specific designs using keywords, categories, dates, or tags.
-- **Time Travel**: Instantly reload any previous workspace state (images, settings, analysis) to iterate on past ideas.
-- **Management**: Sort, organize, and delete history items to maintain a curated collection.
-
-## 🚀 Deployment & Security
-
-To deploy this application to production (e.g., laundromatzat.com), follow these critical steps to ensure security and functionality.
-
-### 1. Environment Variables
-
-You must configure the following environment variables in your production environment (e.g., Render, HerokuConfig, or `.env` file on your server).
-
-| Variable | Description | Security Note |
-|Base URL| `http://localhost:5173` | Set to your production URL (e.g., `https://laundromatzat.com`) |
-| `NODE_ENV` | Set to `production` | Enables optimization and strict security checks. |
-| `PORT` | Listening port (default: 4000) | Set by your hosting provider usually. |
-| `JWT_SECRET` | Secret key for signing session tokens. | **CRITICAL**: Generate a long, random string (e.g., `openssl rand -base64 32`). Do NOT use the default. |
-| `VITE_GEMINI_API_KEY` | Google Gemini API Key. | **RESTRICT THIS KEY**: In Google Cloud Console, restrict this key to `https://laundromatzat.com` (HTTP Referrer restriction). |
-| `LM_STUDIO_API_URL` | URL for local/hosted LLM. | Ensure this is accessible from the backend server if used. |
-
-### 2. Database & Storage Strategy
-
-The application uses **PostgreSQL** (managed database) and persistent file storage (`server/uploads/`).
-
-#### **Development Environment**
-
-- **Database**: Set `DATABASE_URL` in `.env.local` to point to a **separate development database**
-  - **Recommended**: Local PostgreSQL instance (`postgresql://localhost/laundromatzat_dev`)
-  - **Alternative**: Render dev database (separate from production)
-  - **⚠️ Never use production `DATABASE_URL` in development** to avoid data corruption
-- **Storage**: Local filesystem (`server/uploads/`) - data persists on your machine
-
-#### **Production Environment (Render)**
-
-- **Database**: Render-managed PostgreSQL (set via `DATABASE_URL` environment variable)
-- **Storage**: Render persistent disk mounted to `server/uploads/`
-- **Backups**: Use `npm run backup` to create JSON dumps (see Admin Features section)
-
-### 3. Build & Run
-
-For a single-server deployment (serving both Frontend and Backend):
-
-1.  **Build Frontend**:
-
-    ```bash
-    npm run build
-    ```
-
-    This creates the optimized static files in `dist/`.
-
-2.  **Start Backend**:
-
-    ```bash
-    cd server
-    npm install
-    # Ensure dependencies like helmet and rate-limit are installed
-    npm install helmet express-rate-limit
-
-    # Start the server (Process Manager recommended, e.g., PM2)
-    npm start
-    ```
-
-    _Note: The server is configured to serve the `dist/` frontend files automatically when `NODE_ENV=production`._
-
-### 4. Security Checklist
-
-- [ ] **HTTPS**: Ensure your domain has an SSL certificate (e.g., via Let's Encrypt or your PaaS provider).
-- [ ] **API Restrictions**: checking your Google Cloud Console to ensure `VITE_GEMINI_API_KEY` can only be called from `https://laundromatzat.com`.
-- [ ] **CORS**: The backend is configured to allow `https://laundromatzat.com`. If you change your domain, update `allowedOrigins` in `server/server.js`.
-- [ ] **Secrets**: Never commit `.env` files to GitHub. They are ignored by default, but double-check.
-
-### 5. Troubleshooting
-
-- **PDF Processing**: If `pdfjs-dist` errors occur in production, ensure the host environment supports the necessary Node.js bindings or libraries.
-- **Blank Screen**: Check browser console. If API calls fail (401/403), check CORS settings and `JWT_SECRET` consistency.
-
-### 6. Admin Features & Maintenance
-
-#### 🛑 User Approval Workflow
-
-New users cannot log in immediately.
-
-1. User registers -> Sees "Pending Approval" message.
-2. Admin logs in -> Dashboard -> Clicks "Approve".
-3. User can now log in.
-
-#### 📧 Email Notifications
-
-Admin receives an email when a new user registers.
-**Requirement:** Set these env vars on Render:
-
-- `SMTP_HOST` (e.g., smtp.gmail.com)
-- `SMTP_PORT` (e.g., 587)
-- `SMTP_USER` (Your email)
-- `SMTP_PASS` (App Password)
-- `ADMIN_EMAIL` (Where to send notifications)
-
-#### 🛡️ Database Backup
-
-To create a JSON dump of all critical tables:
-
-```bash
-npm run backup
-# Output: server/backups/backup-{timestamp}.json
+```
+src/
+  data/projects.json     the entire content of the site
+  pages/VideosPage.tsx   the grid + player route
+  components/            Header, ProjectGrid, ProjectCard, PortfolioModal, ...
+  utils/                 slug, date, and JSON parsing helpers
 ```
 
-#### 🚨 Emergency Shortcuts (Disabled)
+Stack: React 19, React Router 7, TypeScript, TailwindCSS, Vite. Deployment is
+GitHub Pages via `.github/workflows/deploy.yml`.
 
-The endpoints `hard-reset-users` and `reset-password-emergency` are **commented out** in `server.js` for security. Uncomment them only if you lose Admin access again.
+## External connections
+
+The site itself needs **no API keys**. The one external dependency is the media
+host. See [`docs/CONNECTIONS.md`](docs/CONNECTIONS.md) for the full rundown,
+including the credentials that are no longer needed and should be revoked.

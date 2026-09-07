@@ -11,12 +11,3 @@ export type { AuraButtonProps } from "./AuraButton";
 
 export { AuraCard } from "./AuraCard";
 export type { AuraCardProps } from "./AuraCard";
-
-export { AuraModal } from "./AuraModal";
-export type { AuraModalProps } from "./AuraModal";
-
-export { AuraInput } from "./AuraInput";
-export type { AuraInputProps } from "./AuraInput";
-
-export { AuraBadge } from "./AuraBadge";
-export type { AuraBadgeProps } from "./AuraBadge";
