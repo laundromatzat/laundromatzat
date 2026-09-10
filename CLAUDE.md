@@ -21,6 +21,9 @@ npm run lint         # ESLint, zero warnings allowed
 npx tsc --noEmit     # typecheck
 npm test             # Vitest
 npm run test:e2e     # Playwright
+
+npm run add-video    # append a video from its Firebase download URL
+npm run check-media  # verify every thumbnail/video still serves bytes
 ```
 
 Pre-commit hooks (Husky + lint-staged) lint changed files.
@@ -53,7 +56,10 @@ Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
 ## Conventions
 
 - **Content changes go in `src/data/projects.json`, not in code.** Adding a video
-  requires no code change. Field reference is in `README.md`.
+  requires no code change — prefer `npm run add-video`, which validates the URL
+  and checks it actually loads. Field reference is in `README.md`.
+- `imageUrl` is optional. A video without a thumbnail (or whose thumbnail token
+  is revoked) renders a placeholder tile rather than a broken image.
 - **Types-first**: `src/types.ts` defines `Project`; extend it there.
 - **Tailwind inline**, using the Aura palette in `tailwind.config.ts`. No
   per-component CSS files.
@@ -68,5 +74,9 @@ The site needs no API keys. Its one dependency is the Firebase Storage bucket
 hosting the media, referenced by absolute URL from `projects.json`. If you
 change media hosts you must also widen the CSP in `index.html`.
 
-See `docs/CONNECTIONS.md` — it also records that the media bucket's billing
-account is currently closed, which makes all media 402 until resolved.
+The bucket is not publicly listable and objects are readable only via their
+per-object download token, so new videos cannot be discovered automatically —
+they are added by hand (see `README.md`). `npm run check-media` verifies the
+existing ones still load.
+
+See `docs/CONNECTIONS.md` for the full rundown.

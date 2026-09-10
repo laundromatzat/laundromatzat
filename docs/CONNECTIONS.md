@@ -17,27 +17,15 @@ bucket: laundromat-zat.firebasestorage.app
 form:   https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<path>?alt=media&token=<uuid>
 ```
 
-### ⚠️ This is currently broken — action required
+### Status: resolved (was broken)
 
-Every media URL in the repository returns **HTTP 402**:
+Every media URL once returned **HTTP 402** (`The billing account for the owning
+project is disabled in state closed`). Billing has since been re-enabled and the
+media serves normally again.
 
-```json
-{ "error": { "code": 402,
-  "message": "The billing account for the owning project is disabled in state closed" } }
-```
-
-This is a billing state on the Google Cloud / Firebase project that owns the
-bucket — it is not caused by any code change. **Until billing is re-enabled on
-that project, the grid will render thumbnails as broken images and no video will
-play.** This is the single most important item to fix.
-
-To resolve, pick one:
-
-- **Re-enable billing** on the owning Firebase/GCP project (Firebase console →
-  ⚙️ Project settings → Usage and billing), or
-- **Move the media elsewhere** (Cloudflare R2, Backblaze B2, S3+CloudFront,
-  YouTube/Vimeo embeds, or `public/` in this repo if the files are small
-  enough for Git). Then update the two steps in §1.2 and §2.
+Because a billing lapse or a revoked token leaves the build passing while the
+site shows nothing, run `npm run check-media` after any Firebase change — it
+fetches every thumbnail and video and fails loudly on 402/403/404.
 
 ### 1.1 About the `token=` values
 
@@ -157,7 +145,7 @@ the videos live.
 
 ## Quick checklist
 
-- [ ] **Re-enable billing on the Firebase project that owns `laundromat-zat`** (or migrate the media). Nothing plays until this is done.
+- [x] **Re-enable billing on the Firebase project that owns `laundromat-zat`.** Done — verified serving.
 - [ ] Delete and revoke `VITE_GEMINI_API_KEY` / `GEMINI_API_KEY`.
 - [ ] Delete the `VITE_API_URL` secret.
 - [ ] Decommission the old backend; rotate `JWT_SECRET`, SMTP, and OAuth credentials; back up then drop the database.
