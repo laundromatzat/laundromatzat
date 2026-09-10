@@ -21,6 +21,8 @@ const DATA =
   process.env.PROJECTS_FILE ??
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src/data/projects.json");
 const CONCURRENCY = 6;
+/** The origin a real visitor's browser sends, for the CORS check below. */
+const SITE_ORIGIN = process.env.VITE_SITE_URL ?? "https://laundromatzat.com";
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes)) return "unknown size";
@@ -40,6 +42,34 @@ function explain(status) {
   if (status === 403) return "not uploaded, or token wrong/revoked";
   if (status === 404) return "object not found";
   return "unexpected status";
+}
+
+/**
+ * Checks that a URL is readable by a browser fetch, not just by curl.
+ *
+ * hls.js pulls playlists and segments over XHR, so the browser enforces CORS
+ * on them -- unlike a plain <video src>, which the media pipeline fetches
+ * without needing any Access-Control header. A stream that misses them still
+ * works in Safari (native HLS, no XHR) and fails everywhere else, falling back
+ * to the full-size file. That is invisible from the outside: playback still
+ * works, just with none of the benefit.
+ */
+async function checkCors(url, origin) {
+  try {
+    const res = await fetch(url, { headers: { Origin: origin } });
+    const allowed = res.headers.get("access-control-allow-origin");
+    if (allowed === "*" || allowed === origin) {
+      return { ok: true };
+    }
+    return {
+      ok: false,
+      detail: allowed
+        ? `Access-Control-Allow-Origin is "${allowed}", not "${origin}" or "*"`
+        : "no Access-Control-Allow-Origin on the response",
+    };
+  } catch (error) {
+    return { ok: false, detail: error.message };
+  }
 }
 
 /**
@@ -178,6 +208,21 @@ async function main() {
       `\nVideo payloads: ${formatBytes(totalBytes)} across ${videos.length} files, ` +
         `largest ${largest.map((v) => `${v.title} (${formatBytes(v.bytes)})`).join(", ")}.`,
     );
+  }
+
+  // One CORS probe per stream is enough: every object in a ladder sits in the
+  // same bucket behind the same frontend.
+  const streams = results.filter((r) => r.ok && r.kind === "hls");
+  for (const stream of streams) {
+    const cors = await checkCors(stream.url, SITE_ORIGIN);
+    if (!cors.ok) {
+      console.error(
+        `FAIL  cors   ${stream.title} — ${cors.detail}.\n` +
+          `      hls.js fetches over XHR, so this stream will be blocked in every browser\n` +
+          `      except Safari and fall back to the full-size file. See docs/VIDEO-DELIVERY.md.`,
+      );
+      failures.push({ ...stream, ok: false, kind: "cors", detail: cors.detail });
+    }
   }
 
   const uncacheable = results.filter((r) => r.ok && isUncacheable(r.cacheControl));

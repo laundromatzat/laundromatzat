@@ -133,6 +133,60 @@ playlists and the media they reference, so a half-finished upload — master
 loads, renditions do not — shows up as a failure rather than as a video that
 quietly falls back to the full-size file.
 
+### CORS: the thing that makes a stream silently pointless
+
+A progressive `<video src>` needs no CORS — the browser's media pipeline
+fetches it directly. **hls.js does not have that luxury**: it pulls the
+playlists and segments over XHR, so the browser enforces CORS on every one of
+them. A stream whose responses carry no `Access-Control-Allow-Origin` still
+plays in Safari and on iOS, which use native HLS and never touch XHR, and
+fails in every other browser — where the player falls back to the full-size
+file. Playback keeps working, so the failure is invisible unless you look for
+it. `npm run check-media` looks for it.
+
+Firebase's download endpoint answers the *preflight* with
+`Access-Control-Allow-Origin: *` but, as shipped, sends no such header on the
+actual GET, which is the one the browser checks. Set a CORS policy on the
+bucket:
+
+```bash
+cat > /tmp/cors.json <<'JSON'
+[
+  {
+    "origin": ["https://laundromatzat.com"],
+    "method": ["GET", "HEAD"],
+    "responseHeader": [
+      "Content-Type", "Content-Length", "Content-Range", "Accept-Ranges", "Range"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]
+JSON
+
+gcloud storage buckets update gs://laundromat-zat.firebasestorage.app \
+  --cors-file=/tmp/cors.json
+```
+
+Then confirm, rather than assuming — a bucket CORS policy is documented for
+the `storage.googleapis.com` APIs, and whether it reaches the
+`firebasestorage.googleapis.com` download frontend is worth proving on your
+own bucket:
+
+```bash
+curl -sS -o /dev/null -D - -H "Origin: https://laundromatzat.com" \
+  "<the streamUrl>" | grep -i access-control-allow-origin
+```
+
+A line back means it works. Nothing back means the policy does not reach that
+frontend, and the stream has to be served from `storage.googleapis.com`
+instead — which needs the `streams/` objects made publicly readable (they are
+already public in effect, via their tokens) and that host added to both
+`connect-src` and `media-src` in the CSP in `index.html`.
+
+Do not add a `streamUrl` to `projects.json` until this passes. Until it does,
+adding one makes things slightly worse everywhere but Safari: hls.js is
+downloaded, fails, and the full-size file is fetched anyway.
+
 ### When a stream URL returns 403
 
 Firebase answers `403 Permission denied` both for an object that does not
