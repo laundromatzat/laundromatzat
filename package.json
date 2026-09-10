@@ -6,7 +6,7 @@
   "description": "A static repository of music videos.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp dist/index.html dist/404.html",
+    "build": "vite build && node scripts/prerender.mjs && cp dist/index.html dist/404.html",
     "preview": "vite preview",
     "add-video": "node scripts/add-video.mjs",
     "check-media": "node scripts/check-media.mjs",
@@ -16,7 +16,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prerender": "node scripts/prerender.mjs",
+    "transcode-hls": "node scripts/transcode-hls.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -26,6 +28,7 @@
   "dependencies": {
     "@dr.pogodin/react-helmet": "^3.0.4",
     "clsx": "^2.1.1",
+    "hls.js": "^1.7.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.12.0"

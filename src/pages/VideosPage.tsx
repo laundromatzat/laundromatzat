@@ -4,6 +4,8 @@ import { VIDEOS } from "@/constants";
 import ProjectGrid from "@/components/ProjectGrid";
 import PageMetadata from "@/components/PageMetadata";
 import { compareProjectsByDateDesc } from "@/utils/projectDates";
+import { findProjectBySlug } from "@/utils/slugs";
+import { buildSocialMetadata } from "@/utils/socialMetadata";
 import Container from "@/components/Container";
 
 function VideosPage(): React.ReactNode {
@@ -13,6 +15,16 @@ function VideosPage(): React.ReactNode {
   const videos = useMemo(
     () => [...VIDEOS].sort(compareProjectsByDateDesc),
     [],
+  );
+
+  const activeProject = useMemo(
+    () => findProjectBySlug(videos, slug),
+    [videos, slug],
+  );
+
+  const metadata = useMemo(
+    () => buildSocialMetadata(videos, activeProject),
+    [videos, activeProject],
   );
 
   const handleSlugChange = useCallback(
@@ -25,10 +37,13 @@ function VideosPage(): React.ReactNode {
   return (
     <Container className="space-y-space-5 pt-8 pb-24">
       <PageMetadata
-        title="Music Videos"
-        description="Road films, holiday epics, and family travelogues spanning two decades."
-        path="/"
-        type="website"
+        title={metadata.title}
+        description={metadata.description}
+        path={metadata.path}
+        type={metadata.type}
+        image={metadata.image}
+        imageAlt={metadata.imageAlt}
+        videoUrl={metadata.videoUrl}
       />
 
       <ProjectGrid

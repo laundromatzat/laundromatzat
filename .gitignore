@@ -58,3 +58,6 @@ release/
 coverage/
 .nyc_output/
 playwright-report/
+
+# Local HLS renditions from npm run transcode-hls
+hls-out/

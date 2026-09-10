@@ -12,8 +12,16 @@ export interface Project {
    * Optional: a video added without one falls back to a placeholder tile.
    */
   imageUrl?: string;
-  /** Direct URL to the video file. */
+  /** Direct URL to the progressive video file. Always the fallback source. */
   projectUrl?: string;
+  /**
+   * Optional HLS playlist (.m3u8) for adaptive-bitrate playback.
+   *
+   * When present the player prefers it, so a phone on a slow connection gets a
+   * low rendition instead of stalling on the full-size file, and falls back to
+   * `projectUrl` if HLS cannot play. See docs/VIDEO-DELIVERY.md.
+   */
+  streamUrl?: string;
   tags?: string[];
   date: string;
   year: number;
