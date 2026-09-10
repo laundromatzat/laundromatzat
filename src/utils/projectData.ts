@@ -8,6 +8,7 @@ type JsonProject = {
   description: string;
   imageUrl: string;
   projectUrl?: string;
+  streamUrl?: string;
   tags?: string[];
   date: string;
   year?: number;
@@ -54,6 +55,7 @@ function createProject(base: JsonProject): Project {
     description: base.description,
     imageUrl: base.imageUrl,
     projectUrl: base.projectUrl,
+    streamUrl: base.streamUrl,
     tags: parseTags(base.tags),
     date: base.date,
     year: ensureYear(base.date, base.year),

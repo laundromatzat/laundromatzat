@@ -40,6 +40,12 @@ export default defineConfig({
       workbox: {
         // Videos stream from remote storage; never try to precache them.
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
+        globIgnores: [
+          // hls.js is loaded on demand, and only for videos that have an HLS
+          // rendition. Precaching it would put ~118 kB gzipped on every first
+          // visit for a library most visitors never trigger.
+          "**/hls.light-*.js",
+        ],
       },
     }),
   ],

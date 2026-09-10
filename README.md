@@ -19,13 +19,14 @@ npm run dev      # http://localhost:5173
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Vite dev server |
-| `npm run build` | Production build to `dist/` (plus a `404.html` copy for SPA routing on GitHub Pages) |
+| `npm run build` | Production build to `dist/` (prerenders per-video link previews, plus a `404.html` copy for SPA routing on GitHub Pages) |
 | `npm run preview` | Serve the production build locally |
 | `npm run lint` | ESLint, zero warnings allowed |
 | `npm test` | Vitest unit tests |
 | `npm run test:e2e` | Playwright end-to-end tests |
 | `npm run add-video` | Append a video to `projects.json` from its Firebase download URL |
-| `npm run check-media` | Verify every thumbnail and video still loads |
+| `npm run check-media` | Verify every thumbnail and video still loads, and report how they are delivered |
+| `npm run transcode-hls` | Encode one video into an adaptive-bitrate HLS ladder ([docs](docs/VIDEO-DELIVERY.md)) |
 
 ## Adding a video
 
@@ -68,6 +69,7 @@ Commit the change and open a PR — the site redeploys on merge to `main`.
   "description": "One line.",
   "imageUrl": "https://.../thumb.webp",  // optional poster; omit for a placeholder tile
   "projectUrl": "https://.../video.m4v", // the video file itself
+  "streamUrl": "https://.../master.m3u8", // optional HLS ladder; see docs/VIDEO-DELIVERY.md
   "date": "03/2026",              // MM/YYYY — drives sort order (newest first)
   "location": "Vancouver",        // optional
   "gpsCoords": "49.28, -123.11",  // optional
@@ -88,6 +90,21 @@ Fetches every thumbnail and video and reports anything that no longer serves
 bytes — a revoked token, a deleted object, or a disabled Firebase billing
 account (HTTP 402). These all leave the build passing while the site shows
 nothing, so this is worth running after any Firebase change.
+
+It also reports total payload and flags objects served with a `Cache-Control`
+that defeats caching, which is Firebase Storage's default. See
+[docs/VIDEO-DELIVERY.md](docs/VIDEO-DELIVERY.md) for the one-command fix and
+for how to move a video to adaptive-bitrate playback.
+
+## Sharing a video
+
+`npm run build` writes a static HTML page for every video under `dist/vids/`,
+carrying that video's own title, description and thumbnail as Open Graph tags.
+Link unfurlers do not run JavaScript, so without this a shared `/vids/<slug>`
+link would preview as a blank card. The build also emits `sitemap.xml`.
+
+If you add or rename a video, the previews regenerate on the next deploy — no
+manual step.
 
 ## Architecture
 

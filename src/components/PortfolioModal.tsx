@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Project } from "@/types";
+import { useAdaptiveVideoSource } from "@/hooks/useAdaptiveVideoSource";
 import { AuraButton } from "./aura";
 import { CloseIcon } from "./icons/CloseIcon";
 import { CopyIcon } from "./icons/CopyIcon";
@@ -21,10 +22,19 @@ function PortfolioModal({
   onNext,
 }: PortfolioModalProps): React.ReactNode {
   const project = projects[currentIndex];
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  // A callback ref, not useRef: the hook has to re-run when the element is
+  // swapped out, and `key={project.id}` swaps it on every paging step.
+  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  const videoSrc = useMemo(() => project?.projectUrl, [project]);
+  const attachVideo = useCallback((element: HTMLVideoElement | null) => {
+    setVideoElement(element);
+  }, []);
+
+  useAdaptiveVideoSource(videoElement, {
+    streamUrl: project?.streamUrl,
+    fileUrl: project?.projectUrl,
+  });
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -53,7 +63,6 @@ function PortfolioModal({
   }, [onClose, onPrev, onNext]);
 
   useEffect(() => {
-    videoRef.current?.load();
     setIsCopied(false);
   }, [project]);
 
@@ -117,7 +126,7 @@ function PortfolioModal({
           <div className="relative bg-black group">
             <video
               key={project.id}
-              ref={videoRef}
+              ref={attachVideo}
               className="w-full max-h-[70vh] object-contain bg-black"
               controls
               autoPlay
@@ -125,7 +134,6 @@ function PortfolioModal({
               preload="metadata"
               poster={project.imageUrl}
             >
-              {videoSrc && <source src={videoSrc} />}
               Your browser does not support the video tag.
             </video>
 

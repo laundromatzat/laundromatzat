@@ -6,6 +6,10 @@
  * token, a deleted object, or a disabled Firebase billing account (HTTP 402),
  * any of which leave the site building fine but showing nothing.
  *
+ * It also reports how the objects are being delivered -- size and Cache-Control
+ * -- because those are the two things that decide whether the site feels fast
+ * and what the bucket costs to serve. See docs/VIDEO-DELIVERY.md.
+ *
  *   npm run check-media
  */
 import { readFile } from "node:fs/promises";
@@ -18,6 +22,17 @@ const DATA =
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src/data/projects.json");
 const CONCURRENCY = 6;
 
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes)) return "unknown size";
+  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+  return `${Math.round(bytes / 1024 ** 2)} MB`;
+}
+
+/** Firebase Storage defaults to "private, max-age=0", which defeats every cache. */
+function isUncacheable(cacheControl) {
+  return /no-store|no-cache|private|max-age=0/i.test(cacheControl);
+}
+
 function explain(status) {
   if (status === 402) return "Firebase billing account disabled";
   if (status === 403) return "token wrong or revoked";
@@ -29,7 +44,16 @@ async function check(target) {
   try {
     const res = await fetch(target.url, { headers: { Range: "bytes=0-0" } });
     if (res.status === 200 || res.status === 206) {
-      return { ...target, ok: true, type: res.headers.get("content-type") ?? "" };
+      // Content-Range on a ranged request reports the full object size.
+      const range = res.headers.get("content-range") ?? "";
+      const total = Number(range.split("/")[1]);
+      return {
+        ...target,
+        ok: true,
+        type: res.headers.get("content-type") ?? "",
+        bytes: Number.isFinite(total) ? total : null,
+        cacheControl: res.headers.get("cache-control") ?? "",
+      };
     }
     return { ...target, ok: false, detail: `HTTP ${res.status} (${explain(res.status)})` };
   } catch (error) {
@@ -71,6 +95,26 @@ async function main() {
 
   for (const failure of failures) {
     console.error(`FAIL  ${failure.kind.padEnd(5)}  ${failure.title} — ${failure.detail}`);
+  }
+
+  const videos = results.filter((r) => r.ok && r.kind === "video");
+  if (videos.length > 0) {
+    const totalBytes = videos.reduce((sum, v) => sum + (v.bytes ?? 0), 0);
+    const largest = [...videos].sort((a, b) => (b.bytes ?? 0) - (a.bytes ?? 0)).slice(0, 3);
+    console.log(
+      `\nVideo payloads: ${formatBytes(totalBytes)} across ${videos.length} files, ` +
+        `largest ${largest.map((v) => `${v.title} (${formatBytes(v.bytes)})`).join(", ")}.`,
+    );
+  }
+
+  const uncacheable = results.filter((r) => r.ok && isUncacheable(r.cacheControl));
+  if (uncacheable.length > 0) {
+    console.log(
+      `\n${uncacheable.length} of ${results.filter((r) => r.ok).length} objects are served ` +
+        `uncacheable (e.g. "${uncacheable[0].cacheControl}"), so every play and every page view ` +
+        "re-downloads them from Firebase in full.\n" +
+        "Fix with one command over the bucket — see docs/VIDEO-DELIVERY.md.",
+    );
   }
 
   const missingThumb = projects.filter((p) => !p.imageUrl);

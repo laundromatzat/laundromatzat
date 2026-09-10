@@ -13,13 +13,16 @@
     />
     <!--
       Content Security Policy.
-      Thumbnails and video files are served from Firebase Storage, so both
-      img-src and media-src must allow that host. There is no backend and no
-      third-party API, so connect-src only needs 'self'.
+      Thumbnails and video files are served from Firebase Storage, so
+      img-src, media-src and connect-src must all allow that host --
+      connect-src because hls.js fetches playlists and segments over XHR.
+      Adaptive playback feeds the <video> element from a MediaSource, hence
+      blob: in media-src, and runs its demuxer in a blob-backed worker, hence
+      worker-src. There is still no backend and no third-party API.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' data: blob: https://firebasestorage.googleapis.com; media-src 'self' blob: https://firebasestorage.googleapis.com; connect-src 'self' https://firebasestorage.googleapis.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self';"
+      content="default-src 'self'; img-src 'self' data: blob: https://firebasestorage.googleapis.com; media-src 'self' blob: https://firebasestorage.googleapis.com; connect-src 'self' https://firebasestorage.googleapis.com; worker-src 'self' blob:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self';"
     />
     <link rel="icon" type="image/png" href="/laundromatzat-icon.png" />
     <title>laundromatzat · music videos</title>
