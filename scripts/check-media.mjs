@@ -35,9 +35,37 @@ function isUncacheable(cacheControl) {
 
 function explain(status) {
   if (status === 402) return "Firebase billing account disabled";
-  if (status === 403) return "token wrong or revoked";
+  // Firebase answers 403 for a missing object as well as a bad token, so this
+  // cannot say which. `gcloud storage ls -L <gs:// path>` tells them apart.
+  if (status === 403) return "not uploaded, or token wrong/revoked";
   if (status === 404) return "object not found";
   return "unexpected status";
+}
+
+/**
+ * Pulls every URL out of an HLS playlist.
+ *
+ * scripts/transcode-hls.mjs bakes absolute tokenised URLs into the playlists,
+ * so each line is either a comment, a bare media URL, or a tag carrying a
+ * quoted URI. Checking these is what catches a half-finished upload, where the
+ * master loads but the renditions it points at do not.
+ */
+export function extractPlaylistUrls(text) {
+  const urls = [];
+  for (const line of text.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed === "") continue;
+
+    if (trimmed.startsWith("#")) {
+      for (const match of trimmed.matchAll(/URI="([^"]+)"/g)) {
+        urls.push(match[1]);
+      }
+      continue;
+    }
+
+    urls.push(trimmed);
+  }
+  return Array.from(new Set(urls.filter((url) => /^https?:\/\//.test(url))));
 }
 
 async function check(target) {
@@ -76,6 +104,34 @@ async function runPooled(targets) {
   return results;
 }
 
+/** Fetches one playlist and turns the URLs inside it into further targets. */
+async function collectPlaylistTargets(playlist, depth = 0) {
+  if (depth > 1) {
+    return [];
+  }
+
+  let text;
+  try {
+    const res = await fetch(playlist.url);
+    if (!res.ok) return [];
+    text = await res.text();
+  } catch {
+    return [];
+  }
+
+  const targets = [];
+  for (const url of extractPlaylistUrls(text)) {
+    const kind = url.includes(".m3u8") ? "hls-variant" : "hls-media";
+    const target = { title: playlist.title, kind, url };
+    targets.push(target);
+
+    if (kind === "hls-variant") {
+      targets.push(...(await collectPlaylistTargets(target, depth + 1)));
+    }
+  }
+  return targets;
+}
+
 async function main() {
   const projects = JSON.parse(await readFile(DATA, "utf8"));
 
@@ -87,10 +143,27 @@ async function main() {
     if (project.projectUrl) {
       targets.push({ title: project.title, kind: "video", url: project.projectUrl });
     }
+    if (project.streamUrl) {
+      targets.push({ title: project.title, kind: "hls", url: project.streamUrl });
+    }
   }
 
   console.log(`Checking ${targets.length} URLs across ${projects.length} videos...\n`);
   const results = await runPooled(targets);
+
+  // An HLS master that loads is only half the story: follow it into the
+  // variant playlists and the media they reference.
+  const nested = [];
+  for (const result of results.filter((r) => r.ok && r.kind === "hls")) {
+    for (const url of await collectPlaylistTargets(result)) {
+      nested.push(url);
+    }
+  }
+  if (nested.length > 0) {
+    console.log(`Following ${nested.length} URLs inside the HLS playlists...\n`);
+    results.push(...(await runPooled(nested)));
+  }
+
   const failures = results.filter((r) => !r.ok);
 
   for (const failure of failures) {

@@ -122,6 +122,28 @@ to the video's entry in `src/data/projects.json`:
 Keep `projectUrl`. It is the fallback source, and it is what `og:video` points
 at for link unfurlers, which do not speak HLS.
 
+Then check it: `npm run check-media` follows a `streamUrl` into its variant
+playlists and the media they reference, so a half-finished upload — master
+loads, renditions do not — shows up as a failure rather than as a video that
+quietly falls back to the full-size file.
+
+### When a stream URL returns 403
+
+Firebase answers `403 Permission denied` both for an object that does not
+exist and for one whose download token does not match, so the status alone
+cannot tell you which. Ask the bucket:
+
+```bash
+gcloud storage ls -L gs://laundromat-zat.firebasestorage.app/streams/<slug>/
+```
+
+- **Nothing listed** — `upload.sh` has not run, or exited partway.
+- **Objects listed, but no `firebaseStorageDownloadTokens` under Metadata** —
+  the upload dropped the custom metadata. Re-run `upload.sh`.
+- **The token listed differs from the one in the playlist URLs** — the object
+  was uploaded more than once and Firebase minted a fresh token. Re-run
+  `transcode-hls` so the playlists and the metadata are generated together.
+
 ## If you would rather not self-host
 
 `streamUrl` is just an HLS URL, so a managed host works without any code
