@@ -27,6 +27,7 @@ npm run dev      # http://localhost:5173
 | `npm run add-video` | Append a video to `projects.json` from its Firebase download URL |
 | `npm run check-media` | Verify every thumbnail and video still loads, and report how they are delivered |
 | `npm run transcode-hls` | Encode one video into an adaptive-bitrate HLS ladder ([docs](docs/VIDEO-DELIVERY.md)) |
+| `npm run transcode-all` | Do that for every video that has no `streamUrl` yet, uploading and recording each |
 
 ## Adding a video
 

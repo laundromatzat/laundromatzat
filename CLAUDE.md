@@ -25,6 +25,7 @@ npm run test:e2e     # Playwright
 npm run add-video      # append a video from its Firebase download URL
 npm run check-media    # verify every thumbnail/video still serves bytes
 npm run transcode-hls  # encode one video into an adaptive-bitrate HLS ladder
+npm run transcode-all  # do that for every video still lacking a streamUrl
 ```
 
 Pre-commit hooks (Husky + lint-staged) lint changed files.
@@ -62,6 +63,7 @@ scripts/
   check-media.mjs         verify media still serves, report size and caching
   prerender.mjs           post-build: static HTML per video, plus sitemap.xml
   transcode-hls.mjs       ffmpeg → adaptive-bitrate ladder + upload script
+  transcode-all.mjs       runs that over the whole backlog, resumably
 ```
 
 Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
