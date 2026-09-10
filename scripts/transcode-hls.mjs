@@ -285,16 +285,25 @@ set -euo pipefail
 
 ${uploads}
 
-echo "Uploaded. Add this to the video's entry in src/data/projects.json:"
+echo
+echo "Uploaded. The stream is live. Add this to the video's entry in src/data/projects.json:"
 echo '  "streamUrl": "${urlFor("master.m3u8")}"'
+echo
+echo "Then run: npm run check-media"
 `;
 
   const scriptPath = path.join(outDir, "upload.sh");
   await fs.writeFile(scriptPath, uploadScript, { mode: 0o755 });
 
-  console.log(`\nWrote ${files.length} files to ${outDir}`);
-  console.log(`Next: review and run ${scriptPath}, then set in projects.json:`);
-  console.log(`  "streamUrl": "${urlFor("master.m3u8")}"`);
+  // Deliberately not printing the stream URL here. The URL is decided before
+  // the upload, so printing it alongside "done" reads as a finished result and
+  // invites pasting a dead link into projects.json. upload.sh prints it, once
+  // every object is actually in the bucket.
+  console.log(`\nEncoded ${files.length} files into ${outDir}`);
+  console.log("\nNothing is uploaded yet. Next:");
+  console.log(`  1. read   ${scriptPath}`);
+  console.log(`  2. run    bash ${scriptPath}`);
+  console.log("  3. paste the streamUrl it prints into src/data/projects.json");
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

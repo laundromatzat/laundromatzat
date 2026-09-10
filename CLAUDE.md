@@ -48,6 +48,10 @@ src/
     aura/                 AuraButton, AuraCard (design system)
   hooks/
     useAdaptiveVideoSource.ts   HLS where possible, the file otherwise
+    useFocusTrap.ts             keeps keyboard focus inside the open player
+    usePlayerShortcuts.ts       space/arrows/J L/M/F, shift+arrows to page
+    useRememberedVolume.ts      volume and mute persist across videos
+    useScrollLock.ts            pins the page behind the overlay (iOS-safe)
   utils/
     projectData.ts        JSON → Project, validates and derives `year`
     projectDates.ts       MM/YYYY parsing and sort
@@ -85,6 +89,13 @@ Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
 - `streamUrl` on a video is an optional HLS playlist. Videos without one play
   the progressive file exactly as before, so adaptive playback rolls out one
   video at a time. See `docs/VIDEO-DELIVERY.md`.
+- **The player uses native `<video controls>` on purpose.** They carry iOS
+  fullscreen, Picture-in-Picture, AirPlay and the system caption menu, none of
+  which a custom control bar gets for free. Everything around the controls --
+  focus handling, keyboard, states, paging -- is ours.
+- `App.tsx` moves focus to `<main>` on navigation, but skips it while a
+  `[role="dialog"][aria-modal="true"]` is open: paging the player changes the
+  URL every step and would otherwise drag focus out of the dialog.
 
 ## External connections
 

@@ -109,7 +109,13 @@ before anything is uploaded.
 `hls-out/<slug>/upload.sh` is generated but never run for you — it needs
 credentials for the bucket. Read it, then run it. It sets the download token
 and the long `Cache-Control` on every object, and prints the `streamUrl` to add
-to the video's entry in `src/data/projects.json`:
+to the video's entry in `src/data/projects.json`.
+
+Transcoding deliberately does not print that URL. The token is decided before
+the upload, so a URL shown next to "done" reads as a finished result and is
+easy to paste into `projects.json` while the objects are still only on your
+laptop. Only `upload.sh` prints it, and only once every object is in the
+bucket:
 
 ```json
 {
@@ -121,6 +127,93 @@ to the video's entry in `src/data/projects.json`:
 
 Keep `projectUrl`. It is the fallback source, and it is what `og:video` points
 at for link unfurlers, which do not speak HLS.
+
+Then check it: `npm run check-media` follows a `streamUrl` into its variant
+playlists and the media they reference, so a half-finished upload — master
+loads, renditions do not — shows up as a failure rather than as a video that
+quietly falls back to the full-size file.
+
+### CORS: the thing that makes a stream silently pointless
+
+A progressive `<video src>` needs no CORS — the browser's media pipeline
+fetches it directly. **hls.js does not have that luxury**: it pulls the
+playlists and segments over XHR, so the browser enforces CORS on every one of
+them. A stream whose responses carry no `Access-Control-Allow-Origin` still
+plays in Safari and on iOS, which use native HLS and never touch XHR, and
+fails in every other browser — where the player falls back to the full-size
+file. Playback keeps working, so the failure is invisible unless you look for
+it. `npm run check-media` looks for it.
+
+Firebase's download endpoint answers the *preflight* with
+`Access-Control-Allow-Origin: *` but, as shipped, sends no such header on the
+actual GET, which is the one the browser checks. Set a CORS policy on the
+bucket:
+
+```bash
+cat > /tmp/cors.json <<'JSON'
+[
+  {
+    "origin": ["https://laundromatzat.com"],
+    "method": ["GET", "HEAD"],
+    "responseHeader": [
+      "Content-Type", "Content-Length", "Content-Range", "Accept-Ranges", "Range"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]
+JSON
+
+gcloud storage buckets update gs://laundromat-zat.firebasestorage.app \
+  --cors-file=/tmp/cors.json
+```
+
+Then confirm, rather than assuming — a bucket CORS policy is documented for
+the `storage.googleapis.com` APIs, and whether it reaches the
+`firebasestorage.googleapis.com` download frontend is worth proving on your
+own bucket:
+
+```bash
+curl -sS -o /dev/null -D - -H "Origin: https://laundromatzat.com" \
+  "<the streamUrl>" | grep -i access-control-allow-origin
+```
+
+A line back means it works — confirmed on this bucket, so the policy does
+reach that frontend. Nothing back would mean it does not, and the stream would
+have to be served from `storage.googleapis.com` instead, which needs the
+`streams/` objects made publicly readable (they are already public in effect,
+via their tokens) and that host added to both `connect-src` and `media-src` in
+the CSP in `index.html`.
+
+The policy above lists one origin, so HLS is blocked anywhere else — including
+`http://localhost:5173`, where `npm run dev` runs. Adaptive playback therefore
+falls back to the progressive file in local development, which is harmless but
+means you are not testing what visitors get. Add the dev origin if you want to
+exercise it:
+
+```json
+"origin": ["https://laundromatzat.com", "http://localhost:5173"]
+```
+
+Do not add a `streamUrl` to `projects.json` until this passes. Until it does,
+adding one makes things slightly worse everywhere but Safari: hls.js is
+downloaded, fails, and the full-size file is fetched anyway.
+
+### When a stream URL returns 403
+
+Firebase answers `403 Permission denied` both for an object that does not
+exist and for one whose download token does not match, so the status alone
+cannot tell you which. Ask the bucket:
+
+```bash
+gcloud storage ls -L gs://laundromat-zat.firebasestorage.app/streams/<slug>/
+```
+
+- **Nothing listed** — `upload.sh` has not run, or exited partway.
+- **Objects listed, but no `firebaseStorageDownloadTokens` under Metadata** —
+  the upload dropped the custom metadata. Re-run `upload.sh`.
+- **The token listed differs from the one in the playlist URLs** — the object
+  was uploaded more than once and Firebase minted a fresh token. Re-run
+  `transcode-hls` so the playlists and the metadata are generated together.
 
 ## If you would rather not self-host
 

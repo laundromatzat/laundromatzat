@@ -21,6 +21,8 @@ const DATA =
   process.env.PROJECTS_FILE ??
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src/data/projects.json");
 const CONCURRENCY = 6;
+/** The origin a real visitor's browser sends, for the CORS check below. */
+const SITE_ORIGIN = process.env.VITE_SITE_URL ?? "https://laundromatzat.com";
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes)) return "unknown size";
@@ -35,9 +37,65 @@ function isUncacheable(cacheControl) {
 
 function explain(status) {
   if (status === 402) return "Firebase billing account disabled";
-  if (status === 403) return "token wrong or revoked";
+  // Firebase answers 403 for a missing object as well as a bad token, so this
+  // cannot say which. `gcloud storage ls -L <gs:// path>` tells them apart.
+  if (status === 403) return "not uploaded, or token wrong/revoked";
   if (status === 404) return "object not found";
   return "unexpected status";
+}
+
+/**
+ * Checks that a URL is readable by a browser fetch, not just by curl.
+ *
+ * hls.js pulls playlists and segments over XHR, so the browser enforces CORS
+ * on them -- unlike a plain <video src>, which the media pipeline fetches
+ * without needing any Access-Control header. A stream that misses them still
+ * works in Safari (native HLS, no XHR) and fails everywhere else, falling back
+ * to the full-size file. That is invisible from the outside: playback still
+ * works, just with none of the benefit.
+ */
+async function checkCors(url, origin) {
+  try {
+    const res = await fetch(url, { headers: { Origin: origin } });
+    const allowed = res.headers.get("access-control-allow-origin");
+    if (allowed === "*" || allowed === origin) {
+      return { ok: true };
+    }
+    return {
+      ok: false,
+      detail: allowed
+        ? `Access-Control-Allow-Origin is "${allowed}", not "${origin}" or "*"`
+        : "no Access-Control-Allow-Origin on the response",
+    };
+  } catch (error) {
+    return { ok: false, detail: error.message };
+  }
+}
+
+/**
+ * Pulls every URL out of an HLS playlist.
+ *
+ * scripts/transcode-hls.mjs bakes absolute tokenised URLs into the playlists,
+ * so each line is either a comment, a bare media URL, or a tag carrying a
+ * quoted URI. Checking these is what catches a half-finished upload, where the
+ * master loads but the renditions it points at do not.
+ */
+export function extractPlaylistUrls(text) {
+  const urls = [];
+  for (const line of text.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed === "") continue;
+
+    if (trimmed.startsWith("#")) {
+      for (const match of trimmed.matchAll(/URI="([^"]+)"/g)) {
+        urls.push(match[1]);
+      }
+      continue;
+    }
+
+    urls.push(trimmed);
+  }
+  return Array.from(new Set(urls.filter((url) => /^https?:\/\//.test(url))));
 }
 
 async function check(target) {
@@ -76,6 +134,34 @@ async function runPooled(targets) {
   return results;
 }
 
+/** Fetches one playlist and turns the URLs inside it into further targets. */
+async function collectPlaylistTargets(playlist, depth = 0) {
+  if (depth > 1) {
+    return [];
+  }
+
+  let text;
+  try {
+    const res = await fetch(playlist.url);
+    if (!res.ok) return [];
+    text = await res.text();
+  } catch {
+    return [];
+  }
+
+  const targets = [];
+  for (const url of extractPlaylistUrls(text)) {
+    const kind = url.includes(".m3u8") ? "hls-variant" : "hls-media";
+    const target = { title: playlist.title, kind, url };
+    targets.push(target);
+
+    if (kind === "hls-variant") {
+      targets.push(...(await collectPlaylistTargets(target, depth + 1)));
+    }
+  }
+  return targets;
+}
+
 async function main() {
   const projects = JSON.parse(await readFile(DATA, "utf8"));
 
@@ -87,10 +173,27 @@ async function main() {
     if (project.projectUrl) {
       targets.push({ title: project.title, kind: "video", url: project.projectUrl });
     }
+    if (project.streamUrl) {
+      targets.push({ title: project.title, kind: "hls", url: project.streamUrl });
+    }
   }
 
   console.log(`Checking ${targets.length} URLs across ${projects.length} videos...\n`);
   const results = await runPooled(targets);
+
+  // An HLS master that loads is only half the story: follow it into the
+  // variant playlists and the media they reference.
+  const nested = [];
+  for (const result of results.filter((r) => r.ok && r.kind === "hls")) {
+    for (const url of await collectPlaylistTargets(result)) {
+      nested.push(url);
+    }
+  }
+  if (nested.length > 0) {
+    console.log(`Following ${nested.length} URLs inside the HLS playlists...\n`);
+    results.push(...(await runPooled(nested)));
+  }
+
   const failures = results.filter((r) => !r.ok);
 
   for (const failure of failures) {
@@ -105,6 +208,21 @@ async function main() {
       `\nVideo payloads: ${formatBytes(totalBytes)} across ${videos.length} files, ` +
         `largest ${largest.map((v) => `${v.title} (${formatBytes(v.bytes)})`).join(", ")}.`,
     );
+  }
+
+  // One CORS probe per stream is enough: every object in a ladder sits in the
+  // same bucket behind the same frontend.
+  const streams = results.filter((r) => r.ok && r.kind === "hls");
+  for (const stream of streams) {
+    const cors = await checkCors(stream.url, SITE_ORIGIN);
+    if (!cors.ok) {
+      console.error(
+        `FAIL  cors   ${stream.title} — ${cors.detail}.\n` +
+          `      hls.js fetches over XHR, so this stream will be blocked in every browser\n` +
+          `      except Safari and fall back to the full-size file. See docs/VIDEO-DELIVERY.md.`,
+      );
+      failures.push({ ...stream, ok: false, kind: "cors", detail: cors.detail });
+    }
   }
 
   const uncacheable = results.filter((r) => r.ok && isUncacheable(r.cacheControl));

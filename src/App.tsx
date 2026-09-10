@@ -13,6 +13,14 @@ function App(): React.ReactNode {
     }
 
     const focusTimer = window.requestAnimationFrame(() => {
+      // Moving focus to <main> announces the new page to a screen reader, but
+      // an open modal owns focus for as long as it is up. The player changes
+      // the URL on every paging step, so without this check each Next press
+      // would drag focus out of the dialog and behind the overlay.
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+        return;
+      }
+
       mainElement.focus();
     });
 
