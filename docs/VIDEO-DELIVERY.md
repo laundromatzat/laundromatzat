@@ -66,7 +66,29 @@ video's `streamUrl` when it has one, and:
 A video without a `streamUrl` keeps playing exactly as it does now, so this can
 be rolled out one video at a time.
 
-### Transcoding
+### The whole backlog in one command
+
+```bash
+npm run transcode-all -- --dry-run   # what it would do, largest first
+npm run transcode-all -- --yes       # do it
+```
+
+For every video with a `projectUrl` and no `streamUrl`, this transcodes,
+uploads, and writes the resulting `streamUrl` back into `projects.json`.
+Nothing is copied by hand.
+
+It reads each source straight from its Firebase URL, so no local masters are
+needed. `projects.json` is updated after each upload succeeds, which makes the
+run resumable — re-running skips whatever already has a `streamUrl`, so a
+laptop that sleeps or a network that drops costs you one video, not the run.
+The ladder is deleted once uploaded, so peak disk use is one video's worth
+(roughly half its source) rather than the library's.
+
+`--only <slug>` does a single video, `--limit N` takes the N largest, and
+`--keep` leaves the local ladders in place. When it finishes, run
+`npm run check-media` and commit `src/data/projects.json`.
+
+### Transcoding one video
 
 ```bash
 npm run transcode-hls -- ~/Movies/one-of-us.mov

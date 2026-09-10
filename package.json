@@ -18,7 +18,8 @@
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
     "prepare": "husky",
     "prerender": "node scripts/prerender.mjs",
-    "transcode-hls": "node scripts/transcode-hls.mjs"
+    "transcode-hls": "node scripts/transcode-hls.mjs",
+    "transcode-all": "node scripts/transcode-all.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

@@ -36,6 +36,8 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 export const DEFAULT_BUCKET = "laundromat-zat.firebasestorage.app";
+/** Written next to the ladder so a batch driver need not scrape stdout. */
+export const MANIFEST_NAME = "manifest.json";
 /** One year, immutable: these objects are content-addressed by slug and never edited. */
 export const CACHE_CONTROL = "public, max-age=31536000, immutable";
 
@@ -255,7 +257,8 @@ async function main() {
   await run("ffmpeg", buildFfmpegArgs({ input: options.input, outDir, rungs, hasAudio }));
 
   // One token per object, decided here so the playlists can carry final URLs.
-  const files = (await fs.readdir(outDir)).filter((name) => name !== "upload.sh").sort();
+  const generated = new Set(["upload.sh", MANIFEST_NAME]);
+  const files = (await fs.readdir(outDir)).filter((name) => !generated.has(name)).sort();
   const tokens = new Map(files.map((name) => [name, crypto.randomUUID()]));
   const objectPath = (name) => `streams/${slug}/${name}`;
   const urlFor = (name) =>
@@ -294,6 +297,24 @@ echo "Then run: npm run check-media"
 
   const scriptPath = path.join(outDir, "upload.sh");
   await fs.writeFile(scriptPath, uploadScript, { mode: 0o755 });
+
+  // A machine-readable copy of the same facts, so scripts/transcode-all.mjs can
+  // pick the stream URL up without scraping upload.sh's output.
+  await fs.writeFile(
+    path.join(outDir, MANIFEST_NAME),
+    JSON.stringify(
+      {
+        slug,
+        bucket: options.bucket,
+        streamUrl: urlFor("master.m3u8"),
+        rungs: rungs.map((rung) => rung.name),
+        files,
+      },
+      null,
+      2,
+    ) + "\n",
+    "utf8",
+  );
 
   // Deliberately not printing the stream URL here. The URL is decided before
   // the upload, so printing it alongside "done" reads as a finished result and
