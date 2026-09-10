@@ -109,7 +109,13 @@ before anything is uploaded.
 `hls-out/<slug>/upload.sh` is generated but never run for you — it needs
 credentials for the bucket. Read it, then run it. It sets the download token
 and the long `Cache-Control` on every object, and prints the `streamUrl` to add
-to the video's entry in `src/data/projects.json`:
+to the video's entry in `src/data/projects.json`.
+
+Transcoding deliberately does not print that URL. The token is decided before
+the upload, so a URL shown next to "done" reads as a finished result and is
+easy to paste into `projects.json` while the objects are still only on your
+laptop. Only `upload.sh` prints it, and only once every object is in the
+bucket:
 
 ```json
 {
