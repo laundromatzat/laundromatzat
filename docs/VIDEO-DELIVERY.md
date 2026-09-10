@@ -177,11 +177,22 @@ curl -sS -o /dev/null -D - -H "Origin: https://laundromatzat.com" \
   "<the streamUrl>" | grep -i access-control-allow-origin
 ```
 
-A line back means it works. Nothing back means the policy does not reach that
-frontend, and the stream has to be served from `storage.googleapis.com`
-instead — which needs the `streams/` objects made publicly readable (they are
-already public in effect, via their tokens) and that host added to both
-`connect-src` and `media-src` in the CSP in `index.html`.
+A line back means it works — confirmed on this bucket, so the policy does
+reach that frontend. Nothing back would mean it does not, and the stream would
+have to be served from `storage.googleapis.com` instead, which needs the
+`streams/` objects made publicly readable (they are already public in effect,
+via their tokens) and that host added to both `connect-src` and `media-src` in
+the CSP in `index.html`.
+
+The policy above lists one origin, so HLS is blocked anywhere else — including
+`http://localhost:5173`, where `npm run dev` runs. Adaptive playback therefore
+falls back to the progressive file in local development, which is harmless but
+means you are not testing what visitors get. Add the dev origin if you want to
+exercise it:
+
+```json
+"origin": ["https://laundromatzat.com", "http://localhost:5173"]
+```
 
 Do not add a `streamUrl` to `projects.json` until this passes. Until it does,
 adding one makes things slightly worse everywhere but Safari: hls.js is
