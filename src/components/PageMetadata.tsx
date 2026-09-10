@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from '@dr.pogodin/react-helmet';
 
 interface PageMetadataProps {
   title: string;
   description?: string;
   path?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'video.other';
+  /** Absolute URL of the image link unfurlers should show. */
+  image?: string;
+  /** Alt text for that image. Defaults to the page title. */
+  imageAlt?: string;
+  /** Absolute URL of the video file, for players that embed it inline. */
+  videoUrl?: string;
 }
 
 const SITE_NAME = 'Laundromatzat';
@@ -29,9 +35,35 @@ function buildCanonical(path?: string): string | undefined {
   }
 }
 
-function PageMetadata({ title, description, path, type = 'website' }: PageMetadataProps): React.ReactNode {
+/**
+ * Drops the meta/link tags baked into the HTML by scripts/prerender.mjs.
+ *
+ * Crawlers read the served HTML and never get this far, but a real browser
+ * would otherwise end up with both the prerendered tags and Helmet's, and the
+ * prerendered ones would go stale as soon as the visitor pages to another
+ * video.
+ */
+function useDropPrerenderedTags(): void {
+  useEffect(() => {
+    document
+      .querySelectorAll('head [data-prerendered]')
+      .forEach((element) => element.remove());
+  }, []);
+}
+
+function PageMetadata({
+  title,
+  description,
+  path,
+  type = 'website',
+  image,
+  imageAlt,
+  videoUrl,
+}: PageMetadataProps): React.ReactNode {
   const fullTitle = `${title} · ${SITE_NAME}`;
   const canonical = buildCanonical(path);
+
+  useDropPrerenderedTags();
 
   return (
     <Helmet>
@@ -43,9 +75,16 @@ function PageMetadata({ title, description, path, type = 'website' }: PageMetada
       {description ? <meta property="og:description" content={description} /> : null}
       {canonical ? <meta property="og:url" content={canonical} /> : null}
       <meta property="og:type" content={type} />
+      {image ? <meta property="og:image" content={image} /> : null}
+      {image ? <meta property="og:image:alt" content={imageAlt ?? title} /> : null}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       {description ? <meta name="twitter:description" content={description} /> : null}
+      {image ? <meta name="twitter:image" content={image} /> : null}
+      {image ? <meta name="twitter:image:alt" content={imageAlt ?? title} /> : null}
+      {videoUrl ? <meta property="og:video" content={videoUrl} /> : null}
+      {videoUrl ? <meta property="og:video:secure_url" content={videoUrl} /> : null}
+      {videoUrl ? <meta property="og:video:type" content="video/mp4" /> : null}
     </Helmet>
   );
 }

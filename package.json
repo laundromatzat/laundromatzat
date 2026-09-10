@@ -6,7 +6,7 @@
   "description": "A static repository of music videos.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp dist/index.html dist/404.html",
+    "build": "vite build && node scripts/prerender.mjs && cp dist/index.html dist/404.html",
     "preview": "vite preview",
     "add-video": "node scripts/add-video.mjs",
     "check-media": "node scripts/check-media.mjs",
@@ -16,7 +16,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prerender": "node scripts/prerender.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
