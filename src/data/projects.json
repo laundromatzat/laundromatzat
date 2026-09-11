@@ -74,7 +74,8 @@
       "Randi",
       "Glacier Bay National Park and Preserve",
       "video"
-    ]
+    ],
+    "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fseasons-of-love%2Fmaster.m3u8?alt=media&token=0ac3fc89-d1a0-4b65-8ca6-1714d656ee03"
   },
   {
     "id": 11,
@@ -257,7 +258,8 @@
       "Michael",
       "New Mexico",
       "video"
-    ]
+    ],
+    "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fcowboy-take-me-away%2Fmaster.m3u8?alt=media&token=34fdb000-35db-483c-bf14-0fc49c38352e"
   },
   {
     "id": 21,
@@ -388,7 +390,8 @@
       "Michael",
       "Iceland",
       "video"
-    ]
+    ],
+    "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Ftransatlanticism%2Fmaster.m3u8?alt=media&token=891bccce-a2da-4498-98cf-ae549ebd68a4"
   },
   {
     "id": 27,
