@@ -4,7 +4,9 @@ import { VIDEOS } from "@/constants";
 import {
   CACHE_CONTROL,
   LADDER,
+  TONEMAP_CHAIN,
   buildFfmpegArgs,
+  isHdr,
   contentTypeFor,
   firebaseUrl,
   rewritePlaylist,
@@ -118,6 +120,20 @@ describe("uploadCommand", () => {
   });
 });
 
+describe("isHdr", () => {
+  it("recognises the two transfer functions phones actually shoot", () => {
+    expect(isHdr("smpte2084")).toBe(true); // PQ / HDR10
+    expect(isHdr("arib-std-b67")).toBe(true); // HLG
+  });
+
+  it("treats SDR, and an unknown or missing transfer, as not HDR", () => {
+    expect(isHdr("bt709")).toBe(false);
+    expect(isHdr("")).toBe(false);
+    expect(isHdr(undefined)).toBe(false);
+    expect(isHdr(null)).toBe(false);
+  });
+});
+
 describe("buildFfmpegArgs", () => {
   const rungs = selectLadder(1080);
   const args = buildFfmpegArgs({
@@ -153,6 +169,54 @@ describe("buildFfmpegArgs", () => {
   it("pins a fixed GOP so rungs stay switchable", () => {
     expect(args).toContain("-sc_threshold");
     expect(args[args.indexOf("-g") + 1]).toBe("48");
+  });
+
+  it("forces 8-bit output on every rung", () => {
+    // A 10-bit source puts libx264 into 10-bit mode, where the `main` profile
+    // is invalid and the encode fails outright -- and a 10-bit H.264 rendition
+    // would not decode in most browsers even if it did encode.
+    const graph = args[args.indexOf("-filter_complex") + 1];
+    const scaleSteps = graph.split(";").filter((step: string) => step.includes("scale=-2:"));
+    expect(scaleSteps).toHaveLength(rungs.length);
+    expect(scaleSteps.every((step: string) => step.includes("format=yuv420p"))).toBe(true);
+  });
+
+  it("leaves an SDR source's colour alone", () => {
+    const graph = args[args.indexOf("-filter_complex") + 1];
+    expect(graph).not.toContain("tonemap");
+    expect(args).not.toContain("-color_trc");
+  });
+
+  it("tone maps an HDR source once, before the split", () => {
+    const hdrArgs = buildFfmpegArgs({
+      input: "/tmp/in.mov",
+      outDir: "/tmp/out",
+      rungs,
+      hasAudio: true,
+      hdr: true,
+    });
+    const graph = hdrArgs[hdrArgs.indexOf("-filter_complex") + 1];
+    const steps = graph.split(";");
+
+    expect(steps[0]).toBe(`[0:v]${TONEMAP_CHAIN}[src]`);
+    expect(steps[1]).toContain("[src]split=");
+    // Once, not once per rung. Counted on the chain's opening filter, since
+    // the tonemap filter's own name and option are both spelled "tonemap".
+    expect(graph.match(/zscale=t=linear/g)).toHaveLength(1);
+    expect(graph.split(TONEMAP_CHAIN)).toHaveLength(2);
+  });
+
+  it("retags an HDR source's output as BT.709, since it no longer is BT.2020", () => {
+    const hdrArgs = buildFfmpegArgs({
+      input: "/tmp/in.mov",
+      outDir: "/tmp/out",
+      rungs,
+      hasAudio: true,
+      hdr: true,
+    });
+    expect(hdrArgs[hdrArgs.indexOf("-color_trc") + 1]).toBe("bt709");
+    expect(hdrArgs[hdrArgs.indexOf("-color_primaries") + 1]).toBe("bt709");
+    expect(hdrArgs[hdrArgs.indexOf("-colorspace") + 1]).toBe("bt709");
   });
 });
 
