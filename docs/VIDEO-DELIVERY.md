@@ -111,6 +111,27 @@ The whole four-rung ladder is 77 MB against the source's 135 MB, so this
 *reduces* storage as well as delivery. Encoding cost about two minutes of CPU
 per minute of 1080p video.
 
+### 10-bit and HDR sources
+
+Recent phones shoot HEVC in 10-bit, often with an HDR transfer curve. Two of
+this library's videos do. Both need handling, because the web does not take
+either as-is:
+
+- **Every rung is forced to 8-bit 4:2:0** (`format=yuv420p`). A 10-bit input
+  puts libx264 into 10-bit mode, where the `main` profile this encode asks for
+  is invalid and the encode fails with `Error setting profile main`. Even if it
+  encoded, a 10-bit H.264 rendition would not decode in most browsers.
+- **An HDR source is tone mapped to BT.709 SDR** before the split, so it is
+  done once rather than once per rung. Simply dropping to 8 bits would keep the
+  PQ-encoded values and the BT.2020 tags — an SDR-sized file still claiming to
+  be HDR, which players render grey and washed out. The output is retagged
+  `bt709` to say what it now is.
+
+Detection is from the source's transfer function: `smpte2084` (PQ/HDR10) and
+`arib-std-b67` (HLG) are HDR, everything else is not. A 10-bit *SDR* source
+therefore gets the 8-bit conversion without the tone mapping, which is what it
+wants.
+
 ### Why the output looks the way it does
 
 Firebase Storage issues one download token per object, and a normal HLS encode

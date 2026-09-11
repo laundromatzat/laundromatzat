@@ -52,6 +52,34 @@ export const LADDER = [
   { name: "360p", height: 360, videoBitrate: "800k", maxrate: "856k", bufsize: "1200k" },
 ];
 
+/**
+ * Transfer functions that mean the source is HDR.
+ *
+ * smpte2084 is PQ (HDR10), arib-std-b67 is HLG. Recent phones shoot both.
+ */
+const HDR_TRANSFERS = new Set(["smpte2084", "arib-std-b67"]);
+
+export function isHdr(colorTransfer) {
+  return HDR_TRANSFERS.has(String(colorTransfer ?? "").trim());
+}
+
+/**
+ * Flattens HDR to the BT.709 SDR the web expects.
+ *
+ * Browsers decode 8-bit 4:2:0 H.264; handing them HDR's wide gamut and PQ
+ * curve is not an option. Converting by simply dropping to 8 bits would keep
+ * the PQ-encoded values and render grey and washed out, so the signal is taken
+ * to linear light, tone mapped, and re-encoded against BT.709.
+ */
+export const TONEMAP_CHAIN = [
+  "zscale=t=linear:npl=100",
+  "format=gbrpf32le",
+  "zscale=p=bt709",
+  "tonemap=tonemap=hable:desat=0",
+  "zscale=t=bt709:m=bt709:r=tv",
+  "format=yuv420p",
+].join(",");
+
 /** Mirrors src/utils/slugs.ts. */
 export function slugify(text) {
   return String(text)
@@ -155,7 +183,7 @@ async function requireTool(name) {
 async function probe(input) {
   const raw = await run("ffprobe", [
     "-v", "error",
-    "-show_entries", "stream=codec_type,height",
+    "-show_entries", "stream=codec_type,height,color_transfer",
     "-of", "json",
     input,
   ]);
@@ -164,15 +192,35 @@ async function probe(input) {
   if (!video) {
     throw new Error(`${input} has no video stream.`);
   }
-  return { height: Number(video.height), hasAudio: streams.some((s) => s.codec_type === "audio") };
+  return {
+    height: Number(video.height),
+    hasAudio: streams.some((s) => s.codec_type === "audio"),
+    hdr: isHdr(video.color_transfer),
+  };
 }
 
 /** Builds the single ffmpeg invocation that writes the whole ladder. */
-export function buildFfmpegArgs({ input, outDir, rungs, hasAudio }) {
-  const split = `[0:v]split=${rungs.length}${rungs.map((_, i) => `[v${i}]`).join("")}`;
-  const scales = rungs.map((rung, i) => `[v${i}]scale=-2:${rung.height}[v${i}out]`);
+export function buildFfmpegArgs({ input, outDir, rungs, hasAudio, hdr = false }) {
+  // Tone mapping happens once, before the split, rather than per rung.
+  const prepared = hdr ? "[src]" : "[0:v]";
+  const preface = hdr ? [`[0:v]${TONEMAP_CHAIN}[src]`] : [];
 
-  const args = ["-y", "-i", input, "-filter_complex", [split, ...scales].join(";")];
+  const split = `${prepared}split=${rungs.length}${rungs.map((_, i) => `[v${i}]`).join("")}`;
+  // format=yuv420p on every rung, not just the HDR path: a 10-bit SDR source
+  // puts libx264 into 10-bit mode, where the `main` profile below is invalid
+  // and the encode fails outright -- and a 10-bit H.264 rendition would not
+  // decode in most browsers even if it did encode.
+  const scales = rungs.map(
+    (rung, i) => `[v${i}]scale=-2:${rung.height},format=yuv420p[v${i}out]`,
+  );
+
+  const args = [
+    "-y",
+    "-i",
+    input,
+    "-filter_complex",
+    [...preface, split, ...scales].join(";"),
+  ];
 
   rungs.forEach((rung, i) => {
     args.push(
@@ -188,6 +236,12 @@ export function buildFfmpegArgs({ input, outDir, rungs, hasAudio }) {
     rungs.forEach((_, i) => {
       args.push("-map", "a:0", `-c:a:${i}`, "aac", `-b:a:${i}`, "128k", `-ac:a:${i}`, "2");
     });
+  }
+
+  if (hdr) {
+    // Say what the output now is, so a player does not read the source's
+    // BT.2020 tags off a picture that is no longer BT.2020.
+    args.push("-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709");
   }
 
   args.push(
@@ -247,14 +301,16 @@ async function main() {
   const outDir = path.resolve(options.out ?? path.join(ROOT, "hls-out"), slug);
   await fs.mkdir(outDir, { recursive: true });
 
-  const { height, hasAudio } = await probe(options.input);
+  const { height, hasAudio, hdr } = await probe(options.input);
   const rungs = selectLadder(height);
   console.log(
-    `${slug}: source is ${height}p, encoding ${rungs.map((r) => r.name).join(", ")}` +
+    `${slug}: source is ${height}p${hdr ? " HDR" : ""}, ` +
+      `encoding ${rungs.map((r) => r.name).join(", ")}` +
+      `${hdr ? " (tone mapped to SDR)" : ""}` +
       `${hasAudio ? "" : " (no audio track)"}`,
   );
 
-  await run("ffmpeg", buildFfmpegArgs({ input: options.input, outDir, rungs, hasAudio }));
+  await run("ffmpeg", buildFfmpegArgs({ input: options.input, outDir, rungs, hasAudio, hdr }));
 
   // One token per object, decided here so the playlists can carry final URLs.
   const generated = new Set(["upload.sh", MANIFEST_NAME]);
