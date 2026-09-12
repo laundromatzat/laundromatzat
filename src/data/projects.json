@@ -10,7 +10,7 @@
     "location": "Scotland",
     "tags": [
       "Michael",
-      "Stephen"
+      "Stephen",
       "Irene",
       "Randi",
       "Europe",
@@ -104,7 +104,7 @@
       "cruise",
       "glacier",
       "Pacific Northwest",
-      "musical",
+      "musical"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fseasons-of-love%2Fmaster.m3u8?alt=media&token=0ac3fc89-d1a0-4b65-8ca6-1714d656ee03"
   },
@@ -165,7 +165,7 @@
       "Stephen",
       "Hawaii",
       "beach",
-      "Big Island",
+      "Big Island"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fsecond-hand-news%2Fmaster.m3u8?alt=media&token=6f8a0b4e-e87e-419b-b76c-7948f7b2007a"
   },
@@ -204,8 +204,8 @@
       "Michael",
       "Stephen",
       "Bear Valley",
-      "mountains"
-      "winter"
+      "mountains",
+      "winter",
       "ski"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fwinter-song%2Fmaster.m3u8?alt=media&token=d9277819-81aa-4f2e-a5a6-8c30dc4ce146"
@@ -266,7 +266,7 @@
       "Maui",
       "Hawaii",
       "beach",
-      "Stephen",
+      "Stephen"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fbaba-oriley%2Fmaster.m3u8?alt=media&token=74860426-4e59-4297-aeb8-c26ae9a53b1f"
   },
@@ -340,7 +340,7 @@
       "Grand Teton National Park and Yellowstone National Park",
       "Stephen",
       "Wyoming",
-      "roadtrip"
+      "roadtrip",
       "national park"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Frivers-and-roads%2Fmaster.m3u8?alt=media&token=0498b283-c65b-497a-98bc-a86c4b765d6b"
