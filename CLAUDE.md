@@ -44,6 +44,7 @@ src/
   components/
     ProjectGrid.tsx       grid + modal state, keyboard paging
     ProjectCard.tsx       one thumbnail card
+    FilterBar.tsx         search, year chips, tag chips
     PortfolioModal.tsx    the video player
     Header.tsx, Container.tsx, PageMetadata.tsx, ErrorBoundary.tsx
     aura/                 AuraButton, AuraCard (design system)
@@ -58,6 +59,7 @@ src/
     projectDates.ts       MM/YYYY parsing and sort
     slugs.ts              title → URL slug
     socialMetadata.ts     the og:/twitter: tags a page should carry
+    videoFilters.ts       search/year/tag matching, facets, URL round trip
 scripts/
   add-video.mjs           append an entry from a Firebase download URL
   check-media.mjs         verify media still serves, report size and caching
@@ -98,6 +100,15 @@ Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
 - `App.tsx` moves focus to `<main>` on navigation, but skips it while a
   `[role="dialog"][aria-modal="true"]` is open: paging the player changes the
   URL every step and would otherwise drag focus out of the dialog.
+- **Filters live in the URL** (`?q=`, `?year=`, `?tag=`), so a narrowed view is
+  shareable, and they survive opening a video. A deep link wins over them: a
+  `/vids/<slug>` the filters exclude still opens.
+- **Tag chips are derived, not curated.** `collectFilterTags` offers only tags
+  on more than one video and at most 60% of the library, because this archive
+  tags nearly everything "video" and most of it with the person who shot it —
+  chips for those would be buttons that do nothing. Most tags and nearly every
+  location appear on a single video, which is why free text carries the long
+  tail instead.
 
 ## External connections
 

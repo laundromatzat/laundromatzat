@@ -97,6 +97,19 @@ that defeats caching, which is Firebase Storage's default. See
 [docs/VIDEO-DELIVERY.md](docs/VIDEO-DELIVERY.md) for the one-command fix and
 for how to move a video to adaptive-bitrate playback.
 
+## Browsing
+
+The grid is filterable by free text, year, and the handful of tags that
+actually split the library. Filters are held in the URL — `?q=maui`,
+`?year=2019`, `?tag=Irene` — so a narrowed view can be bookmarked or sent to
+someone, and they survive opening a video.
+
+Which tag chips appear is derived from the data rather than curated: a tag has
+to be on more than one video (a tag on one filters to the card you just
+clicked) and on at most 60% of the library (a tag on nearly everything narrows
+nothing). Everything else is reachable through search, which covers titles,
+descriptions, locations and all tags.
+
 ## Sharing a video
 
 `npm run build` writes a static HTML page for every video under `dist/vids/`,
