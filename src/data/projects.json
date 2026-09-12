@@ -7,6 +7,18 @@
     "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fim-gonna-be-500-miles.webp?alt=media&token=9f2de1ed-181d-4410-918b-3b95c2affd6c",
     "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fim-gonna-be-500-miles.m4v?alt=media&token=f1aaf76c-b15c-4bbc-aebe-25279f58fdfb",
     "date": "08/2026",
+    "location": "Scotland",
+    "tags": [
+      "Michael",
+      "Stephen"
+      "Irene",
+      "Randi",
+      "Europe",
+      "Scotland",
+      "Spain",
+      "eclipse",
+      "fringe"
+    ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fim-gonna-be-500-miles%2Fmaster.m3u8?alt=media&token=7a010b6a-4835-42ba-bcb8-a33becdbb39d"
   },
   {
@@ -17,6 +29,13 @@
     "imageUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/thumbnails%2Fif-it-makes-you-happy.webp?alt=media&token=1440389c-c58b-4bd7-bafd-26746facc613",
     "projectUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/videos%2Fif-it-makes-you-happy.m4v?alt=media&token=a354a5a4-310a-4700-be54-e5939e7398e1",
     "date": "05/2026",
+    "location": "Puerto Vallarta",
+    "tags": [
+      "Michael",
+      "Stephen"
+      "Mexico",
+      "beach"
+    ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fif-it-makes-you-happy%2Fmaster.m3u8?alt=media&token=6f2adf02-6bb1-4831-8ae3-90c4db9d9466"
   },
   {
@@ -34,12 +53,12 @@
       "Emily",
       "Randi",
       "Irene",
+      "Stephen",
       "Vancouver",
       "Canada",
       "musical",
       "Les Mis",
       "Les Miserables",
-      "video"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fdo-you-hear-the-people-sing%2Fmaster.m3u8?alt=media&token=7fa3eaaa-e650-43d8-ad8a-cdc4c8318ba6"
   },
@@ -56,7 +75,10 @@
     "tags": [
       "Michael",
       "Glacier National Park",
-      "video"
+      "Stephen",
+      "glacier",
+      "Montana",
+      "mountains"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fsea-of-love%2Fmaster.m3u8?alt=media&token=602d4e57-029a-4999-93b0-c5f3d873e2f9"
   },
@@ -76,8 +98,13 @@
       "Irene",
       "Michael",
       "Randi",
+      "Stephen",
       "Glacier Bay National Park and Preserve",
-      "video"
+      "Alaska",
+      "cruise",
+      "glacier",
+      "Pacific Northwest",
+      "musical",
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fseasons-of-love%2Fmaster.m3u8?alt=media&token=0ac3fc89-d1a0-4b65-8ca6-1714d656ee03"
   },
@@ -94,7 +121,10 @@
     "tags": [
       "Michael",
       "Oregon Coast Range",
-      "video"
+      "Stephen",
+      "Pacific Northwest",
+      "van",
+      "coast"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fthe-sound-of-silence%2Fmaster.m3u8?alt=media&token=ef16a9ee-6281-468c-bf8f-8d779078a761"
   },
@@ -112,7 +142,9 @@
       "Eli",
       "Ayush",
       "Puerto Vallarta",
-      "video"
+      "Mexico",
+      "Stephen",
+      "beach"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fi-could-be-the-one%2Fmaster.m3u8?alt=media&token=361fac63-e91c-48ff-b712-f5cea43073b9"
   },
@@ -130,8 +162,10 @@
       "Michael",
       "Janita",
       "Tom",
+      "Stephen",
+      "Hawaii",
+      "beach",
       "Big Island",
-      "video"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fsecond-hand-news%2Fmaster.m3u8?alt=media&token=6f8a0b4e-e87e-419b-b76c-7948f7b2007a"
   },
@@ -148,8 +182,10 @@
     "tags": [
       "Michael",
       "Madrid",
-      "video"
-    ],
+      "Spain",
+      "Stephen",
+      "Granada"
+      ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fno-apagues-la-luz%2Fmaster.m3u8?alt=media&token=aad20ffa-8f59-4b3a-bc60-666afecfb5f2"
   },
   {
@@ -166,8 +202,11 @@
       "Amy",
       "Irene",
       "Michael",
+      "Stephen",
       "Bear Valley",
-      "video"
+      "mountains"
+      "winter"
+      "ski"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fwinter-song%2Fmaster.m3u8?alt=media&token=d9277819-81aa-4f2e-a5a6-8c30dc4ce146"
   },
@@ -184,7 +223,10 @@
     "tags": [
       "Eli",
       "Denali National Park and Preserve",
-      "video"
+      "Stephen",
+      "Alaska",
+      "mountains",
+      "coast"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fboulevard-of-broken-dreams%2Fmaster.m3u8?alt=media&token=e88f5e35-90e5-4be8-8ad6-ae175b980934"
   },
@@ -201,7 +243,9 @@
     "tags": [
       "Michael",
       "Big Island",
-      "video"
+      "Stephen",
+      "Hawaii",
+      "beach"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Finto-the-west%2Fmaster.m3u8?alt=media&token=02cedad6-e918-4029-952b-8211260e32ab"
   },
@@ -220,7 +264,9 @@
       "Tom",
       "Michael",
       "Maui",
-      "video"
+      "Hawaii",
+      "beach",
+      "Stephen"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fbaba-oriley%2Fmaster.m3u8?alt=media&token=74860426-4e59-4297-aeb8-c26ae9a53b1f"
   },
@@ -237,7 +283,8 @@
     "tags": [
       "Michael",
       "Channel Islands",
-      "video"
+      "Stephen",
+      "coast"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fojai%2Fmaster.m3u8?alt=media&token=daddc1bf-f933-4c2e-9106-7d4c7be69a45"
   },
@@ -254,7 +301,9 @@
     "tags": [
       "Michael",
       "Seattle and Vancouver",
-      "video"
+      "Pacific Northwest",
+      "Stephen",
+      "coast"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fflightless-bird-american-mouth%2Fmaster.m3u8?alt=media&token=705ad198-a624-4f49-9d08-27a40ace09cb"
   },
@@ -271,7 +320,8 @@
     "tags": [
       "Michael",
       "New Mexico",
-      "video"
+      "Stephen",
+      "desert"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fcowboy-take-me-away%2Fmaster.m3u8?alt=media&token=34fdb000-35db-483c-bf14-0fc49c38352e"
   },
@@ -288,7 +338,10 @@
     "tags": [
       "Michael",
       "Grand Teton National Park and Yellowstone National Park",
-      "video"
+      "Stephen",
+      "Wyoming",
+      "roadtrip"
+      "national park"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Frivers-and-roads%2Fmaster.m3u8?alt=media&token=0498b283-c65b-497a-98bc-a86c4b765d6b"
   },
@@ -305,7 +358,9 @@
     "tags": [
       "Michael",
       "Grand Canyon National Park and Sedona",
-      "video"
+      "Stephen",
+      "national park",
+      "desert"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fshallow%2Fmaster.m3u8?alt=media&token=3ced013b-89cf-4528-b571-db51f26b975c"
   },
@@ -322,7 +377,9 @@
     "tags": [
       "Janita",
       "Maui",
-      "video"
+      "Stephen",
+      "Hawaii",
+      "beach"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Ftiny-dancer%2Fmaster.m3u8?alt=media&token=995c6476-2d3c-4a0b-9201-b114c0dd729f"
   },
@@ -340,7 +397,9 @@
       "Irene",
       "Michael",
       "Maui",
-      "video"
+      "Stephen",
+      "Hawaii",
+      "beach"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Ftik-tok%2Fmaster.m3u8?alt=media&token=4c34d167-dadc-42e8-9950-49c60ba93e28"
   },
@@ -357,7 +416,7 @@
     "tags": [
       "Stephen",
       "Manhattan",
-      "video"
+      "New York City"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fspace-oddity%2Fmaster.m3u8?alt=media&token=8e3422c4-2274-4a89-b6d3-11dc16fea8e5"
   },
@@ -376,7 +435,8 @@
       "Jackson",
       "Michael",
       "Catskill Mountains",
-      "video"
+      "Stephen",
+      "mountains"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fdrift-away%2Fmaster.m3u8?alt=media&token=869b71dc-3a28-48c5-bdfe-4950e0a98f9c"
   },
@@ -393,7 +453,9 @@
     "tags": [
       "Michael",
       "Banff National Park",
-      "video"
+      "Stephen",
+      "national park",
+      "mountains"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Ffly-away-home%2Fmaster.m3u8?alt=media&token=14cc2d6c-f578-4142-ac0b-6f124954ccdc"
   },
@@ -410,7 +472,10 @@
     "tags": [
       "Michael",
       "Iceland",
-      "video"
+      "Stephen",
+      "camping",
+      "roadtrip",
+      "coast"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Ftransatlanticism%2Fmaster.m3u8?alt=media&token=891bccce-a2da-4498-98cf-ae549ebd68a4"
   },
@@ -427,7 +492,7 @@
     "tags": [
       "Stephen",
       "Austria",
-      "video"
+      "Italy"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fone-of-us%2Fmaster.m3u8?alt=media&token=efd679d6-826e-419f-8dac-e78d249eae4e"
   },
@@ -444,7 +509,11 @@
     "tags": [
       "Michael",
       "Crater Lake National Park",
-      "video"
+      "Stephen",
+      "national park",
+      "camping",
+      "roadtrip",
+      "redwoods"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Ffast-car%2Fmaster.m3u8?alt=media&token=524ce9da-9212-4ef4-aa80-f8e728b3223a"
   },
@@ -461,7 +530,8 @@
     "tags": [
       "Michael",
       "Humboldt Redwoods State Park",
-      "video"
+      "Stephen",
+      "redwoods"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fyou-were-meant-for-me%2Fmaster.m3u8?alt=media&token=4937843f-0882-4856-89e5-fb1786b1d5bd"
   },
@@ -478,7 +548,9 @@
     "tags": [
       "Michael",
       "Oak Creek Apartments | Stanford",
-      "video"
+      "Stephen",
+      "Stanford",
+      "musical"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fimpossible%2Fmaster.m3u8?alt=media&token=7231c41e-c4d4-4fe2-9894-5a1caa582b50"
   }
