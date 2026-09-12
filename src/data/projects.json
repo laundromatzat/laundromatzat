@@ -32,7 +32,7 @@
     "location": "Puerto Vallarta",
     "tags": [
       "Michael",
-      "Stephen"
+      "Stephen",
       "Mexico",
       "beach"
     ],
@@ -58,7 +58,7 @@
       "Canada",
       "musical",
       "Les Mis",
-      "Les Miserables",
+      "Les Miserables"
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fdo-you-hear-the-people-sing%2Fmaster.m3u8?alt=media&token=7fa3eaaa-e650-43d8-ad8a-cdc4c8318ba6"
   },
@@ -266,7 +266,7 @@
       "Maui",
       "Hawaii",
       "beach",
-      "Stephen"
+      "Stephen",
     ],
     "streamUrl": "https://firebasestorage.googleapis.com/v0/b/laundromat-zat.firebasestorage.app/o/streams%2Fbaba-oriley%2Fmaster.m3u8?alt=media&token=74860426-4e59-4297-aeb8-c26ae9a53b1f"
   },
