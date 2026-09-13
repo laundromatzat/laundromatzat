@@ -17,7 +17,10 @@ test.describe("Music video library", () => {
     await page.getByTestId("project-grid").locator("li").first().click();
 
     await expect(page).toHaveURL(/\/vids\/.+/);
-    await expect(page.locator("video")).toBeVisible();
+    // toBeAttached, not toBeVisible, for the reason spelled out below: a
+    // <video> with neither media nor poster loaded collapses to zero height,
+    // so visibility would be asserting that the network is up.
+    await expect(page.locator("video")).toBeAttached();
   });
 
   test("closing the player returns to the library", async ({ page }) => {
@@ -43,10 +46,14 @@ test.describe("Video playback", () => {
     // that the network is up rather than that the player was wired correctly.
     await expect(video).toBeAttached();
     // The source is assigned by useAdaptiveVideoSource rather than a <source>
-    // child, so assert the element really ends up pointed at the media.
+    // child, so assert the element really ends up pointed at the media. Which
+    // form that takes depends on the path taken: the bucket URL for native HLS
+    // and for the progressive file, a blob: MediaSource for hls.js.
     await expect
       .poll(() => video.evaluate((el: HTMLVideoElement) => el.currentSrc || el.src))
-      .toMatch(/firebasestorage\.googleapis\.com/);
+      .toMatch(/^(blob:|https:\/\/firebasestorage\.googleapis\.com)/);
+    // ...and that it settled on one of them rather than finding nothing to play.
+    await expect(video).not.toHaveAttribute("data-video-source", "none");
   });
 
   test("keeps the poster while the video loads", async ({ page }) => {

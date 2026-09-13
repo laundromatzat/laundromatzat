@@ -1,11 +1,15 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import VideosPage from "@/pages/VideosPage";
 import { VIDEOS } from "@/constants";
-import { collectFilterTags } from "@/utils/videoFilters";
+import {
+  collectFilterTags,
+  collectLocations,
+  collectPeople,
+} from "@/utils/videoFilters";
 
 function renderPage(initialEntry = "/") {
   const router = createMemoryRouter(
@@ -64,91 +68,119 @@ describe("VideosPage filtering", () => {
     const year = VIDEOS[0].year;
     renderPage(`/?year=${year}`);
 
-    const expected = VIDEOS.filter((v) => v.year === year).length;
-    expect(cardCount()).toBe(expected);
-    expect(
-      screen.getByRole("button", { name: String(year), pressed: true }),
-    ).toBeInTheDocument();
+    expect(cardCount()).toBe(VIDEOS.filter((v) => v.year === year).length);
+    expect(screen.getByRole("combobox", { name: /year/i })).toHaveValue(String(year));
   });
 
-  it("toggles a year chip off when pressed again", async () => {
+  it("filters by each of the four axes", async () => {
+    const user = userEvent.setup();
+
+    const year = VIDEOS[0].year;
+    const cases = [
+      {
+        label: /year/i,
+        facet: {
+          value: String(year),
+          count: VIDEOS.filter((v) => v.year === year).length,
+        },
+      },
+      // Someone on every video is a legitimate option but not a test of
+      // narrowing, so pick a person who is on some of it.
+      {
+        label: /people/i,
+        facet: collectPeople(VIDEOS).find((f) => f.count < VIDEOS.length)!,
+      },
+      { label: /location/i, facet: collectLocations(VIDEOS)[0] },
+      { label: /tag/i, facet: collectFilterTags(VIDEOS)[0] },
+    ];
+
+    for (const { label, facet } of cases) {
+      const router = renderPage();
+      await user.selectOptions(screen.getByRole("combobox", { name: label }), facet.value);
+      await waitFor(() => expect(cardCount()).toBe(facet.count));
+      expect(router.state.location.search).not.toBe("");
+      cleanup();
+    }
+  });
+
+  it("returns to the whole library when an axis is set back to any", async () => {
     const user = userEvent.setup();
     const year = VIDEOS[0].year;
     renderPage(`/?year=${year}`);
 
-    await user.click(screen.getByRole("button", { name: String(year), pressed: true }));
+    await user.selectOptions(screen.getByRole("combobox", { name: /year/i }), "");
 
     await waitFor(() => expect(cardCount()).toBe(VIDEOS.length));
   });
 
-  it("filters by a tag chip", async () => {
-    const user = userEvent.setup();
-    const facet = collectFilterTags(VIDEOS)[0];
+  it("offers every person, including the ones on most of the library", () => {
+    // The regression this guards: the people most worth filtering by were the
+    // ones a "too common to be useful" rule threw away.
     renderPage();
+    const options = within(screen.getByRole("combobox", { name: /people/i }))
+      .getAllByRole("option")
+      .map((o) => o.textContent ?? "");
 
-    await user.click(screen.getByRole("button", { name: new RegExp(`^${facet.tag}`) }));
-
-    await waitFor(() => expect(cardCount()).toBe(facet.count));
+    expect(options.some((o) => o.startsWith("Stephen"))).toBe(true);
+    expect(options.some((o) => o.startsWith("Michael"))).toBe(true);
   });
 
-  it("offers no chip for a tag that would filter to everything or to one card", () => {
+  it("offers every tag, down to the ones on a single video", () => {
     renderPage();
-    const group = screen.getByRole("group", { name: /filter by tag/i });
-    const labels = within(group)
-      .getAllByRole("button")
-      .map((b) => b.textContent ?? "");
+    const options = within(screen.getByRole("combobox", { name: /tag/i })).getAllByRole(
+      "option",
+    );
+    // One option per tag, plus the "Any tag" row.
+    expect(options).toHaveLength(collectFilterTags(VIDEOS).length + 1);
+  });
 
-    expect(labels.some((l) => l.startsWith("video"))).toBe(false);
-    expect(labels.some((l) => l.startsWith("Michael"))).toBe(false);
+  it("keeps the four axes out of the way on a phone, behind one control", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const toggle = screen.getByRole("button", { name: /^filters/i });
+    const panel = document.getElementById(toggle.getAttribute("aria-controls")!)!;
+
+    // Hidden at phone width, laid out as a row once there is room for it.
+    expect(panel.className).toContain("hidden");
+    expect(panel.className).toContain("md:grid");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(toggle);
+
+    await waitFor(() => expect(toggle).toHaveAttribute("aria-expanded", "true"));
+    expect(panel.className).not.toContain("hidden");
+  });
+
+  it("badges the collapsed control with how many axes are narrowing", () => {
+    renderPage(`/?year=${VIDEOS[0].year}&tag=beach`);
+    expect(screen.getByRole("button", { name: /^filters/i }).textContent).toContain("2");
+  });
+
+  it("does not badge the collapsed control for the search box beside it", () => {
+    renderPage("/?q=maui");
+    expect(screen.getByRole("button", { name: /^filters/i }).textContent).toBe("Filters");
   });
 
   it("keeps every filter control at a comfortable touch target", () => {
     renderPage();
     // Same 44px the player's controls use; these are tapped on a phone too.
-    for (const group of [/filter by year/i, /filter by tag/i]) {
-      for (const chip of within(screen.getByRole("group", { name: group })).getAllByRole(
-        "button",
-      )) {
-        expect(chip.className).toContain("min-h-[2.75rem]");
-      }
+    for (const control of [
+      ...screen.getAllByRole("combobox"),
+      screen.getByRole("searchbox"),
+      screen.getByRole("button", { name: /^filters/i }),
+    ]) {
+      expect(control.className).toContain("min-h-[2.75rem]");
     }
-    expect(screen.getByRole("searchbox").className).toContain("min-h-[2.75rem]");
   });
 
-  it("collapses a long tag row behind a toggle, and expands it again", async () => {
-    const user = userEvent.setup();
-    const total = collectFilterTags(VIDEOS).length;
-    renderPage();
+  it("shows a filter the list no longer carries, rather than reading empty", () => {
+    // Michael moved from the tag list to the People list. A link shared before
+    // that still narrows the grid, so the control has to admit it.
+    renderPage("/?tag=Michael");
 
-    const group = () => screen.getByRole("group", { name: /filter by tag/i });
-    const chips = () => within(group()).getAllByRole("button").length;
-
-    if (total <= 10) {
-      // Nothing to collapse at this library size.
-      expect(within(group()).queryByRole("button", { name: /show all/i })).toBeNull();
-      return;
-    }
-
-    const collapsed = chips();
-    expect(collapsed).toBeLessThan(total + 1);
-
-    await user.click(within(group()).getByRole("button", { name: /show all/i }));
-    await waitFor(() => expect(chips()).toBeGreaterThan(collapsed));
-
-    await user.click(within(group()).getByRole("button", { name: /show fewer/i }));
-    await waitFor(() => expect(chips()).toBe(collapsed));
-  });
-
-  it("keeps a selected tag visible even when it sits past the cut", async () => {
-    const facets = collectFilterTags(VIDEOS);
-    if (facets.length <= 10) return;
-
-    const hidden = facets[facets.length - 1];
-    renderPage(`/?tag=${encodeURIComponent(hidden.tag)}`);
-
-    expect(
-      screen.getByRole("button", { name: new RegExp(`^${hidden.tag}`), pressed: true }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /tag/i })).toHaveValue("Michael");
+    expect(cardCount()).toBe(VIDEOS.filter((v) => v.tags?.includes("Michael")).length);
   });
 
   it("explains an empty result and offers a way out", async () => {
@@ -167,7 +199,9 @@ describe("VideosPage filtering", () => {
 
   it("clears every filter at once", async () => {
     const user = userEvent.setup();
-    const router = renderPage(`/?q=maui&year=${VIDEOS[0].year}`);
+    const router = renderPage(
+      `/?q=maui&year=${VIDEOS[0].year}&person=Stephen&location=Maui&tag=beach`,
+    );
 
     await user.click(screen.getAllByRole("button", { name: /clear filters/i })[0]);
 

@@ -35,6 +35,7 @@ Pre-commit hooks (Husky + lint-staged) lint changed files.
 ```
 src/
   data/projects.json      ← all site content lives here
+  data/people.json        the names the People filter offers
   constants.ts            parses that JSON into the VIDEOS array
   index.tsx               router: "/" and "/vids/:slug"
   App.tsx                 layout shell
@@ -44,7 +45,7 @@ src/
   components/
     ProjectGrid.tsx       grid + modal state, keyboard paging
     ProjectCard.tsx       one thumbnail card
-    FilterBar.tsx         search, year chips, tag chips
+    FilterBar.tsx         search, plus the four axes (folded away on a phone)
     PortfolioModal.tsx    the video player
     Header.tsx, Container.tsx, PageMetadata.tsx, ErrorBoundary.tsx
     aura/                 AuraButton, AuraCard (design system)
@@ -59,7 +60,7 @@ src/
     projectDates.ts       MM/YYYY parsing and sort
     slugs.ts              title → URL slug
     socialMetadata.ts     the og:/twitter: tags a page should carry
-    videoFilters.ts       search/year/tag matching, facets, URL round trip
+    videoFilters.ts       matching on four axes, facets, URL round trip
 scripts/
   add-video.mjs           append an entry from a Firebase download URL
   check-media.mjs         verify media still serves, report size and caching
@@ -100,15 +101,19 @@ Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
 - `App.tsx` moves focus to `<main>` on navigation, but skips it while a
   `[role="dialog"][aria-modal="true"]` is open: paging the player changes the
   URL every step and would otherwise drag focus out of the dialog.
-- **Filters live in the URL** (`?q=`, `?year=`, `?tag=`), so a narrowed view is
-  shareable, and they survive opening a video. A deep link wins over them: a
-  `/vids/<slug>` the filters exclude still opens.
-- **Tag chips are derived, not curated.** `collectFilterTags` offers only tags
-  on more than one video and at most 60% of the library, because this archive
-  tags nearly everything "video" and most of it with the person who shot it —
-  chips for those would be buttons that do nothing. Most tags and nearly every
-  location appear on a single video, which is why free text carries the long
-  tail instead.
+- **Filters live in the URL** (`?q=`, `?year=`, `?person=`, `?location=`,
+  `?tag=`), so a narrowed view is shareable, and they survive opening a video.
+  A deep link wins over them: a `/vids/<slug>` the filters exclude still opens.
+- **Filtering has four axes: year, people, location, tag.** Year and location are
+  derived from the `date` and `location` fields; people come from
+  `src/data/people.json`; tag is the catch-all and offers everything that is
+  neither. People are curated because a name is not distinguishable from any
+  other tag by shape — and splitting them out is what makes them usable, since
+  the two most-tagged people are on 100% and 82% of the library and any
+  "too common to be a useful filter" rule threw exactly them away. Each axis is
+  a `<select>`, not a row of chips: 14 years, 24 locations and 32 tags do not
+  fit in a wrapping row, and on a phone they buried the grid. Adding a person is
+  a content edit, like adding a video.
 
 ## External connections
 

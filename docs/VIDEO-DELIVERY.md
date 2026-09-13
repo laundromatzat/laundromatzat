@@ -281,3 +281,32 @@ Adaptive playback needs three things the CSP in `index.html` already grants:
   worker. Without it hls.js still works, but on the main thread.
 
 Any new media host has to be added to `connect-src` **and** `media-src`.
+
+
+## Every HLS attempt is provisional
+
+`useAdaptiveVideoSource` treats a stream as something to try, never as the
+final answer. Three things can go wrong and only one of them announces itself:
+
+- **hls.js** raises a fatal error, which the hook listens for.
+- **Native HLS** (Safari, iOS) reports nothing at all -- the `<video>` element
+  simply fires `error`. Without a listener on it, a visitor on that path got a
+  dead player and no second chance, because the native branch returns before
+  any of the hls.js recovery exists. This is the path every iPhone takes.
+- **Neither** -- the stream stalls silently. `canPlayType` is a guess, not a
+  promise: Chrome on Android answers "maybe" for the HLS type and then cannot
+  play it. A watchdog gives the stream 12 seconds to reach `readyState > 0`.
+
+All three land in the same place: the progressive file, which is the source
+that worked before any of this existed. Bytes arriving disarms the watchdog but
+does not settle the question -- a stream can start flowing and still fail to
+decode, so the error path stays armed until the file is in play.
+
+The player only shows its failure panel once the file itself is the source that
+failed. Before that it keeps its spinner, because hls.js detaching its
+MediaSource is itself reported as an element `error`, and treating that as final
+would put a failure panel over a video that is about to play.
+
+`<video data-video-source>` carries which source is in play (`hls-native`,
+`hls-mse`, `progressive`, `none`). It is the first thing worth knowing when
+someone reports a video that will not start.

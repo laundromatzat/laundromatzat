@@ -51,10 +51,20 @@ function PortfolioModal({
     setVideoElement(element);
   }, []);
 
-  useAdaptiveVideoSource(videoElement, {
+  const source = useAdaptiveVideoSource(videoElement, {
     streamUrl: project?.streamUrl,
     fileUrl: project?.projectUrl,
   });
+
+  // An HLS attempt that fails has the progressive file still to come, and the
+  // element fires `error` on the way there -- hls.js detaching its MediaSource
+  // is itself reported as an error. Reading that as final would show a failure
+  // panel over a video that is about to play, so the panel waits until the
+  // source being played is the last one there is.
+  const sourceRef = useRef(source);
+  useEffect(() => {
+    sourceRef.current = source;
+  }, [source]);
 
   useScrollLock(true);
   useFocusTrap(dialogRef, true);
@@ -72,6 +82,13 @@ function PortfolioModal({
     setPlayback("loading");
     setNeedsTap(false);
   }, [project]);
+
+  // Falling back is a fresh attempt, not a continuation of the failed one.
+  useEffect(() => {
+    if (source === "progressive") {
+      setPlayback("loading");
+    }
+  }, [source]);
 
   // An entry with neither a stream nor a file can never load, so say so rather
   // than leaving a black rectangle spinning forever. Checked from the data, not
@@ -102,7 +119,12 @@ function PortfolioModal({
 
     const markReady = () => setPlayback("ready");
     const markLoading = () => setPlayback("loading");
-    const markError = () => setPlayback("error");
+    const markError = () => {
+      if (sourceRef.current === "hls-native" || sourceRef.current === "hls-mse") {
+        return;
+      }
+      setPlayback("error");
+    };
 
     video.addEventListener("loadeddata", startPlayback, { once: true });
     video.addEventListener("playing", markReady);
@@ -266,6 +288,7 @@ function PortfolioModal({
             <video
               key={project.id}
               ref={attachVideo}
+              data-video-source={source}
               className="w-full bg-black object-contain max-h-[65svh] landscape:max-h-[80svh]"
               controls
               playsInline
