@@ -45,7 +45,7 @@ src/
   components/
     ProjectGrid.tsx       grid + modal state, keyboard paging
     ProjectCard.tsx       one thumbnail card
-    FilterBar.tsx         search, year chips, tag chips
+    FilterBar.tsx         search, plus the four axes (folded away on a phone)
     PortfolioModal.tsx    the video player
     Header.tsx, Container.tsx, PageMetadata.tsx, ErrorBoundary.tsx
     aura/                 AuraButton, AuraCard (design system)
@@ -102,9 +102,8 @@ Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
   `[role="dialog"][aria-modal="true"]` is open: paging the player changes the
   URL every step and would otherwise drag focus out of the dialog.
 - **Filters live in the URL** (`?q=`, `?year=`, `?person=`, `?location=`,
-  `?tag=`), so a narrowed view is
-  shareable, and they survive opening a video. A deep link wins over them: a
-  `/vids/<slug>` the filters exclude still opens.
+  `?tag=`), so a narrowed view is shareable, and they survive opening a video.
+  A deep link wins over them: a `/vids/<slug>` the filters exclude still opens.
 - **Filtering has four axes: year, people, location, tag.** Year and location are
   derived from the `date` and `location` fields; people come from
   `src/data/people.json`; tag is the catch-all and offers everything that is
