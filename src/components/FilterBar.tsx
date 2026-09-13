@@ -1,4 +1,4 @@
-import React, { useId } from "react";
+import React, { useId, useState } from "react";
 import clsx from "clsx";
 import {
   TagFacet,
@@ -36,6 +36,15 @@ function chipClass(active: boolean): string {
  * single video), while year and the handful of recurring tags are the axes
  * broad enough to browse by.
  */
+/**
+ * Chips shown before the row is collapsed behind a toggle.
+ *
+ * How many tags qualify depends on how richly the library is tagged, and a
+ * wrapping row of every one of them buries the grid on a phone. The rest stay
+ * one tap away, and search reaches them regardless.
+ */
+const CHIPS_SHOWN = 10;
+
 function FilterBar({
   filters,
   onChange,
@@ -46,6 +55,17 @@ function FilterBar({
 }: FilterBarProps): React.ReactNode {
   const searchId = useId();
   const active = hasActiveFilters(filters);
+  const [showAllTags, setShowAllTags] = useState(false);
+
+  // A selected tag stays visible even when it sits past the cut.
+  const visibleTags =
+    showAllTags || tags.length <= CHIPS_SHOWN
+      ? tags
+      : tags
+          .slice(0, CHIPS_SHOWN)
+          .concat(
+            tags.slice(CHIPS_SHOWN).filter((facet) => facet.tag === filters.tag),
+          );
 
   const toggleYear = (year: number) =>
     onChange({ ...filters, year: filters.year === year ? null : year });
@@ -112,7 +132,7 @@ function FilterBar({
 
       {tags.length > 0 ? (
         <div role="group" aria-label="Filter by tag" className="flex flex-wrap gap-2">
-          {tags.map(({ tag, count }) => (
+          {visibleTags.map(({ tag, count }) => (
             <button
               key={tag}
               type="button"
@@ -124,6 +144,16 @@ function FilterBar({
               <span className="ml-1.5 text-xs opacity-60">{count}</span>
             </button>
           ))}
+          {tags.length > CHIPS_SHOWN ? (
+            <button
+              type="button"
+              aria-expanded={showAllTags}
+              onClick={() => setShowAllTags((shown) => !shown)}
+              className={clsx(chipClass(false), "underline underline-offset-4")}
+            >
+              {showAllTags ? "Show fewer" : `Show all ${tags.length}`}
+            </button>
+          ) : null}
         </div>
       ) : null}
 

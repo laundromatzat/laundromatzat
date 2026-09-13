@@ -115,6 +115,42 @@ describe("VideosPage filtering", () => {
     expect(screen.getByRole("searchbox").className).toContain("min-h-[2.75rem]");
   });
 
+  it("collapses a long tag row behind a toggle, and expands it again", async () => {
+    const user = userEvent.setup();
+    const total = collectFilterTags(VIDEOS).length;
+    renderPage();
+
+    const group = () => screen.getByRole("group", { name: /filter by tag/i });
+    const chips = () => within(group()).getAllByRole("button").length;
+
+    if (total <= 10) {
+      // Nothing to collapse at this library size.
+      expect(within(group()).queryByRole("button", { name: /show all/i })).toBeNull();
+      return;
+    }
+
+    const collapsed = chips();
+    expect(collapsed).toBeLessThan(total + 1);
+
+    await user.click(within(group()).getByRole("button", { name: /show all/i }));
+    await waitFor(() => expect(chips()).toBeGreaterThan(collapsed));
+
+    await user.click(within(group()).getByRole("button", { name: /show fewer/i }));
+    await waitFor(() => expect(chips()).toBe(collapsed));
+  });
+
+  it("keeps a selected tag visible even when it sits past the cut", async () => {
+    const facets = collectFilterTags(VIDEOS);
+    if (facets.length <= 10) return;
+
+    const hidden = facets[facets.length - 1];
+    renderPage(`/?tag=${encodeURIComponent(hidden.tag)}`);
+
+    expect(
+      screen.getByRole("button", { name: new RegExp(`^${hidden.tag}`), pressed: true }),
+    ).toBeInTheDocument();
+  });
+
   it("explains an empty result and offers a way out", async () => {
     const user = userEvent.setup();
     renderPage();

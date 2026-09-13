@@ -116,9 +116,12 @@ describe("collectFilterTags", () => {
     // that would do nothing.
     expect(names).not.toContain("video");
     expect(names).not.toContain("Michael");
-    expect(facets.every((f) => f.count > 1)).toBe(true);
     expect(facets.length).toBeGreaterThan(0);
-    expect(facets.length).toBeLessThan(15);
+    // Every chip narrows: on more than one video, and on no more than the
+    // share above which a filter stops filtering. Asserting the property
+    // rather than a count, so enriching the tags cannot fail the build.
+    expect(facets.every((f) => f.count > 1)).toBe(true);
+    expect(facets.every((f) => f.count <= VIDEOS.length * 0.6)).toBe(true);
   });
 });
 
