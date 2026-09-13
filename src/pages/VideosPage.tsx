@@ -12,6 +12,8 @@ import {
   EMPTY_FILTERS,
   VideoFilters,
   collectFilterTags,
+  collectLocations,
+  collectPeople,
   collectYears,
   filterVideos,
   filtersFromSearchParams,
@@ -31,6 +33,8 @@ function VideosPage(): React.ReactNode {
   const filters = useMemo(() => filtersFromSearchParams(searchParams), [searchParams]);
 
   const years = useMemo(() => collectYears(videos), [videos]);
+  const people = useMemo(() => collectPeople(videos), [videos]);
+  const locations = useMemo(() => collectLocations(videos), [videos]);
   const tags = useMemo(() => collectFilterTags(videos), [videos]);
 
   const activeProject = useMemo(
@@ -88,6 +92,8 @@ function VideosPage(): React.ReactNode {
         filters={filters}
         onChange={handleFiltersChange}
         years={years}
+        people={people}
+        locations={locations}
         tags={tags}
         resultCount={visible.length}
         totalCount={videos.length}
@@ -101,7 +107,7 @@ function VideosPage(): React.ReactNode {
           <div className="rounded-2xl border border-aura-border bg-aura-surface px-6 py-10 text-center">
             <p className="text-aura-text-primary font-semibold">Nothing matches that.</p>
             <p className="mt-1 text-sm text-aura-text-secondary">
-              Try a different word, or widen the year and tag filters.
+              Try a different word, or widen one of the filters.
             </p>
             {hasActiveFilters(filters) ? (
               <AuraButton
