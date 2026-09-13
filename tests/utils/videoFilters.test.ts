@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { VIDEOS } from "@/constants";
 import {
   EMPTY_FILTERS,
+  KNOWN_PEOPLE,
+  activeFacetCount,
   collectFilterTags,
+  collectLocations,
+  collectPeople,
   collectYears,
   filterVideos,
   filtersFromSearchParams,
@@ -17,7 +21,7 @@ describe("matchesFilters", () => {
     title: "Drift Away",
     description: "A road film through the desert.",
     location: "New Mexico",
-    tags: ["Michael", "Irene"],
+    tags: ["Michael", "Irene", "roadtrip"],
     date: "06/2019",
     year: 2019,
   });
@@ -47,106 +51,202 @@ describe("matchesFilters", () => {
     expect(matchesFilters(video, { ...EMPTY_FILTERS, year: 2020 })).toBe(false);
   });
 
-  it("matches a tag exactly, not as a substring", () => {
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, tag: "Irene" })).toBe(true);
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, tag: "Iren" })).toBe(false);
+  it("matches a person against the tags", () => {
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, person: "Irene" })).toBe(true);
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, person: "Tom" })).toBe(false);
   });
 
-  it("combines filters with AND", () => {
-    expect(matchesFilters(video, { query: "drift", year: 2019, tag: "Irene" })).toBe(true);
-    expect(matchesFilters(video, { query: "drift", year: 2020, tag: "Irene" })).toBe(false);
+  it("matches a location against the location field, whole and exact", () => {
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, location: "New Mexico" })).toBe(true);
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, location: "new mexico" })).toBe(true);
+    // A location is one place, not a prefix of one: "New" must not match.
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, location: "New" })).toBe(false);
+  });
+
+  it("matches a tag exactly, not as a substring", () => {
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, tag: "roadtrip" })).toBe(true);
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, tag: "road" })).toBe(false);
+  });
+
+  it("combines all four axes with AND", () => {
+    const all = {
+      query: "drift",
+      year: 2019,
+      person: "Irene",
+      location: "New Mexico",
+      tag: "roadtrip",
+    };
+    expect(matchesFilters(video, all)).toBe(true);
+    expect(matchesFilters(video, { ...all, person: "Tom" })).toBe(false);
+    expect(matchesFilters(video, { ...all, location: "Maui" })).toBe(false);
+    expect(matchesFilters(video, { ...all, year: 2020 })).toBe(false);
   });
 
   it("survives a video with no tags or location", () => {
     const sparse = makeVideo({ tags: undefined, location: undefined });
     expect(matchesFilters(sparse, EMPTY_FILTERS)).toBe(true);
     expect(matchesFilters(sparse, { ...EMPTY_FILTERS, tag: "Irene" })).toBe(false);
+    expect(matchesFilters(sparse, { ...EMPTY_FILTERS, person: "Irene" })).toBe(false);
+    expect(matchesFilters(sparse, { ...EMPTY_FILTERS, location: "Maui" })).toBe(false);
+  });
+});
+
+describe("collectPeople", () => {
+  it("offers everyone present, however much of the library they are on", () => {
+    // The regression this guards: Stephen is on every video and Michael on most,
+    // so a rule that dropped tags for being too common dropped both of them --
+    // the two people most likely to be searched for.
+    const people = collectPeople(VIDEOS).map((f) => f.value);
+    expect(people).toContain("Stephen");
+    expect(people).toContain("Michael");
+  });
+
+  it("offers people on only one video too, since that is how you reach it", () => {
+    const facets = collectPeople(VIDEOS);
+    expect(facets.some((f) => f.count === 1)).toBe(true);
+  });
+
+  it("counts truthfully", () => {
+    for (const { value, count } of collectPeople(VIDEOS)) {
+      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, person: value })).toHaveLength(count);
+    }
+  });
+
+  it("leaves out anyone the library does not mention", () => {
+    const videos = [makeVideo({ id: "1", tags: ["Irene"] })];
+    expect(collectPeople(videos)).toEqual([{ value: "Irene", count: 1 }]);
+  });
+
+  it("only ever offers names from the curated list", () => {
+    const known = new Set(KNOWN_PEOPLE);
+    for (const { value } of collectPeople(VIDEOS)) {
+      expect(known.has(value)).toBe(true);
+    }
+  });
+});
+
+describe("collectLocations", () => {
+  it("takes locations verbatim from the location field", () => {
+    const videos = [
+      makeVideo({ id: "1", location: "Maui" }),
+      makeVideo({ id: "2", location: "Maui" }),
+      makeVideo({ id: "3", location: "Iceland" }),
+      makeVideo({ id: "4", location: undefined }),
+    ];
+    expect(collectLocations(videos)).toEqual([
+      { value: "Maui", count: 2 },
+      { value: "Iceland", count: 1 },
+    ]);
+  });
+
+  it("counts truthfully across the real library", () => {
+    for (const { value, count } of collectLocations(VIDEOS)) {
+      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, location: value })).toHaveLength(count);
+    }
   });
 });
 
 describe("collectFilterTags", () => {
-  /** Ten videos: enough that a share of the library means something. */
-  function library(tagsFor: (index: number) => string[]) {
-    return Array.from({ length: 10 }, (_, i) =>
-      makeVideo({ id: String(i), tags: tagsFor(i) }),
-    );
-  }
-
-  it("drops tags on a single video, which filter to the card you just clicked", () => {
-    const videos = library((i) => (i < 3 ? ["Shared"] : i === 3 ? ["Lonely"] : []));
-    expect(collectFilterTags(videos).map((f) => f.tag)).toEqual(["Shared"]);
+  it("offers a tag on a single video, because that is a way to reach it", () => {
+    const videos = [
+      makeVideo({ id: "1", tags: ["eclipse"], location: undefined }),
+      makeVideo({ id: "2", tags: [], location: undefined }),
+    ];
+    expect(collectFilterTags(videos)).toEqual([{ value: "eclipse", count: 1 }]);
   });
 
-  it("drops a tag on nearly everything, which narrows nothing", () => {
-    const videos = library((i) => (i < 3 ? ["video", "Rare"] : ["video"]));
-    const tags = collectFilterTags(videos).map((f) => f.tag);
-    expect(tags).not.toContain("video");
-    expect(tags).toContain("Rare");
+  it("leaves people to the People control", () => {
+    const videos = [makeVideo({ id: "1", tags: ["Stephen", "beach"], location: undefined })];
+    expect(collectFilterTags(videos).map((f) => f.value)).toEqual(["beach"]);
   });
 
-  it("orders by how many videos a tag covers", () => {
-    const videos = library((i) => {
-      const tags = [];
-      if (i < 5) tags.push("Many");
-      if (i < 2) tags.push("Few");
-      return tags;
-    });
+  it("leaves a tag that only repeats a location to the Location control", () => {
+    const videos = [makeVideo({ id: "1", location: "Maui", tags: ["Maui", "beach"] })];
+    expect(collectFilterTags(videos).map((f) => f.value)).toEqual(["beach"]);
+  });
+
+  it("orders by how many videos a tag covers, then alphabetically", () => {
+    const videos = [
+      makeVideo({ id: "1", tags: ["Many", "Few"], location: undefined }),
+      makeVideo({ id: "2", tags: ["Many", "Few"], location: undefined }),
+      makeVideo({ id: "3", tags: ["Many", "Also"], location: undefined }),
+    ];
     expect(collectFilterTags(videos)).toEqual([
-      { tag: "Many", count: 5 },
-      { tag: "Few", count: 2 },
+      { value: "Many", count: 3 },
+      { value: "Few", count: 2 },
+      { value: "Also", count: 1 },
     ]);
   });
 
-  it("offers nothing for a library too small for a share to mean anything", () => {
-    // Two videos sharing a tag is 100% of the library, which narrows nothing.
-    // FilterBar hides the group when this is empty, which is the right answer:
-    // a library this size does not need filtering.
-    const videos = [
-      makeVideo({ id: "1", tags: ["Both"] }),
-      makeVideo({ id: "2", tags: ["Both"] }),
-    ];
-    expect(collectFilterTags(videos)).toEqual([]);
+  it("is about subject, not about who or where", () => {
+    const names = collectFilterTags(VIDEOS).map((f) => f.value);
+    const people = new Set(collectPeople(VIDEOS).map((f) => f.value));
+    const places = new Set(collectLocations(VIDEOS).map((f) => f.value));
+
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
+      expect(people.has(name)).toBe(false);
+      expect(places.has(name)).toBe(false);
+    }
+    expect(names).toContain("beach");
   });
 
-  it("picks usable chips out of the real library", () => {
-    const facets = collectFilterTags(VIDEOS);
-    const names = facets.map((f) => f.tag);
-
-    // "video" is on nearly every entry and "Michael" on most: both are buttons
-    // that would do nothing.
-    expect(names).not.toContain("video");
-    expect(names).not.toContain("Michael");
-    expect(facets.length).toBeGreaterThan(0);
-    // Every chip narrows: on more than one video, and on no more than the
-    // share above which a filter stops filtering. Asserting the property
-    // rather than a count, so enriching the tags cannot fail the build.
-    expect(facets.every((f) => f.count > 1)).toBe(true);
-    expect(facets.every((f) => f.count <= VIDEOS.length * 0.6)).toBe(true);
+  it("counts truthfully", () => {
+    for (const { value, count } of collectFilterTags(VIDEOS)) {
+      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, tag: value })).toHaveLength(count);
+    }
   });
 });
 
 describe("collectYears", () => {
-  it("lists the years present, newest first, without repeats", () => {
+  it("lists the years present, newest first, with counts", () => {
     const videos = [
       makeVideo({ id: "1", year: 2019 }),
       makeVideo({ id: "2", year: 2024 }),
       makeVideo({ id: "3", year: 2019 }),
     ];
-    expect(collectYears(videos)).toEqual([2024, 2019]);
+    expect(collectYears(videos)).toEqual([
+      { value: "2024", count: 1 },
+      { value: "2019", count: 2 },
+    ]);
   });
 
-  it("covers the real library's span", () => {
-    const years = collectYears(VIDEOS);
+  it("stays chronological over the real library, not ordered by size", () => {
+    const years = collectYears(VIDEOS).map((f) => Number(f.value));
     expect(years).toEqual([...years].sort((a, b) => b - a));
     expect(new Set(years).size).toBe(years.length);
   });
 });
 
+describe("activeFacetCount", () => {
+  it("counts the axes that fold away, and not the search box", () => {
+    expect(activeFacetCount(EMPTY_FILTERS)).toBe(0);
+    // The search input stays on screen when the axes are collapsed, so badging
+    // the disclosure for it would point at something already visible.
+    expect(activeFacetCount({ ...EMPTY_FILTERS, query: "maui" })).toBe(0);
+    expect(activeFacetCount({ ...EMPTY_FILTERS, year: 2019, tag: "beach" })).toBe(2);
+    expect(
+      activeFacetCount({
+        query: "x",
+        year: 2019,
+        person: "Tom",
+        location: "Maui",
+        tag: "beach",
+      }),
+    ).toBe(4);
+  });
+});
+
 describe("URL round trip", () => {
   it("survives a round trip through search params", () => {
-    const filters = { query: "maui sunset", year: 2019, tag: "Irene" };
-    const restored = filtersFromSearchParams(searchParamsFromFilters(filters));
-    expect(restored).toEqual(filters);
+    const filters = {
+      query: "maui sunset",
+      year: 2019,
+      person: "Irene",
+      location: "Big Island",
+      tag: "beach",
+    };
+    expect(filtersFromSearchParams(searchParamsFromFilters(filters))).toEqual(filters);
   });
 
   it("writes nothing for empty filters, so a clean view has a clean URL", () => {
@@ -162,6 +262,11 @@ describe("URL round trip", () => {
     expect(hasActiveFilters({ ...EMPTY_FILTERS, query: "   " })).toBe(false);
     expect(searchParamsFromFilters({ ...EMPTY_FILTERS, query: "  x " }).get("q")).toBe("x");
   });
+
+  it("treats each axis as active on its own", () => {
+    expect(hasActiveFilters({ ...EMPTY_FILTERS, person: "Tom" })).toBe(true);
+    expect(hasActiveFilters({ ...EMPTY_FILTERS, location: "Maui" })).toBe(true);
+  });
 });
 
 describe("filterVideos over the real library", () => {
@@ -169,17 +274,21 @@ describe("filterVideos over the real library", () => {
     expect(filterVideos(VIDEOS, EMPTY_FILTERS)).toHaveLength(VIDEOS.length);
   });
 
-  it("narrows to a subset for each offered chip", () => {
-    for (const { tag, count } of collectFilterTags(VIDEOS)) {
-      const matched = filterVideos(VIDEOS, { ...EMPTY_FILTERS, tag });
-      expect(matched).toHaveLength(count);
-      expect(matched.length).toBeLessThan(VIDEOS.length);
+  it("finds something for every option offered on every axis", () => {
+    for (const { value } of collectYears(VIDEOS)) {
+      expect(
+        filterVideos(VIDEOS, { ...EMPTY_FILTERS, year: Number(value) }).length,
+      ).toBeGreaterThan(0);
     }
-  });
-
-  it("finds something for every year offered", () => {
-    for (const year of collectYears(VIDEOS)) {
-      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, year }).length).toBeGreaterThan(0);
+    for (const { value } of [
+      ...collectPeople(VIDEOS),
+      ...collectLocations(VIDEOS),
+      ...collectFilterTags(VIDEOS),
+    ]) {
+      const byPerson = filterVideos(VIDEOS, { ...EMPTY_FILTERS, person: value });
+      const byLocation = filterVideos(VIDEOS, { ...EMPTY_FILTERS, location: value });
+      const byTag = filterVideos(VIDEOS, { ...EMPTY_FILTERS, tag: value });
+      expect(byPerson.length + byLocation.length + byTag.length).toBeGreaterThan(0);
     }
   });
 });
