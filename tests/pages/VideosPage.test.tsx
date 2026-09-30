@@ -183,6 +183,35 @@ describe("VideosPage filtering", () => {
     expect(cardCount()).toBe(VIDEOS.filter((v) => v.tags?.includes("Michael")).length);
   });
 
+  it("never lets one control's style silently override another's", () => {
+    // The regression this guards: CONTROL carried `w-full`, and the Filters
+    // button appended `w-auto` to undo it. Both are width utilities with equal
+    // specificity, so the winner is whichever Tailwind emits last -- and it
+    // emits `.w-full` after `.w-auto`. The button took the whole row and sat on
+    // top of the search box. jsdom has no layout and the e2e suite serves the
+    // dev server, whose incrementally-built stylesheet can order the two the
+    // other way, so neither would catch it: the class strings are the evidence.
+    renderPage(`/?year=${VIDEOS[0].year}`);
+
+    /** Utilities from one group, ignoring breakpoint variants, which cannot collide. */
+    const sameGroup = (className: string, group: string) =>
+      className
+        .split(/\s+/)
+        .filter((name) => name && !name.includes(":") && name.startsWith(group));
+
+    const controls = [
+      ...screen.getAllByRole("combobox"),
+      screen.getByRole("searchbox"),
+      screen.getByRole("button", { name: /^filters/i }),
+    ];
+
+    for (const control of controls) {
+      for (const group of ["w-", "px-", "border-aura-"]) {
+        expect(sameGroup(control.className, group).length).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
   it("explains an empty result and offers a way out", async () => {
     const user = userEvent.setup();
     renderPage();
