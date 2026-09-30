@@ -19,9 +19,19 @@ interface FilterBarProps {
   totalCount: number;
 }
 
+/**
+ * The look every control in this bar shares.
+ *
+ * Carries no width, padding or border colour: those differ per control, and
+ * appending a utility to this string does not reliably override one inside it.
+ * Two utilities from the same group have equal specificity, so the winner is
+ * whichever Tailwind emits last -- `w-auto` on the Filters button never beat
+ * the `w-full` that used to live here, which left the button spanning the whole
+ * row on top of the search box. State the differing value once, per control.
+ */
 const CONTROL = clsx(
-  "w-full rounded-xl border border-aura-border bg-aura-surface",
-  "px-3 py-2 min-h-[2.75rem] text-sm text-aura-text-primary",
+  "rounded-xl border bg-aura-surface",
+  "py-2 min-h-[2.75rem] text-sm text-aura-text-primary",
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-aura-text-primary",
 );
 
@@ -69,7 +79,11 @@ function FacetSelect({
         id={id}
         value={value ?? ""}
         onChange={(event) => onSelect(event.target.value === "" ? null : event.target.value)}
-        className={clsx(CONTROL, value !== null && "border-aura-text-primary")}
+        className={clsx(
+          CONTROL,
+          "w-full px-3",
+          value === null ? "border-aura-border" : "border-aura-text-primary",
+        )}
       >
         <option value="">{anyLabel}</option>
         {value !== null && !listed ? <option value={value}>{value}</option> : null}
@@ -123,7 +137,10 @@ function FilterBar({
             value={filters.query}
             onChange={(event) => onChange({ ...filters, query: event.target.value })}
             placeholder="A title, a place, a person…"
-            className={clsx(CONTROL, "px-4 placeholder:text-aura-text-tertiary")}
+            className={clsx(
+              CONTROL,
+              "w-full px-4 border-aura-border placeholder:text-aura-text-tertiary",
+            )}
           />
         </div>
 
@@ -133,7 +150,11 @@ function FilterBar({
           onClick={() => setOpen((shown) => !shown)}
           aria-expanded={open}
           aria-controls={panelId}
-          className={clsx(CONTROL, "md:hidden w-auto shrink-0 px-4 text-aura-text-secondary")}
+          className={clsx(
+            CONTROL,
+            "md:hidden shrink-0 whitespace-nowrap px-4",
+            "border-aura-border text-aura-text-secondary",
+          )}
         >
           Filters
           {activeCount > 0 ? (
