@@ -1,24 +1,29 @@
 import { Project } from "@/types";
 import PEOPLE from "@/data/people.json";
+import REGIONS from "@/data/locations.json";
 
+/**
+ * What the grid is narrowed by.
+ *
+ * Within an axis, values are alternatives: picking 2020 and 2021 shows videos
+ * from either year. Across axes, every axis has to hold: 2020 + Emily shows
+ * Emily's videos from 2020. An empty axis does not narrow anything.
+ */
 export interface VideoFilters {
   /** Free text, matched across title, description, location and tags. */
   query: string;
-  year: number | null;
-  /** One of the names in src/data/people.json, matched against tags. */
-  person: string | null;
-  /** An exact `location` value from the library. */
-  location: string | null;
-  /** Any other tag: the catch-all axis. */
-  tag: string | null;
+  years: number[];
+  /** Names from src/data/people.json, matched against tags. */
+  people: string[];
+  /** Exact `location` values from the library. */
+  locations: string[];
 }
 
 export const EMPTY_FILTERS: VideoFilters = {
   query: "",
-  year: null,
-  person: null,
-  location: null,
-  tag: null,
+  years: [],
+  people: [],
+  locations: [],
 };
 
 /**
@@ -39,9 +44,12 @@ export function normalise(value: string): string {
     .trim();
 }
 
-const PEOPLE_KEYS = new Set(KNOWN_PEOPLE.map(normalise));
-
-/** Everything about a video that free text should search. */
+/**
+ * Everything about a video that free text should search.
+ *
+ * Tags are still searched although the site no longer shows them: they are
+ * how "beach" finds the beach videos, and they are where People reads names.
+ */
 function haystack(video: Project): string {
   return normalise(
     [video.title, video.description, video.location, ...(video.tags ?? [])]
@@ -56,23 +64,19 @@ function hasTag(video: Project, wanted: string): boolean {
 }
 
 export function matchesFilters(video: Project, filters: VideoFilters): boolean {
-  if (filters.year !== null && video.year !== filters.year) {
+  if (filters.years.length > 0 && !filters.years.includes(video.year)) {
     return false;
   }
 
-  if (filters.person !== null && !hasTag(video, filters.person)) {
+  if (filters.people.length > 0 && !filters.people.some((person) => hasTag(video, person))) {
     return false;
   }
 
-  if (
-    filters.location !== null &&
-    normalise(video.location ?? "") !== normalise(filters.location)
-  ) {
-    return false;
-  }
-
-  if (filters.tag !== null && !hasTag(video, filters.tag)) {
-    return false;
+  if (filters.locations.length > 0) {
+    const here = normalise(video.location ?? "");
+    if (!filters.locations.some((location) => normalise(location) === here)) {
+      return false;
+    }
   }
 
   const query = normalise(filters.query);
@@ -91,6 +95,8 @@ export function filterVideos(videos: Project[], filters: VideoFilters): Project[
 
 export interface Facet {
   value: string;
+  /** What the option reads as. Defaults to the value itself. */
+  label?: string;
   count: number;
 }
 
@@ -153,70 +159,123 @@ export function collectLocations(videos: Project[]): Facet[] {
     .sort(byCountThenName);
 }
 
-/**
- * Everything else: the catch-all axis.
- *
- * People have their own control, and a tag that merely repeats a `location`
- * value is already reachable under Location, so both are dropped here to keep
- * this list about subject rather than about who and where. Nothing else is
- * withheld -- a tag on one video is a legitimate way to reach that video.
- */
-export function collectFilterTags(videos: Project[]): Facet[] {
-  const locations = new Set(collectLocations(videos).map((f) => normalise(f.value)));
+/** A heading in the Location list, and the places filed under it. */
+export interface FacetSection {
+  heading: string;
+  /** 0 for a region such as "United States", 1 for one inside it such as "West". */
+  depth: 0 | 1;
+  options: Facet[];
+}
 
-  return [...countTags(videos).entries()]
-    .filter(([tag]) => {
-      const key = normalise(tag);
-      return !PEOPLE_KEYS.has(key) && !locations.has(key);
-    })
-    .map(([value, count]) => ({ value, count }))
-    .sort(byCountThenName);
+export interface Region {
+  name: string;
+  places?: Record<string, string>;
+  subregions?: { name: string; places: Record<string, string> }[];
+}
+
+/** Heading for anything src/data/locations.json does not place yet. */
+export const UNGROUPED_HEADING = "Other";
+
+/**
+ * The library's locations, filed under the regions in src/data/locations.json.
+ *
+ * Headings with nothing under them are left out, so a region can be listed in
+ * the data before the library has a video there. A location the data does not
+ * mention still appears, under "Other": a new video should never be unfindable
+ * because nobody has filed its place yet. A place may sit under two regions --
+ * "Seattle and Vancouver" is both -- and either checkbox selects it.
+ */
+export function collectLocationSections(
+  videos: Project[],
+  regions: readonly Region[] = REGIONS as Region[],
+): FacetSection[] {
+  // Keyed loosely so the data file need not match the library's capitalisation,
+  // but every option carries the library's own spelling, which is what matches.
+  const present = new Map(
+    collectLocations(videos).map((facet) => [normalise(facet.value), facet]),
+  );
+
+  const filed = new Set<string>();
+  const optionsFor = (places: Record<string, string> = {}): Facet[] =>
+    Object.entries(places)
+      .flatMap(([value, label]) => {
+        const facet = present.get(normalise(value));
+        if (!facet) return [];
+        filed.add(normalise(value));
+        return [{ ...facet, label }];
+      })
+      .sort((a, b) => (a.label ?? a.value).localeCompare(b.label ?? b.value));
+
+  const sections: FacetSection[] = [];
+  for (const region of regions) {
+    const own = optionsFor(region.places);
+    const children = (region.subregions ?? [])
+      .map((sub) => ({ heading: sub.name, depth: 1 as const, options: optionsFor(sub.places) }))
+      .filter((section) => section.options.length > 0);
+
+    if (own.length === 0 && children.length === 0) {
+      continue;
+    }
+    sections.push({ heading: region.name, depth: 0, options: own }, ...children);
+  }
+
+  const leftover = [...present.entries()]
+    .filter(([key]) => !filed.has(key))
+    .map(([, facet]) => facet)
+    .sort((a, b) => a.value.localeCompare(b.value));
+  if (leftover.length > 0) {
+    sections.push({ heading: UNGROUPED_HEADING, depth: 0, options: leftover });
+  }
+
+  return sections;
 }
 
 export function hasActiveFilters(filters: VideoFilters): boolean {
-  return (
-    filters.query.trim() !== "" ||
-    filters.year !== null ||
-    filters.person !== null ||
-    filters.location !== null ||
-    filters.tag !== null
-  );
+  return filters.query.trim() !== "" || activeFacetCount(filters) > 0;
 }
 
 /**
- * How many of the four axes are narrowing the grid.
+ * How many values are narrowing the grid across the three axes.
  *
+ * Counts values, not axes: picking two years and a person reads as three.
  * Deliberately not counting the query: the search box is on screen even when
  * the axes are folded away, so counting it would badge the disclosure for
  * something the visitor can already see.
  */
 export function activeFacetCount(filters: VideoFilters): number {
-  return [
-    filters.year !== null,
-    filters.person !== null,
-    filters.location !== null,
-    filters.tag !== null,
-  ].filter(Boolean).length;
+  return filters.years.length + filters.people.length + filters.locations.length;
 }
 
-/** Filters are kept in the URL so a narrowed view can be linked to. */
+/** Repeated values collapse, so a hand-edited URL cannot double-count. */
+function unique<T>(values: T[]): T[] {
+  return [...new Set(values)];
+}
+
+/**
+ * Filters are kept in the URL so a narrowed view can be linked to.
+ *
+ * Several values on one axis repeat the parameter: `?year=2020&year=2021`.
+ * A link from before multiple selection, with a single value, reads the same.
+ */
 export function filtersFromSearchParams(params: URLSearchParams): VideoFilters {
-  const year = Number(params.get("year"));
   return {
     query: params.get("q") ?? "",
-    year: Number.isInteger(year) && year > 0 ? year : null,
-    person: params.get("person"),
-    location: params.get("location"),
-    tag: params.get("tag"),
+    years: unique(
+      params
+        .getAll("year")
+        .map(Number)
+        .filter((year) => Number.isInteger(year) && year > 0),
+    ),
+    people: unique(params.getAll("person").filter(Boolean)),
+    locations: unique(params.getAll("location").filter(Boolean)),
   };
 }
 
 export function searchParamsFromFilters(filters: VideoFilters): URLSearchParams {
   const params = new URLSearchParams();
   if (filters.query.trim() !== "") params.set("q", filters.query.trim());
-  if (filters.year !== null) params.set("year", String(filters.year));
-  if (filters.person !== null) params.set("person", filters.person);
-  if (filters.location !== null) params.set("location", filters.location);
-  if (filters.tag !== null) params.set("tag", filters.tag);
+  for (const year of filters.years) params.append("year", String(year));
+  for (const person of filters.people) params.append("person", person);
+  for (const location of filters.locations) params.append("location", location);
   return params;
 }

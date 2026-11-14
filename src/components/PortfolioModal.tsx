@@ -367,15 +367,6 @@ function PortfolioModal({
 
           <div className="px-4 sm:px-6 py-3 sm:py-4 text-aura-text-secondary text-sm sm:text-base pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <p>{project.description}</p>
-            {project.tags?.length ? (
-              <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase tracking-wide text-aura-text-tertiary">
-                {project.tags.map((tag) => (
-                  <span key={tag} className="bg-aura-accent-light px-3 py-1 rounded-full">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            ) : null}
             <p className="mt-3 hidden text-xs text-aura-text-tertiary md:block">
               Space play · ← → seek · J L jump 10s · M mute · F fullscreen ·
               Shift + ← → change video · Esc close

@@ -186,6 +186,28 @@ describe("PortfolioModal", () => {
     });
   });
 
+  describe("details", () => {
+    it("shows the description and no tags", () => {
+      renderPlayer({
+        projects: [
+          makeVideo({
+            id: "1",
+            title: "Tagged",
+            description: "A day out.",
+            tags: ["beach", "Irene"],
+          }),
+        ],
+        currentIndex: 0,
+      });
+
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toHaveTextContent("A day out.");
+      // Tags still exist in the data -- People and search read them -- but
+      // the site no longer shows them.
+      expect(dialog).not.toHaveTextContent(/beach/i);
+    });
+  });
+
   describe("playback states", () => {
     it("shows a spinner until the video has data", () => {
       renderPlayer();

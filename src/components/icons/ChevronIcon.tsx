@@ -1,10 +1,16 @@
 import React from "react";
 
+const PATHS = {
+  left: "M15 5l-7 7 7 7",
+  right: "M9 5l7 7-7 7",
+  down: "M5 9l7 7 7-7",
+} as const;
+
 export function ChevronIcon({
   direction,
   className,
 }: {
-  direction: "left" | "right";
+  direction: "left" | "right" | "down";
   className?: string;
 }): React.ReactNode {
   return (
@@ -18,7 +24,7 @@ export function ChevronIcon({
       aria-hidden="true"
       className={className}
     >
-      <path d={direction === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} />
+      <path d={PATHS[direction]} />
     </svg>
   );
 }

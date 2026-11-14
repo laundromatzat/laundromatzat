@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { VIDEOS } from "@/constants";
+import REGIONS from "@/data/locations.json";
 import {
   EMPTY_FILTERS,
   KNOWN_PEOPLE,
+  Region,
+  UNGROUPED_HEADING,
   activeFacetCount,
-  collectFilterTags,
+  collectLocationSections,
   collectLocations,
   collectPeople,
   collectYears,
@@ -31,7 +34,8 @@ describe("matchesFilters", () => {
   });
 
   it("searches title, description, location and tags alike", () => {
-    for (const query of ["drift", "desert", "new mexico", "irene"]) {
+    // Tags are no longer shown, but they are still how "roadtrip" is found.
+    for (const query of ["drift", "desert", "new mexico", "irene", "roadtrip"]) {
       expect(matchesFilters(video, { ...EMPTY_FILTERS, query })).toBe(true);
     }
     expect(matchesFilters(video, { ...EMPTY_FILTERS, query: "iceland" })).toBe(false);
@@ -46,48 +50,44 @@ describe("matchesFilters", () => {
     expect(matchesFilters(video, { ...EMPTY_FILTERS, query: "  DRÍFT  " })).toBe(true);
   });
 
-  it("matches a year exactly", () => {
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, year: 2019 })).toBe(true);
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, year: 2020 })).toBe(false);
+  it("treats several years as alternatives", () => {
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, years: [2019] })).toBe(true);
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, years: [2018, 2019] })).toBe(true);
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, years: [2020, 2021] })).toBe(false);
   });
 
-  it("matches a person against the tags", () => {
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, person: "Irene" })).toBe(true);
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, person: "Tom" })).toBe(false);
+  it("treats several people as alternatives, matched against the tags", () => {
+    // Emily OR Irene: Irene is in it, so it stays.
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, people: ["Emily", "Irene"] })).toBe(true);
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, people: ["Emily", "Tom"] })).toBe(false);
   });
 
-  it("matches a location against the location field, whole and exact", () => {
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, location: "New Mexico" })).toBe(true);
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, location: "new mexico" })).toBe(true);
+  it("treats several locations as alternatives, each whole and exact", () => {
+    expect(
+      matchesFilters(video, { ...EMPTY_FILTERS, locations: ["Maui", "new mexico"] }),
+    ).toBe(true);
     // A location is one place, not a prefix of one: "New" must not match.
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, location: "New" })).toBe(false);
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, locations: ["New"] })).toBe(false);
   });
 
-  it("matches a tag exactly, not as a substring", () => {
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, tag: "roadtrip" })).toBe(true);
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, tag: "road" })).toBe(false);
-  });
-
-  it("combines all four axes with AND", () => {
+  it("requires every axis that has picks, while picks within one are alternatives", () => {
     const all = {
       query: "drift",
-      year: 2019,
-      person: "Irene",
-      location: "New Mexico",
-      tag: "roadtrip",
+      years: [2018, 2019],
+      people: ["Tom", "Irene"],
+      locations: ["Maui", "New Mexico"],
     };
     expect(matchesFilters(video, all)).toBe(true);
-    expect(matchesFilters(video, { ...all, person: "Tom" })).toBe(false);
-    expect(matchesFilters(video, { ...all, location: "Maui" })).toBe(false);
-    expect(matchesFilters(video, { ...all, year: 2020 })).toBe(false);
+    expect(matchesFilters(video, { ...all, people: ["Tom"] })).toBe(false);
+    expect(matchesFilters(video, { ...all, locations: ["Maui"] })).toBe(false);
+    expect(matchesFilters(video, { ...all, years: [2020] })).toBe(false);
   });
 
   it("survives a video with no tags or location", () => {
     const sparse = makeVideo({ tags: undefined, location: undefined });
     expect(matchesFilters(sparse, EMPTY_FILTERS)).toBe(true);
-    expect(matchesFilters(sparse, { ...EMPTY_FILTERS, tag: "Irene" })).toBe(false);
-    expect(matchesFilters(sparse, { ...EMPTY_FILTERS, person: "Irene" })).toBe(false);
-    expect(matchesFilters(sparse, { ...EMPTY_FILTERS, location: "Maui" })).toBe(false);
+    expect(matchesFilters(sparse, { ...EMPTY_FILTERS, people: ["Irene"] })).toBe(false);
+    expect(matchesFilters(sparse, { ...EMPTY_FILTERS, locations: ["Maui"] })).toBe(false);
   });
 });
 
@@ -102,13 +102,12 @@ describe("collectPeople", () => {
   });
 
   it("offers people on only one video too, since that is how you reach it", () => {
-    const facets = collectPeople(VIDEOS);
-    expect(facets.some((f) => f.count === 1)).toBe(true);
+    expect(collectPeople(VIDEOS).some((f) => f.count === 1)).toBe(true);
   });
 
   it("counts truthfully", () => {
     for (const { value, count } of collectPeople(VIDEOS)) {
-      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, person: value })).toHaveLength(count);
+      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, people: [value] })).toHaveLength(count);
     }
   });
 
@@ -138,62 +137,109 @@ describe("collectLocations", () => {
       { value: "Iceland", count: 1 },
     ]);
   });
-
-  it("counts truthfully across the real library", () => {
-    for (const { value, count } of collectLocations(VIDEOS)) {
-      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, location: value })).toHaveLength(count);
-    }
-  });
 });
 
-describe("collectFilterTags", () => {
-  it("offers a tag on a single video, because that is a way to reach it", () => {
+describe("collectLocationSections", () => {
+  const regions: Region[] = [
+    {
+      name: "United States",
+      subregions: [
+        { name: "West", places: { Maui: "Maui, HI", "Big Island": "Big Island, HI" } },
+        { name: "Midwest", places: {} },
+      ],
+    },
+    { name: "Europe", places: { Madrid: "Madrid, Spain" } },
+    { name: "Antarctica", places: { "South Pole": "South Pole" } },
+  ];
+
+  it("files places under their region and subregion, with readable labels", () => {
     const videos = [
-      makeVideo({ id: "1", tags: ["eclipse"], location: undefined }),
-      makeVideo({ id: "2", tags: [], location: undefined }),
+      makeVideo({ id: "1", location: "Maui" }),
+      makeVideo({ id: "2", location: "Big Island" }),
+      makeVideo({ id: "3", location: "Madrid" }),
     ];
-    expect(collectFilterTags(videos)).toEqual([{ value: "eclipse", count: 1 }]);
-  });
-
-  it("leaves people to the People control", () => {
-    const videos = [makeVideo({ id: "1", tags: ["Stephen", "beach"], location: undefined })];
-    expect(collectFilterTags(videos).map((f) => f.value)).toEqual(["beach"]);
-  });
-
-  it("leaves a tag that only repeats a location to the Location control", () => {
-    const videos = [makeVideo({ id: "1", location: "Maui", tags: ["Maui", "beach"] })];
-    expect(collectFilterTags(videos).map((f) => f.value)).toEqual(["beach"]);
-  });
-
-  it("orders by how many videos a tag covers, then alphabetically", () => {
-    const videos = [
-      makeVideo({ id: "1", tags: ["Many", "Few"], location: undefined }),
-      makeVideo({ id: "2", tags: ["Many", "Few"], location: undefined }),
-      makeVideo({ id: "3", tags: ["Many", "Also"], location: undefined }),
-    ];
-    expect(collectFilterTags(videos)).toEqual([
-      { value: "Many", count: 3 },
-      { value: "Few", count: 2 },
-      { value: "Also", count: 1 },
+    expect(collectLocationSections(videos, regions)).toEqual([
+      { heading: "United States", depth: 0, options: [] },
+      {
+        heading: "West",
+        depth: 1,
+        options: [
+          { value: "Big Island", label: "Big Island, HI", count: 1 },
+          { value: "Maui", label: "Maui, HI", count: 1 },
+        ],
+      },
+      { heading: "Europe", depth: 0, options: [{ value: "Madrid", label: "Madrid, Spain", count: 1 }] },
     ]);
   });
 
-  it("is about subject, not about who or where", () => {
-    const names = collectFilterTags(VIDEOS).map((f) => f.value);
-    const people = new Set(collectPeople(VIDEOS).map((f) => f.value));
-    const places = new Set(collectLocations(VIDEOS).map((f) => f.value));
+  it("leaves out a heading with nothing under it", () => {
+    // Midwest is in the data with no places; Antarctica has a place but no video.
+    const headings = collectLocationSections(
+      [makeVideo({ id: "1", location: "Maui" })],
+      regions,
+    ).map((s) => s.heading);
+    expect(headings).not.toContain("Midwest");
+    expect(headings).not.toContain("Antarctica");
+    expect(headings).not.toContain("Europe");
+  });
 
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(people.has(name)).toBe(false);
-      expect(places.has(name)).toBe(false);
+  it("never loses a location the data does not mention yet", () => {
+    // A new video somewhere nobody has filed must still be findable.
+    const sections = collectLocationSections(
+      [makeVideo({ id: "1", location: "Tokyo" })],
+      regions,
+    );
+    expect(sections).toEqual([
+      { heading: UNGROUPED_HEADING, depth: 0, options: [{ value: "Tokyo", count: 1 }] },
+    ]);
+  });
+
+  it("can list one place under two regions, both selecting the same value", () => {
+    const sections = collectLocationSections(
+      [makeVideo({ id: "1", location: "Seattle and Vancouver" })],
+      [
+        {
+          name: "United States",
+          places: { "Seattle and Vancouver": "Seattle, WA and Vancouver, BC" },
+        },
+        { name: "Canada", places: { "Seattle and Vancouver": "Seattle, WA and Vancouver, BC" } },
+      ],
+    );
+    expect(sections.map((s) => s.options[0].value)).toEqual([
+      "Seattle and Vancouver",
+      "Seattle and Vancouver",
+    ]);
+  });
+
+  it("files every location in the real library, so nothing lands under Other", () => {
+    const sections = collectLocationSections(VIDEOS);
+    expect(sections.map((s) => s.heading)).not.toContain(UNGROUPED_HEADING);
+
+    const offered = new Set(sections.flatMap((s) => s.options.map((o) => o.value)));
+    for (const { value } of collectLocations(VIDEOS)) {
+      expect(offered.has(value)).toBe(true);
     }
-    expect(names).toContain("beach");
+  });
+
+  it("only files places under regions that exist in the data", () => {
+    const regionNames = new Set(
+      (REGIONS as { name: string; subregions?: { name: string }[] }[]).flatMap((r) => [
+        r.name,
+        ...(r.subregions ?? []).map((s) => s.name),
+      ]),
+    );
+    for (const { heading } of collectLocationSections(VIDEOS)) {
+      expect(regionNames.has(heading)).toBe(true);
+    }
   });
 
   it("counts truthfully", () => {
-    for (const { value, count } of collectFilterTags(VIDEOS)) {
-      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, tag: value })).toHaveLength(count);
+    for (const section of collectLocationSections(VIDEOS)) {
+      for (const { value, count } of section.options) {
+        expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, locations: [value] })).toHaveLength(
+          count,
+        );
+      }
     }
   });
 });
@@ -219,53 +265,58 @@ describe("collectYears", () => {
 });
 
 describe("activeFacetCount", () => {
-  it("counts the axes that fold away, and not the search box", () => {
+  it("counts every pick on the folded-away axes, and not the search box", () => {
     expect(activeFacetCount(EMPTY_FILTERS)).toBe(0);
     // The search input stays on screen when the axes are collapsed, so badging
     // the disclosure for it would point at something already visible.
     expect(activeFacetCount({ ...EMPTY_FILTERS, query: "maui" })).toBe(0);
-    expect(activeFacetCount({ ...EMPTY_FILTERS, year: 2019, tag: "beach" })).toBe(2);
     expect(
-      activeFacetCount({
-        query: "x",
-        year: 2019,
-        person: "Tom",
-        location: "Maui",
-        tag: "beach",
-      }),
-    ).toBe(4);
+      activeFacetCount({ ...EMPTY_FILTERS, years: [2020, 2021], people: ["Eli"] }),
+    ).toBe(3);
   });
 });
 
 describe("URL round trip", () => {
-  it("survives a round trip through search params", () => {
+  it("survives a round trip with several values per axis", () => {
     const filters = {
       query: "maui sunset",
-      year: 2019,
-      person: "Irene",
-      location: "Big Island",
-      tag: "beach",
+      years: [2020, 2021],
+      people: ["Emily", "Eli"],
+      locations: ["Big Island", "Oak Creek Apartments | Stanford"],
     };
     expect(filtersFromSearchParams(searchParamsFromFilters(filters))).toEqual(filters);
+  });
+
+  it("repeats a parameter per pick, so values may contain commas", () => {
+    const params = searchParamsFromFilters({ ...EMPTY_FILTERS, years: [2020, 2021] });
+    expect(params.toString()).toBe("year=2020&year=2021");
+  });
+
+  it("still reads a single-value link from before multiple selection", () => {
+    const filters = filtersFromSearchParams(new URLSearchParams("year=2019&person=Tom"));
+    expect(filters.years).toEqual([2019]);
+    expect(filters.people).toEqual(["Tom"]);
+  });
+
+  it("ignores the old tag parameter now that tags are not a filter", () => {
+    const filters = filtersFromSearchParams(new URLSearchParams("tag=beach"));
+    expect(hasActiveFilters(filters)).toBe(false);
   });
 
   it("writes nothing for empty filters, so a clean view has a clean URL", () => {
     expect(searchParamsFromFilters(EMPTY_FILTERS).toString()).toBe("");
   });
 
-  it("ignores a year that is not a year", () => {
-    expect(filtersFromSearchParams(new URLSearchParams("year=soon")).year).toBeNull();
-    expect(filtersFromSearchParams(new URLSearchParams("year=-5")).year).toBeNull();
+  it("drops years that are not years, and repeats", () => {
+    expect(
+      filtersFromSearchParams(new URLSearchParams("year=soon&year=-5&year=2019&year=2019"))
+        .years,
+    ).toEqual([2019]);
   });
 
   it("trims a whitespace-only query rather than treating it as active", () => {
     expect(hasActiveFilters({ ...EMPTY_FILTERS, query: "   " })).toBe(false);
     expect(searchParamsFromFilters({ ...EMPTY_FILTERS, query: "  x " }).get("q")).toBe("x");
-  });
-
-  it("treats each axis as active on its own", () => {
-    expect(hasActiveFilters({ ...EMPTY_FILTERS, person: "Tom" })).toBe(true);
-    expect(hasActiveFilters({ ...EMPTY_FILTERS, location: "Maui" })).toBe(true);
   });
 });
 
@@ -274,21 +325,30 @@ describe("filterVideos over the real library", () => {
     expect(filterVideos(VIDEOS, EMPTY_FILTERS)).toHaveLength(VIDEOS.length);
   });
 
+  it("adds up two years rather than intersecting them", () => {
+    const [first, second] = collectYears(VIDEOS);
+    const both = filterVideos(VIDEOS, {
+      ...EMPTY_FILTERS,
+      years: [Number(first.value), Number(second.value)],
+    });
+    expect(both).toHaveLength(first.count + second.count);
+  });
+
   it("finds something for every option offered on every axis", () => {
     for (const { value } of collectYears(VIDEOS)) {
       expect(
-        filterVideos(VIDEOS, { ...EMPTY_FILTERS, year: Number(value) }).length,
+        filterVideos(VIDEOS, { ...EMPTY_FILTERS, years: [Number(value)] }).length,
       ).toBeGreaterThan(0);
     }
-    for (const { value } of [
-      ...collectPeople(VIDEOS),
-      ...collectLocations(VIDEOS),
-      ...collectFilterTags(VIDEOS),
-    ]) {
-      const byPerson = filterVideos(VIDEOS, { ...EMPTY_FILTERS, person: value });
-      const byLocation = filterVideos(VIDEOS, { ...EMPTY_FILTERS, location: value });
-      const byTag = filterVideos(VIDEOS, { ...EMPTY_FILTERS, tag: value });
-      expect(byPerson.length + byLocation.length + byTag.length).toBeGreaterThan(0);
+    for (const { value } of collectPeople(VIDEOS)) {
+      expect(filterVideos(VIDEOS, { ...EMPTY_FILTERS, people: [value] }).length).toBeGreaterThan(0);
+    }
+    for (const section of collectLocationSections(VIDEOS)) {
+      for (const { value } of section.options) {
+        expect(
+          filterVideos(VIDEOS, { ...EMPTY_FILTERS, locations: [value] }).length,
+        ).toBeGreaterThan(0);
+      }
     }
   });
 });

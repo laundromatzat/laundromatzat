@@ -1,0 +1,66 @@
+[
+  {
+    "name": "United States",
+    "subregions": [
+      {
+        "name": "West",
+        "places": {
+          "Bear Valley": "Bear Valley, CA",
+          "Big Island": "Big Island, HI",
+          "Channel Islands": "Channel Islands, CA",
+          "Crater Lake National Park": "Crater Lake National Park, OR",
+          "Denali National Park and Preserve": "Denali National Park and Preserve, AK",
+          "Glacier Bay National Park and Preserve": "Glacier Bay National Park and Preserve, AK",
+          "Glacier National Park": "Glacier National Park, MT",
+          "Grand Teton National Park and Yellowstone National Park": "Grand Teton and Yellowstone National Parks, WY",
+          "Humboldt Redwoods State Park": "Humboldt Redwoods State Park, CA",
+          "Maui": "Maui, HI",
+          "Oak Creek Apartments | Stanford": "Oak Creek Apartments, Stanford, CA",
+          "Oregon Coast Range": "Oregon Coast Range",
+          "Seattle and Vancouver": "Seattle, WA and Vancouver, BC"
+        }
+      },
+      {
+        "name": "Southwest",
+        "places": {
+          "Grand Canyon National Park and Sedona": "Grand Canyon National Park and Sedona, AZ",
+          "New Mexico": "New Mexico"
+        }
+      },
+      {
+        "name": "Midwest",
+        "places": {}
+      },
+      {
+        "name": "East",
+        "places": {
+          "Catskill Mountains": "Catskill Mountains, NY",
+          "Manhattan": "Manhattan, NY"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Canada",
+    "places": {
+      "Banff National Park": "Banff National Park, AB",
+      "Seattle and Vancouver": "Seattle, WA and Vancouver, BC",
+      "Vancouver": "Vancouver, BC"
+    }
+  },
+  {
+    "name": "Mexico",
+    "places": {
+      "Puerto Vallarta": "Puerto Vallarta, Jalisco"
+    }
+  },
+  {
+    "name": "Europe",
+    "places": {
+      "Austria": "Austria",
+      "Iceland": "Iceland",
+      "Madrid": "Madrid, Spain",
+      "Scotland": "Scotland, UK"
+    }
+  }
+]
