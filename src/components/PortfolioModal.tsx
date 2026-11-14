@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { Project } from "@/types";
 import { useAdaptiveVideoSource } from "@/hooks/useAdaptiveVideoSource";
@@ -61,8 +61,14 @@ function PortfolioModal({
   // is itself reported as an error. Reading that as final would show a failure
   // panel over a video that is about to play, so the panel waits until the
   // source being played is the last one there is.
+  //
+  // Layout effects, not passive ones, here and in the reset below: a passive
+  // effect runs after the commit, leaving a moment where the element already
+  // plays the file but this ref still says HLS -- an error then is dismissed
+  // as recoverable, or lands before the reset and is wiped by it. A file that
+  // fails fast (a cached 404) would sit under a spinner for good.
   const sourceRef = useRef(source);
-  useEffect(() => {
+  useLayoutEffect(() => {
     sourceRef.current = source;
   }, [source]);
 
@@ -84,7 +90,7 @@ function PortfolioModal({
   }, [project]);
 
   // Falling back is a fresh attempt, not a continuation of the failed one.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (source === "progressive") {
       setPlayback("loading");
     }
