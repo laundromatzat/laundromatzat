@@ -7,15 +7,27 @@ import App from "@/App";
 /** App renders <ScrollRestoration>, which only works under a data router. */
 function renderApp(children: React.ReactNode) {
   const router = createMemoryRouter(
-    [{ path: "/", element: <App />, children: [{ index: true, element: children }] }],
+    [
+      {
+        path: "/",
+        element: <App />,
+        children: [
+          { index: true, element: children },
+          { path: "other", element: <p>Another page</p> },
+        ],
+      },
+    ],
     { initialEntries: ["/"] },
   );
 
-  return render(
-    <HelmetProvider>
-      <RouterProvider router={router} />
-    </HelmetProvider>,
-  );
+  return {
+    router,
+    ...render(
+      <HelmetProvider>
+        <RouterProvider router={router} />
+      </HelmetProvider>,
+    ),
+  };
 }
 
 async function settleFrames() {
@@ -45,5 +57,34 @@ describe("App focus management", () => {
     await settleFrames();
 
     expect(document.activeElement).toBe(dialog);
+  });
+
+  it("leaves focus alone when only the query string changes", async () => {
+    // Every filter pick rewrites the query string. Treating that as a new page
+    // threw focus from the checkbox just ticked to <main>, so a keyboard user
+    // lost their place in the list after each pick and a screen reader
+    // announced the page afresh.
+    const { container, router } = renderApp(
+      <label>
+        <input type="checkbox" /> 2020
+      </label>,
+    );
+    await waitFor(() => expect(document.activeElement).toBe(container.querySelector("main")));
+
+    const box = container.querySelector("input") as HTMLInputElement;
+    box.focus();
+    await router.navigate("/?year=2020", { replace: true });
+    await settleFrames();
+
+    expect(document.activeElement).toBe(box);
+  });
+
+  it("still moves focus when the page itself changes", async () => {
+    const { container, router } = renderApp(<button type="button">Somewhere</button>);
+    (container.querySelector("button") as HTMLButtonElement).focus();
+
+    await router.navigate("/other");
+
+    await waitFor(() => expect(document.activeElement).toBe(container.querySelector("main")));
   });
 });

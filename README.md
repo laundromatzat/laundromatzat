@@ -99,16 +99,19 @@ for how to move a video to adaptive-bitrate playback.
 
 ## Browsing
 
-The grid is filterable by free text, year, and the handful of tags that
-actually split the library. Filters are held in the URL — `?q=maui`,
-`?year=2019`, `?tag=Irene` — so a narrowed view can be bookmarked or sent to
-someone, and they survive opening a video.
+The grid is filterable by year, person and location. Each takes any number of
+picks: picks within one filter are alternatives (2020 or 2021), and filters
+combine (2020 and Emily). Filters are held in the URL —
+`?year=2020&year=2021&person=Emily` — so a narrowed view can be bookmarked or
+sent to someone, and they survive opening a video.
 
-Which tag chips appear is derived from the data rather than curated: a tag has
-to be on more than one video (a tag on one filters to the card you just
-clicked) and on at most 60% of the library (a tag on nearly everything narrows
-nothing). Everything else is reachable through search, which covers titles,
-descriptions, locations and all tags.
+- **Year** comes from each video's `date`.
+- **People** are the names in `src/data/people.json`, matched against a
+  video's `tags`. Add a person there to make them filterable.
+- **Location** is each video's `location`, filed under regions in
+  `src/data/locations.json` (United States by area, Canada, Mexico, Europe),
+  each with the label the list shows, such as "Maui, HI". A video somewhere not
+  yet listed there appears under "Other" until you add it.
 
 ## Sharing a video
 

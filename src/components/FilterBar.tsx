@@ -9,6 +9,7 @@ import {
   hasActiveFilters,
 } from "@/utils/videoFilters";
 import MultiSelect from "./MultiSelect";
+import { ChevronIcon } from "./icons/ChevronIcon";
 
 interface FilterBarProps {
   filters: VideoFilters;
@@ -21,22 +22,6 @@ interface FilterBarProps {
   totalCount: number;
 }
 
-/**
- * The look the search box and the Filters button share.
- *
- * Carries no width, padding or border colour: those differ per control, and
- * appending a utility to this string does not reliably override one inside it.
- * Two utilities from the same group have equal specificity, so the winner is
- * whichever Tailwind emits last -- `w-auto` on the Filters button never beat
- * the `w-full` that used to live here, which left the button spanning the whole
- * row on top of the search box. State the differing value once, per control.
- */
-const CONTROL = clsx(
-  "rounded-xl border bg-aura-surface",
-  "py-2 min-h-[2.75rem] text-sm text-aura-text-primary",
-  "focus:outline-none focus-visible:ring-2 focus-visible:ring-aura-text-primary",
-);
-
 type Axis = "year" | "people" | "location";
 
 /** A flat list is one section with no heading. */
@@ -45,11 +30,11 @@ function flat(options: Facet[]): FacetSection[] {
 }
 
 /**
- * Search and narrow the library.
+ * Narrow the library by when, who and where.
  *
- * Search stays visible because it carries the long tail on its own. The three
- * axes behind it -- when, who, where -- each take any number of picks, and
- * fold away on a phone so the first thing on screen is a video.
+ * Each axis takes any number of picks. On a phone they fold behind one Filters
+ * button, so the first thing on screen is a video; from the md breakpoint up
+ * they sit in a row and the button is hidden.
  */
 function FilterBar({
   filters,
@@ -60,7 +45,6 @@ function FilterBar({
   resultCount,
   totalCount,
 }: FilterBarProps): React.ReactNode {
-  const searchId = useId();
   const panelId = useId();
   const [open, setOpen] = useState(false);
   // One list open at a time: a second one opening over the first would hide it.
@@ -70,7 +54,7 @@ function FilterBar({
   const activeCount = activeFacetCount(filters);
 
   // Stable per axis, so an open list does not re-subscribe its outside-click
-  // listener on every keystroke in the search box.
+  // listener every time a pick re-renders this bar.
   const openChange = useMemo(() => {
     const forAxis = (axis: Axis) => (shown: boolean) =>
       setOpenAxis((current) => (shown ? axis : current === axis ? null : current));
@@ -79,50 +63,42 @@ function FilterBar({
 
   return (
     <section aria-label="Filter videos" className="space-y-3">
-      <div className="flex items-end gap-2">
-        <div className="min-w-0 flex-1">
-          <label
-            htmlFor={searchId}
-            className="block text-xs uppercase tracking-wide text-aura-text-tertiary mb-1"
-          >
-            Search
-          </label>
-          <input
-            id={searchId}
-            type="search"
-            value={filters.query}
-            onChange={(event) => onChange({ ...filters, query: event.target.value })}
-            placeholder="A title, a place, a person…"
-            className={clsx(
-              CONTROL,
-              "w-full px-4 border-aura-border placeholder:text-aura-text-tertiary",
-            )}
-          />
-        </div>
-
-        {/* The axes are always on screen where there is room for them. */}
-        <button
-          type="button"
-          onClick={() => {
-            setOpen((shown) => !shown);
-            setOpenAxis(null);
-          }}
-          aria-expanded={open}
-          aria-controls={panelId}
-          className={clsx(
-            CONTROL,
-            "md:hidden shrink-0 whitespace-nowrap px-4",
-            "border-aura-border text-aura-text-secondary",
-          )}
-        >
+      {/*
+        Every utility below is stated once: two from the same group (`w-full`
+        and `w-auto`, say) have equal specificity, so the winner is whichever
+        Tailwind emits last. The test in VideosPage.test.tsx guards it.
+      */}
+      <button
+        type="button"
+        onClick={() => {
+          setOpen((shown) => !shown);
+          setOpenAxis(null);
+        }}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className={clsx(
+          "flex w-full items-center justify-between gap-2 md:hidden",
+          "rounded-xl border border-aura-border bg-aura-surface",
+          "min-h-[2.75rem] px-4 py-2 text-sm text-aura-text-primary",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-aura-text-primary",
+        )}
+      >
+        <span>
           Filters
           {activeCount > 0 ? (
-            <span className="ml-1.5 rounded-full bg-aura-text-primary px-1.5 py-0.5 text-xs text-white">
+            <span className="ml-2 rounded-full bg-aura-text-primary px-1.5 py-0.5 text-xs text-white">
               {activeCount}
             </span>
           ) : null}
-        </button>
-      </div>
+        </span>
+        <ChevronIcon
+          direction="down"
+          className={clsx(
+            "h-4 w-4 shrink-0 text-aura-text-tertiary aura-transition",
+            open && "rotate-180",
+          )}
+        />
+      </button>
 
       <div
         id={panelId}
