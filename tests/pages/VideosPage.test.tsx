@@ -39,25 +39,23 @@ describe("VideosPage filtering", () => {
     expect(screen.getByText(`${VIDEOS.length} videos, newest first`)).toBeInTheDocument();
   });
 
-  it("narrows as you type, and says how much is left", async () => {
-    const user = userEvent.setup();
-    renderPage();
+  it("says how much of the library is left once something is picked", () => {
+    const year = VIDEOS[0].year;
+    renderPage(`/?year=${year}`);
 
-    await user.type(screen.getByRole("searchbox", { name: /search/i }), "maui");
-
-    await waitFor(() => expect(cardCount()).toBeLessThan(VIDEOS.length));
-    expect(screen.getByText(new RegExp(`of ${VIDEOS.length} videos`))).toBeInTheDocument();
+    const left = VIDEOS.filter((v) => v.year === year).length;
+    expect(screen.getByText(`${left} of ${VIDEOS.length} videos`)).toBeInTheDocument();
   });
 
-  it("puts the filter in the URL so a narrowed view can be shared", async () => {
-    const user = userEvent.setup();
-    const router = renderPage();
+  it("has no search box, and ignores a search link from before it went", () => {
+    // `?q=` was the search box. A link shared back then must open the whole
+    // library, not a half-narrowed one the visitor has no way to undo.
+    renderPage("/?q=maui");
 
-    await user.type(screen.getByRole("searchbox", { name: /search/i }), "maui");
-
-    await waitFor(() =>
-      expect(router.state.location.search).toContain("q=maui"),
-    );
+    expect(screen.queryByRole("searchbox")).toBeNull();
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(cardCount()).toBe(VIDEOS.length);
+    expect(screen.queryByRole("button", { name: /clear filters/i })).toBeNull();
   });
 
   /** Open one axis's list and return it. */
@@ -277,8 +275,8 @@ describe("VideosPage filtering", () => {
     expect(screen.getByRole("button", { name: /^filters/i }).textContent).toContain("3");
   });
 
-  it("does not badge the collapsed control for the search box beside it", () => {
-    renderPage("/?q=maui");
+  it("shows no badge on the collapsed control when nothing is picked", () => {
+    renderPage();
     expect(screen.getByRole("button", { name: /^filters/i }).textContent).toBe("Filters");
   });
 
@@ -289,7 +287,6 @@ describe("VideosPage filtering", () => {
 
     const { list } = await openAxis(user, /^Location/);
     const controls = [
-      screen.getByRole("searchbox"),
       screen.getByRole("button", { name: /^filters/i }),
       screen.getByRole("button", { name: /^Year/ }),
       screen.getByRole("button", { name: /^People/ }),
@@ -304,14 +301,14 @@ describe("VideosPage filtering", () => {
   });
 
   it("never lets one control's style silently override another's", async () => {
-    // The regression this guards: CONTROL carried `w-full`, and the Filters
-    // button appended `w-auto` to undo it. Both are width utilities with equal
-    // specificity, so the winner is whichever Tailwind emits last -- and it
-    // emits `.w-full` after `.w-auto`. The button took the whole row and sat on
-    // top of the search box. jsdom has no layout and the e2e suite serves the
-    // dev server, whose incrementally-built stylesheet can order the two rules
-    // the other way, so neither would catch it: the class strings are the
-    // evidence.
+    // The regression this guards: a shared class carried `w-full`, and the
+    // Filters button appended `w-auto` to undo it. Both are width utilities with
+    // equal specificity, so the winner is whichever Tailwind emits last -- and
+    // it emits `.w-full` after `.w-auto`. The button took the whole row and sat
+    // on top of the search box that shared it. jsdom has no layout and the e2e
+    // suite serves the dev server, whose incrementally-built stylesheet can
+    // order the two rules the other way, so neither would catch it: the class
+    // strings are the evidence.
     const user = userEvent.setup();
     renderPage(`/?year=${VIDEOS[0].year}`);
 
@@ -324,7 +321,6 @@ describe("VideosPage filtering", () => {
     const { list } = await openAxis(user, /^Location/);
     const headings = [...list.querySelectorAll("p")];
     const controls = [
-      screen.getByRole("searchbox"),
       screen.getByRole("button", { name: /^filters/i }),
       screen.getByRole("button", { name: /^Year/ }),
       screen.getByRole("button", { name: /^People/ }),
@@ -347,16 +343,25 @@ describe("VideosPage filtering", () => {
     }
   });
 
+  /** A year and a person that no video has together, from the real library. */
+  function emptyCombination(): { year: number; person: string } {
+    for (const { value: person } of collectPeople(VIDEOS)) {
+      const theirYears = new Set(
+        VIDEOS.filter((v) => (v.tags ?? []).includes(person)).map((v) => v.year),
+      );
+      const missing = collectYears(VIDEOS).find((y) => !theirYears.has(Number(y.value)));
+      if (missing) return { year: Number(missing.value), person };
+    }
+    throw new Error("every person appears in every year; the library cannot give an empty result");
+  }
+
   it("explains an empty result and offers a way out", async () => {
     const user = userEvent.setup();
-    renderPage();
-
-    await user.type(
-      screen.getByRole("searchbox", { name: /search/i }),
-      "zzzznothingmatchesthis",
-    );
+    const { year, person } = emptyCombination();
+    renderPage(`/?year=${year}&person=${encodeURIComponent(person)}`);
 
     expect(await screen.findByText(/nothing matches that/i)).toBeInTheDocument();
+    expect(screen.getByText(/try removing one of the filters/i)).toBeInTheDocument();
     await user.click(screen.getAllByRole("button", { name: /clear filters/i })[0]);
     await waitFor(() => expect(cardCount()).toBe(VIDEOS.length));
   });
@@ -364,7 +369,7 @@ describe("VideosPage filtering", () => {
   it("clears every filter at once", async () => {
     const user = userEvent.setup();
     const router = renderPage(
-      `/?q=maui&year=${VIDEOS[0].year}&year=2019&person=Stephen&person=Eli&location=Maui`,
+      `/?year=${VIDEOS[0].year}&year=2019&person=Stephen&person=Eli&location=Maui`,
     );
 
     await user.click(screen.getAllByRole("button", { name: /clear filters/i })[0]);
@@ -388,7 +393,8 @@ describe("VideosPage filtering", () => {
 
   it("carries the filters along when opening a video", async () => {
     const user = userEvent.setup();
-    const router = renderPage("/?q=a");
+    // `q=a` is a dead search parameter from an old link; `year` is live.
+    const router = renderPage(`/?year=${VIDEOS[0].year}&q=a`);
 
     // The card itself carries the handler; the <li> around it does not, and a
     // click on an ancestor never reaches a descendant's listener.
@@ -397,6 +403,8 @@ describe("VideosPage filtering", () => {
     );
 
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/vids\//));
-    expect(router.state.location.search).toContain("q=a");
+    expect(router.state.location.search).toContain(`year=${VIDEOS[0].year}`);
+    // Only what the site still reads travels with the visitor.
+    expect(router.state.location.search).not.toContain("q=a");
   });
 });

@@ -10,8 +10,6 @@ import REGIONS from "@/data/locations.json";
  * Emily's videos from 2020. An empty axis does not narrow anything.
  */
 export interface VideoFilters {
-  /** Free text, matched across title, description, location and tags. */
-  query: string;
   years: number[];
   /** Names from src/data/people.json, matched against tags. */
   people: string[];
@@ -20,7 +18,6 @@ export interface VideoFilters {
 }
 
 export const EMPTY_FILTERS: VideoFilters = {
-  query: "",
   years: [],
   people: [],
   locations: [],
@@ -44,20 +41,6 @@ export function normalise(value: string): string {
     .trim();
 }
 
-/**
- * Everything about a video that free text should search.
- *
- * Tags are still searched although the site no longer shows them: they are
- * how "beach" finds the beach videos, and they are where People reads names.
- */
-function haystack(video: Project): string {
-  return normalise(
-    [video.title, video.description, video.location, ...(video.tags ?? [])]
-      .filter(Boolean)
-      .join(" "),
-  );
-}
-
 function hasTag(video: Project, wanted: string): boolean {
   const key = normalise(wanted);
   return (video.tags ?? []).some((tag) => normalise(tag) === key);
@@ -79,14 +62,7 @@ export function matchesFilters(video: Project, filters: VideoFilters): boolean {
     }
   }
 
-  const query = normalise(filters.query);
-  if (query === "") {
-    return true;
-  }
-
-  // Every word has to appear somewhere, so "maui 2019" narrows rather than widens.
-  const text = haystack(video);
-  return query.split(/\s+/).every((term) => text.includes(term));
+  return true;
 }
 
 export function filterVideos(videos: Project[], filters: VideoFilters): Project[] {
@@ -231,16 +207,13 @@ export function collectLocationSections(
 }
 
 export function hasActiveFilters(filters: VideoFilters): boolean {
-  return filters.query.trim() !== "" || activeFacetCount(filters) > 0;
+  return activeFacetCount(filters) > 0;
 }
 
 /**
  * How many values are narrowing the grid across the three axes.
  *
  * Counts values, not axes: picking two years and a person reads as three.
- * Deliberately not counting the query: the search box is on screen even when
- * the axes are folded away, so counting it would badge the disclosure for
- * something the visitor can already see.
  */
 export function activeFacetCount(filters: VideoFilters): number {
   return filters.years.length + filters.people.length + filters.locations.length;
@@ -259,7 +232,6 @@ function unique<T>(values: T[]): T[] {
  */
 export function filtersFromSearchParams(params: URLSearchParams): VideoFilters {
   return {
-    query: params.get("q") ?? "",
     years: unique(
       params
         .getAll("year")
@@ -273,7 +245,6 @@ export function filtersFromSearchParams(params: URLSearchParams): VideoFilters {
 
 export function searchParamsFromFilters(filters: VideoFilters): URLSearchParams {
   const params = new URLSearchParams();
-  if (filters.query.trim() !== "") params.set("q", filters.query.trim());
   for (const year of filters.years) params.append("year", String(year));
   for (const person of filters.people) params.append("person", person);
   for (const location of filters.locations) params.append("location", location);

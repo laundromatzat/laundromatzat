@@ -33,21 +33,10 @@ describe("matchesFilters", () => {
     expect(matchesFilters(video, EMPTY_FILTERS)).toBe(true);
   });
 
-  it("searches title, description, location and tags alike", () => {
-    // Tags are no longer shown, but they are still how "roadtrip" is found.
-    for (const query of ["drift", "desert", "new mexico", "irene", "roadtrip"]) {
-      expect(matchesFilters(video, { ...EMPTY_FILTERS, query })).toBe(true);
-    }
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, query: "iceland" })).toBe(false);
-  });
-
-  it("requires every word, so more words narrow rather than widen", () => {
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, query: "drift desert" })).toBe(true);
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, query: "drift iceland" })).toBe(false);
-  });
-
-  it("ignores case, accents and stray whitespace", () => {
-    expect(matchesFilters(video, { ...EMPTY_FILTERS, query: "  DRÍFT  " })).toBe(true);
+  it("ignores case, accents and stray whitespace when matching a person or place", () => {
+    expect(matchesFilters(video, { ...EMPTY_FILTERS, people: ["  IRENE "] })).toBe(true);
+    const accented = makeVideo({ location: "Zürich" });
+    expect(matchesFilters(accented, { ...EMPTY_FILTERS, locations: ["zurich"] })).toBe(true);
   });
 
   it("treats several years as alternatives", () => {
@@ -72,7 +61,6 @@ describe("matchesFilters", () => {
 
   it("requires every axis that has picks, while picks within one are alternatives", () => {
     const all = {
-      query: "drift",
       years: [2018, 2019],
       people: ["Tom", "Irene"],
       locations: ["Maui", "New Mexico"],
@@ -265,11 +253,8 @@ describe("collectYears", () => {
 });
 
 describe("activeFacetCount", () => {
-  it("counts every pick on the folded-away axes, and not the search box", () => {
+  it("counts every pick across the three axes", () => {
     expect(activeFacetCount(EMPTY_FILTERS)).toBe(0);
-    // The search input stays on screen when the axes are collapsed, so badging
-    // the disclosure for it would point at something already visible.
-    expect(activeFacetCount({ ...EMPTY_FILTERS, query: "maui" })).toBe(0);
     expect(
       activeFacetCount({ ...EMPTY_FILTERS, years: [2020, 2021], people: ["Eli"] }),
     ).toBe(3);
@@ -279,7 +264,6 @@ describe("activeFacetCount", () => {
 describe("URL round trip", () => {
   it("survives a round trip with several values per axis", () => {
     const filters = {
-      query: "maui sunset",
       years: [2020, 2021],
       people: ["Emily", "Eli"],
       locations: ["Big Island", "Oak Creek Apartments | Stanford"],
@@ -298,9 +282,12 @@ describe("URL round trip", () => {
     expect(filters.people).toEqual(["Tom"]);
   });
 
-  it("ignores the old tag parameter now that tags are not a filter", () => {
-    const filters = filtersFromSearchParams(new URLSearchParams("tag=beach"));
+  it("ignores parameters the site no longer reads", () => {
+    // `q` was the search box and `tag` the tag filter. A link shared before
+    // they went must open the whole library rather than a narrowed or broken one.
+    const filters = filtersFromSearchParams(new URLSearchParams("q=maui&tag=beach"));
     expect(hasActiveFilters(filters)).toBe(false);
+    expect(filters).toEqual(EMPTY_FILTERS);
   });
 
   it("writes nothing for empty filters, so a clean view has a clean URL", () => {
@@ -314,9 +301,11 @@ describe("URL round trip", () => {
     ).toEqual([2019]);
   });
 
-  it("trims a whitespace-only query rather than treating it as active", () => {
-    expect(hasActiveFilters({ ...EMPTY_FILTERS, query: "   " })).toBe(false);
-    expect(searchParamsFromFilters({ ...EMPTY_FILTERS, query: "  x " }).get("q")).toBe("x");
+  it("treats each axis as active on its own", () => {
+    expect(hasActiveFilters({ ...EMPTY_FILTERS, years: [2020] })).toBe(true);
+    expect(hasActiveFilters({ ...EMPTY_FILTERS, people: ["Tom"] })).toBe(true);
+    expect(hasActiveFilters({ ...EMPTY_FILTERS, locations: ["Maui"] })).toBe(true);
+    expect(hasActiveFilters(EMPTY_FILTERS)).toBe(false);
   });
 });
 

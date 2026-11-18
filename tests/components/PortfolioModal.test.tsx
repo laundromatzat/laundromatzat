@@ -202,7 +202,7 @@ describe("PortfolioModal", () => {
 
       const dialog = screen.getByRole("dialog");
       expect(dialog).toHaveTextContent("A day out.");
-      // Tags still exist in the data -- People and search read them -- but
+      // Tags still exist in the data -- the People filter reads them -- but
       // the site no longer shows them.
       expect(dialog).not.toHaveTextContent(/beach/i);
     });

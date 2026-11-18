@@ -58,8 +58,8 @@ function VideosPage(): React.ReactNode {
 
   const handleFiltersChange = useCallback(
     (next: VideoFilters) => {
-      // replace, not push: typing in the search box should not bury the page
-      // the visitor arrived on under a history entry per keystroke.
+      // replace, not push: ticking several boxes should not bury the page the
+      // visitor arrived on under a history entry per tick.
       setSearchParams(searchParamsFromFilters(next), { replace: true });
     },
     [setSearchParams],
@@ -67,11 +67,13 @@ function VideosPage(): React.ReactNode {
 
   const handleSlugChange = useCallback(
     (newSlug: string | null) => {
-      const query = searchParams.toString();
+      // Rebuilt from the parsed filters rather than copied from the URL, so a
+      // parameter the site no longer reads (an old `?q=`) does not linger.
+      const query = searchParamsFromFilters(filters).toString();
       const suffix = query ? `?${query}` : "";
       navigate(newSlug ? `/vids/${newSlug}${suffix}` : `/${suffix}`);
     },
-    [navigate, searchParams],
+    [navigate, filters],
   );
 
   return (
@@ -104,7 +106,7 @@ function VideosPage(): React.ReactNode {
           <div className="rounded-2xl border border-aura-border bg-aura-surface px-6 py-10 text-center">
             <p className="text-aura-text-primary font-semibold">Nothing matches that.</p>
             <p className="mt-1 text-sm text-aura-text-secondary">
-              Try a different word, or widen one of the filters.
+              Try removing one of the filters.
             </p>
             {hasActiveFilters(filters) ? (
               <AuraButton

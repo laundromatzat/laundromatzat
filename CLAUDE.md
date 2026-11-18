@@ -46,7 +46,7 @@ src/
   components/
     ProjectGrid.tsx       grid + modal state, keyboard paging
     ProjectCard.tsx       one thumbnail card
-    FilterBar.tsx         search, plus the three axes (folded away on a phone)
+    FilterBar.tsx         the three axes (folded behind a button on a phone)
     MultiSelect.tsx       one axis: a button opening a list of checkboxes
     PortfolioModal.tsx    the video player
     Header.tsx, Container.tsx, PageMetadata.tsx, ErrorBoundary.tsx
@@ -103,11 +103,12 @@ Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
 - `App.tsx` moves focus to `<main>` on navigation, but skips it while a
   `[role="dialog"][aria-modal="true"]` is open: paging the player changes the
   URL every step and would otherwise drag focus out of the dialog.
-- **Filters live in the URL** (`?q=`, `?year=`, `?person=`, `?location=`), so a
-  narrowed view is shareable, and they survive opening a video. Several picks on
-  one axis repeat the parameter (`?year=2020&year=2021`); a single-value link
-  from before multiple selection reads the same. A deep link wins over them: a
-  `/vids/<slug>` the filters exclude still opens.
+- **Filters live in the URL** (`?year=`, `?person=`, `?location=`), so a narrowed
+  view is shareable, and they survive opening a video. Several picks on one axis
+  repeat the parameter (`?year=2020&year=2021`); a single-value link from before
+  multiple selection reads the same. A deep link wins over them: a
+  `/vids/<slug>` the filters exclude still opens. There is no text search, and
+  `?q=` / `?tag=` from old links are ignored rather than carried along.
 - **Filtering has three axes: year, people, location.** Each takes any number of
   picks. Picks within an axis are alternatives (2020 *or* 2021); axes combine
   (2020 *and* Emily). Year is derived from `date`. People come from
@@ -122,10 +123,9 @@ Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
   hidden, so Midwest can wait in the data. A location the file does not mention
   is never lost: it appears under "Other" until someone files it. Adding a video
   somewhere new is a content edit to this file, like adding a person.
-- **Tags are data, not display.** The site no longer shows them anywhere and
-  there is no tag filter, but they stay in `projects.json`: People reads names
-  from them, and search still matches them, which is how "beach" finds the
-  beach videos.
+- **Tags are data, not display.** The site shows them nowhere and there is no
+  tag filter or search, but they stay in `projects.json` because People reads
+  names from them.
 - **Each axis is a button opening checkboxes, not a native `<select multiple>`**
   (`MultiSelect.tsx`). That control cannot nest a heading inside a heading,
   which Location needs, and on a desktop it only takes a second pick with Ctrl
