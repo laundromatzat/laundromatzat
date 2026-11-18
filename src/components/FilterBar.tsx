@@ -1,26 +1,28 @@
-import React, { useId, useState } from "react";
+import React, { useId, useMemo, useState } from "react";
 import clsx from "clsx";
 import {
   EMPTY_FILTERS,
   Facet,
+  FacetSection,
   VideoFilters,
   activeFacetCount,
   hasActiveFilters,
 } from "@/utils/videoFilters";
+import MultiSelect from "./MultiSelect";
 
 interface FilterBarProps {
   filters: VideoFilters;
   onChange: (next: VideoFilters) => void;
   years: Facet[];
   people: Facet[];
-  locations: Facet[];
-  tags: Facet[];
+  /** Locations under their regional headings. */
+  locations: FacetSection[];
   resultCount: number;
   totalCount: number;
 }
 
 /**
- * The look every control in this bar shares.
+ * The look the search box and the Filters button share.
  *
  * Carries no width, padding or border colour: those differ per control, and
  * appending a utility to this string does not reliably override one inside it.
@@ -35,74 +37,19 @@ const CONTROL = clsx(
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-aura-text-primary",
 );
 
-interface FacetSelectProps {
-  label: string;
-  value: string | null;
-  /** Shown as the unfiltered option, e.g. "All years". */
-  anyLabel: string;
-  options: Facet[];
-  onSelect: (value: string | null) => void;
-}
+type Axis = "year" | "people" | "location";
 
-/**
- * One axis, as a native select.
- *
- * Chips were the obvious thing and the wrong one: 14 years, 23 locations and 56
- * tags is more than a wrapping row can hold, and on a phone the rows pushed the
- * grid off the screen. A select shows the same counts, collapses to one line,
- * and on iOS opens the system picker.
- */
-function FacetSelect({
-  label,
-  value,
-  anyLabel,
-  options,
-  onSelect,
-}: FacetSelectProps): React.ReactNode {
-  const id = useId();
-
-  // A value the list does not carry still has to show. Filters arrive from the
-  // URL, and a link shared before the axes were split up can name a tag that is
-  // now a person -- it still narrows the grid, so the control has to say so
-  // rather than reading "any" over a filtered library.
-  const listed = options.some((option) => option.value === value);
-
-  return (
-    <div className="min-w-0">
-      <label
-        htmlFor={id}
-        className="block text-xs uppercase tracking-wide text-aura-text-tertiary mb-1"
-      >
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value ?? ""}
-        onChange={(event) => onSelect(event.target.value === "" ? null : event.target.value)}
-        className={clsx(
-          CONTROL,
-          "w-full px-3",
-          value === null ? "border-aura-border" : "border-aura-text-primary",
-        )}
-      >
-        <option value="">{anyLabel}</option>
-        {value !== null && !listed ? <option value={value}>{value}</option> : null}
-        {options.map(({ value: option, count }) => (
-          <option key={option} value={option}>
-            {option} ({count})
-          </option>
-        ))}
-      </select>
-    </div>
-  );
+/** A flat list is one section with no heading. */
+function flat(options: Facet[]): FacetSection[] {
+  return [{ heading: "", depth: 0, options }];
 }
 
 /**
  * Search and narrow the library.
  *
- * Search stays visible because it carries the long tail on its own. The four
- * axes behind it -- when, who, where, what -- are the ones the data can support,
- * and they fold away on a phone so the first thing on screen is a video.
+ * Search stays visible because it carries the long tail on its own. The three
+ * axes behind it -- when, who, where -- each take any number of picks, and
+ * fold away on a phone so the first thing on screen is a video.
  */
 function FilterBar({
   filters,
@@ -110,16 +57,25 @@ function FilterBar({
   years,
   people,
   locations,
-  tags,
   resultCount,
   totalCount,
 }: FilterBarProps): React.ReactNode {
   const searchId = useId();
   const panelId = useId();
   const [open, setOpen] = useState(false);
+  // One list open at a time: a second one opening over the first would hide it.
+  const [openAxis, setOpenAxis] = useState<Axis | null>(null);
 
   const active = hasActiveFilters(filters);
   const activeCount = activeFacetCount(filters);
+
+  // Stable per axis, so an open list does not re-subscribe its outside-click
+  // listener on every keystroke in the search box.
+  const openChange = useMemo(() => {
+    const forAxis = (axis: Axis) => (shown: boolean) =>
+      setOpenAxis((current) => (shown ? axis : current === axis ? null : current));
+    return { year: forAxis("year"), people: forAxis("people"), location: forAxis("location") };
+  }, []);
 
   return (
     <section aria-label="Filter videos" className="space-y-3">
@@ -144,10 +100,13 @@ function FilterBar({
           />
         </div>
 
-        {/* The four axes are always on screen where there is room for them. */}
+        {/* The axes are always on screen where there is room for them. */}
         <button
           type="button"
-          onClick={() => setOpen((shown) => !shown)}
+          onClick={() => {
+            setOpen((shown) => !shown);
+            setOpenAxis(null);
+          }}
           aria-expanded={open}
           aria-controls={panelId}
           className={clsx(
@@ -167,50 +126,41 @@ function FilterBar({
 
       <div
         id={panelId}
-        className={clsx(
-          "gap-3 sm:grid-cols-2 md:grid-cols-4",
-          open ? "grid" : "hidden md:grid",
-        )}
+        className={clsx("gap-3 sm:grid-cols-3", open ? "grid" : "hidden md:grid")}
       >
         {years.length > 1 ? (
-          <FacetSelect
+          <MultiSelect
             label="Year"
-            anyLabel="All years"
-            value={filters.year === null ? null : String(filters.year)}
-            options={years}
-            onSelect={(value) =>
-              onChange({ ...filters, year: value === null ? null : Number(value) })
-            }
+            anyLabel="Any year"
+            sections={flat(years)}
+            selected={filters.years.map(String)}
+            onChange={(picked) => onChange({ ...filters, years: picked.map(Number) })}
+            open={openAxis === "year"}
+            onOpenChange={openChange.year}
           />
         ) : null}
 
         {people.length > 0 ? (
-          <FacetSelect
+          <MultiSelect
             label="People"
             anyLabel="Anyone"
-            value={filters.person}
-            options={people}
-            onSelect={(person) => onChange({ ...filters, person })}
+            sections={flat(people)}
+            selected={filters.people}
+            onChange={(picked) => onChange({ ...filters, people: picked })}
+            open={openAxis === "people"}
+            onOpenChange={openChange.people}
           />
         ) : null}
 
         {locations.length > 0 ? (
-          <FacetSelect
+          <MultiSelect
             label="Location"
             anyLabel="Anywhere"
-            value={filters.location}
-            options={locations}
-            onSelect={(location) => onChange({ ...filters, location })}
-          />
-        ) : null}
-
-        {tags.length > 0 ? (
-          <FacetSelect
-            label="Tag"
-            anyLabel="Any tag"
-            value={filters.tag}
-            options={tags}
-            onSelect={(tag) => onChange({ ...filters, tag })}
+            sections={locations}
+            selected={filters.locations}
+            onChange={(picked) => onChange({ ...filters, locations: picked })}
+            open={openAxis === "location"}
+            onOpenChange={openChange.location}
           />
         ) : null}
       </div>

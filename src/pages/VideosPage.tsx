@@ -11,8 +11,7 @@ import { buildSocialMetadata } from "@/utils/socialMetadata";
 import {
   EMPTY_FILTERS,
   VideoFilters,
-  collectFilterTags,
-  collectLocations,
+  collectLocationSections,
   collectPeople,
   collectYears,
   filterVideos,
@@ -34,8 +33,7 @@ function VideosPage(): React.ReactNode {
 
   const years = useMemo(() => collectYears(videos), [videos]);
   const people = useMemo(() => collectPeople(videos), [videos]);
-  const locations = useMemo(() => collectLocations(videos), [videos]);
-  const tags = useMemo(() => collectFilterTags(videos), [videos]);
+  const locations = useMemo(() => collectLocationSections(videos), [videos]);
 
   const activeProject = useMemo(
     () => findProjectBySlug(videos, slug),
@@ -94,7 +92,6 @@ function VideosPage(): React.ReactNode {
         years={years}
         people={people}
         locations={locations}
-        tags={tags}
         resultCount={visible.length}
         totalCount={videos.length}
       />

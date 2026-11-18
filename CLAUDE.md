@@ -36,6 +36,7 @@ Pre-commit hooks (Husky + lint-staged) lint changed files.
 src/
   data/projects.json      ← all site content lives here
   data/people.json        the names the People filter offers
+  data/locations.json     the regions the Location filter files places under
   constants.ts            parses that JSON into the VIDEOS array
   index.tsx               router: "/" and "/vids/:slug"
   App.tsx                 layout shell
@@ -45,7 +46,8 @@ src/
   components/
     ProjectGrid.tsx       grid + modal state, keyboard paging
     ProjectCard.tsx       one thumbnail card
-    FilterBar.tsx         search, plus the four axes (folded away on a phone)
+    FilterBar.tsx         search, plus the three axes (folded away on a phone)
+    MultiSelect.tsx       one axis: a button opening a list of checkboxes
     PortfolioModal.tsx    the video player
     Header.tsx, Container.tsx, PageMetadata.tsx, ErrorBoundary.tsx
     aura/                 AuraButton, AuraCard (design system)
@@ -60,7 +62,7 @@ src/
     projectDates.ts       MM/YYYY parsing and sort
     slugs.ts              title → URL slug
     socialMetadata.ts     the og:/twitter: tags a page should carry
-    videoFilters.ts       matching on four axes, facets, URL round trip
+    videoFilters.ts       matching on three axes, facets, URL round trip
 scripts/
   add-video.mjs           append an entry from a Firebase download URL
   check-media.mjs         verify media still serves, report size and caching
@@ -101,19 +103,34 @@ Stack: React 19, React Router 7, TypeScript, TailwindCSS 3.4, Vite 6.
 - `App.tsx` moves focus to `<main>` on navigation, but skips it while a
   `[role="dialog"][aria-modal="true"]` is open: paging the player changes the
   URL every step and would otherwise drag focus out of the dialog.
-- **Filters live in the URL** (`?q=`, `?year=`, `?person=`, `?location=`,
-  `?tag=`), so a narrowed view is shareable, and they survive opening a video.
-  A deep link wins over them: a `/vids/<slug>` the filters exclude still opens.
-- **Filtering has four axes: year, people, location, tag.** Year and location are
-  derived from the `date` and `location` fields; people come from
-  `src/data/people.json`; tag is the catch-all and offers everything that is
-  neither. People are curated because a name is not distinguishable from any
-  other tag by shape — and splitting them out is what makes them usable, since
-  the two most-tagged people are on 100% and 82% of the library and any
-  "too common to be a useful filter" rule threw exactly them away. Each axis is
-  a `<select>`, not a row of chips: 14 years, 24 locations and 32 tags do not
-  fit in a wrapping row, and on a phone they buried the grid. Adding a person is
-  a content edit, like adding a video.
+- **Filters live in the URL** (`?q=`, `?year=`, `?person=`, `?location=`), so a
+  narrowed view is shareable, and they survive opening a video. Several picks on
+  one axis repeat the parameter (`?year=2020&year=2021`); a single-value link
+  from before multiple selection reads the same. A deep link wins over them: a
+  `/vids/<slug>` the filters exclude still opens.
+- **Filtering has three axes: year, people, location.** Each takes any number of
+  picks. Picks within an axis are alternatives (2020 *or* 2021); axes combine
+  (2020 *and* Emily). Year is derived from `date`. People come from
+  `src/data/people.json` and are matched against `tags` -- curated because a
+  name is not distinguishable from any other tag by shape, and split out because
+  the two most-tagged people are on 100% and 82% of the library, so any "too
+  common to be a useful filter" rule threw exactly them away.
+- **Locations are filed under regions in `src/data/locations.json`**, keyed by
+  the exact `location` value, each with the label the list shows ("Maui" reads
+  "Maui, HI"). A place may sit under two regions -- "Seattle and Vancouver" is
+  both -- and either checkbox picks it. A region with nothing in it yet is
+  hidden, so Midwest can wait in the data. A location the file does not mention
+  is never lost: it appears under "Other" until someone files it. Adding a video
+  somewhere new is a content edit to this file, like adding a person.
+- **Tags are data, not display.** The site no longer shows them anywhere and
+  there is no tag filter, but they stay in `projects.json`: People reads names
+  from them, and search still matches them, which is how "beach" finds the
+  beach videos.
+- **Each axis is a button opening checkboxes, not a native `<select multiple>`**
+  (`MultiSelect.tsx`). That control cannot nest a heading inside a heading,
+  which Location needs, and on a desktop it only takes a second pick with Ctrl
+  or Cmd held. One list opens at a time; it stays open while picking and closes
+  on Escape, a click elsewhere, or its button.
 
 ## External connections
 
