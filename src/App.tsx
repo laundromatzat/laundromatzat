@@ -25,7 +25,10 @@ function App(): React.ReactNode {
     });
 
     return () => window.cancelAnimationFrame(focusTimer);
-  }, [location]);
+    // The path, not the whole location: a filter pick rewrites only the query
+    // string, and treating that as a new page would pull focus off the checkbox
+    // the visitor just ticked.
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-aura-bg font-sans text-aura-text-primary selection:bg-aura-accent selection:text-aura-text-primary">
